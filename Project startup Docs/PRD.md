@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.6 (Final)  
+**Version:** 1.7 (Implementation Baseline)  
 **Status:** Approved  
 **Prepared By:** Product Team  
 **Last Updated:** 29 April 2026  
@@ -349,5 +349,69 @@ If license expires or becomes invalid:
 | | Product Owner | | |
 | | University Representative | | |
 | | Technical Lead | | |
+
+---
+
+## 20. Implementation Architecture Baseline (ASP.NET)
+
+### 20.1 Target Solution Style
+- Modular monolith for v1, with clean boundaries and migration path to services
+- Backend stack: ASP.NET Core 8 Web API
+- UI stack: ASP.NET Core MVC with Razor views and selective client-side enhancement
+- Data access: Entity Framework Core with SQL Server as default provider
+- Background jobs: Hosted Services for scheduled validation and notifications
+
+### 20.2 Proposed Solution Layers
+- Presentation: Web UI, REST API controllers, auth endpoints
+- Application: Use cases, command/query handlers, validation, orchestration
+- Domain: Entities, value objects, domain rules, domain events
+- Infrastructure: EF Core, repositories, file storage, email/SMS adapters, audit sinks
+
+### 20.3 Bounded Contexts
+- Identity and Access
+- Academic Core (departments, programs, courses, semesters)
+- Student Lifecycle (profiles, enrollment, records)
+- Learning Delivery (assignments, quizzes, attendance)
+- Assessment and Results
+- FYP Management
+- Notifications
+- Licensing and Entitlements
+- Audit and Reporting
+
+### 20.4 API and Contract Standards
+- Versioned APIs under /api/v1
+- Consistent envelope for success and error responses
+- RFC7807-compatible problem details for validation and runtime errors
+- Idempotency support for critical write operations (license activation, results publish)
+
+### 20.5 Security Architecture
+- ASP.NET Core Identity for authentication and password policies
+- JWT bearer tokens for API access and secure cookies for web sessions
+- Role-based authorization plus policy checks for department scoping
+- Encryption at rest for sensitive columns and TLS in transit
+- Centralized audit logging for privileged actions and data export operations
+
+### 20.6 License Enforcement Integration
+- License validated on startup, scheduled daily, and on Super Admin sign-in
+- Degraded mode automatically enables read-only policy when invalid or expired
+- Entitlement cache refreshed from signed local license payload
+- Feature flags resolved by module entitlement plus system-level mandatory rules
+
+### 20.7 Non-Functional Targets (Implementation)
+- p95 API response under 500 ms for standard read endpoints
+- p95 page load under 3 seconds on standard campus networks
+- Horizontal scale readiness to 10,000 concurrent users
+- Zero data-loss tolerance for academic history records
+
+### 20.8 Observability and Operations
+- Structured logging with correlation IDs
+- Health checks for database, license state, and background workers
+- Metrics: request latency, error rates, queue depth, failed jobs
+- Audit export and retention controls for compliance reporting
+
+### 20.9 Release Scope for v1
+- In scope for v1: Authentication, Departments, SIS, Courses/Programs, Assignments, Results, Notifications, Licensing core
+- In scope for v1.1: Quizzes, Attendance, FYP, AI Chatbot baseline, extended themes
+- In scope for v1.2: Advanced analytics, advanced audit dashboards, multi-campus enhancements
 
 ---

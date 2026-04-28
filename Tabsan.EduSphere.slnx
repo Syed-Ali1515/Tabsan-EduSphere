@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Tabsan.EduSphere.API/Tabsan.EduSphere.API.csproj" />
+    <Project Path="src/Tabsan.EduSphere.Application/Tabsan.EduSphere.Application.csproj" />
+    <Project Path="src/Tabsan.EduSphere.BackgroundJobs/Tabsan.EduSphere.BackgroundJobs.csproj" />
+    <Project Path="src/Tabsan.EduSphere.Domain/Tabsan.EduSphere.Domain.csproj" />
+    <Project Path="src/Tabsan.EduSphere.Infrastructure/Tabsan.EduSphere.Infrastructure.csproj" />
+    <Project Path="src/Tabsan.EduSphere.Web/Tabsan.EduSphere.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Tabsan.EduSphere.ContractTests/Tabsan.EduSphere.ContractTests.csproj" />
+    <Project Path="tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj" />
+    <Project Path="tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj" />
+  </Folder>
+</Solution>

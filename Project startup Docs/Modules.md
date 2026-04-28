@@ -1,6 +1,6 @@
 # University Portal – Module Definition, Activation & Packaging
 
-**Document Version:** 1.1 (Final)  
+**Document Version:** 1.2 (Implementation Baseline)  
 **Aligned With PRD Version:** 1.6  
 **Audience:** Super Admin, University Decision Makers  
 **Purpose:** Define selectable system modules, activation rules, and pricing packages  
@@ -263,4 +263,73 @@ Modules that can be enabled later (paid):
 - Academic records are never deleted
 
 ---
-``
+
+## 15. ASP.NET Implementation Mapping
+
+### 15.1 Module-to-Bounded-Context Mapping
+
+| Functional Module | Bounded Context | Primary API Area |
+|------|------|------|
+| Authentication & Users | Identity and Access | /api/v1/auth, /api/v1/users |
+| Departments | Academic Core | /api/v1/departments |
+| SIS | Student Lifecycle | /api/v1/students, /api/v1/enrollments |
+| Courses & Programs | Academic Core | /api/v1/programs, /api/v1/courses |
+| Assignments | Learning Delivery | /api/v1/assignments |
+| Quizzes | Learning Delivery | /api/v1/quizzes |
+| Attendance | Learning Delivery | /api/v1/attendance |
+| Exams & Results | Assessment and Results | /api/v1/results |
+| Notifications | Notifications | /api/v1/notifications |
+| FYP | FYP Management | /api/v1/fyp |
+| AI Chatbot | AI Services | /api/v1/ai/chat |
+| Reports & Analytics | Reporting | /api/v1/reports |
+| Themes & Personalization | UX Personalization | /api/v1/themes |
+| Advanced Audit | Audit and Compliance | /api/v1/audit |
+
+---
+
+### 15.2 Dependency Rules
+
+- Courses & Programs depends on Departments
+- Assignments depends on Courses & Programs and SIS
+- Quizzes depends on Courses & Programs and SIS
+- Attendance depends on Courses & Programs and SIS
+- Exams & Results depends on Courses & Programs and SIS
+- FYP depends on SIS and Notifications
+- AI Chatbot depends on Licensing, RBAC, and at least one academic module
+- Reporting depends on data-producing modules (Assignments, Quizzes, Attendance, Results)
+
+If a dependency module is inactive, dependent module endpoints must return module-inactive responses.
+
+---
+
+### 15.3 Technical Activation Rules
+
+- UI menu rendering checks module entitlements before route exposure
+- API endpoints enforce module entitlement through policy filters
+- Background jobs for a module run only when module is active
+- Deactivation hides UI immediately and blocks writes; read access follows role and policy
+- Reactivation restores feature access without data migration or data loss
+
+---
+
+### 15.4 Module State Contract
+
+Module state should expose:
+
+- module_key
+- is_active
+- source (mandatory, license, manual)
+- last_changed_at
+- changed_by
+
+This contract enables auditability and deterministic behavior across UI, API, and jobs.
+
+---
+
+### 15.5 Packaging and Release Alignment
+
+- v1 package: mandatory modules plus Courses, Assignments, Results, Notifications
+- v1.1 package: Quizzes, Attendance, FYP, AI Chatbot baseline
+- v1.2 package: Reporting, Advanced Audit, extended themes, multi-campus foundations
+
+---

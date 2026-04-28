@@ -1,7 +1,7 @@
 # Database Schema Documentation
 ## University Portal & License Creation Tool
 
-**Version:** 1.0  
+**Version:** 1.1  
 **Aligned With PRD:** v1.6  
 **Purpose:** Define database schemas for the University Portal Application and the License Creation Tool  
 
@@ -405,5 +405,141 @@ Full traceability.
 - Academic data is never deleted
 - Module-based feature control supported
 - Fully offline-capable license validation
+
+---
+
+## 19. Implementation Conventions (ASP.NET + EF Core)
+
+- Use GUID PKs for all user-facing and distributed entities (users, students, assignments, licenses)
+- Use bigint PKs for high-volume append-only logs where sequential inserts are beneficial
+- Add created_at, updated_at, and row_version (concurrency token) to mutable aggregates
+- Use soft-delete columns (is_deleted, deleted_at) for operational entities; never soft-delete academic history tables
+- Store all timestamps in UTC
+
+---
+
+## 20. Additional Core Tables Required for Build Readiness
+
+### user_sessions
+Tracks web/API sessions and refresh-token family state.
+
+- id (UUID, PK)
+- user_id (FK -> users.id)
+- refresh_token_hash
+- device_info
+- ip_address
+- expires_at
+- revoked_at (nullable)
+
+### faculty_department_assignments
+Supports faculty mapped to one or more departments.
+
+- id (PK)
+- faculty_id (FK -> users.id)
+- department_id (FK -> departments.id)
+- is_primary
+
+### course_offerings
+Represents a course running in a specific semester and department context.
+
+- id (PK)
+- course_id (FK)
+- semester_id (FK)
+- department_id (FK)
+- faculty_id (FK -> users.id)
+- section
+- capacity
+- is_active
+
+### registration_whitelist
+Pre-approved registration numbers for controlled student signup.
+
+- id (PK)
+- registration_number (unique)
+- program_id (FK)
+- semester_id (FK)
+- is_claimed
+- claimed_by_student_id (FK, nullable)
+
+### quiz_questions
+Question bank entries tied to quizzes.
+
+- id (PK)
+- quiz_id (FK)
+- question_text
+- question_type (mcq, short, true_false)
+- marks
+- display_order
+
+### quiz_question_options
+Options for objective quiz questions.
+
+- id (PK)
+- quiz_question_id (FK)
+- option_text
+- is_correct
+
+### quiz_attempt_answers
+Submitted answers per attempt.
+
+- id (PK)
+- quiz_attempt_id (FK)
+- quiz_question_id (FK)
+- selected_option_id (FK, nullable)
+- answer_text (nullable)
+- awarded_marks
+
+### transcript_exports
+Tracks transcript generation history for compliance and auditability.
+
+- id (PK)
+- student_id (FK)
+- exported_by (FK -> users.id)
+- exported_at
+- format (pdf, excel)
+
+### audit_logs
+Operational audit logs for privileged activities.
+
+- id (bigint, PK)
+- actor_user_id (FK -> users.id, nullable)
+- action
+- entity_name
+- entity_id
+- old_values_json
+- new_values_json
+- occurred_at
+- ip_address
+
+---
+
+## 21. Constraint and Index Strategy
+
+- users: unique indexes on username and email (filtered where email is not null)
+- students: unique index on registration_number and unique index on user_id
+- student_course_enrollments: unique composite index on (student_id, course_id, semester_id)
+- attendance_records: unique composite index on (student_id, course_id, semester_id, attendance_date)
+- assignment_submissions: unique composite index on (assignment_id, student_id)
+- module_status: unique index on module_id to enforce single active status row
+- notifications_recipients: index on (user_id, is_read)
+- audit_logs: clustered index by occurred_at for time-range queries
+
+---
+
+## 22. Data Retention and Archival Rules
+
+- Academic records: never deleted; archive to cold storage after policy threshold
+- Audit logs: retain online for 24 months, archive for 7 years
+- Notification delivery logs: retain online for 12 months, then archive
+- Session and token records: purge expired and revoked entries after 90 days
+
+---
+
+## 23. Migration and Seeding Plan
+
+- Baseline migration: identity, departments, SIS core, license_state
+- Seed mandatory roles, modules, and default themes
+- Seed Super Admin bootstrap user through secure deployment script
+- Apply feature migrations per release train (v1, v1.1, v1.2)
 
 ---
