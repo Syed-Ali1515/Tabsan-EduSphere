@@ -28,6 +28,7 @@ using Tabsan.EduSphere.Infrastructure.Modules;
 using Tabsan.EduSphere.Infrastructure.Persistence;
 using Tabsan.EduSphere.Infrastructure.Repositories;
 using Tabsan.EduSphere.Application.Services;
+using Tabsan.EduSphere.Infrastructure.Exporters;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -139,6 +140,18 @@ builder.Services.AddScoped<IStudentLifecycleRepository, StudentLifecycleReposito
 builder.Services.AddScoped<IStudentLifecycleService, StudentLifecycleService>();
 builder.Services.AddScoped<IAccountSecurityService, AccountSecurityService>();
 builder.Services.AddScoped<ICsvRegistrationImportService, CsvRegistrationImportService>();
+
+// ── Phase 9: Timetable, Report Settings, Module Roles, Theme ─────────────
+builder.Services.AddScoped<ITimetableRepository, TimetableRepository>();
+builder.Services.AddScoped<IBuildingRoomRepository, BuildingRoomRepository>();
+builder.Services.AddScoped<ISettingsRepository, SettingsRepository>();
+builder.Services.AddScoped<ITimetableExcelExporter, TimetableExcelExporter>();
+builder.Services.AddScoped<ITimetablePdfExporter, TimetablePdfExporter>();
+builder.Services.AddScoped<ITimetableService, TimetableService>();
+builder.Services.AddScoped<IBuildingRoomService, BuildingRoomService>();
+builder.Services.AddScoped<IReportSettingsService, ReportSettingsService>();
+builder.Services.AddScoped<IModuleRolesService, ModuleRolesService>();
+builder.Services.AddScoped<IThemeService, ThemeService>();
 
 // ── Rate limiting (OWASP hardening) ─────────────────────────────────────
 builder.Services.AddRateLimiter(opts =>

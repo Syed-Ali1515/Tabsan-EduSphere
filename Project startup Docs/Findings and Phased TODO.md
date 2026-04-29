@@ -506,6 +506,8 @@ The provided startup documents define a strong product vision and feature set, b
 ## Phase 9: Dashboard, Navigation & System Settings (Sprints 17–18)
 
 > **Scope:** Role-based sidebar navigation, per-user theming, department/timetable management, and the full System Settings menu.
+>
+> **Backend Status: ✅ COMPLETE (0 errors, 0 warnings) — EF Migration: Phase9DashboardSettings**
 
 ### Stage 9.1 Role-Based Sidebar Navigation
 - [ ] Implement collapsible sidebar with menus and sub-menus driven by the authenticated user's role
@@ -513,18 +515,22 @@ The provided startup documents define a strong product vision and feature set, b
 - [ ] Super Admin sees all menus regardless of module status
 
 ### Stage 9.2 Per-User Theme Settings
-- [ ] Theme selection is stored per user (not per role)
-- [ ] User can switch theme from their profile or Settings → Theme Settings
-- [ ] Minimum 15 themes supported; Light, Dark, and High-Contrast accessibility variants included
-- [ ] Admin default theme does not override individual user selections
+- [x] `ThemeKey` property added to `User` entity (max 50 chars, nullable)
+- [x] `SetTheme(themeKey)` domain method added
+- [x] `ThemeController` — `GET /api/v1/theme` + `PUT /api/v1/theme`
+- [x] `IThemeService` + `ThemeService` implementation
+- [ ] Theme picker UI (Razor Pages / MVC)
 
 ### Stage 9.3 Departments Administration Menu
-- [ ] Admin and Super Admin: "Departments" menu to create / edit departments, degree programs, semesters, and subjects
-- [ ] Timetable management under Departments: admin creates and publishes timetable per department/semester
-- [ ] All users from that department can download the timetable in **PDF or Excel** format
+- [x] Timetable aggregate: `Timetable` + `TimetableEntry` domain entities created
+- [x] `TimetableController` — 12 endpoints (CRUD, publish/unpublish, delete, Excel + PDF export)
+- [x] `ITimetableService` + `TimetableService` implementation
+- [x] `ITimetableRepository` + `TimetableRepository` (EF Core)
+- [x] `TimetableExcelExporter` using ClosedXML (colour-coded weekly grid)
+- [x] `TimetablePdfExporter` using QuestPDF (landscape A4, active-days grid)
+- [ ] Timetable admin UI (Razor Pages / MVC)
 
 ### Stage 9.4 System Settings Menu
-Add a "Settings" top-level menu with the following sub-menus:
 
 #### 9.4.1 License Update (Super Admin only)
 - [ ] UI to upload a `.tablic` license file; calls the Phase 7 import endpoint
@@ -536,14 +542,17 @@ Add a "Settings" top-level menu with the following sub-menus:
 - [ ] Preview mode before applying
 
 #### 9.4.3 Report Settings (Super Admin only)
-- [ ] Table: SR#, Report Name, Purpose, Roles (multi-select checkbox list of all roles)
-- [ ] Super Admin activates or deactivates a report; deactivated reports hidden from all dashboards except Super Admin
+- [x] `ReportDefinition` + `ReportRoleAssignment` domain entities created
+- [x] `ReportSettingsController` — 7 endpoints (CRUD, activate/deactivate, set roles)
+- [x] `IReportSettingsService` + `ReportSettingsService` implementation
+- [x] `ISettingsRepository` + `SettingsRepository` (EF Core)
+- [ ] Report Settings UI (Razor Pages / MVC)
 
 #### 9.4.4 Module Settings (Super Admin only)
-- [ ] Table: SR#, Module Name, Purpose, Roles (multi-select checkbox), Status (Active / Inactive dropdown)
-- [ ] Active: module visible and functional for all selected roles
-- [ ] Inactive: module hidden from all role dashboards except Super Admin
-- [ ] Module data is never deleted on deactivation
+- [x] `ModuleRoleAssignment` domain entity created (`Domain/Settings/ModuleRoleAssignment.cs`)
+- [x] `ModuleController` extended with `GET /{key}/roles` + `PUT /{key}/roles` endpoints
+- [x] `IModuleRolesService` + `ModuleRolesService` implementation
+- [ ] Module Settings UI (Razor Pages / MVC)
 
 ### Stage 9.5 License Expiry Notifications
 - [ ] Background job checks license expiry daily

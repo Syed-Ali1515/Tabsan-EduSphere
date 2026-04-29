@@ -46,6 +46,12 @@ public class User : AuditableEntity
     /// <summary>UTC timestamp when the lock will automatically expire. Null if not locked or if unlocked manually.</summary>
     public DateTime? LockedOutUntil { get; private set; }
 
+    /// <summary>
+    /// The UI theme key selected by this user (e.g. "dark", "light", "high-contrast").
+    /// Null means the system default theme is used.
+    /// </summary>
+    public string? ThemeKey { get; private set; }
+
     private User() { }
 
     /// <summary>Creates a new user. Password must already be hashed by the caller.</summary>
@@ -134,6 +140,13 @@ public class User : AuditableEntity
     public void UpdateEmail(string? email)
     {
         Email = email;
+        Touch();
+    }
+
+    /// <summary>Sets the user's preferred UI theme key. Pass null to revert to the system default.</summary>
+    public void SetTheme(string? themeKey)
+    {
+        ThemeKey = themeKey?.Trim().ToLowerInvariant();
         Touch();
     }
 }

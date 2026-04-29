@@ -1463,3 +1463,106 @@
 | Function | Description | File |
 |---|---|---|
 | `LoginAsync(request, ipAddress, ct)` | Updated: checks `IsCurrentlyLockedOut()` before password verify; calls `RecordFailedLoginAttempt()` on bad password. | `Application/Auth/AuthService.cs` |
+
+---
+
+## Phase 9: Dashboard, Reports, Timetable, Theme
+
+### Domain Entities
+
+#### `Timetable` — `Domain/Academic/Timetable.cs`
+| Name | Purpose |
+|------|---------|
+| `Publish()` | Publishes the timetable; sets `IsPublished = true` and `PublishedAt = UtcNow`. Throws if already published. |
+| `Unpublish()` | Returns the timetable to draft mode; clears `IsPublished` and `PublishedAt`. |
+| `UpdateTitle(title)` | Updates the timetable display title. |
+
+#### `TimetableEntry` — `Domain/Academic/TimetableEntry.cs`
+| Name | Purpose |
+|------|---------|
+| `Update(...)` | Updates all mutable fields: day, start/end time, subject, room, faculty, courseOfferingId. |
+
+#### `ReportDefinition` — `Domain/Settings/ReportDefinition.cs`
+| Name | Purpose |
+|------|---------|
+| `Activate()` | Makes the report visible to assigned roles. |
+| `Deactivate()` | Hides the report from all role dashboards (Super Admin still sees it). |
+| `Update(name, purpose)` | Updates display name and purpose text. |
+
+#### `User` — Phase 9 update
+| Name | Purpose |
+|------|---------|
+| `SetTheme(themeKey)` | Sets or clears the user's preferred UI theme key (stored as lowercase, max 50 chars). |
+
+### Repository Interfaces
+| Interface | File |
+|-----------|------|
+| `ITimetableRepository` | `Domain/Interfaces/ITimetableRepository.cs` |
+| `ISettingsRepository` | `Domain/Interfaces/ISettingsRepository.cs` |
+
+### Repository Implementations (Infrastructure/Repositories/)
+| Class | Interface | Methods |
+|-------|-----------|---------|
+| `TimetableRepository` | `ITimetableRepository` | GetByDepartmentAsync, GetPublishedByDepartmentAsync, GetByIdWithEntriesAsync, GetByIdAsync, AddAsync, AddEntryAsync, Update, UpdateEntry, RemoveEntry, GetEntryByIdAsync, SaveChangesAsync |
+| `SettingsRepository` | `ISettingsRepository` | GetAllReportsAsync, GetReportByKeyAsync, GetReportByIdAsync, AddReportAsync, UpdateReport, AddReportRoleAsync, RemoveReportRole, GetReportRoleAsync, GetModuleRolesAsync, GetAllModuleRolesAsync, AddModuleRoleAsync, RemoveModuleRole, GetModuleRoleAsync, SaveChangesAsync |
+
+### Services (Application/Services/SettingsServices.cs + TimetableService.cs)
+| Class | Interface | Description |
+|-------|-----------|-------------|
+| `TimetableService` | `ITimetableService` | CRUD, publish/unpublish, soft-delete, Excel + PDF export delegation |
+| `ReportSettingsService` | `IReportSettingsService` | Create/update/activate/deactivate reports; replace role assignments |
+| `ModuleRolesService` | `IModuleRolesService` | Get/set role assignments per module (who can access it) |
+| `ThemeService` | `IThemeService` | Get/set per-user UI theme preference |
+
+### Export Services (Infrastructure/Timetable/)
+| Class | Interface | Description |
+|-------|-----------|-------------|
+| `TimetableExcelExporter` | `ITimetableExcelExporter` | Generates `.xlsx` weekly grid using ClosedXML; colour-coded header + alternate row shading |
+| `TimetablePdfExporter` | `ITimetablePdfExporter` | Generates `.pdf` landscape A4 using QuestPDF; active-days-only grid layout |
+
+### API Controllers (API/Controllers/)
+
+#### TimetableController — `api/v1/timetable`
+| Endpoint | Method | Roles | Description |
+|---|---|---|---|
+| `GET /department/{departmentId}` | GetByDepartment | Authenticated | Lists timetables (admins see drafts; others see published only) |
+| `GET /{id}` | GetById | Authenticated | Full timetable with all entries |
+| `POST /` | Create | Admin, SuperAdmin | Creates a new draft timetable |
+| `PUT /{id}` | Update | Admin, SuperAdmin | Updates timetable title |
+| `POST /{id}/entries` | AddEntry | Admin, SuperAdmin | Adds a scheduled slot |
+| `PUT /{id}/entries/{entryId}` | UpdateEntry | Admin, SuperAdmin | Updates a scheduled slot |
+| `DELETE /{id}/entries/{entryId}` | DeleteEntry | Admin, SuperAdmin | Removes a slot |
+| `POST /{id}/publish` | Publish | Admin, SuperAdmin | Makes timetable visible to department |
+| `POST /{id}/unpublish` | Unpublish | Admin, SuperAdmin | Returns to draft mode |
+| `DELETE /{id}` | Delete | Admin, SuperAdmin | Soft-deletes the timetable |
+| `GET /{id}/export/excel` | ExportExcel | Authenticated | Downloads .xlsx timetable |
+| `GET /{id}/export/pdf` | ExportPdf | Authenticated | Downloads .pdf timetable |
+
+#### ReportSettingsController — `api/v1/report-settings`
+| Endpoint | Method | Roles | Description |
+|---|---|---|---|
+| `GET /` | GetAll | SuperAdmin | All report definitions with role assignments |
+| `GET /{key}` | GetByKey | SuperAdmin | Single report by stable key |
+| `POST /` | Create | SuperAdmin | Creates a new report definition |
+| `PUT /{id}` | Update | SuperAdmin | Updates name and purpose |
+| `POST /{id}/activate` | Activate | SuperAdmin | Makes report visible on dashboards |
+| `POST /{id}/deactivate` | Deactivate | SuperAdmin | Hides report from dashboards |
+| `PUT /{id}/roles` | SetRoles | SuperAdmin | Replaces role assignments |
+
+#### ThemeController — `api/v1/theme`
+| Endpoint | Method | Roles | Description |
+|---|---|---|---|
+| `GET /` | GetTheme | Authenticated | Returns the user's current theme key |
+| `PUT /` | SetTheme | Authenticated | Sets or clears the user's theme preference |
+
+#### ModuleController — Phase 9 additions (`api/v1/modules`)
+| Endpoint | Method | Roles | Description |
+|---|---|---|---|
+| `GET /{key}/roles` | GetRoles | SuperAdmin | Returns roles assigned to a module |
+| `PUT /{key}/roles` | SetRoles | SuperAdmin | Replaces all role assignments for a module |
+
+### EF Migration
+| Migration | Tables Added / Modified |
+|-----------|------------------------|
+| `Phase9DashboardSettings` | `timetables`, `timetable_entries`, `report_definitions`, `report_role_assignments`, `module_role_assignments`; `users.theme_key` column added |
+

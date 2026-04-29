@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Tabsan.EduSphere.Application.Dtos;
 using Tabsan.EduSphere.Application.Interfaces;
 using Tabsan.EduSphere.Domain.Modules;
 
@@ -16,11 +17,16 @@ public class ModuleController : ControllerBase
 {
     private readonly IModuleService _modules;
     private readonly IModuleEntitlementResolver _resolver;
+    private readonly IModuleRolesService _moduleRoles;
 
-    public ModuleController(IModuleService modules, IModuleEntitlementResolver resolver)
+    public ModuleController(
+        IModuleService modules,
+        IModuleEntitlementResolver resolver,
+        IModuleRolesService moduleRoles)
     {
         _modules = modules;
         _resolver = resolver;
+        _moduleRoles = moduleRoles;
     }
 
     // ── GET /api/v1/modules ────────────────────────────────────────────────────
@@ -81,6 +87,40 @@ public class ModuleController : ControllerBase
     {
         var isActive = await _resolver.IsActiveAsync(key, ct);
         return Ok(new { key, isActive });
+    }
+
+    // ── GET /api/v1/modules/{key}/roles ───────────────────────────────────────
+
+    /// <summary>Returns the roles currently assigned to access the named module.</summary>
+    [HttpGet("{key}/roles")]
+    public async Task<IActionResult> GetRoles(string key, CancellationToken ct)
+    {
+        try
+        {
+            var dto = await _moduleRoles.GetByModuleKeyAsync(key, ct);
+            return Ok(dto);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+    }
+
+    // ── PUT /api/v1/modules/{key}/roles ───────────────────────────────────────
+
+    /// <summary>Replaces all role assignments for the named module. Pass an empty array to clear all.</summary>
+    [HttpPut("{key}/roles")]
+    public async Task<IActionResult> SetRoles(string key, [FromBody] SetRolesCommand cmd, CancellationToken ct)
+    {
+        try
+        {
+            await _moduleRoles.SetRolesAsync(key, cmd, ct);
+            return NoContent();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

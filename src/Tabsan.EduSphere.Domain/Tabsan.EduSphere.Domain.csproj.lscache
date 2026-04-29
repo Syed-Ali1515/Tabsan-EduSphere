@@ -55,14 +55,18 @@ TemporaryDependencyNodeTargetIdentifier=net8.0
 [sourceFiles]
 Academic/
  AcademicProgram.cs
+ Building.cs
  Course.cs
  CourseOffering.cs
  Department.cs
  Enrollment.cs
  FacultyDepartmentAssignment.cs
  RegistrationWhitelist.cs
+ Room.cs
  Semester.cs
  StudentProfile.cs
+ Timetable.cs
+ TimetableEntry.cs
 AiChat/ChatConversation.cs
 Assignments/
  Assignment.cs
@@ -90,6 +94,7 @@ Interfaces/
  IAssignmentRepository.cs
  IAttendanceRepository.cs
  IAuditService.cs
+ IBuildingRoomRepository.cs
  ICourseRepository.cs
  IDepartmentRepository.cs
  IEnrollmentRepository.cs
@@ -102,8 +107,10 @@ Interfaces/
  IRegistrationWhitelistRepository.cs
  IResultRepository.cs
  ISemesterRepository.cs
+ ISettingsRepository.cs
  IStudentLifecycleRepository.cs
  IStudentProfileRepository.cs
+ ITimetableRepository.cs
  IUserRepository.cs
 Licensing/
  ConsumedVerificationKey.cs
@@ -122,6 +129,10 @@ obj/Debug/net8.0/
 Quizzes/
  Quiz.cs
  QuizAttempt.cs
+Settings/
+ ModuleRoleAssignment.cs
+ ReportDefinition.cs
+ ReportRoleAssignment.cs
 StudentLifecycle/
  AdminChangeRequest.cs
  PaymentReceipt.cs

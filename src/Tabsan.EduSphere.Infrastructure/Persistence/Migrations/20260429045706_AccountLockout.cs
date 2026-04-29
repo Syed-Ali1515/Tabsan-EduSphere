@@ -32,7 +32,7 @@ namespace Tabsan.EduSphere.Infrastructure.Persistence.Migrations
                 name: "IX_users_is_locked_out",
                 table: "users",
                 column: "IsLockedOut",
-                filter: "[is_locked_out] = 1");
+                filter: "[IsLockedOut] = 1");
         }
 
         /// <inheritdoc />

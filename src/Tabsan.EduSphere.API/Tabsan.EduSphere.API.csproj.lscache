@@ -61,6 +61,7 @@ Controllers/
  AssignmentController.cs
  AttendanceController.cs
  AuthController.cs
+ BuildingController.cs
  CourseController.cs
  DepartmentController.cs
  EnrollmentController.cs
@@ -72,11 +73,15 @@ Controllers/
  ProgramController.cs
  QuizController.cs
  RegistrationImportController.cs
+ ReportSettingsController.cs
  ResultController.cs
+ RoomController.cs
  SemesterController.cs
  StudentController.cs
  StudentLifecycleController.cs
  TeacherModificationController.cs
+ ThemeController.cs
+ TimetableController.cs
 Middleware/SecurityHeadersMiddleware.cs
 obj/Debug/net8.0/
  .NETCoreApp,Version=v8.0.AssemblyAttributes.cs

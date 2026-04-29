@@ -3,17 +3,20 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Tabsan.EduSphere.Infrastructure.Persistence;
 
 #nullable disable
 
-namespace Tabsan.EduSphere.Infrastructure.Migrations
+namespace Tabsan.EduSphere.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260429223425_Phase9DashboardSettings")]
+    partial class Phase9DashboardSettings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -73,53 +76,6 @@ namespace Tabsan.EduSphere.Infrastructure.Migrations
                     b.HasIndex("DepartmentId");
 
                     b.ToTable("academic_programs", (string)null);
-                });
-
-            modelBuilder.Entity("Tabsan.EduSphere.Domain.Academic.Building", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Code")
-                        .IsUnique()
-                        .HasDatabaseName("IX_buildings_code");
-
-                    b.ToTable("buildings", (string)null);
                 });
 
             modelBuilder.Entity("Tabsan.EduSphere.Domain.Academic.Course", b =>
@@ -401,54 +357,6 @@ namespace Tabsan.EduSphere.Infrastructure.Migrations
                     b.ToTable("registration_whitelist", (string)null);
                 });
 
-            modelBuilder.Entity("Tabsan.EduSphere.Domain.Academic.Room", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("BuildingId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int?>("Capacity")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Number")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BuildingId", "Number")
-                        .IsUnique()
-                        .HasDatabaseName("IX_rooms_building_number");
-
-                    b.ToTable("rooms", (string)null);
-                });
-
             modelBuilder.Entity("Tabsan.EduSphere.Domain.Academic.Semester", b =>
                 {
                     b.Property<Guid>("Id")
@@ -569,9 +477,6 @@ namespace Tabsan.EduSphere.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("AcademicProgramId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -580,9 +485,6 @@ namespace Tabsan.EduSphere.Infrastructure.Migrations
 
                     b.Property<Guid>("DepartmentId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("EffectiveDate")
-                        .HasColumnType("date");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
@@ -603,20 +505,20 @@ namespace Tabsan.EduSphere.Infrastructure.Migrations
                     b.Property<Guid>("SemesterId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("SemesterNumber")
-                        .HasColumnType("int");
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AcademicProgramId");
-
                     b.HasIndex("SemesterId");
 
-                    b.HasIndex("DepartmentId", "AcademicProgramId", "SemesterId")
-                        .HasDatabaseName("IX_timetables_dept_program_semester");
+                    b.HasIndex("DepartmentId", "SemesterId")
+                        .HasDatabaseName("IX_timetables_dept_semester");
 
                     b.ToTable("timetables", (string)null);
                 });
@@ -627,10 +529,7 @@ namespace Tabsan.EduSphere.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("BuildingId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("CourseId")
+                    b.Property<Guid?>("CourseOfferingId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
@@ -645,12 +544,6 @@ namespace Tabsan.EduSphere.Infrastructure.Migrations
                     b.Property<string>("FacultyName")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
-
-                    b.Property<Guid?>("FacultyUserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("RoomId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("RoomNumber")
                         .HasMaxLength(50)
@@ -676,15 +569,6 @@ namespace Tabsan.EduSphere.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("BuildingId");
-
-                    b.HasIndex("CourseId");
-
-                    b.HasIndex("FacultyUserId")
-                        .HasDatabaseName("IX_timetable_entries_faculty_user");
-
-                    b.HasIndex("RoomId");
 
                     b.HasIndex("TimetableId", "DayOfWeek")
                         .HasDatabaseName("IX_timetable_entries_timetable_day");
@@ -2289,17 +2173,6 @@ namespace Tabsan.EduSphere.Infrastructure.Migrations
                     b.Navigation("Department");
                 });
 
-            modelBuilder.Entity("Tabsan.EduSphere.Domain.Academic.Room", b =>
-                {
-                    b.HasOne("Tabsan.EduSphere.Domain.Academic.Building", "Building")
-                        .WithMany("Rooms")
-                        .HasForeignKey("BuildingId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Building");
-                });
-
             modelBuilder.Entity("Tabsan.EduSphere.Domain.Academic.StudentProfile", b =>
                 {
                     b.HasOne("Tabsan.EduSphere.Domain.Academic.Department", "Department")
@@ -2321,12 +2194,6 @@ namespace Tabsan.EduSphere.Infrastructure.Migrations
 
             modelBuilder.Entity("Tabsan.EduSphere.Domain.Academic.Timetable", b =>
                 {
-                    b.HasOne("Tabsan.EduSphere.Domain.Academic.AcademicProgram", "AcademicProgram")
-                        .WithMany()
-                        .HasForeignKey("AcademicProgramId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("Tabsan.EduSphere.Domain.Academic.Department", "Department")
                         .WithMany()
                         .HasForeignKey("DepartmentId")
@@ -2339,8 +2206,6 @@ namespace Tabsan.EduSphere.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("AcademicProgram");
-
                     b.Navigation("Department");
 
                     b.Navigation("Semester");
@@ -2348,37 +2213,11 @@ namespace Tabsan.EduSphere.Infrastructure.Migrations
 
             modelBuilder.Entity("Tabsan.EduSphere.Domain.Academic.TimetableEntry", b =>
                 {
-                    b.HasOne("Tabsan.EduSphere.Domain.Academic.Building", "Building")
-                        .WithMany()
-                        .HasForeignKey("BuildingId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Tabsan.EduSphere.Domain.Academic.Course", "Course")
-                        .WithMany()
-                        .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Tabsan.EduSphere.Domain.Identity.User", null)
-                        .WithMany()
-                        .HasForeignKey("FacultyUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Tabsan.EduSphere.Domain.Academic.Room", "Room")
-                        .WithMany()
-                        .HasForeignKey("RoomId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("Tabsan.EduSphere.Domain.Academic.Timetable", "Timetable")
                         .WithMany("Entries")
                         .HasForeignKey("TimetableId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Building");
-
-                    b.Navigation("Course");
-
-                    b.Navigation("Room");
 
                     b.Navigation("Timetable");
                 });
@@ -2616,11 +2455,6 @@ namespace Tabsan.EduSphere.Infrastructure.Migrations
                     b.Navigation("ReviewedByUser");
 
                     b.Navigation("Teacher");
-                });
-
-            modelBuilder.Entity("Tabsan.EduSphere.Domain.Academic.Building", b =>
-                {
-                    b.Navigation("Rooms");
                 });
 
             modelBuilder.Entity("Tabsan.EduSphere.Domain.Academic.Timetable", b =>

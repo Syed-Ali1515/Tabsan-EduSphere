@@ -99,6 +99,7 @@ Persistence/
   ModuleConfiguration.cs
   NotificationConfigurations.cs
   PaymentReceiptConfiguration.cs
+  Phase9Configurations.cs
   QuizConfigurations.cs
   RoleConfiguration.cs
   StudentAcademicConfigurations.cs
@@ -111,20 +112,30 @@ Persistence/
   20260429043652_StudentLifecycle.Designer.cs
   20260429045706_AccountLockout.cs
   20260429045706_AccountLockout.Designer.cs
+  20260429223425_Phase9DashboardSettings.cs
+  20260429223425_Phase9DashboardSettings.Designer.cs
+  20260429230253_Phase9TimetableRedesign.cs
+  20260429230253_Phase9TimetableRedesign.Designer.cs
 Repositories/
  AcademicRepositories.cs
  AcademicSupportRepositories.cs
  AiChatRepository.cs
  AssignmentResultRepositories.cs
+ BuildingRoomRepository.cs
  CourseRepository.cs
  DepartmentRepository.cs
  LicenseRepository.cs
  ModuleRepository.cs
  NotificationAttendanceRepositories.cs
  QuizFypRepositories.cs
+ SettingsRepository.cs
  StudentLifecycleRepository.cs
+ TimetableRepository.cs
  UserRepository.cs
  UserSessionRepository.cs
+Timetable/
+ TimetableExcelExporter.cs
+ TimetablePdfExporter.cs
 
 [metadataReferences]
 ../

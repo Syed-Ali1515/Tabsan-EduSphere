@@ -64,5 +64,10 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
                .WithMany()
                .HasForeignKey(u => u.RoleId)
                .OnDelete(DeleteBehavior.Restrict);
+
+        // Phase 9: per-user theme preference — nullable, max 50 chars.
+        builder.Property(u => u.ThemeKey)
+               .HasMaxLength(50)
+               .IsRequired(false);
     }
 }

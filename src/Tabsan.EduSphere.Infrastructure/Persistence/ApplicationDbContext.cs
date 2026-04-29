@@ -10,6 +10,7 @@ using Tabsan.EduSphere.Domain.Licensing;
 using Tabsan.EduSphere.Domain.Modules;
 using Tabsan.EduSphere.Domain.Notifications;
 using Tabsan.EduSphere.Domain.Quizzes;
+using Tabsan.EduSphere.Domain.Settings;
 using Tabsan.EduSphere.Domain.StudentLifecycle;
 
 namespace Tabsan.EduSphere.Infrastructure.Persistence;
@@ -147,6 +148,28 @@ public class ApplicationDbContext : DbContext
 
     /// <summary>Payment receipts issued to students for fee collection.</summary>
     public DbSet<PaymentReceipt> PaymentReceipts => Set<PaymentReceipt>();
+
+    // ── Phase 9: Timetable, Report Settings, Module Roles ─────────────────────────
+    /// <summary>Department/semester timetables created by admins.</summary>
+    public DbSet<Timetable> Timetables => Set<Timetable>();
+
+    /// <summary>Individual scheduled slots within a timetable.</summary>
+    public DbSet<TimetableEntry> TimetableEntries => Set<TimetableEntry>();
+
+    /// <summary>Physical campus buildings — managed by Admin/SuperAdmin, used in timetable dropdowns.</summary>
+    public DbSet<Building> Buildings => Set<Building>();
+
+    /// <summary>Rooms within buildings — managed by Admin/SuperAdmin, used in timetable dropdowns.</summary>
+    public DbSet<Room> Rooms => Set<Room>();
+
+    /// <summary>Report definitions configurable by Super Admin (name, purpose, active flag).</summary>
+    public DbSet<ReportDefinition> ReportDefinitions => Set<ReportDefinition>();
+
+    /// <summary>Per-role visibility assignments for each report definition.</summary>
+    public DbSet<ReportRoleAssignment> ReportRoleAssignments => Set<ReportRoleAssignment>();
+
+    /// <summary>Per-role access assignments for each module (beyond mandatory/licensed).</summary>
+    public DbSet<ModuleRoleAssignment> ModuleRoleAssignments => Set<ModuleRoleAssignment>();
 
     /// <summary>
     /// Scans the current assembly for all IEntityTypeConfiguration implementations

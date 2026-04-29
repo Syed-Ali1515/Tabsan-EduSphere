@@ -74,7 +74,9 @@ DTOs/
  Fyp/FypDtos.cs
  Notifications/NotificationDtos.cs
  Quizzes/QuizDtos.cs
+ SettingsDtos.cs
  StudentLifecycleDtos.cs
+ TimetableDtos.cs
 Fyp/FypService.cs
 Interfaces/
  IAccountSecurityService.cs
@@ -83,6 +85,7 @@ Interfaces/
  IAssignmentService.cs
  IAttendanceService.cs
  IAuthService.cs
+ IBuildingRoomService.cs
  ICsvRegistrationImportService.cs
  IEnrollmentService.cs
  IFypService.cs
@@ -93,8 +96,11 @@ Interfaces/
  IPasswordHasher.cs
  IQuizService.cs
  IResultService.cs
+ ISettingsServices.cs
  IStudentLifecycleService.cs
  IStudentRegistrationService.cs
+ ITimetableExporters.cs
+ ITimetableService.cs
  ITokenService.cs
  IUserSessionRepository.cs
 Modules/ModuleService.cs
@@ -106,8 +112,11 @@ obj/Debug/net8.0/
 Quizzes/QuizService.cs
 Services/
  AccountSecurityService.cs
+ BuildingRoomService.cs
  CsvRegistrationImportService.cs
+ SettingsServices.cs
  StudentLifecycleService.cs
+ TimetableService.cs
 
 [metadataReferences]
 ../Tabsan.EduSphere.Domain/obj/Debug/net8.0/ref/Tabsan.EduSphere.Domain.dll
