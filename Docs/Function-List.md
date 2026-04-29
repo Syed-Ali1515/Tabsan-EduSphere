@@ -1199,3 +1199,74 @@
 | `GetUpcomingMeetings(ct)` | GET /api/fyp/meeting/upcoming — Returns upcoming supervisor meetings. Faculty only. | `API/Controllers/FypController.cs` |
 | `GetCurrentUserId()` | Extracts user ID from NameIdentifier JWT claim. | `API/Controllers/FypController.cs` |
 | `GetStudentProfileId()` | Extracts studentProfileId from JWT claim. | `API/Controllers/FypController.cs` |
+
+---
+
+## Phase 6 — AI Chat Assistant & Analytics
+
+### AiChatService (Application/AiChat/AiChatService.cs)
+| Function | Description | File |
+|---|---|---|
+| `SendMessageAsync(userId, userRole, departmentId, request, ct)` | Sends user message to LLM; guards module status; creates/fetches conversation; persists messages. | `Application/AiChat/AiChatService.cs` |
+| `GetConversationsAsync(userId, ct)` | Returns summary list of past conversations for a user. | `Application/AiChat/AiChatService.cs` |
+| `GetConversationAsync(conversationId, ct)` | Returns full conversation with message history. | `Application/AiChat/AiChatService.cs` |
+| `BuildSystemPrompt(userRole, departmentId)` | Builds role-aware system prompt (Student/Faculty/Admin/SuperAdmin/Finance). | `Application/AiChat/AiChatService.cs` |
+| `ToMessageResponse(message)` | Maps ChatMessage domain entity to DTO. | `Application/AiChat/AiChatService.cs` |
+
+### AnalyticsService (Infrastructure/Analytics/AnalyticsService.cs)
+| Function | Description | File |
+|---|---|---|
+| `GetPerformanceReportAsync(departmentId, ct)` | Aggregates student results/submissions per department or all. | `Infrastructure/Analytics/AnalyticsService.cs` |
+| `GetAttendanceReportAsync(departmentId, ct)` | Attendance summary per student per course; supports dept filter. | `Infrastructure/Analytics/AnalyticsService.cs` |
+| `GetAssignmentStatsAsync(departmentId, ct)` | Assignment submission/grading stats per assignment. | `Infrastructure/Analytics/AnalyticsService.cs` |
+| `GetQuizStatsAsync(departmentId, ct)` | Quiz attempt/score stats per quiz. | `Infrastructure/Analytics/AnalyticsService.cs` |
+| `ExportPerformancePdfAsync(departmentId, ct)` | Exports performance report as QuestPDF A4 Landscape PDF. | `Infrastructure/Analytics/AnalyticsService.cs` |
+| `ExportAttendancePdfAsync(departmentId, ct)` | Exports attendance report as QuestPDF A4 Landscape PDF. | `Infrastructure/Analytics/AnalyticsService.cs` |
+| `ExportPerformanceExcelAsync(departmentId, ct)` | Exports performance report as ClosedXML Excel workbook. | `Infrastructure/Analytics/AnalyticsService.cs` |
+| `ExportAttendanceExcelAsync(departmentId, ct)` | Exports attendance report as ClosedXML Excel workbook. | `Infrastructure/Analytics/AnalyticsService.cs` |
+| `ResolveDeptNameAsync(departmentId, ct)` | Resolves department name from ID; returns "All Departments" for null. | `Infrastructure/Analytics/AnalyticsService.cs` |
+| `AddPdfHeader(table, headers)` | Adds styled blue header row to QuestPDF table. | `Infrastructure/Analytics/AnalyticsService.cs` |
+| `AddPdfRow(table, values)` | Adds data row with bottom border to QuestPDF table. | `Infrastructure/Analytics/AnalyticsService.cs` |
+
+### AiChatRepository (Infrastructure/Repositories/AiChatRepository.cs)
+| Function | Description | File |
+|---|---|---|
+| `GetByIdAsync(conversationId, ct)` | Fetches a conversation by ID. | `Infrastructure/Repositories/AiChatRepository.cs` |
+| `GetByUserAsync(userId, ct)` | Fetches all conversations for a user with messages. | `Infrastructure/Repositories/AiChatRepository.cs` |
+| `GetWithMessagesAsync(conversationId, ct)` | Fetches conversation with full message history. | `Infrastructure/Repositories/AiChatRepository.cs` |
+| `AddConversationAsync(conversation, ct)` | Persists a new conversation. | `Infrastructure/Repositories/AiChatRepository.cs` |
+| `AddMessageAsync(message, ct)` | Persists a new chat message. | `Infrastructure/Repositories/AiChatRepository.cs` |
+| `SaveChangesAsync(ct)` | Commits pending DbContext changes. | `Infrastructure/Repositories/AiChatRepository.cs` |
+
+### OpenAiLlmClient (Infrastructure/AiChat/OpenAiLlmClient.cs)
+| Function | Description | File |
+|---|---|---|
+| `SendAsync(systemPrompt, messages, ct)` | Calls OpenAI-compatible /v1/chat/completions; returns reply + token count. | `Infrastructure/AiChat/OpenAiLlmClient.cs` |
+
+### AiChatController (API/Controllers/AiChatController.cs)
+| Function | Description | File |
+|---|---|---|
+| `SendMessage(request, ct)` | POST /api/ai/message — Send message to AI. All authenticated roles. | `API/Controllers/AiChatController.cs` |
+| `GetConversations(ct)` | GET /api/ai/conversations — List user conversations. | `API/Controllers/AiChatController.cs` |
+| `GetConversation(conversationId, ct)` | GET /api/ai/conversations/{id} — Get conversation history. | `API/Controllers/AiChatController.cs` |
+| `GetCurrentUserId()` | Extracts user ID from NameIdentifier JWT claim. | `API/Controllers/AiChatController.cs` |
+| `GetDepartmentId()` | Extracts optional departmentId from JWT claim. | `API/Controllers/AiChatController.cs` |
+
+### AnalyticsController (API/Controllers/AnalyticsController.cs)
+| Function | Description | File |
+|---|---|---|
+| `GetPerformance(departmentId, ct)` | GET /api/analytics/performance — Faculty+ scoped. | `API/Controllers/AnalyticsController.cs` |
+| `GetAttendance(departmentId, ct)` | GET /api/analytics/attendance — Faculty+ scoped. | `API/Controllers/AnalyticsController.cs` |
+| `GetAssignmentStats(departmentId, ct)` | GET /api/analytics/assignments — Faculty+ scoped. | `API/Controllers/AnalyticsController.cs` |
+| `GetQuizStats(departmentId, ct)` | GET /api/analytics/quizzes — Faculty+ scoped. | `API/Controllers/AnalyticsController.cs` |
+| `ExportPerformancePdf(departmentId, ct)` | GET /api/analytics/performance/export/pdf — Admin+ only. | `API/Controllers/AnalyticsController.cs` |
+| `ExportPerformanceExcel(departmentId, ct)` | GET /api/analytics/performance/export/excel — Admin+ only. | `API/Controllers/AnalyticsController.cs` |
+| `ExportAttendancePdf(departmentId, ct)` | GET /api/analytics/attendance/export/pdf — Admin+ only. | `API/Controllers/AnalyticsController.cs` |
+| `ExportAttendanceExcelAsync(departmentId, ct)` | GET /api/analytics/attendance/export/excel — Admin+ only. | `API/Controllers/AnalyticsController.cs` |
+| `ResolveEffectiveDepartment(requested)` | Scopes Faculty to own dept; Admin/SuperAdmin see all. | `API/Controllers/AnalyticsController.cs` |
+
+### SecurityHeadersMiddleware (API/Middleware/SecurityHeadersMiddleware.cs)
+| Function | Description | File |
+|---|---|---|
+| `InvokeAsync(context)` | Adds HSTS, X-Content-Type-Options, X-Frame-Options, CSP, Referrer-Policy, Permissions-Policy headers. | `API/Middleware/SecurityHeadersMiddleware.cs` |
+| `UseSecurityHeaders(app)` | Extension method to register the middleware. | `API/Middleware/SecurityHeadersMiddleware.cs` |

@@ -1,6 +1,8 @@
 // ── Builder configuration ──────────────────────────────────────────────────────
 
 using System.Text;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -13,6 +15,10 @@ using Tabsan.EduSphere.Application.Attendance;
 using Tabsan.EduSphere.Application.Fyp;
 using Tabsan.EduSphere.Application.Notifications;
 using Tabsan.EduSphere.Application.Quizzes;
+using Tabsan.EduSphere.Application.AiChat;
+using Tabsan.EduSphere.API.Middleware;
+using Tabsan.EduSphere.Infrastructure.AiChat;
+using Tabsan.EduSphere.Infrastructure.Analytics;
 using Tabsan.EduSphere.BackgroundJobs;
 using Tabsan.EduSphere.Domain.Interfaces;
 using Tabsan.EduSphere.Infrastructure.Auditing;
@@ -119,7 +125,42 @@ builder.Services.AddScoped<IQuizRepository, QuizRepository>();
 builder.Services.AddScoped<IFypRepository, FypRepository>();
 builder.Services.AddScoped<IQuizService, QuizService>();
 builder.Services.AddScoped<IFypService, FypService>();
-// ── Background jobs ──────────────────────────────────────────────────
+
+// ── Phase 6: AI Chat and Analytics ───────────────────────────────────
+builder.Services.AddScoped<IAiChatRepository, AiChatRepository>();
+builder.Services.AddScoped<IAiChatService, AiChatService>();
+builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
+// LLM HTTP client — base URL and API key from AiChat:BaseUrl / AiChat:ApiKey in config.
+builder.Services.AddHttpClient<ILlmClient, OpenAiLlmClient>((sp, client) =>
+{
+    var cfg = sp.GetRequiredService<Microsoft.Extensions.Configuration.IConfiguration>();
+    client.BaseAddress = new Uri(cfg["AiChat:BaseUrl"] ?? "https://api.openai.com/");
+    var apiKey = cfg["AiChat:ApiKey"] ?? string.Empty;
+    if (!string.IsNullOrWhiteSpace(apiKey))
+        client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+});
+
+// ── Rate limiting (OWASP hardening) ─────────────────────────────────────
+builder.Services.AddRateLimiter(opts =>
+{
+    // Global sliding window: 100 requests per minute per IP.
+    opts.AddSlidingWindowLimiter("global", o =>
+    {
+        o.PermitLimit       = 100;
+        o.Window            = TimeSpan.FromMinutes(1);
+        o.SegmentsPerWindow = 6;
+        o.QueueLimit        = 0;
+    });
+    // Stricter limit for authentication endpoints: 10 per minute per IP.
+    opts.AddSlidingWindowLimiter("auth", o =>
+    {
+        o.PermitLimit       = 10;
+        o.Window            = TimeSpan.FromMinutes(1);
+        o.SegmentsPerWindow = 6;
+        o.QueueLimit        = 0;
+    });
+    opts.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
 builder.Services.AddHostedService<LicenseCheckWorker>();
 builder.Services.AddHostedService<AttendanceAlertJob>();
 
@@ -165,6 +206,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseSecurityHeaders();
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

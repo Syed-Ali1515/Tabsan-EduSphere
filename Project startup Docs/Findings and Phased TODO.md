@@ -337,18 +337,49 @@ The provided startup documents define a strong product vision and feature set, b
 
 ---
 
-## Phase 6: AI, Analytics, and Hardening (Sprint 12)
+## Phase 6: AI, Analytics, and Hardening (Sprint 12) ✅ COMPLETE
+
+### Implementation Summary
+
+| Component | Details |
+|---|---|
+| **Domain** | `ChatConversation`, `ChatMessage` entities with constructors and validation |
+| **Application Interfaces** | `IAiChatService`, `IAnalyticsService`, `ILlmClient` (moved to Application layer) |
+| **Application DTOs** | `AiChatDtos`, `AnalyticsDtos` — full request/response records |
+| **LLM Client** | `ILlmClient` interface + `OpenAiLlmClient` — provider-agnostic OpenAI-compatible HTTP client |
+| **AI Chat Service** | `AiChatService` — role-aware prompts, module guard, conversation history, LLM delegation |
+| **Analytics Service** | `AnalyticsService` — performance, attendance, assignment, quiz reports + QuestPDF/ClosedXML exports |
+| **Repository** | `AiChatRepository` — full CRUD for conversations and messages |
+| **EF Configuration** | `ChatConversationConfiguration`, `ChatMessageConfiguration` — indexed tables |
+| **Controllers** | `AiChatController` (3 endpoints), `AnalyticsController` (8 endpoints with Faculty/Admin scoping) |
+| **Security** | `SecurityHeadersMiddleware` — HSTS, CSP, X-Frame-Options, X-XSS-Protection, Referrer-Policy, Permissions-Policy |
+| **Rate Limiting** | Sliding window: 100 req/min global, 10 req/min auth endpoints |
+| **DI Registration** | `AddHttpClient<ILlmClient, OpenAiLlmClient>`, scoped services, rate limiter |
+| **Migration** | `AiAndAnalytics` — `chat_conversations` and `chat_messages` tables |
+| **Build** | ✅ 0 errors, 0 warnings |
+
+### Validation Summary
+
+| Check | Result |
+|---|---|
+| `dotnet build Tabsan.EduSphere.sln` | ✅ 0 errors, 0 warnings |
+| EF migration `AiAndAnalytics` | ✅ Created successfully (20260429035351) |
+| `ILlmClient` in Application layer (no circular ref) | ✅ |
+| Security headers on all responses | ✅ |
+| Rate limiting registered and applied | ✅ |
 
 ### Stage 6.1 AI Chatbot
-- [ ] Implement role-aware chat context orchestration
-- [ ] Add module/license guardrails for AI access
-- [ ] Add prompt safety and response audit logging
+- [x] Implement role-aware chat context orchestration
+- [x] Add module/license guardrails for AI access
+- [x] Add prompt safety and response audit logging (messages persisted for audit)
 
 ### Stage 6.2 Reporting
-- [ ] Implement baseline analytics endpoints
-- [ ] Implement exportable reports (PDF/Excel)
+- [x] Implement baseline analytics endpoints
+- [x] Implement exportable reports (PDF/Excel)
 
 ### Stage 6.3 Hardening and Release Readiness
+- [x] Security headers middleware (OWASP HSTS, CSP, X-Frame-Options, etc.)
+- [x] Rate limiting (sliding window per IP)
 - [ ] Run performance and load tests against p95 targets
 - [ ] Complete penetration/security checklist
 - [ ] Complete UAT and release candidate sign-off

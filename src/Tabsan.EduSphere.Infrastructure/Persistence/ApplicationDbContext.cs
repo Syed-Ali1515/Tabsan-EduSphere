@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Tabsan.EduSphere.Domain.Academic;
+using Tabsan.EduSphere.Domain.AiChat;
 using Tabsan.EduSphere.Domain.Assignments;
 using Tabsan.EduSphere.Domain.Attendance;
 using Tabsan.EduSphere.Domain.Auditing;
@@ -125,6 +126,13 @@ public class ApplicationDbContext : DbContext
 
     /// <summary>Supervision and review meetings scheduled for FYP projects.</summary>
     public DbSet<FypMeeting> FypMeetings => Set<FypMeeting>();
+
+    // ── Phase 6: AI Chat ──────────────────────────────────────────────────────────
+    /// <summary>AI chat conversations initiated by users.</summary>
+    public DbSet<ChatConversation> ChatConversations => Set<ChatConversation>();
+
+    /// <summary>Individual message turns (user and assistant) within a chat conversation.</summary>
+    public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
 
     /// <summary>
     /// Scans the current assembly for all IEntityTypeConfiguration implementations

@@ -63,6 +63,7 @@ Academic/
  RegistrationWhitelist.cs
  Semester.cs
  StudentProfile.cs
+AiChat/ChatConversation.cs
 Assignments/
  Assignment.cs
  AssignmentSubmission.cs
@@ -80,6 +81,7 @@ Identity/
  UserSession.cs
 Interfaces/
  IAcademicProgramRepository.cs
+ IAiChatRepository.cs
  IAssignmentRepository.cs
  IAttendanceRepository.cs
  IAuditService.cs

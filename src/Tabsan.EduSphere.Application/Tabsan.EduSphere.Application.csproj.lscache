@@ -56,6 +56,7 @@ TemporaryDependencyNodeTargetIdentifier=net8.0
 Academic/
  EnrollmentService.cs
  StudentRegistrationService.cs
+AiChat/AiChatService.cs
 Assignments/
  AssignmentService.cs
  ResultService.cs
@@ -63,6 +64,8 @@ Attendance/AttendanceService.cs
 Auth/AuthService.cs
 DTOs/
  Academic/AcademicDtos.cs
+ AiChat/AiChatDtos.cs
+ Analytics/AnalyticsDtos.cs
  Assignments/AssignmentDtos.cs
  Attendance/AttendanceDtos.cs
  Auth/AuthDtos.cs
@@ -71,11 +74,14 @@ DTOs/
  Quizzes/QuizDtos.cs
 Fyp/FypService.cs
 Interfaces/
+ IAiChatService.cs
+ IAnalyticsService.cs
  IAssignmentService.cs
  IAttendanceService.cs
  IAuthService.cs
  IEnrollmentService.cs
  IFypService.cs
+ ILlmClient.cs
  IModuleEntitlementResolver.cs
  IModuleService.cs
  INotificationService.cs

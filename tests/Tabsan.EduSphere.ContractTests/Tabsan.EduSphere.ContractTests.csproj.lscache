@@ -373,7 +373,11 @@ UnitTest1.cs
 <NUGET>/
  azure.core/1.35.0/lib/net6.0/Azure.Core.dll
  azure.identity/1.10.3/lib/netstandard2.0/Azure.Identity.dll
+ closedxml/0.102.3/lib/netstandard2.1/ClosedXML.dll
+ documentformat.openxml/2.16.0/lib/netstandard2.0/DocumentFormat.OpenXml.dll
+ excelnumberformat/1.1.0/lib/netstandard2.0/ExcelNumberFormat.dll
  fluentvalidation/11.10.0/lib/net8.0/FluentValidation.dll
+ irony.netcore/1.0.11/lib/netstandard1.6/Irony.dll
  microsoft.aspnetcore.authentication.jwtbearer/8.0.8/lib/net8.0/Microsoft.AspNetCore.Authentication.JwtBearer.dll
  microsoft.aspnetcore.identity.entityframeworkcore/8.0.8/lib/net8.0/Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll
  microsoft.aspnetcore.openapi/8.0.26/lib/net8.0/Microsoft.AspNetCore.OpenApi.dll
@@ -412,6 +416,7 @@ UnitTest1.cs
  opentelemetry.exporter.console/1.9.0/lib/net8.0/OpenTelemetry.Exporter.Console.dll
  opentelemetry.extensions.hosting/1.9.0/lib/net8.0/OpenTelemetry.Extensions.Hosting.dll
  opentelemetry/1.9.0/lib/net8.0/OpenTelemetry.dll
+ questpdf/2024.12.0/lib/net8.0/QuestPDF.dll
  serilog.aspnetcore/8.0.2/lib/net8.0/Serilog.AspNetCore.dll
  serilog.extensions.hosting/8.0.0/lib/net8.0/Serilog.Extensions.Hosting.dll
  serilog.extensions.logging/8.0.0/lib/net8.0/Serilog.Extensions.Logging.dll
@@ -421,15 +426,18 @@ UnitTest1.cs
  serilog.sinks.debug/2.0.0/lib/netstandard2.1/Serilog.Sinks.Debug.dll
  serilog.sinks.file/5.0.0/lib/net5.0/Serilog.Sinks.File.dll
  serilog/3.1.1/lib/net7.0/Serilog.dll
+ sixlabors.fonts/1.0.0/lib/netcoreapp3.1/SixLabors.Fonts.dll
  swashbuckle.aspnetcore.swagger/6.6.2/lib/net8.0/Swashbuckle.AspNetCore.Swagger.dll
  swashbuckle.aspnetcore.swaggergen/6.6.2/lib/net8.0/Swashbuckle.AspNetCore.SwaggerGen.dll
  swashbuckle.aspnetcore.swaggerui/6.6.2/lib/net8.0/Swashbuckle.AspNetCore.SwaggerUI.dll
  system.drawing.common/6.0.0/lib/net6.0/System.Drawing.Common.dll
  system.identitymodel.tokens.jwt/7.1.2/lib/net8.0/System.IdentityModel.Tokens.Jwt.dll
+ system.io.packaging/6.0.0/lib/net6.0/System.IO.Packaging.dll
  system.memory.data/1.0.2/lib/netstandard2.0/System.Memory.Data.dll
  system.security.cryptography.protecteddata/6.0.0/lib/net6.0/System.Security.Cryptography.ProtectedData.dll
  system.security.permissions/6.0.0/lib/net6.0/System.Security.Permissions.dll
  system.windows.extensions/6.0.0/lib/net6.0/System.Windows.Extensions.dll
+ xlparser/1.5.2/lib/netstandard1.6/XLParser.dll
  xunit.abstractions/2.0.3/lib/netstandard2.0/xunit.abstractions.dll
  xunit.assert/2.5.3/lib/netstandard1.1/xunit.assert.dll
  xunit.extensibility.core/2.5.3/lib/netstandard1.1/xunit.core.dll
