@@ -539,40 +539,40 @@
 
 ---
 
-## Phase 3 — Assignments and Results
+## Phase 3 ï¿½ Assignments and Results
 
-### Domain — Assignment
+### Domain ï¿½ Assignment
 
 | Function Name | Purpose | Location |
 |---|---|---|
-| `Assignment(courseOfferingId, title, description, dueDate, maxMarks)` | Constructor — creates an unpublished assignment. | `Domain/Assignments/Assignment.cs` |
+| `Assignment(courseOfferingId, title, description, dueDate, maxMarks)` | Constructor ï¿½ creates an unpublished assignment. | `Domain/Assignments/Assignment.cs` |
 | `Publish()` | Marks the assignment as published (visible to students). Throws if already published. | `Domain/Assignments/Assignment.cs` |
 | `Retract()` | Withdraws a published assignment. Throws if not published. | `Domain/Assignments/Assignment.cs` |
 | `Update(title, description, dueDate, maxMarks)` | Updates editable fields. Throws if already published. | `Domain/Assignments/Assignment.cs` |
 
-### Domain — AssignmentSubmission
+### Domain ï¿½ AssignmentSubmission
 
 | Function Name | Purpose | Location |
 |---|---|---|
-| `AssignmentSubmission(assignmentId, studentProfileId, fileUrl, textContent)` | Constructor — requires at least one of fileUrl/textContent. | `Domain/Assignments/AssignmentSubmission.cs` |
+| `AssignmentSubmission(assignmentId, studentProfileId, fileUrl, textContent)` | Constructor ï¿½ requires at least one of fileUrl/textContent. | `Domain/Assignments/AssignmentSubmission.cs` |
 | `Grade(marksAwarded, feedback, gradedByUserId)` | Records marks and feedback. Throws if submission was Rejected. | `Domain/Assignments/AssignmentSubmission.cs` |
 | `Reject()` | Marks submission as Rejected and clears awarded marks. | `Domain/Assignments/AssignmentSubmission.cs` |
 
-### Domain — Result
+### Domain ï¿½ Result
 
 | Function Name | Purpose | Location |
 |---|---|---|
-| `Result(studentProfileId, courseOfferingId, resultType, marksObtained, maxMarks)` | Constructor — validates marks range. | `Domain/Assignments/Result.cs` |
+| `Result(studentProfileId, courseOfferingId, resultType, marksObtained, maxMarks)` | Constructor ï¿½ validates marks range. | `Domain/Assignments/Result.cs` |
 | `Publish(publishedByUserId)` | One-way publication. Throws if already published. | `Domain/Assignments/Result.cs` |
 | `CorrectMarks(newMarksObtained, newMaxMarks)` | Admin-only correction of a published result. Validates range. | `Domain/Assignments/Result.cs` |
 
-### Domain — TranscriptExportLog
+### Domain ï¿½ TranscriptExportLog
 
 | Function Name | Purpose | Location |
 |---|---|---|
-| `TranscriptExportLog(studentProfileId, requestedByUserId, format, documentUrl?, ipAddress?)` | Constructor — append-only, immutable after creation. | `Domain/Assignments/TranscriptExportLog.cs` |
+| `TranscriptExportLog(studentProfileId, requestedByUserId, format, documentUrl?, ipAddress?)` | Constructor ï¿½ append-only, immutable after creation. | `Domain/Assignments/TranscriptExportLog.cs` |
 
-### Infrastructure — AssignmentRepository
+### Infrastructure ï¿½ AssignmentRepository
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -590,7 +590,7 @@
 | `UpdateSubmission(submission)` | Marks submission as modified. | `Infrastructure/Repositories/AssignmentResultRepositories.cs` |
 | `SaveChangesAsync(ct)` | Commits pending changes (AssignmentRepository). | `Infrastructure/Repositories/AssignmentResultRepositories.cs` |
 
-### Infrastructure — ResultRepository
+### Infrastructure ï¿½ ResultRepository
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -606,7 +606,7 @@
 | `AddExportLogAsync(log, ct)` | Queues a transcript export log for insertion. | `Infrastructure/Repositories/AssignmentResultRepositories.cs` |
 | `SaveChangesAsync(ct)` | Commits pending changes (ResultRepository). | `Infrastructure/Repositories/AssignmentResultRepositories.cs` |
 
-### Application — AssignmentService
+### Application ï¿½ AssignmentService
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -622,10 +622,10 @@
 | `GetSubmissionsByAssignmentAsync(assignmentId, ct)` | Returns all submissions for an assignment (faculty grading view). | `Application/Assignments/AssignmentService.cs` |
 | `GradeSubmissionAsync(request, gradedByUserId, ct)` | Grades a submission; validates marks <= MaxMarks. | `Application/Assignments/AssignmentService.cs` |
 | `RejectSubmissionAsync(assignmentId, studentProfileId, ct)` | Rejects a submission. Returns false if not found. | `Application/Assignments/AssignmentService.cs` |
-| `ToResponse(assignment, submissionCount)` | Private — maps Assignment to AssignmentResponse DTO. | `Application/Assignments/AssignmentService.cs` |
-| `ToSubmissionResponse(submission, assignmentTitle)` | Private — maps AssignmentSubmission to SubmissionResponse DTO. | `Application/Assignments/AssignmentService.cs` |
+| `ToResponse(assignment, submissionCount)` | Private ï¿½ maps Assignment to AssignmentResponse DTO. | `Application/Assignments/AssignmentService.cs` |
+| `ToSubmissionResponse(submission, assignmentTitle)` | Private ï¿½ maps AssignmentSubmission to SubmissionResponse DTO. | `Application/Assignments/AssignmentService.cs` |
 
-### Application — ResultService
+### Application ï¿½ ResultService
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -639,71 +639,71 @@
 | `GetByOfferingAsync(courseOfferingId, ct)` | Returns all results for a course offering. | `Application/Assignments/ResultService.cs` |
 | `ExportTranscriptAsync(request, requestedByUserId, ipAddress, ct)` | Exports transcript, logs to TranscriptExportLog and AuditLog. | `Application/Assignments/ResultService.cs` |
 | `GetExportHistoryAsync(studentProfileId, ct)` | Returns transcript export history for a student. | `Application/Assignments/ResultService.cs` |
-| `ToResponse(result)` | Private — maps Result to ResultResponse DTO including percentage. | `Application/Assignments/ResultService.cs` |
+| `ToResponse(result)` | Private ï¿½ maps Result to ResultResponse DTO including percentage. | `Application/Assignments/ResultService.cs` |
 
-### API — AssignmentController
-
-| Function Name | Purpose | Location |
-|---|---|---|
-| `Create(request, ct)` | `POST /api/assignment` — creates an assignment. Faculty/Admin. | `API/Controllers/AssignmentController.cs` |
-| `Update(id, request, ct)` | `PUT /api/assignment/{id}` — updates a draft assignment. Faculty/Admin. | `API/Controllers/AssignmentController.cs` |
-| `Publish(id, ct)` | `POST /api/assignment/{id}/publish` — publishes an assignment. Faculty/Admin. | `API/Controllers/AssignmentController.cs` |
-| `Retract(id, ct)` | `POST /api/assignment/{id}/retract` — retracts a published assignment. Faculty/Admin. | `API/Controllers/AssignmentController.cs` |
-| `Delete(id, ct)` | `DELETE /api/assignment/{id}` — soft-deletes when no submissions exist. Admin. | `API/Controllers/AssignmentController.cs` |
-| `GetByOffering(courseOfferingId, ct)` | `GET /api/assignment/by-offering/{id}` — lists assignments for an offering. | `API/Controllers/AssignmentController.cs` |
-| `GetById(id, ct)` | `GET /api/assignment/{id}` — returns a single assignment. | `API/Controllers/AssignmentController.cs` |
-| `Submit(request, ct)` | `POST /api/assignment/submit` — student submission. Student. | `API/Controllers/AssignmentController.cs` |
-| `GetMySubmissions(ct)` | `GET /api/assignment/my-submissions` — student's own submissions. Student. | `API/Controllers/AssignmentController.cs` |
-| `GetSubmissions(id, ct)` | `GET /api/assignment/{id}/submissions` — all submissions for an assignment. Faculty/Admin. | `API/Controllers/AssignmentController.cs` |
-| `Grade(request, ct)` | `PUT /api/assignment/submissions/grade` — grades a submission. Faculty/Admin. | `API/Controllers/AssignmentController.cs` |
-| `Reject(assignmentId, studentProfileId, ct)` | `POST /api/assignment/{id}/submissions/{studentId}/reject` — rejects a submission. Faculty/Admin. | `API/Controllers/AssignmentController.cs` |
-| `GetCurrentUserId()` | Private — extracts user ID from JWT NameIdentifier claim. | `API/Controllers/AssignmentController.cs` |
-| `GetCurrentStudentProfileId()` | Private — extracts student profile ID from "studentProfileId" JWT claim. | `API/Controllers/AssignmentController.cs` |
-
-### API — ResultController
+### API ï¿½ AssignmentController
 
 | Function Name | Purpose | Location |
 |---|---|---|
-| `Create(request, ct)` | `POST /api/result` — creates a draft result. Faculty/Admin. | `API/Controllers/ResultController.cs` |
-| `BulkCreate(request, ct)` | `POST /api/result/bulk` — bulk-creates draft results for a class. Faculty/Admin. | `API/Controllers/ResultController.cs` |
-| `Publish(studentProfileId, courseOfferingId, resultType, ct)` | `POST /api/result/publish` — publishes a single result. Faculty/Admin. | `API/Controllers/ResultController.cs` |
-| `PublishAll(courseOfferingId, ct)` | `POST /api/result/publish-all` — publishes all drafts for an offering. Faculty/Admin. | `API/Controllers/ResultController.cs` |
-| `Correct(studentProfileId, courseOfferingId, resultType, request, ct)` | `PUT /api/result/correct` — Admin correction of a published result. Admin only. | `API/Controllers/ResultController.cs` |
-| `GetMyResults(ct)` | `GET /api/result/my-results` — student's own published results. Student. | `API/Controllers/ResultController.cs` |
-| `GetByStudent(studentProfileId, ct)` | `GET /api/result/by-student/{id}` — all results for a student. Faculty/Admin. | `API/Controllers/ResultController.cs` |
-| `GetByOffering(courseOfferingId, ct)` | `GET /api/result/by-offering/{id}` — all results for an offering. Faculty/Admin. | `API/Controllers/ResultController.cs` |
-| `GetTranscript(studentProfileId, format, ct)` | `GET /api/result/transcript/{id}` — exports transcript, logs request. All roles. | `API/Controllers/ResultController.cs` |
-| `GetTranscriptHistory(studentProfileId, ct)` | `GET /api/result/transcript/{id}/history` — export history for a student. Faculty/Admin. | `API/Controllers/ResultController.cs` |
-| `GetCurrentUserId()` | Private — extracts user ID from JWT NameIdentifier claim. | `API/Controllers/ResultController.cs` |
-| `GetCurrentStudentProfileId()` | Private — extracts student profile ID from "studentProfileId" JWT claim. | `API/Controllers/ResultController.cs` |
+| `Create(request, ct)` | `POST /api/assignment` ï¿½ creates an assignment. Faculty/Admin. | `API/Controllers/AssignmentController.cs` |
+| `Update(id, request, ct)` | `PUT /api/assignment/{id}` ï¿½ updates a draft assignment. Faculty/Admin. | `API/Controllers/AssignmentController.cs` |
+| `Publish(id, ct)` | `POST /api/assignment/{id}/publish` ï¿½ publishes an assignment. Faculty/Admin. | `API/Controllers/AssignmentController.cs` |
+| `Retract(id, ct)` | `POST /api/assignment/{id}/retract` ï¿½ retracts a published assignment. Faculty/Admin. | `API/Controllers/AssignmentController.cs` |
+| `Delete(id, ct)` | `DELETE /api/assignment/{id}` ï¿½ soft-deletes when no submissions exist. Admin. | `API/Controllers/AssignmentController.cs` |
+| `GetByOffering(courseOfferingId, ct)` | `GET /api/assignment/by-offering/{id}` ï¿½ lists assignments for an offering. | `API/Controllers/AssignmentController.cs` |
+| `GetById(id, ct)` | `GET /api/assignment/{id}` ï¿½ returns a single assignment. | `API/Controllers/AssignmentController.cs` |
+| `Submit(request, ct)` | `POST /api/assignment/submit` ï¿½ student submission. Student. | `API/Controllers/AssignmentController.cs` |
+| `GetMySubmissions(ct)` | `GET /api/assignment/my-submissions` ï¿½ student's own submissions. Student. | `API/Controllers/AssignmentController.cs` |
+| `GetSubmissions(id, ct)` | `GET /api/assignment/{id}/submissions` ï¿½ all submissions for an assignment. Faculty/Admin. | `API/Controllers/AssignmentController.cs` |
+| `Grade(request, ct)` | `PUT /api/assignment/submissions/grade` ï¿½ grades a submission. Faculty/Admin. | `API/Controllers/AssignmentController.cs` |
+| `Reject(assignmentId, studentProfileId, ct)` | `POST /api/assignment/{id}/submissions/{studentId}/reject` ï¿½ rejects a submission. Faculty/Admin. | `API/Controllers/AssignmentController.cs` |
+| `GetCurrentUserId()` | Private ï¿½ extracts user ID from JWT NameIdentifier claim. | `API/Controllers/AssignmentController.cs` |
+| `GetCurrentStudentProfileId()` | Private ï¿½ extracts student profile ID from "studentProfileId" JWT claim. | `API/Controllers/AssignmentController.cs` |
+
+### API ï¿½ ResultController
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `Create(request, ct)` | `POST /api/result` ï¿½ creates a draft result. Faculty/Admin. | `API/Controllers/ResultController.cs` |
+| `BulkCreate(request, ct)` | `POST /api/result/bulk` ï¿½ bulk-creates draft results for a class. Faculty/Admin. | `API/Controllers/ResultController.cs` |
+| `Publish(studentProfileId, courseOfferingId, resultType, ct)` | `POST /api/result/publish` ï¿½ publishes a single result. Faculty/Admin. | `API/Controllers/ResultController.cs` |
+| `PublishAll(courseOfferingId, ct)` | `POST /api/result/publish-all` ï¿½ publishes all drafts for an offering. Faculty/Admin. | `API/Controllers/ResultController.cs` |
+| `Correct(studentProfileId, courseOfferingId, resultType, request, ct)` | `PUT /api/result/correct` ï¿½ Admin correction of a published result. Admin only. | `API/Controllers/ResultController.cs` |
+| `GetMyResults(ct)` | `GET /api/result/my-results` ï¿½ student's own published results. Student. | `API/Controllers/ResultController.cs` |
+| `GetByStudent(studentProfileId, ct)` | `GET /api/result/by-student/{id}` ï¿½ all results for a student. Faculty/Admin. | `API/Controllers/ResultController.cs` |
+| `GetByOffering(courseOfferingId, ct)` | `GET /api/result/by-offering/{id}` ï¿½ all results for an offering. Faculty/Admin. | `API/Controllers/ResultController.cs` |
+| `GetTranscript(studentProfileId, format, ct)` | `GET /api/result/transcript/{id}` ï¿½ exports transcript, logs request. All roles. | `API/Controllers/ResultController.cs` |
+| `GetTranscriptHistory(studentProfileId, ct)` | `GET /api/result/transcript/{id}/history` ï¿½ export history for a student. Faculty/Admin. | `API/Controllers/ResultController.cs` |
+| `GetCurrentUserId()` | Private ï¿½ extracts user ID from JWT NameIdentifier claim. | `API/Controllers/ResultController.cs` |
+| `GetCurrentStudentProfileId()` | Private ï¿½ extracts student profile ID from "studentProfileId" JWT claim. | `API/Controllers/ResultController.cs` |
 
 ---
 
-## Phase 4 — Notifications and Attendance
+## Phase 4 ï¿½ Notifications and Attendance
 
-### Domain — Notification
+### Domain ï¿½ Notification
 
 | Function Name | Purpose | Location |
 |---|---|---|
-| `Notification(title, body, type, senderUserId)` | Constructor — user-authored notification. | `Domain/Notifications/Notification.cs` |
-| `Notification(title, body, type)` | Constructor — system-generated notification (no human sender). | `Domain/Notifications/Notification.cs` |
+| `Notification(title, body, type, senderUserId)` | Constructor ï¿½ user-authored notification. | `Domain/Notifications/Notification.cs` |
+| `Notification(title, body, type)` | Constructor ï¿½ system-generated notification (no human sender). | `Domain/Notifications/Notification.cs` |
 | `Deactivate()` | Hides the notification from all inboxes. Does not delete it. | `Domain/Notifications/Notification.cs` |
 
-### Domain — NotificationRecipient
+### Domain ï¿½ NotificationRecipient
 
 | Function Name | Purpose | Location |
 |---|---|---|
-| `NotificationRecipient(notificationId, recipientUserId)` | Constructor — creates an unread delivery record for the user. | `Domain/Notifications/NotificationRecipient.cs` |
+| `NotificationRecipient(notificationId, recipientUserId)` | Constructor ï¿½ creates an unread delivery record for the user. | `Domain/Notifications/NotificationRecipient.cs` |
 | `MarkRead()` | Marks the notification as read. Idempotent. | `Domain/Notifications/NotificationRecipient.cs` |
 
-### Domain — AttendanceRecord
+### Domain ï¿½ AttendanceRecord
 
 | Function Name | Purpose | Location |
 |---|---|---|
-| `AttendanceRecord(studentProfileId, courseOfferingId, date, status, markedByUserId, remarks?)` | Constructor — normalises date to UTC date only. | `Domain/Attendance/AttendanceRecord.cs` |
+| `AttendanceRecord(studentProfileId, courseOfferingId, date, status, markedByUserId, remarks?)` | Constructor ï¿½ normalises date to UTC date only. | `Domain/Attendance/AttendanceRecord.cs` |
 | `Correct(newStatus, correctedByUserId, remarks?)` | Corrects status and records the correcting user. | `Domain/Attendance/AttendanceRecord.cs` |
 
-### Infrastructure — NotificationRepository
+### Infrastructure ï¿½ NotificationRepository
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -717,7 +717,7 @@
 | `UpdateRecipient(recipient)` | Marks a recipient row as modified (read state). | `Infrastructure/Repositories/NotificationAttendanceRepositories.cs` |
 | `SaveChangesAsync(ct)` | Commits pending changes (NotificationRepository). | `Infrastructure/Repositories/NotificationAttendanceRepositories.cs` |
 
-### Infrastructure — AttendanceRepository
+### Infrastructure ï¿½ AttendanceRepository
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -732,7 +732,7 @@
 | `Update(record)` | Marks a record as modified (correction). | `Infrastructure/Repositories/NotificationAttendanceRepositories.cs` |
 | `SaveChangesAsync(ct)` | Commits pending changes (AttendanceRepository). | `Infrastructure/Repositories/NotificationAttendanceRepositories.cs` |
 
-### Application — NotificationService
+### Application ï¿½ NotificationService
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -743,9 +743,9 @@
 | `GetBadgeAsync(userId, ct)` | Returns unread count for the notification bell badge. | `Application/Notifications/NotificationService.cs` |
 | `MarkReadAsync(notificationId, userId, ct)` | Marks a specific notification as read. Idempotent. | `Application/Notifications/NotificationService.cs` |
 | `MarkAllReadAsync(userId, ct)` | Marks all unread notifications as read for the user. | `Application/Notifications/NotificationService.cs` |
-| `ToResponse(recipient)` | Private — maps NotificationRecipient (with navigation) to DTO. | `Application/Notifications/NotificationService.cs` |
+| `ToResponse(recipient)` | Private ï¿½ maps NotificationRecipient (with navigation) to DTO. | `Application/Notifications/NotificationService.cs` |
 
-### Application — AttendanceService
+### Application ï¿½ AttendanceService
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -756,47 +756,47 @@
 | `GetByStudentAsync(studentProfileId, courseOfferingId?, ct)` | Returns records for a student, optionally scoped to one offering. | `Application/Attendance/AttendanceService.cs` |
 | `GetSummaryAsync(studentProfileId, courseOfferingId, ct)` | Returns attendance percentage summary for a student in an offering. | `Application/Attendance/AttendanceService.cs` |
 | `GetBelowThresholdAsync(thresholdPercent, ct)` | Returns all student-offering pairs below the threshold. | `Application/Attendance/AttendanceService.cs` |
-| `ToResponse(record)` | Private — maps AttendanceRecord to AttendanceResponse DTO. | `Application/Attendance/AttendanceService.cs` |
+| `ToResponse(record)` | Private ï¿½ maps AttendanceRecord to AttendanceResponse DTO. | `Application/Attendance/AttendanceService.cs` |
 
-### API — NotificationController
-
-| Function Name | Purpose | Location |
-|---|---|---|
-| `Send(request, ct)` | `POST /api/notification` — dispatches notification to a user list. Admin/Faculty. | `API/Controllers/NotificationController.cs` |
-| `Deactivate(id, ct)` | `DELETE /api/notification/{id}` — deactivates a notification. Admin. | `API/Controllers/NotificationController.cs` |
-| `GetInbox(unreadOnly, page, pageSize, ct)` | `GET /api/notification/inbox` — paged inbox for current user. | `API/Controllers/NotificationController.cs` |
-| `GetBadge(ct)` | `GET /api/notification/badge` — unread count for the bell icon. | `API/Controllers/NotificationController.cs` |
-| `MarkRead(id, ct)` | `POST /api/notification/{id}/read` — marks one notification read. | `API/Controllers/NotificationController.cs` |
-| `MarkAllRead(ct)` | `POST /api/notification/read-all` — marks all unread as read. | `API/Controllers/NotificationController.cs` |
-| `GetCurrentUserId()` | Private — extracts user ID from JWT NameIdentifier claim. | `API/Controllers/NotificationController.cs` |
-
-### API — AttendanceController
+### API ï¿½ NotificationController
 
 | Function Name | Purpose | Location |
 |---|---|---|
-| `Mark(request, ct)` | `POST /api/attendance` — marks attendance for one student. Faculty/Admin. | `API/Controllers/AttendanceController.cs` |
-| `BulkMark(request, ct)` | `POST /api/attendance/bulk` — bulk-marks a full class. Faculty/Admin. | `API/Controllers/AttendanceController.cs` |
-| `Correct(request, ct)` | `PUT /api/attendance/correct` — corrects an existing record. Faculty/Admin. | `API/Controllers/AttendanceController.cs` |
-| `GetByOffering(courseOfferingId, from, to, ct)` | `GET /api/attendance/by-offering/{id}` — records for an offering. Faculty/Admin. | `API/Controllers/AttendanceController.cs` |
-| `GetByStudent(studentProfileId, courseOfferingId, ct)` | `GET /api/attendance/by-student/{id}` — records for a student. Faculty/Admin. | `API/Controllers/AttendanceController.cs` |
-| `GetMyAttendance(courseOfferingId, ct)` | `GET /api/attendance/my-attendance` — student's own records. Student. | `API/Controllers/AttendanceController.cs` |
-| `GetSummary(studentProfileId, courseOfferingId, ct)` | `GET /api/attendance/summary/{studentId}/{offeringId}` — percentage summary. All roles. | `API/Controllers/AttendanceController.cs` |
-| `GetBelowThreshold(threshold, ct)` | `GET /api/attendance/below-threshold` — students below threshold. Admin. | `API/Controllers/AttendanceController.cs` |
-| `GetCurrentUserId()` | Private — extracts user ID from JWT NameIdentifier claim. | `API/Controllers/AttendanceController.cs` |
-| `GetCurrentStudentProfileId()` | Private — extracts student profile ID from "studentProfileId" JWT claim. | `API/Controllers/AttendanceController.cs` |
+| `Send(request, ct)` | `POST /api/notification` ï¿½ dispatches notification to a user list. Admin/Faculty. | `API/Controllers/NotificationController.cs` |
+| `Deactivate(id, ct)` | `DELETE /api/notification/{id}` ï¿½ deactivates a notification. Admin. | `API/Controllers/NotificationController.cs` |
+| `GetInbox(unreadOnly, page, pageSize, ct)` | `GET /api/notification/inbox` ï¿½ paged inbox for current user. | `API/Controllers/NotificationController.cs` |
+| `GetBadge(ct)` | `GET /api/notification/badge` ï¿½ unread count for the bell icon. | `API/Controllers/NotificationController.cs` |
+| `MarkRead(id, ct)` | `POST /api/notification/{id}/read` ï¿½ marks one notification read. | `API/Controllers/NotificationController.cs` |
+| `MarkAllRead(ct)` | `POST /api/notification/read-all` ï¿½ marks all unread as read. | `API/Controllers/NotificationController.cs` |
+| `GetCurrentUserId()` | Private ï¿½ extracts user ID from JWT NameIdentifier claim. | `API/Controllers/NotificationController.cs` |
 
-### Background Job — AttendanceAlertJob
+### API ï¿½ AttendanceController
 
 | Function Name | Purpose | Location |
 |---|---|---|
-| `ExecuteAsync(stoppingToken)` | Main hosted service loop — waits 60 s startup delay then runs on configured interval. | `BackgroundJobs/AttendanceAlertJob.cs` |
+| `Mark(request, ct)` | `POST /api/attendance` ï¿½ marks attendance for one student. Faculty/Admin. | `API/Controllers/AttendanceController.cs` |
+| `BulkMark(request, ct)` | `POST /api/attendance/bulk` ï¿½ bulk-marks a full class. Faculty/Admin. | `API/Controllers/AttendanceController.cs` |
+| `Correct(request, ct)` | `PUT /api/attendance/correct` ï¿½ corrects an existing record. Faculty/Admin. | `API/Controllers/AttendanceController.cs` |
+| `GetByOffering(courseOfferingId, from, to, ct)` | `GET /api/attendance/by-offering/{id}` ï¿½ records for an offering. Faculty/Admin. | `API/Controllers/AttendanceController.cs` |
+| `GetByStudent(studentProfileId, courseOfferingId, ct)` | `GET /api/attendance/by-student/{id}` ï¿½ records for a student. Faculty/Admin. | `API/Controllers/AttendanceController.cs` |
+| `GetMyAttendance(courseOfferingId, ct)` | `GET /api/attendance/my-attendance` ï¿½ student's own records. Student. | `API/Controllers/AttendanceController.cs` |
+| `GetSummary(studentProfileId, courseOfferingId, ct)` | `GET /api/attendance/summary/{studentId}/{offeringId}` ï¿½ percentage summary. All roles. | `API/Controllers/AttendanceController.cs` |
+| `GetBelowThreshold(threshold, ct)` | `GET /api/attendance/below-threshold` ï¿½ students below threshold. Admin. | `API/Controllers/AttendanceController.cs` |
+| `GetCurrentUserId()` | Private ï¿½ extracts user ID from JWT NameIdentifier claim. | `API/Controllers/AttendanceController.cs` |
+| `GetCurrentStudentProfileId()` | Private ï¿½ extracts student profile ID from "studentProfileId" JWT claim. | `API/Controllers/AttendanceController.cs` |
+
+### Background Job ï¿½ AttendanceAlertJob
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `ExecuteAsync(stoppingToken)` | Main hosted service loop ï¿½ waits 60 s startup delay then runs on configured interval. | `BackgroundJobs/AttendanceAlertJob.cs` |
 | `RunCheckAsync(ct)` | Resolves scoped services, finds below-threshold students, dispatches alert notifications. | `BackgroundJobs/AttendanceAlertJob.cs` |
 
 ---
 
-## Phase 5 — Quizzes and FYP (Sprints 10–11)
+## Phase 5 ï¿½ Quizzes and FYP (Sprints 10ï¿½11)
 
-### Domain — Quiz
+### Domain ï¿½ Quiz
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -806,20 +806,20 @@
 | Deactivate() | Soft-deletes the quiz by setting IsActive=false. | Domain/Quizzes/Quiz.cs |
 | Update(title, instructions, timeLimitMinutes, maxAttempts, availableFrom, availableUntil) | Updates editable quiz metadata. | Domain/Quizzes/Quiz.cs |
 
-### Domain — QuizQuestion
+### Domain ï¿½ QuizQuestion
 
 | Function Name | Purpose | Location |
 |---|---|---|
 | QuizQuestion(quizId, text, type, marks, orderIndex) | Creates a new question within a quiz. | Domain/Quizzes/Quiz.cs |
 | Update(text, marks, orderIndex) | Updates the question text, marks, and display order. | Domain/Quizzes/Quiz.cs |
 
-### Domain — QuizOption
+### Domain ï¿½ QuizOption
 
 | Function Name | Purpose | Location |
 |---|---|---|
 | QuizOption(quizQuestionId, text, isCorrect, orderIndex) | Creates an answer option for a MCQ or TrueFalse question. | Domain/Quizzes/Quiz.cs |
 
-### Domain — QuizAttempt
+### Domain ï¿½ QuizAttempt
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -829,7 +829,7 @@
 | Abandon() | Marks the attempt as Abandoned and records FinishedAt. | Domain/Quizzes/QuizAttempt.cs |
 | RecordScore(score) | Sets the computed TotalScore on the attempt. | Domain/Quizzes/QuizAttempt.cs |
 
-### Domain — QuizAnswer
+### Domain ï¿½ QuizAnswer
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -837,7 +837,7 @@
 | QuizAnswer(quizAttemptId, quizQuestionId, textResponse) | Records a ShortAnswer response as free text. | Domain/Quizzes/QuizAttempt.cs |
 | AwardMarks(marks) | Sets the marks awarded for manually graded short answers. | Domain/Quizzes/QuizAttempt.cs |
 
-### Domain — FypProject
+### Domain ï¿½ FypProject
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -848,13 +848,13 @@
 | Complete() | Marks the project as Completed. | Domain/Fyp/FypProject.cs |
 | Update(title, description) | Updates the project title and description. | Domain/Fyp/FypProject.cs |
 
-### Domain — FypPanelMember
+### Domain ï¿½ FypPanelMember
 
 | Function Name | Purpose | Location |
 |---|---|---|
 | FypPanelMember(fypProjectId, userId, role) | Adds a faculty member to the project panel with a specified role. | Domain/Fyp/FypProject.cs |
 
-### Domain — FypMeeting
+### Domain ï¿½ FypMeeting
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -863,7 +863,7 @@
 | Cancel() | Cancels a scheduled meeting. | Domain/Fyp/FypProject.cs |
 | Reschedule(scheduledAt, venue, agenda) | Updates the meeting time, venue, and agenda and resets status to Scheduled. | Domain/Fyp/FypProject.cs |
 
-### Infrastructure — QuizRepository
+### Infrastructure ï¿½ QuizRepository
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -889,7 +889,7 @@
 | UpdateAnswer(answer) | Marks an answer as modified. | Infrastructure/Repositories/QuizFypRepositories.cs |
 | SaveChangesAsync(ct) | Commits all pending changes to the database. | Infrastructure/Repositories/QuizFypRepositories.cs |
 
-### Infrastructure — FypRepository
+### Infrastructure ï¿½ FypRepository
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -911,7 +911,7 @@
 | UpdateMeeting(meeting) | Marks a meeting as modified. | Infrastructure/Repositories/QuizFypRepositories.cs |
 | SaveChangesAsync(ct) | Commits all pending changes to the database. | Infrastructure/Repositories/QuizFypRepositories.cs |
 
-### Application — QuizService
+### Application ï¿½ QuizService
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -930,13 +930,13 @@
 | GetStudentAttemptsAsync(quizId, studentProfileId, ct) | Returns all attempts for a student on a quiz. | Application/Quizzes/QuizService.cs |
 | GetAttemptDetailAsync(attemptId, ct) | Returns detailed attempt data including answer responses. | Application/Quizzes/QuizService.cs |
 | GradeAnswerAsync(request, ct) | Awards marks to a short-answer response and updates attempt total score. | Application/Quizzes/QuizService.cs |
-| ToSummary(quiz) | Private — maps Quiz to QuizSummaryResponse. | Application/Quizzes/QuizService.cs |
-| ToDetail(quiz) | Private — maps Quiz with questions to QuizDetailResponse. | Application/Quizzes/QuizService.cs |
-| ToQuestionResponse(question, hideAnswers) | Private — maps a QuizQuestion to QuestionResponse, optionally hiding correct answers. | Application/Quizzes/QuizService.cs |
-| ToAttemptResponse(attempt) | Private — maps QuizAttempt to AttemptResponse. | Application/Quizzes/QuizService.cs |
-| ToAttemptDetail(attempt) | Private — maps QuizAttempt with answers to AttemptDetailResponse. | Application/Quizzes/QuizService.cs |
+| ToSummary(quiz) | Private ï¿½ maps Quiz to QuizSummaryResponse. | Application/Quizzes/QuizService.cs |
+| ToDetail(quiz) | Private ï¿½ maps Quiz with questions to QuizDetailResponse. | Application/Quizzes/QuizService.cs |
+| ToQuestionResponse(question, hideAnswers) | Private ï¿½ maps a QuizQuestion to QuestionResponse, optionally hiding correct answers. | Application/Quizzes/QuizService.cs |
+| ToAttemptResponse(attempt) | Private ï¿½ maps QuizAttempt to AttemptResponse. | Application/Quizzes/QuizService.cs |
+| ToAttemptDetail(attempt) | Private ï¿½ maps QuizAttempt with answers to AttemptDetailResponse. | Application/Quizzes/QuizService.cs |
 
-### Application — FypService
+### Application ï¿½ FypService
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -958,62 +958,62 @@
 | CancelMeetingAsync(meetingId, ct) | Cancels a scheduled meeting. | Application/Fyp/FypService.cs |
 | GetMeetingsByProjectAsync(projectId, ct) | Returns all meetings for a project as response DTOs. | Application/Fyp/FypService.cs |
 | GetUpcomingMeetingsAsync(supervisorUserId, ct) | Returns upcoming meetings organised by the supervisor. | Application/Fyp/FypService.cs |
-| ToSummary(project) | Private — maps FypProject to FypProjectSummaryResponse. | Application/Fyp/FypService.cs |
-| ToDetail(project) | Private — maps FypProject with panel/meetings to FypProjectDetailResponse. | Application/Fyp/FypService.cs |
-| ToMeetingResponse(meeting) | Private — maps FypMeeting to MeetingResponse. | Application/Fyp/FypService.cs |
+| ToSummary(project) | Private ï¿½ maps FypProject to FypProjectSummaryResponse. | Application/Fyp/FypService.cs |
+| ToDetail(project) | Private ï¿½ maps FypProject with panel/meetings to FypProjectDetailResponse. | Application/Fyp/FypService.cs |
+| ToMeetingResponse(meeting) | Private ï¿½ maps FypMeeting to MeetingResponse. | Application/Fyp/FypService.cs |
 
-### API — QuizController
-
-| Function Name | Purpose | Location |
-|---|---|---|
-| Create(request, ct) | POST /api/quiz — Creates a quiz (Faculty). | API/Controllers/QuizController.cs |
-| Update(id, request, ct) | PUT /api/quiz/{id} — Updates quiz metadata (Faculty). | API/Controllers/QuizController.cs |
-| Publish(id, ct) | POST /api/quiz/{id}/publish — Publishes a quiz (Faculty). | API/Controllers/QuizController.cs |
-| Unpublish(id, ct) | POST /api/quiz/{id}/unpublish — Unpublishes a quiz (Faculty). | API/Controllers/QuizController.cs |
-| Deactivate(id, ct) | DELETE /api/quiz/{id} — Soft-deletes a quiz (Admin). | API/Controllers/QuizController.cs |
-| AddQuestion(request, ct) | POST /api/quiz/question — Adds a question to a quiz (Faculty). | API/Controllers/QuizController.cs |
-| UpdateQuestion(questionId, request, ct) | PUT /api/quiz/question/{questionId} — Updates a question (Faculty). | API/Controllers/QuizController.cs |
-| RemoveQuestion(questionId, ct) | DELETE /api/quiz/question/{questionId} — Removes a question (Faculty). | API/Controllers/QuizController.cs |
-| GetByOffering(courseOfferingId, ct) | GET /api/quiz/by-offering/{courseOfferingId} — Lists quizzes for an offering (All). | API/Controllers/QuizController.cs |
-| GetDetail(id, ct) | GET /api/quiz/{id} — Returns full quiz detail (All). | API/Controllers/QuizController.cs |
-| StartAttempt(id, ct) | POST /api/quiz/{id}/start — Starts a student attempt; 409 if cap reached (Student). | API/Controllers/QuizController.cs |
-| SubmitAttempt(request, ct) | POST /api/quiz/attempt/submit — Submits answers and grades MCQ/TrueFalse (Student). | API/Controllers/QuizController.cs |
-| GetMyAttempts(id, ct) | GET /api/quiz/{id}/my-attempts — Returns student's own attempts (Student). | API/Controllers/QuizController.cs |
-| GetAttemptDetail(attemptId, ct) | GET /api/quiz/attempt/{attemptId} — Returns attempt detail with answers (All). | API/Controllers/QuizController.cs |
-| GradeAnswer(request, ct) | POST /api/quiz/attempt/grade-answer — Manually grades a short-answer response (Faculty). | API/Controllers/QuizController.cs |
-| GetCurrentUserId() | Private — Extracts authenticated user ID from JWT NameIdentifier claim. | API/Controllers/QuizController.cs |
-| GetStudentProfileId() | Private — Extracts student profile ID from the studentProfileId JWT claim. | API/Controllers/QuizController.cs |
-
-### API — FypController
+### API ï¿½ QuizController
 
 | Function Name | Purpose | Location |
 |---|---|---|
-| Propose(request, ct) | POST /api/fyp — Submits an FYP proposal (Student). | API/Controllers/FypController.cs |
-| Update(id, request, ct) | PUT /api/fyp/{id} — Updates project title/description (Student). | API/Controllers/FypController.cs |
-| Approve(id, request, ct) | POST /api/fyp/{id}/approve — Approves a proposal (Admin). | API/Controllers/FypController.cs |
-| Reject(id, request, ct) | POST /api/fyp/{id}/reject — Rejects a proposal with remarks (Admin). | API/Controllers/FypController.cs |
-| AssignSupervisor(id, request, ct) | POST /api/fyp/{id}/assign-supervisor — Assigns a supervisor (Admin). | API/Controllers/FypController.cs |
-| Complete(id, ct) | POST /api/fyp/{id}/complete — Marks a project as completed (Admin). | API/Controllers/FypController.cs |
-| GetMyProjects(ct) | GET /api/fyp/my-projects — Returns current student's projects (Student). | API/Controllers/FypController.cs |
-| GetByDepartment(departmentId, status, ct) | GET /api/fyp/by-department/{departmentId} — Returns department projects (Faculty). | API/Controllers/FypController.cs |
-| GetMySupervised(ct) | GET /api/fyp/my-supervised — Returns projects supervised by current user (Faculty). | API/Controllers/FypController.cs |
-| GetDetail(id, ct) | GET /api/fyp/{id} — Returns full project detail (All). | API/Controllers/FypController.cs |
-| AddPanelMember(id, request, ct) | POST /api/fyp/{id}/panel — Adds a panel member (Admin). | API/Controllers/FypController.cs |
-| RemovePanelMember(id, userId, ct) | DELETE /api/fyp/{id}/panel/{userId} — Removes a panel member (Admin). | API/Controllers/FypController.cs |
-| ScheduleMeeting(request, ct) | POST /api/fyp/meeting — Schedules a new FYP meeting (Faculty). | API/Controllers/FypController.cs |
-| RescheduleMeeting(meetingId, request, ct) | PUT /api/fyp/meeting/{meetingId} — Reschedules a meeting (Faculty). | API/Controllers/FypController.cs |
-| CompleteMeeting(meetingId, request, ct) | POST /api/fyp/meeting/{meetingId}/complete — Completes a meeting (Faculty). | API/Controllers/FypController.cs |
-| CancelMeeting(meetingId, ct) | POST /api/fyp/meeting/{meetingId}/cancel — Cancels a meeting (Faculty). | API/Controllers/FypController.cs |
-| GetMeetings(id, ct) | GET /api/fyp/{id}/meetings — Returns all meetings for a project (All). | API/Controllers/FypController.cs |
-| GetUpcomingMeetings(ct) | GET /api/fyp/meeting/upcoming — Returns upcoming meetings for current supervisor (Faculty). | API/Controllers/FypController.cs |
-| GetCurrentUserId() | Private — Extracts authenticated user ID from JWT NameIdentifier claim. | API/Controllers/FypController.cs |
-| GetStudentProfileId() | Private — Extracts student profile ID from the studentProfileId JWT claim. | API/Controllers/FypController.cs |
+| Create(request, ct) | POST /api/quiz ï¿½ Creates a quiz (Faculty). | API/Controllers/QuizController.cs |
+| Update(id, request, ct) | PUT /api/quiz/{id} ï¿½ Updates quiz metadata (Faculty). | API/Controllers/QuizController.cs |
+| Publish(id, ct) | POST /api/quiz/{id}/publish ï¿½ Publishes a quiz (Faculty). | API/Controllers/QuizController.cs |
+| Unpublish(id, ct) | POST /api/quiz/{id}/unpublish ï¿½ Unpublishes a quiz (Faculty). | API/Controllers/QuizController.cs |
+| Deactivate(id, ct) | DELETE /api/quiz/{id} ï¿½ Soft-deletes a quiz (Admin). | API/Controllers/QuizController.cs |
+| AddQuestion(request, ct) | POST /api/quiz/question ï¿½ Adds a question to a quiz (Faculty). | API/Controllers/QuizController.cs |
+| UpdateQuestion(questionId, request, ct) | PUT /api/quiz/question/{questionId} ï¿½ Updates a question (Faculty). | API/Controllers/QuizController.cs |
+| RemoveQuestion(questionId, ct) | DELETE /api/quiz/question/{questionId} ï¿½ Removes a question (Faculty). | API/Controllers/QuizController.cs |
+| GetByOffering(courseOfferingId, ct) | GET /api/quiz/by-offering/{courseOfferingId} ï¿½ Lists quizzes for an offering (All). | API/Controllers/QuizController.cs |
+| GetDetail(id, ct) | GET /api/quiz/{id} ï¿½ Returns full quiz detail (All). | API/Controllers/QuizController.cs |
+| StartAttempt(id, ct) | POST /api/quiz/{id}/start ï¿½ Starts a student attempt; 409 if cap reached (Student). | API/Controllers/QuizController.cs |
+| SubmitAttempt(request, ct) | POST /api/quiz/attempt/submit ï¿½ Submits answers and grades MCQ/TrueFalse (Student). | API/Controllers/QuizController.cs |
+| GetMyAttempts(id, ct) | GET /api/quiz/{id}/my-attempts ï¿½ Returns student's own attempts (Student). | API/Controllers/QuizController.cs |
+| GetAttemptDetail(attemptId, ct) | GET /api/quiz/attempt/{attemptId} ï¿½ Returns attempt detail with answers (All). | API/Controllers/QuizController.cs |
+| GradeAnswer(request, ct) | POST /api/quiz/attempt/grade-answer ï¿½ Manually grades a short-answer response (Faculty). | API/Controllers/QuizController.cs |
+| GetCurrentUserId() | Private ï¿½ Extracts authenticated user ID from JWT NameIdentifier claim. | API/Controllers/QuizController.cs |
+| GetStudentProfileId() | Private ï¿½ Extracts student profile ID from the studentProfileId JWT claim. | API/Controllers/QuizController.cs |
+
+### API ï¿½ FypController
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| Propose(request, ct) | POST /api/fyp ï¿½ Submits an FYP proposal (Student). | API/Controllers/FypController.cs |
+| Update(id, request, ct) | PUT /api/fyp/{id} ï¿½ Updates project title/description (Student). | API/Controllers/FypController.cs |
+| Approve(id, request, ct) | POST /api/fyp/{id}/approve ï¿½ Approves a proposal (Admin). | API/Controllers/FypController.cs |
+| Reject(id, request, ct) | POST /api/fyp/{id}/reject ï¿½ Rejects a proposal with remarks (Admin). | API/Controllers/FypController.cs |
+| AssignSupervisor(id, request, ct) | POST /api/fyp/{id}/assign-supervisor ï¿½ Assigns a supervisor (Admin). | API/Controllers/FypController.cs |
+| Complete(id, ct) | POST /api/fyp/{id}/complete ï¿½ Marks a project as completed (Admin). | API/Controllers/FypController.cs |
+| GetMyProjects(ct) | GET /api/fyp/my-projects ï¿½ Returns current student's projects (Student). | API/Controllers/FypController.cs |
+| GetByDepartment(departmentId, status, ct) | GET /api/fyp/by-department/{departmentId} ï¿½ Returns department projects (Faculty). | API/Controllers/FypController.cs |
+| GetMySupervised(ct) | GET /api/fyp/my-supervised ï¿½ Returns projects supervised by current user (Faculty). | API/Controllers/FypController.cs |
+| GetDetail(id, ct) | GET /api/fyp/{id} ï¿½ Returns full project detail (All). | API/Controllers/FypController.cs |
+| AddPanelMember(id, request, ct) | POST /api/fyp/{id}/panel ï¿½ Adds a panel member (Admin). | API/Controllers/FypController.cs |
+| RemovePanelMember(id, userId, ct) | DELETE /api/fyp/{id}/panel/{userId} ï¿½ Removes a panel member (Admin). | API/Controllers/FypController.cs |
+| ScheduleMeeting(request, ct) | POST /api/fyp/meeting ï¿½ Schedules a new FYP meeting (Faculty). | API/Controllers/FypController.cs |
+| RescheduleMeeting(meetingId, request, ct) | PUT /api/fyp/meeting/{meetingId} ï¿½ Reschedules a meeting (Faculty). | API/Controllers/FypController.cs |
+| CompleteMeeting(meetingId, request, ct) | POST /api/fyp/meeting/{meetingId}/complete ï¿½ Completes a meeting (Faculty). | API/Controllers/FypController.cs |
+| CancelMeeting(meetingId, ct) | POST /api/fyp/meeting/{meetingId}/cancel ï¿½ Cancels a meeting (Faculty). | API/Controllers/FypController.cs |
+| GetMeetings(id, ct) | GET /api/fyp/{id}/meetings ï¿½ Returns all meetings for a project (All). | API/Controllers/FypController.cs |
+| GetUpcomingMeetings(ct) | GET /api/fyp/meeting/upcoming ï¿½ Returns upcoming meetings for current supervisor (Faculty). | API/Controllers/FypController.cs |
+| GetCurrentUserId() | Private ï¿½ Extracts authenticated user ID from JWT NameIdentifier claim. | API/Controllers/FypController.cs |
+| GetStudentProfileId() | Private ï¿½ Extracts student profile ID from the studentProfileId JWT claim. | API/Controllers/FypController.cs |
 
 ---
 
-## Phase 5 — Quizzes and FYP
+## Phase 5 ï¿½ Quizzes and FYP
 
-### Domain — Quiz
+### Domain ï¿½ Quiz
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -1026,7 +1026,7 @@
 | `QuizQuestion.Update(text, marks, orderIndex)` | Updates question text and grading details. | `Domain/Quizzes/Quiz.cs` |
 | `QuizOption(quizQuestionId, text, isCorrect, orderIndex)` | Creates an answer option for a question. | `Domain/Quizzes/Quiz.cs` |
 
-### Domain — QuizAttempt
+### Domain ï¿½ QuizAttempt
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -1039,7 +1039,7 @@
 | `QuizAnswer(quizAttemptId, quizQuestionId, textResponse)` | Records a short-answer textual response. | `Domain/Quizzes/QuizAttempt.cs` |
 | `AwardMarks(marks)` | Stores instructor-awarded marks for a short-answer response. | `Domain/Quizzes/QuizAttempt.cs` |
 
-### Domain — FypProject
+### Domain ï¿½ FypProject
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -1055,7 +1055,7 @@
 | `FypMeeting.Cancel()` | Cancels a scheduled meeting. | `Domain/Fyp/FypProject.cs` |
 | `FypMeeting.Reschedule(scheduledAt, venue, agenda)` | Updates meeting time, venue and agenda. | `Domain/Fyp/FypProject.cs` |
 
-### Infrastructure — QuizRepository
+### Infrastructure ï¿½ QuizRepository
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -1080,7 +1080,7 @@
 | `GetAnswerByIdAsync(answerId, ct)` | Fetches a single answer for manual grading. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
 | `UpdateAnswer(answer)` | Marks answer as modified after manual grading. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
 
-### Infrastructure — FypRepository
+### Infrastructure ï¿½ FypRepository
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -1102,7 +1102,7 @@
 | `UpdateMeeting(meeting)` | Marks meeting as modified. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
 | `SaveChangesAsync(ct)` | Flushes all pending changes to the database. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
 
-### Application — QuizService
+### Application ï¿½ QuizService
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -1127,7 +1127,7 @@
 | `ToAttemptResponse(attempt)` | Maps QuizAttempt to AttemptResponse DTO. | `Application/Quizzes/QuizService.cs` |
 | `ToAttemptDetail(attempt)` | Maps QuizAttempt with answers to AttemptDetailResponse DTO. | `Application/Quizzes/QuizService.cs` |
 
-### Application — FypService
+### Application ï¿½ FypService
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -1153,56 +1153,56 @@
 | `ToDetail(project)` | Maps FypProject to FypProjectDetailResponse DTO. | `Application/Fyp/FypService.cs` |
 | `ToMeetingResponse(meeting)` | Maps FypMeeting to MeetingResponse DTO. | `Application/Fyp/FypService.cs` |
 
-### API — QuizController
+### API ï¿½ QuizController
 
 | Function Name | Purpose | Location |
 |---|---|---|
-| `Create(request, ct)` | POST /api/quiz — Creates a new quiz. Faculty only. | `API/Controllers/QuizController.cs` |
-| `Update(id, request, ct)` | PUT /api/quiz/{id} — Updates quiz metadata. Faculty only. | `API/Controllers/QuizController.cs` |
-| `Publish(id, ct)` | POST /api/quiz/{id}/publish — Publishes a quiz. Faculty only. | `API/Controllers/QuizController.cs` |
-| `Unpublish(id, ct)` | POST /api/quiz/{id}/unpublish — Reverts quiz to draft. Faculty only. | `API/Controllers/QuizController.cs` |
-| `Deactivate(id, ct)` | DELETE /api/quiz/{id} — Soft-deletes a quiz. Admin only. | `API/Controllers/QuizController.cs` |
-| `AddQuestion(request, ct)` | POST /api/quiz/question — Adds a question to a quiz. Faculty only. | `API/Controllers/QuizController.cs` |
-| `UpdateQuestion(questionId, request, ct)` | PUT /api/quiz/question/{questionId} — Updates a question. Faculty only. | `API/Controllers/QuizController.cs` |
-| `RemoveQuestion(questionId, ct)` | DELETE /api/quiz/question/{questionId} — Removes a question. Faculty only. | `API/Controllers/QuizController.cs` |
-| `GetByOffering(courseOfferingId, ct)` | GET /api/quiz/by-offering/{courseOfferingId} — Lists quizzes for an offering. | `API/Controllers/QuizController.cs` |
-| `GetDetail(id, ct)` | GET /api/quiz/{id} — Returns quiz with questions and options. | `API/Controllers/QuizController.cs` |
-| `StartAttempt(id, ct)` | POST /api/quiz/{id}/start — Starts a new attempt. Student only. | `API/Controllers/QuizController.cs` |
-| `SubmitAttempt(request, ct)` | POST /api/quiz/attempt/submit — Submits and auto-grades an attempt. Student only. | `API/Controllers/QuizController.cs` |
-| `GetMyAttempts(id, ct)` | GET /api/quiz/{id}/my-attempts — Lists a student's own attempts. Student only. | `API/Controllers/QuizController.cs` |
-| `GetAttemptDetail(attemptId, ct)` | GET /api/quiz/attempt/{attemptId} — Returns attempt with answers. | `API/Controllers/QuizController.cs` |
-| `GradeAnswer(request, ct)` | POST /api/quiz/attempt/grade-answer — Awards marks to a short-answer. Faculty only. | `API/Controllers/QuizController.cs` |
+| `Create(request, ct)` | POST /api/quiz ï¿½ Creates a new quiz. Faculty only. | `API/Controllers/QuizController.cs` |
+| `Update(id, request, ct)` | PUT /api/quiz/{id} ï¿½ Updates quiz metadata. Faculty only. | `API/Controllers/QuizController.cs` |
+| `Publish(id, ct)` | POST /api/quiz/{id}/publish ï¿½ Publishes a quiz. Faculty only. | `API/Controllers/QuizController.cs` |
+| `Unpublish(id, ct)` | POST /api/quiz/{id}/unpublish ï¿½ Reverts quiz to draft. Faculty only. | `API/Controllers/QuizController.cs` |
+| `Deactivate(id, ct)` | DELETE /api/quiz/{id} ï¿½ Soft-deletes a quiz. Admin only. | `API/Controllers/QuizController.cs` |
+| `AddQuestion(request, ct)` | POST /api/quiz/question ï¿½ Adds a question to a quiz. Faculty only. | `API/Controllers/QuizController.cs` |
+| `UpdateQuestion(questionId, request, ct)` | PUT /api/quiz/question/{questionId} ï¿½ Updates a question. Faculty only. | `API/Controllers/QuizController.cs` |
+| `RemoveQuestion(questionId, ct)` | DELETE /api/quiz/question/{questionId} ï¿½ Removes a question. Faculty only. | `API/Controllers/QuizController.cs` |
+| `GetByOffering(courseOfferingId, ct)` | GET /api/quiz/by-offering/{courseOfferingId} ï¿½ Lists quizzes for an offering. | `API/Controllers/QuizController.cs` |
+| `GetDetail(id, ct)` | GET /api/quiz/{id} ï¿½ Returns quiz with questions and options. | `API/Controllers/QuizController.cs` |
+| `StartAttempt(id, ct)` | POST /api/quiz/{id}/start ï¿½ Starts a new attempt. Student only. | `API/Controllers/QuizController.cs` |
+| `SubmitAttempt(request, ct)` | POST /api/quiz/attempt/submit ï¿½ Submits and auto-grades an attempt. Student only. | `API/Controllers/QuizController.cs` |
+| `GetMyAttempts(id, ct)` | GET /api/quiz/{id}/my-attempts ï¿½ Lists a student's own attempts. Student only. | `API/Controllers/QuizController.cs` |
+| `GetAttemptDetail(attemptId, ct)` | GET /api/quiz/attempt/{attemptId} ï¿½ Returns attempt with answers. | `API/Controllers/QuizController.cs` |
+| `GradeAnswer(request, ct)` | POST /api/quiz/attempt/grade-answer ï¿½ Awards marks to a short-answer. Faculty only. | `API/Controllers/QuizController.cs` |
 | `GetCurrentUserId()` | Extracts user ID from NameIdentifier JWT claim. | `API/Controllers/QuizController.cs` |
 | `GetStudentProfileId()` | Extracts studentProfileId from JWT claim. | `API/Controllers/QuizController.cs` |
 
-### API — FypController
+### API ï¿½ FypController
 
 | Function Name | Purpose | Location |
 |---|---|---|
-| `Propose(request, ct)` | POST /api/fyp — Submits a new FYP project proposal. Student only. | `API/Controllers/FypController.cs` |
-| `Update(id, request, ct)` | PUT /api/fyp/{id} — Updates project title/description. Student only. | `API/Controllers/FypController.cs` |
-| `Approve(id, request, ct)` | POST /api/fyp/{id}/approve — Approves a proposal. Admin only. | `API/Controllers/FypController.cs` |
-| `Reject(id, request, ct)` | POST /api/fyp/{id}/reject — Rejects a proposal with remarks. Admin only. | `API/Controllers/FypController.cs` |
-| `AssignSupervisor(id, request, ct)` | POST /api/fyp/{id}/assign-supervisor — Assigns a supervisor. Admin only. | `API/Controllers/FypController.cs` |
-| `Complete(id, ct)` | POST /api/fyp/{id}/complete — Marks a project completed. Admin only. | `API/Controllers/FypController.cs` |
-| `GetMyProjects(ct)` | GET /api/fyp/my-projects — Returns the student's own projects. | `API/Controllers/FypController.cs` |
-| `GetByDepartment(departmentId, status, ct)` | GET /api/fyp/by-department/{departmentId} — Lists department projects. Faculty only. | `API/Controllers/FypController.cs` |
-| `GetMySupervised(ct)` | GET /api/fyp/my-supervised — Returns supervised projects. Faculty only. | `API/Controllers/FypController.cs` |
-| `GetDetail(id, ct)` | GET /api/fyp/{id} — Returns full project detail. | `API/Controllers/FypController.cs` |
-| `AddPanelMember(id, request, ct)` | POST /api/fyp/{id}/panel — Adds a panel member. Admin only. | `API/Controllers/FypController.cs` |
-| `RemovePanelMember(id, userId, ct)` | DELETE /api/fyp/{id}/panel/{userId} — Removes a panel member. Admin only. | `API/Controllers/FypController.cs` |
-| `ScheduleMeeting(request, ct)` | POST /api/fyp/meeting — Schedules an FYP meeting. Faculty only. | `API/Controllers/FypController.cs` |
-| `RescheduleMeeting(meetingId, request, ct)` | PUT /api/fyp/meeting/{meetingId} — Reschedules a meeting. Faculty only. | `API/Controllers/FypController.cs` |
-| `CompleteMeeting(meetingId, request, ct)` | POST /api/fyp/meeting/{meetingId}/complete — Completes a meeting. Faculty only. | `API/Controllers/FypController.cs` |
-| `CancelMeeting(meetingId, ct)` | POST /api/fyp/meeting/{meetingId}/cancel — Cancels a meeting. Faculty only. | `API/Controllers/FypController.cs` |
-| `GetMeetings(id, ct)` | GET /api/fyp/{id}/meetings — Lists all meetings for a project. | `API/Controllers/FypController.cs` |
-| `GetUpcomingMeetings(ct)` | GET /api/fyp/meeting/upcoming — Returns upcoming supervisor meetings. Faculty only. | `API/Controllers/FypController.cs` |
+| `Propose(request, ct)` | POST /api/fyp ï¿½ Submits a new FYP project proposal. Student only. | `API/Controllers/FypController.cs` |
+| `Update(id, request, ct)` | PUT /api/fyp/{id} ï¿½ Updates project title/description. Student only. | `API/Controllers/FypController.cs` |
+| `Approve(id, request, ct)` | POST /api/fyp/{id}/approve ï¿½ Approves a proposal. Admin only. | `API/Controllers/FypController.cs` |
+| `Reject(id, request, ct)` | POST /api/fyp/{id}/reject ï¿½ Rejects a proposal with remarks. Admin only. | `API/Controllers/FypController.cs` |
+| `AssignSupervisor(id, request, ct)` | POST /api/fyp/{id}/assign-supervisor ï¿½ Assigns a supervisor. Admin only. | `API/Controllers/FypController.cs` |
+| `Complete(id, ct)` | POST /api/fyp/{id}/complete ï¿½ Marks a project completed. Admin only. | `API/Controllers/FypController.cs` |
+| `GetMyProjects(ct)` | GET /api/fyp/my-projects ï¿½ Returns the student's own projects. | `API/Controllers/FypController.cs` |
+| `GetByDepartment(departmentId, status, ct)` | GET /api/fyp/by-department/{departmentId} ï¿½ Lists department projects. Faculty only. | `API/Controllers/FypController.cs` |
+| `GetMySupervised(ct)` | GET /api/fyp/my-supervised ï¿½ Returns supervised projects. Faculty only. | `API/Controllers/FypController.cs` |
+| `GetDetail(id, ct)` | GET /api/fyp/{id} ï¿½ Returns full project detail. | `API/Controllers/FypController.cs` |
+| `AddPanelMember(id, request, ct)` | POST /api/fyp/{id}/panel ï¿½ Adds a panel member. Admin only. | `API/Controllers/FypController.cs` |
+| `RemovePanelMember(id, userId, ct)` | DELETE /api/fyp/{id}/panel/{userId} ï¿½ Removes a panel member. Admin only. | `API/Controllers/FypController.cs` |
+| `ScheduleMeeting(request, ct)` | POST /api/fyp/meeting ï¿½ Schedules an FYP meeting. Faculty only. | `API/Controllers/FypController.cs` |
+| `RescheduleMeeting(meetingId, request, ct)` | PUT /api/fyp/meeting/{meetingId} ï¿½ Reschedules a meeting. Faculty only. | `API/Controllers/FypController.cs` |
+| `CompleteMeeting(meetingId, request, ct)` | POST /api/fyp/meeting/{meetingId}/complete ï¿½ Completes a meeting. Faculty only. | `API/Controllers/FypController.cs` |
+| `CancelMeeting(meetingId, ct)` | POST /api/fyp/meeting/{meetingId}/cancel ï¿½ Cancels a meeting. Faculty only. | `API/Controllers/FypController.cs` |
+| `GetMeetings(id, ct)` | GET /api/fyp/{id}/meetings ï¿½ Lists all meetings for a project. | `API/Controllers/FypController.cs` |
+| `GetUpcomingMeetings(ct)` | GET /api/fyp/meeting/upcoming ï¿½ Returns upcoming supervisor meetings. Faculty only. | `API/Controllers/FypController.cs` |
 | `GetCurrentUserId()` | Extracts user ID from NameIdentifier JWT claim. | `API/Controllers/FypController.cs` |
 | `GetStudentProfileId()` | Extracts studentProfileId from JWT claim. | `API/Controllers/FypController.cs` |
 
 ---
 
-## Phase 6 — AI Chat Assistant & Analytics
+## Phase 6 ï¿½ AI Chat Assistant & Analytics
 
 ### AiChatService (Application/AiChat/AiChatService.cs)
 | Function | Description | File |
@@ -1246,23 +1246,23 @@
 ### AiChatController (API/Controllers/AiChatController.cs)
 | Function | Description | File |
 |---|---|---|
-| `SendMessage(request, ct)` | POST /api/ai/message — Send message to AI. All authenticated roles. | `API/Controllers/AiChatController.cs` |
-| `GetConversations(ct)` | GET /api/ai/conversations — List user conversations. | `API/Controllers/AiChatController.cs` |
-| `GetConversation(conversationId, ct)` | GET /api/ai/conversations/{id} — Get conversation history. | `API/Controllers/AiChatController.cs` |
+| `SendMessage(request, ct)` | POST /api/ai/message ï¿½ Send message to AI. All authenticated roles. | `API/Controllers/AiChatController.cs` |
+| `GetConversations(ct)` | GET /api/ai/conversations ï¿½ List user conversations. | `API/Controllers/AiChatController.cs` |
+| `GetConversation(conversationId, ct)` | GET /api/ai/conversations/{id} ï¿½ Get conversation history. | `API/Controllers/AiChatController.cs` |
 | `GetCurrentUserId()` | Extracts user ID from NameIdentifier JWT claim. | `API/Controllers/AiChatController.cs` |
 | `GetDepartmentId()` | Extracts optional departmentId from JWT claim. | `API/Controllers/AiChatController.cs` |
 
 ### AnalyticsController (API/Controllers/AnalyticsController.cs)
 | Function | Description | File |
 |---|---|---|
-| `GetPerformance(departmentId, ct)` | GET /api/analytics/performance — Faculty+ scoped. | `API/Controllers/AnalyticsController.cs` |
-| `GetAttendance(departmentId, ct)` | GET /api/analytics/attendance — Faculty+ scoped. | `API/Controllers/AnalyticsController.cs` |
-| `GetAssignmentStats(departmentId, ct)` | GET /api/analytics/assignments — Faculty+ scoped. | `API/Controllers/AnalyticsController.cs` |
-| `GetQuizStats(departmentId, ct)` | GET /api/analytics/quizzes — Faculty+ scoped. | `API/Controllers/AnalyticsController.cs` |
-| `ExportPerformancePdf(departmentId, ct)` | GET /api/analytics/performance/export/pdf — Admin+ only. | `API/Controllers/AnalyticsController.cs` |
-| `ExportPerformanceExcel(departmentId, ct)` | GET /api/analytics/performance/export/excel — Admin+ only. | `API/Controllers/AnalyticsController.cs` |
-| `ExportAttendancePdf(departmentId, ct)` | GET /api/analytics/attendance/export/pdf — Admin+ only. | `API/Controllers/AnalyticsController.cs` |
-| `ExportAttendanceExcelAsync(departmentId, ct)` | GET /api/analytics/attendance/export/excel — Admin+ only. | `API/Controllers/AnalyticsController.cs` |
+| `GetPerformance(departmentId, ct)` | GET /api/analytics/performance ï¿½ Faculty+ scoped. | `API/Controllers/AnalyticsController.cs` |
+| `GetAttendance(departmentId, ct)` | GET /api/analytics/attendance ï¿½ Faculty+ scoped. | `API/Controllers/AnalyticsController.cs` |
+| `GetAssignmentStats(departmentId, ct)` | GET /api/analytics/assignments ï¿½ Faculty+ scoped. | `API/Controllers/AnalyticsController.cs` |
+| `GetQuizStats(departmentId, ct)` | GET /api/analytics/quizzes ï¿½ Faculty+ scoped. | `API/Controllers/AnalyticsController.cs` |
+| `ExportPerformancePdf(departmentId, ct)` | GET /api/analytics/performance/export/pdf ï¿½ Admin+ only. | `API/Controllers/AnalyticsController.cs` |
+| `ExportPerformanceExcel(departmentId, ct)` | GET /api/analytics/performance/export/excel ï¿½ Admin+ only. | `API/Controllers/AnalyticsController.cs` |
+| `ExportAttendancePdf(departmentId, ct)` | GET /api/analytics/attendance/export/pdf ï¿½ Admin+ only. | `API/Controllers/AnalyticsController.cs` |
+| `ExportAttendanceExcelAsync(departmentId, ct)` | GET /api/analytics/attendance/export/excel ï¿½ Admin+ only. | `API/Controllers/AnalyticsController.cs` |
 | `ResolveEffectiveDepartment(requested)` | Scopes Faculty to own dept; Admin/SuperAdmin see all. | `API/Controllers/AnalyticsController.cs` |
 
 ### SecurityHeadersMiddleware (API/Middleware/SecurityHeadersMiddleware.cs)
@@ -1273,7 +1273,7 @@
 
 ## Phase 7: Tabsan-Lic + License Import
 
-### Tabsan.Lic — KeyService (tools/Tabsan.Lic/Services/KeyService.cs)
+### Tabsan.Lic ï¿½ KeyService (tools/Tabsan.Lic/Services/KeyService.cs)
 | Function | Description | File |
 |---|---|---|
 | `GenerateAsync(expiry, label)` | Generates a random VerificationKey, stores SHA-256 hash in SQLite, returns (record, rawToken). | `tools/Tabsan.Lic/Services/KeyService.cs` |
@@ -1285,12 +1285,12 @@
 | `GenerateRawToken()` | Generates 32-byte cryptographically random base64url token. | `tools/Tabsan.Lic/Services/KeyService.cs` |
 | `HashToken(token)` | Returns lowercase hex SHA-256 hash of a raw token string. | `tools/Tabsan.Lic/Services/KeyService.cs` |
 
-### Tabsan.Lic — LicenseBuilder (tools/Tabsan.Lic/Services/LicenseBuilder.cs)
+### Tabsan.Lic ï¿½ LicenseBuilder (tools/Tabsan.Lic/Services/LicenseBuilder.cs)
 | Function | Description | File |
 |---|---|---|
 | `BuildAsync(key, outputPath)` | Serialises payload JSON, AES-256 encrypts, RSA signs, writes .tablic binary file. | `tools/Tabsan.Lic/Services/LicenseBuilder.cs` |
 
-### Tabsan.Lic — LicCrypto (tools/Tabsan.Lic/Crypto/LicCrypto.cs)
+### Tabsan.Lic ï¿½ LicCrypto (tools/Tabsan.Lic/Crypto/LicCrypto.cs)
 | Function | Description | File |
 |---|---|---|
 | `EncryptAes(plaintext)` | AES-256-CBC encrypt with random IV; returns (ciphertext, iv). | `tools/Tabsan.Lic/Crypto/LicCrypto.cs` |
@@ -1317,3 +1317,149 @@
 |---|---|---|
 | `ExecuteAsync(stoppingToken)` | Main loop: runs daily after 60s startup delay. | `BackgroundJobs/LicenseExpiryWarningJob.cs` |
 | `RunCheckAsync(ct)` | Checks LicenseState.ExpiresAt; sends System notification to Admin/SuperAdmin if within 5 days. | `BackgroundJobs/LicenseExpiryWarningJob.cs` |
+
+---
+
+## Phase 8: Student Lifecycle & Academic Operations
+
+### IStudentLifecycleRepository / StudentLifecycleRepository (Infrastructure/Repositories/StudentLifecycleRepository.cs)
+| Function | Description | File |
+|---|---|---|
+| `GetFinalSemesterStudentsByDepartmentAsync(departmentId, ct)` | Returns Active students in a department who are in their final semester (eligible for graduation). | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `GetStudentsByStatusAsync(departmentId, status, ct)` | Returns students filtered by lifecycle status (Active / Inactive / Graduated) within a department. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `GetActiveStudentsBySemesterAsync(departmentId, semesterNumber, ct)` | Returns Active students currently in the given semester number within a department. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `GetByIdAsync(studentProfileId, ct)` | Returns a StudentProfile with Program and Department loaded. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `UpdateAsync(student, ct)` | Persists changes to a StudentProfile and saves immediately. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `GetPendingChangeRequestsAsync(ct)` | Returns all AdminChangeRequests in Pending status. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `GetPendingChangeRequestsByUserAsync(userId, ct)` | Returns pending AdminChangeRequests for a specific requestor. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `GetChangeRequestByIdAsync(requestId, ct)` | Returns an AdminChangeRequest with related users loaded. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `GetAllChangeRequestsByUserAsync(userId, ct)` | Returns all change requests (all statuses) for a user. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `AddChangeRequestAsync(request, ct)` | Creates a new AdminChangeRequest. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `UpdateChangeRequestAsync(request, ct)` | Persists state changes on an AdminChangeRequest. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `GetPendingModificationRequestsAsync(ct)` | Returns all TeacherModificationRequests in Pending status. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `GetPendingModificationRequestsByTeacherAsync(teacherUserId, ct)` | Returns pending modification requests for a specific teacher. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `GetModificationRequestByIdAsync(requestId, ct)` | Returns a TeacherModificationRequest with related users loaded. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `GetAllModificationRequestsByTeacherAsync(teacherUserId, ct)` | Returns all modification requests (all statuses) for a teacher. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `AddModificationRequestAsync(request, ct)` | Creates a new TeacherModificationRequest. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `UpdateModificationRequestAsync(request, ct)` | Persists state changes on a TeacherModificationRequest. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `GetActiveReceiptsByStudentAsync(studentProfileId, ct)` | Returns non-cancelled PaymentReceipts for a student. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `GetAllReceiptsByStudentAsync(studentProfileId, ct)` | Returns all PaymentReceipts (including cancelled) for a student. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `GetReceiptByIdAsync(receiptId, ct)` | Returns a PaymentReceipt with navigation data loaded. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `GetUnpaidReceiptsByStudentAsync(studentProfileId, ct)` | Returns Pending or Submitted receipts for a student. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `GetAllUnpaidReceiptsAsync(ct)` | Returns all unpaid receipts across all students (Finance admin view). | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `AddReceiptAsync(receipt, ct)` | Creates a new PaymentReceipt. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `UpdateReceiptAsync(receipt, ct)` | Persists state changes on a PaymentReceipt. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `SaveChangesAsync(ct)` | Commits pending EF changes within the unit of work. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+
+### IStudentLifecycleService / StudentLifecycleService (Application/Services/StudentLifecycleService.cs)
+| Function | Description | File |
+|---|---|---|
+| `GetGraduationCandidatesByDepartmentAsync(departmentId, ct)` | Returns GraduationSummaryDto list for all final-semester Active students in a department. | `Application/Services/StudentLifecycleService.cs` |
+| `GraduateStudentAsync(studentProfileId, ct)` | Sets student status to Graduated, sets GraduatedDate to UTC now. | `Application/Services/StudentLifecycleService.cs` |
+| `GraduateStudentsBatchAsync(studentProfileIds, ct)` | Graduates a list of students in sequence. | `Application/Services/StudentLifecycleService.cs` |
+| `GetStudentsBySemesterAsync(departmentId, semesterNumber, ct)` | Returns SemesterPromotionSummaryDto list for Active students in a specific semester. | `Application/Services/StudentLifecycleService.cs` |
+| `PromoteStudentAsync(studentProfileId, ct)` | Advances a single Active student to the next semester (increments CurrentSemesterNumber). | `Application/Services/StudentLifecycleService.cs` |
+| `PromoteStudentsBatchAsync(studentProfileIds, ct)` | Promotes multiple students; returns PromotionBatchResultDto with promoted count and errors. | `Application/Services/StudentLifecycleService.cs` |
+| `DeactivateStudentAsync(studentProfileId, ct)` | Sets student status to Inactive (dropout / leave). | `Application/Services/StudentLifecycleService.cs` |
+| `ReactivateStudentAsync(studentProfileId, ct)` | Restores an Inactive student to Active status. | `Application/Services/StudentLifecycleService.cs` |
+| `CreateChangeRequestAsync(requestorUserId, cmd, ct)` | Creates an AdminChangeRequest from a student or faculty member. | `Application/Services/StudentLifecycleService.cs` |
+| `GetPendingChangeRequestsAsync(ct)` | Returns all pending AdminChangeRequests for admin review. | `Application/Services/StudentLifecycleService.cs` |
+| `GetChangeRequestsByUserAsync(userId, ct)` | Returns all change requests (all statuses) for a user. | `Application/Services/StudentLifecycleService.cs` |
+| `GetChangeRequestByIdAsync(requestId, ct)` | Returns a single AdminChangeRequestDto by ID. | `Application/Services/StudentLifecycleService.cs` |
+| `ApproveChangeRequestAsync(requestId, adminUserId, notes, ct)` | Admin approves an AdminChangeRequest; records reviewer and timestamp. | `Application/Services/StudentLifecycleService.cs` |
+| `RejectChangeRequestAsync(requestId, adminUserId, notes, ct)` | Admin rejects an AdminChangeRequest. | `Application/Services/StudentLifecycleService.cs` |
+| `CreateModificationRequestAsync(teacherUserId, cmd, ct)` | Teacher creates a TeacherModificationRequest for an attendance or result record. | `Application/Services/StudentLifecycleService.cs` |
+| `GetPendingModificationRequestsAsync(ct)` | Returns all pending TeacherModificationRequests for admin review. | `Application/Services/StudentLifecycleService.cs` |
+| `GetModificationRequestsByTeacherAsync(teacherUserId, ct)` | Returns all modification requests for a specific teacher. | `Application/Services/StudentLifecycleService.cs` |
+| `GetModificationRequestByIdAsync(requestId, ct)` | Returns a single TeacherModificationRequestDto by ID. | `Application/Services/StudentLifecycleService.cs` |
+| `ApproveModificationRequestAsync(requestId, adminUserId, notes, ct)` | Admin approves a TeacherModificationRequest. | `Application/Services/StudentLifecycleService.cs` |
+| `RejectModificationRequestAsync(requestId, adminUserId, notes, ct)` | Admin rejects a TeacherModificationRequest. | `Application/Services/StudentLifecycleService.cs` |
+| `CreatePaymentReceiptAsync(financeUserId, cmd, ct)` | Finance creates a PaymentReceipt for a student with amount and due date. | `Application/Services/StudentLifecycleService.cs` |
+| `GetActiveReceiptsByStudentAsync(studentProfileId, ct)` | Returns active (non-cancelled) receipts for a student. | `Application/Services/StudentLifecycleService.cs` |
+| `GetStudentFeeStatusAsync(studentProfileId, ct)` | Returns StudentFeeStatusDto with paid/unpaid summary totals. | `Application/Services/StudentLifecycleService.cs` |
+| `GetPaymentReceiptByIdAsync(receiptId, ct)` | Returns a single PaymentReceiptDto by ID. | `Application/Services/StudentLifecycleService.cs` |
+| `SubmitPaymentProofAsync(receiptId, proofPath, ct)` | Records proof of payment file path; moves receipt to Submitted status. | `Application/Services/StudentLifecycleService.cs` |
+| `ConfirmPaymentAsync(receiptId, financeUserId, notes, ct)` | Finance confirms payment; moves receipt to Paid (final state). | `Application/Services/StudentLifecycleService.cs` |
+| `CancelReceiptAsync(receiptId, financeUserId, reason, ct)` | Finance cancels a receipt. Record is permanently preserved for audit. | `Application/Services/StudentLifecycleService.cs` |
+
+### IAccountSecurityService / AccountSecurityService (Application/Services/AccountSecurityService.cs)
+| Function | Description | File |
+|---|---|---|
+| `GetLockoutStatusAsync(userId, ct)` | Returns AccountLockoutStatusDto for a user (username, failed attempts, lockout state). | `Application/Services/AccountSecurityService.cs` |
+| `UnlockAccountAsync(targetUserId, adminUserId, ct)` | Admin unlocks a non-admin account and resets failed login counter. | `Application/Services/AccountSecurityService.cs` |
+| `ResetPasswordAsync(request, adminUserId, ct)` | Admin resets password for a non-admin account; also unlocks if locked. | `Application/Services/AccountSecurityService.cs` |
+| `GetLockedAccountsAsync(ct)` | Returns all currently locked-out non-admin accounts. | `Application/Services/AccountSecurityService.cs` |
+
+### ICsvRegistrationImportService / CsvRegistrationImportService (Application/Services/CsvRegistrationImportService.cs)
+| Function | Description | File |
+|---|---|---|
+| `ImportFromCsvAsync(csvStream, ct)` | Parses CSV (header: RegistrationNumber,DepartmentId,ProgramId), validates rows, detects duplicates, batch-inserts valid entries into whitelist. Returns CsvImportResult. | `Application/Services/CsvRegistrationImportService.cs` |
+| `AddSingleAsync(registrationNumber, departmentId, programId, ct)` | Adds a single registration number to the whitelist. Returns false if already exists. | `Application/Services/CsvRegistrationImportService.cs` |
+
+### StudentLifecycleController (API/Controllers/StudentLifecycleController.cs)
+| Endpoint | Method | Description |
+|---|---|---|
+| `GET /api/v1/student-lifecycle/graduation-candidates/{departmentId}` | GetGraduationCandidates | Returns final-semester Active students eligible for graduation. |
+| `POST /api/v1/student-lifecycle/graduate` | GraduateStudent | Marks a single student as Graduated. |
+| `POST /api/v1/student-lifecycle/graduate/batch` | GraduateStudentsBatch | Graduates multiple students in one request. |
+| `POST /api/v1/student-lifecycle/{id}/deactivate` | Deactivate | Marks a student Inactive (dropout/leave). |
+| `POST /api/v1/student-lifecycle/{id}/reactivate` | Reactivate | Re-activates an Inactive student account. |
+| `GET /api/v1/student-lifecycle/semester-students/{departmentId}/{semesterNumber}` | GetStudentsBySemester | Returns Active students in a given semester. |
+| `POST /api/v1/student-lifecycle/{id}/promote` | PromoteStudent | Advances a student to the next semester. |
+| `POST /api/v1/student-lifecycle/promote/batch` | PromoteStudentsBatch | Promotes multiple students; returns result with errors. |
+
+### AdminChangeRequestController (API/Controllers/AdminChangeRequestController.cs)
+| Endpoint | Method | Description |
+|---|---|---|
+| `POST /api/v1/change-requests` | Create | Student or Faculty submits a change request. |
+| `GET /api/v1/change-requests/pending` | GetPending | Admin views all pending change requests. |
+| `GET /api/v1/change-requests/my` | GetMine | Authenticated user views their own requests. |
+| `GET /api/v1/change-requests/{id}` | GetById | Returns a specific change request by ID. |
+| `POST /api/v1/change-requests/{id}/approve` | Approve | Admin approves a change request. |
+| `POST /api/v1/change-requests/{id}/reject` | Reject | Admin rejects a change request. |
+
+### TeacherModificationController (API/Controllers/TeacherModificationController.cs)
+| Endpoint | Method | Description |
+|---|---|---|
+| `POST /api/v1/modification-requests` | Create | Faculty creates a modification request for attendance or result. |
+| `GET /api/v1/modification-requests/pending` | GetPending | Admin views all pending modification requests. |
+| `GET /api/v1/modification-requests/my` | GetMine | Teacher views their own requests. |
+| `GET /api/v1/modification-requests/{id}` | GetById | Returns a specific modification request. |
+| `POST /api/v1/modification-requests/{id}/approve` | Approve | Admin approves a modification request. |
+| `POST /api/v1/modification-requests/{id}/reject` | Reject | Admin rejects a modification request. |
+
+### PaymentReceiptController (API/Controllers/PaymentReceiptController.cs)
+| Endpoint | Method | Description |
+|---|---|---|
+| `POST /api/v1/payments` | Create | Finance creates a payment receipt for a student. |
+| `GET /api/v1/payments/student/{studentProfileId}` | GetByStudent | Finance views all active receipts for a student. |
+| `GET /api/v1/payments/my/{studentProfileId}` | GetMine | Student views their own active receipts. |
+| `GET /api/v1/payments/student/{studentProfileId}/fee-status` | GetFeeStatus | Returns full fee status (paid + unpaid totals). |
+| `GET /api/v1/payments/{id}` | GetById | Returns a specific receipt by ID. |
+| `POST /api/v1/payments/{id}/submit-proof` | SubmitProof | Student uploads payment proof (PDF/JPG/PNG). |
+| `POST /api/v1/payments/{id}/confirm` | ConfirmPayment | Finance confirms payment received. |
+| `POST /api/v1/payments/{id}/cancel` | Cancel | Finance cancels a receipt. |
+
+### RegistrationImportController (API/Controllers/RegistrationImportController.cs)
+| Endpoint | Method | Description |
+|---|---|---|
+| `POST /api/v1/registration-import/csv` | ImportCsv | Admin uploads CSV file to bulk-import registration numbers into whitelist. |
+| `POST /api/v1/registration-import/single` | AddSingle | Admin adds a single registration number to the whitelist. |
+
+### AccountSecurityController (API/Controllers/AccountSecurityController.cs)
+| Endpoint | Method | Description |
+|---|---|---|
+| `GET /api/v1/account-security/locked` | GetLockedAccounts | Admin lists all currently locked-out accounts. |
+| `GET /api/v1/account-security/{userId}/status` | GetStatus | Admin views lockout status for a specific user. |
+| `POST /api/v1/account-security/{userId}/unlock` | Unlock | Admin unlocks a locked-out account and resets failed attempt counter. |
+| `POST /api/v1/account-security/{userId}/reset-password` | ResetPassword | Admin resets a non-admin account password; also unlocks if locked. |
+
+### UserRepository â€” Phase 8 additions (Infrastructure/Repositories/UserRepository.cs)
+| Function | Description | File |
+|---|---|---|
+| `GetLockedAccountsAsync(ct)` | Returns all non-admin user accounts that are currently locked out. | `Infrastructure/Repositories/UserRepository.cs` |
+
+### AuthService â€” Phase 8 update (Application/Auth/AuthService.cs)
+| Function | Description | File |
+|---|---|---|
+| `LoginAsync(request, ipAddress, ct)` | Updated: checks `IsCurrentlyLockedOut()` before password verify; calls `RecordFailedLoginAttempt()` on bad password. | `Application/Auth/AuthService.cs` |

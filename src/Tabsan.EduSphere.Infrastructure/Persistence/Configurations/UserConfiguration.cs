@@ -31,6 +31,23 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.RowVersion)
                .IsRowVersion();
 
+        // Account lockout fields
+        builder.Property(u => u.FailedLoginAttempts)
+               .IsRequired()
+               .HasDefaultValue(0);
+
+        builder.Property(u => u.IsLockedOut)
+               .IsRequired()
+               .HasDefaultValue(false);
+
+        builder.Property(u => u.LockedOutUntil)
+               .IsRequired(false);
+
+        // Filtered index on locked accounts — fast admin queries for locked users.
+        builder.HasIndex(u => u.IsLockedOut)
+               .HasFilter("[is_locked_out] = 1")
+               .HasDatabaseName("IX_users_is_locked_out");
+
         // Unique index on username — login lookups always go through this index.
         builder.HasIndex(u => u.Username)
                .IsUnique()

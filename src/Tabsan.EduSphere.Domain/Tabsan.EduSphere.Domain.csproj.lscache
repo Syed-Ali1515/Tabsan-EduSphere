@@ -74,6 +74,11 @@ Auditing/AuditLog.cs
 Common/
  AuditableEntity.cs
  BaseEntity.cs
+Enums/
+ ChangeRequestStatus.cs
+ ModificationRequest.cs
+ PaymentReceiptStatus.cs
+ StudentStatus.cs
 Fyp/FypProject.cs
 Identity/
  Role.cs
@@ -97,6 +102,7 @@ Interfaces/
  IRegistrationWhitelistRepository.cs
  IResultRepository.cs
  ISemesterRepository.cs
+ IStudentLifecycleRepository.cs
  IStudentProfileRepository.cs
  IUserRepository.cs
 Licensing/
@@ -116,6 +122,10 @@ obj/Debug/net8.0/
 Quizzes/
  Quiz.cs
  QuizAttempt.cs
+StudentLifecycle/
+ AdminChangeRequest.cs
+ PaymentReceipt.cs
+ TeacherModificationRequest.cs
 
 [metadataReferences]
 <DOTNET>/packs/Microsoft.NETCore.App.Ref/8.0.26/ref/net8.0/

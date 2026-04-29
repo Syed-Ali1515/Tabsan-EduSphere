@@ -87,6 +87,7 @@ Persistence/
  ApplicationDbContext.cs
  Configurations/
   AcademicConfigurations.cs
+  AdminChangeRequestConfiguration.cs
   AiChatConfigurations.cs
   AssignmentConfigurations.cs
   AttendanceConfigurations.cs
@@ -97,12 +98,19 @@ Persistence/
   LicenseStateConfiguration.cs
   ModuleConfiguration.cs
   NotificationConfigurations.cs
+  PaymentReceiptConfiguration.cs
   QuizConfigurations.cs
   RoleConfiguration.cs
   StudentAcademicConfigurations.cs
+  TeacherModificationRequestConfiguration.cs
   UserConfiguration.cs
   UserSessionConfiguration.cs
  DatabaseSeeder.cs
+ Migrations/
+  20260429043652_StudentLifecycle.cs
+  20260429043652_StudentLifecycle.Designer.cs
+  20260429045706_AccountLockout.cs
+  20260429045706_AccountLockout.Designer.cs
 Repositories/
  AcademicRepositories.cs
  AcademicSupportRepositories.cs
@@ -114,6 +122,7 @@ Repositories/
  ModuleRepository.cs
  NotificationAttendanceRepositories.cs
  QuizFypRepositories.cs
+ StudentLifecycleRepository.cs
  UserRepository.cs
  UserSessionRepository.cs
 

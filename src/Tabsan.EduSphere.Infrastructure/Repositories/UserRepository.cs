@@ -37,6 +37,16 @@ public class UserRepository : IUserRepository
     public Task<bool> UsernameExistsAsync(string username, CancellationToken ct = default)
         => _db.Users.AnyAsync(u => u.Username.ToLower() == username.ToLower(), ct);
 
+    /// <summary>
+    /// Returns all non-admin accounts that are currently locked out.
+    /// Excludes Admin and SuperAdmin roles (those cannot be locked via automated policy).
+    /// </summary>
+    public async Task<IList<User>> GetLockedAccountsAsync(CancellationToken ct = default)
+        => await _db.Users
+            .Include(u => u.Role)
+            .Where(u => u.IsLockedOut && u.Role.Name != "Admin" && u.Role.Name != "SuperAdmin")
+            .ToListAsync(ct);
+
     /// <summary>Queues the new user entity for insertion on the next SaveChanges call.</summary>
     public async Task AddAsync(User user, CancellationToken ct = default)
         => await _db.Users.AddAsync(user, ct);

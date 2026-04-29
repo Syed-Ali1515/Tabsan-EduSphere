@@ -10,6 +10,7 @@ using Tabsan.EduSphere.Domain.Licensing;
 using Tabsan.EduSphere.Domain.Modules;
 using Tabsan.EduSphere.Domain.Notifications;
 using Tabsan.EduSphere.Domain.Quizzes;
+using Tabsan.EduSphere.Domain.StudentLifecycle;
 
 namespace Tabsan.EduSphere.Infrastructure.Persistence;
 
@@ -136,6 +137,16 @@ public class ApplicationDbContext : DbContext
 
     /// <summary>Individual message turns (user and assistant) within a chat conversation.</summary>
     public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
+
+    // ── Phase 8: Student Lifecycle ─────────────────────────────────────────────────
+    /// <summary>Requests from students/teachers to modify their profile information.</summary>
+    public DbSet<AdminChangeRequest> AdminChangeRequests => Set<AdminChangeRequest>();
+
+    /// <summary>Requests from teachers to modify attendance or result records.</summary>
+    public DbSet<TeacherModificationRequest> TeacherModificationRequests => Set<TeacherModificationRequest>();
+
+    /// <summary>Payment receipts issued to students for fee collection.</summary>
+    public DbSet<PaymentReceipt> PaymentReceipts => Set<PaymentReceipt>();
 
     /// <summary>
     /// Scans the current assembly for all IEntityTypeConfiguration implementations

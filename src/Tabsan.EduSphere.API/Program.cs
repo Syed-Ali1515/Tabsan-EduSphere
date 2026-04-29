@@ -27,6 +27,7 @@ using Tabsan.EduSphere.Infrastructure.Licensing;
 using Tabsan.EduSphere.Infrastructure.Modules;
 using Tabsan.EduSphere.Infrastructure.Persistence;
 using Tabsan.EduSphere.Infrastructure.Repositories;
+using Tabsan.EduSphere.Application.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -132,6 +133,12 @@ builder.Services.AddHttpClient<ILlmClient, OpenAiLlmClient>((sp, client) =>
     if (!string.IsNullOrWhiteSpace(apiKey))
         client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
 });
+
+// ── Phase 8: Student Lifecycle & Account Security ───────────────────────
+builder.Services.AddScoped<IStudentLifecycleRepository, StudentLifecycleRepository>();
+builder.Services.AddScoped<IStudentLifecycleService, StudentLifecycleService>();
+builder.Services.AddScoped<IAccountSecurityService, AccountSecurityService>();
+builder.Services.AddScoped<ICsvRegistrationImportService, CsvRegistrationImportService>();
 
 // ── Rate limiting (OWASP hardening) ─────────────────────────────────────
 builder.Services.AddRateLimiter(opts =>

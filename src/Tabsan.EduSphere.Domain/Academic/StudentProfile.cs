@@ -1,4 +1,5 @@
 using Tabsan.EduSphere.Domain.Common;
+using Tabsan.EduSphere.Domain.Enums;
 
 namespace Tabsan.EduSphere.Domain.Academic;
 
@@ -39,6 +40,12 @@ public class StudentProfile : AuditableEntity
     /// <summary>Current semester number the student is in (1-based).</summary>
     public int CurrentSemesterNumber { get; private set; } = 1;
 
+    /// <summary>Current lifecycle status: Active, Inactive, or Graduated.</summary>
+    public StudentStatus Status { get; private set; } = StudentStatus.Active;
+
+    /// <summary>UTC date when the student was formally graduated. Only set when Status = Graduated.</summary>
+    public DateTime? GraduatedDate { get; private set; }
+
     private StudentProfile() { }
 
     public StudentProfile(Guid userId, string registrationNumber, Guid programId, Guid departmentId, DateTime admissionDate)
@@ -66,6 +73,28 @@ public class StudentProfile : AuditableEntity
     public void AdvanceSemester()
     {
         CurrentSemesterNumber++;
+        Touch();
+    }
+
+    /// <summary>Marks the student as Graduated with the current UTC date.</summary>
+    public void Graduate()
+    {
+        Status = StudentStatus.Graduated;
+        GraduatedDate = DateTime.UtcNow;
+        Touch();
+    }
+
+    /// <summary>Marks the student as Inactive (dropout, leave of absence, etc.). Student will be blocked from login.</summary>
+    public void Deactivate()
+    {
+        Status = StudentStatus.Inactive;
+        Touch();
+    }
+
+    /// <summary>Marks the student as Active (re-activates an inactive account).</summary>
+    public void Reactivate()
+    {
+        Status = StudentStatus.Active;
         Touch();
     }
 }

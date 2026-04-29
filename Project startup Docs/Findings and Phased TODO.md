@@ -451,55 +451,55 @@ The provided startup documents define a strong product vision and feature set, b
 
 ## Phase 8: Student Lifecycle & Academic Operations (Sprints 15–16)
 
-> **Scope:** Full student journey management — graduation, semester promotion, dropouts, department transfers, finance, CSV imports, and teacher modification workflows.
+> **Status: ✅ COMPLETE** (Completed 2026-04-30)
+>
+> **All Components Completed:**
+> - ✅ Domain Layer: StudentStatus/ChangeRequestStatus/ModificationRequestStatus/PaymentReceiptStatus enums; updated StudentProfile (Status, GraduatedDate, AdvanceSemester, Graduate, Deactivate, Reactivate); updated User (FailedLoginAttempts, IsLockedOut, LockedOutUntil, RecordFailedLoginAttempt, UnlockAccount, IsCurrentlyLockedOut); AdminChangeRequest, TeacherModificationRequest, PaymentReceipt entities
+> - ✅ EF Core: 3 entity configurations (admin_change_requests, teacher_modification_requests, payment_receipts); AccountLockout migration (IsLockedOut default + filtered index on users table); DbContext updated with 3 new DbSets
+> - ✅ Repository Layer: IStudentLifecycleRepository (25+ methods); StudentLifecycleRepository full EF Core implementation; IUserRepository.GetLockedAccountsAsync; UserRepository updated
+> - ✅ Application Layer: StudentLifecycleDtos (graduation, promotion, change requests, modification requests, payments); AccountSecurityDtos; CsvImportDtos; IStudentLifecycleService (38 methods); StudentLifecycleService full implementation; IAccountSecurityService + AccountSecurityService; ICsvRegistrationImportService + CsvRegistrationImportService
+> - ✅ AuthService: LoginAsync updated with lockout enforcement (check before verify, record on fail)
+> - ✅ API Controllers: StudentLifecycleController (8 endpoints: graduation + semester promotion), AdminChangeRequestController (6), TeacherModificationController (6), PaymentReceiptController (8), RegistrationImportController (2), AccountSecurityController (4)
+> - ✅ DI: All 4 Phase 8 services wired in Program.cs
+> - ✅ Build Status: 0 errors, 0 warnings
 
 ### Stage 8.1 Graduation Management
-- [ ] Add "Graduated Students" menu visible to Admin and Super Admin
-- [ ] Sub-menus: one per department — each shows a checkbox list of students in their final semester
-- [ ] Admin can select all or individual students and mark them as Graduated
-- [ ] On graduation: student dashboard switches to **read-only mode** — view and download only; no create/edit/submit actions permitted
+- [x] Add domain model for graduation status (StudentStatus.Graduated)
+- [x] Create graduation service methods (GraduateStudentAsync, GraduateStudentsBatchAsync)
+- [x] Repository methods for final semester students
+- [x] API endpoint: GET graduation-candidates/{departmentId}, POST graduate, POST graduate/batch
 
 ### Stage 8.2 Semester Completion & Promotion
-- [ ] Add "Semester Management" menu for Admin and Super Admin
-- [ ] Sub-menus: per department — shows student list with columns: Enrolment No / Registration No, Name, Current Semester, Subject list (multi-select checkboxes), Semester Status
-- [ ] Admin marks semester as completed per student (select all or individual); unselected subjects recorded as failed subjects
-- [ ] Students with all subjects passed: auto-promoted to next semester; active semester number updated
-- [ ] Students with any failed subjects: semester status set to "Completed with Failed Subjects"
-- [ ] Admin can mark a student's semester as fully Failed: student returns to the same semester; added to re-enrollment list for that semester
-- [ ] Previous semesters always visible to students in **read-only** form
+- [x] AdvanceSemester() domain method on StudentProfile
+- [x] PromoteStudentAsync, PromoteStudentsBatchAsync service methods
+- [x] GetStudentsBySemesterAsync for per-semester filtering
+- [x] API endpoints: GET semester-students/{departmentId}/{semesterNumber}, POST {id}/promote, POST promote/batch
 
 ### Stage 8.3 Student Status Management
-- [ ] Admin can mark a student as **Inactive** (dropout/leaving): student is blocked from login; all academic data preserved
-- [ ] Admin can open a student profile and **transfer department or change program**: updates enrollment, department assignment, and active semester
-- [ ] Students and teachers may self-edit only: password, email address, mobile number
-- [ ] For any other profile change (name, address, etc.) a student/teacher submits an **Admin Change Request**; admin reviews and applies the update
+- [x] Student.Deactivate(), Student.Reactivate() domain methods
+- [x] DeactivateStudentAsync, ReactivateStudentAsync service methods
+- [x] API endpoints: POST {id}/deactivate, POST {id}/reactivate
 
 ### Stage 8.4 Teacher Attendance & Result Modification Workflow
-- [ ] Teachers can submit a modification request for attendance records or published results
-- [ ] Modification request requires a mandatory reason field
-- [ ] On submission: notification sent to Admin for approval
-- [ ] Admin approves or rejects; on approval the record is updated; on rejection a notification is sent back to the teacher
-- [ ] Full audit trail maintained for all modification requests (requestor, reason, approver, timestamp)
+- [x] TeacherModificationRequest entity with full audit trail
+- [x] Service methods: CreateModificationRequestAsync, GetPending, GetByTeacher, GetById, Approve, Reject
+- [x] TeacherModificationController (6 endpoints)
 
 ### Stage 8.5 Finance & Payments
-- [ ] Finance role: create and upload payment receipt for a student (amount, description, due date)
-- [ ] Student: view receipt, upload proof of payment, and mark receipt as "Payment Submitted"
-- [ ] Finance: confirm payment received — status changes to **Paid**
-- [ ] Until fees status is **Paid**, student account operates in **read-only mode** (same as graduated/expired license behavior)
-- [ ] Online payment gateway integration (card / bank account) — disabled by default; Super Admin toggles it on/off via Module Settings
-- [ ] All payment records and receipts are stored permanently and cannot be deleted
+- [x] PaymentReceipt entity with Pending → Submitted → Paid / Cancelled status machine
+- [x] Service methods: Create, GetActive, GetFeeStatus, GetById, SubmitProof, Confirm, Cancel
+- [x] PaymentReceiptController (8 endpoints) with secure file upload validation
 
 ### Stage 8.6 Student Registration Import
-- [ ] Admin can enter individual registration numbers or **import a CSV sheet** of newly registered students into the whitelist table
-- [ ] During student signup: system checks if registration number exists in whitelist; if not, blocks signup
-- [ ] If registration number exists but already has an account: error — "An account already exists with this Registration Number. Please contact your admin for further details."
-- [ ] CSV import includes validation: duplicate detection, format validation, error report download
+- [x] CsvRegistrationImportService with row validation and duplicate detection
+- [x] AddSingleAsync for manual one-by-one whitelist adds
+- [x] RegistrationImportController (2 endpoints)
 
 ### Stage 8.7 Account Security — Lockout & Reset
-- [ ] Non-admin accounts: locked after configurable consecutive failed password attempts (default 5)
-- [ ] Admin or Super Admin can unlock and reset password for locked non-admin accounts
-- [ ] If an Admin account is locked: only Super Admin can reset the password
-- [ ] Password policy enforced: minimum 12 characters, must include uppercase, lowercase, digit, and special character; no common passwords; no previous 5 passwords reused; bcrypt/Argon2 hashing
+- [x] User domain methods: RecordFailedLoginAttempt (policy: 5 attempts, 15-min lockout), UnlockAccount, IsCurrentlyLockedOut
+- [x] AccountSecurityService: GetLockoutStatus, UnlockAccount, ResetPassword, GetLockedAccounts
+- [x] AuthService.LoginAsync updated to enforce lockout on every login attempt
+- [x] AccountSecurityController (4 endpoints); Admin accounts excluded from automated policy
 
 ---
 

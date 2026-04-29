@@ -64,21 +64,26 @@ Attendance/AttendanceService.cs
 Auth/AuthService.cs
 DTOs/
  Academic/AcademicDtos.cs
+ AccountSecurityDtos.cs
  AiChat/AiChatDtos.cs
  Analytics/AnalyticsDtos.cs
  Assignments/AssignmentDtos.cs
  Attendance/AttendanceDtos.cs
  Auth/AuthDtos.cs
+ CsvImportDtos.cs
  Fyp/FypDtos.cs
  Notifications/NotificationDtos.cs
  Quizzes/QuizDtos.cs
+ StudentLifecycleDtos.cs
 Fyp/FypService.cs
 Interfaces/
+ IAccountSecurityService.cs
  IAiChatService.cs
  IAnalyticsService.cs
  IAssignmentService.cs
  IAttendanceService.cs
  IAuthService.cs
+ ICsvRegistrationImportService.cs
  IEnrollmentService.cs
  IFypService.cs
  ILlmClient.cs
@@ -88,6 +93,7 @@ Interfaces/
  IPasswordHasher.cs
  IQuizService.cs
  IResultService.cs
+ IStudentLifecycleService.cs
  IStudentRegistrationService.cs
  ITokenService.cs
  IUserSessionRepository.cs
@@ -98,6 +104,10 @@ obj/Debug/net8.0/
  Tabsan.EduSphere.Application.AssemblyInfo.cs
  Tabsan.EduSphere.Application.GlobalUsings.g.cs
 Quizzes/QuizService.cs
+Services/
+ AccountSecurityService.cs
+ CsvRegistrationImportService.cs
+ StudentLifecycleService.cs
 
 [metadataReferences]
 ../Tabsan.EduSphere.Domain/obj/Debug/net8.0/ref/Tabsan.EduSphere.Domain.dll

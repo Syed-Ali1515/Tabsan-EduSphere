@@ -47,8 +47,18 @@ public class AuthService : IAuthService
         if (user is null || !user.IsActive)
             return null;
 
-        if (!_passwordHasher.Verify(user.PasswordHash, request.Password))
+        // Check lockout before password verification
+        if (user.IsCurrentlyLockedOut())
             return null;
+
+        if (!_passwordHasher.Verify(user.PasswordHash, request.Password))
+        {
+            // Record failed attempt — locks the account after 5 consecutive failures for 15 minutes
+            user.RecordFailedLoginAttempt(maxFailedAttempts: 5, lockoutDurationMinutes: 15);
+            _userRepo.Update(user);
+            await _userRepo.SaveChangesAsync(ct);
+            return null;
+        }
 
         var rawRefresh = _tokenService.GenerateRefreshToken();
         var refreshHash = _tokenService.HashRefreshToken(rawRefresh);

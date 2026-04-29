@@ -54,6 +54,8 @@ TemporaryDependencyNodeTargetIdentifier=net8.0
 
 [sourceFiles]
 Controllers/
+ AccountSecurityController.cs
+ AdminChangeRequestController.cs
  AiChatController.cs
  AnalyticsController.cs
  AssignmentController.cs
@@ -66,11 +68,15 @@ Controllers/
  LicenseController.cs
  ModuleController.cs
  NotificationController.cs
+ PaymentReceiptController.cs
  ProgramController.cs
  QuizController.cs
+ RegistrationImportController.cs
  ResultController.cs
  SemesterController.cs
  StudentController.cs
+ StudentLifecycleController.cs
+ TeacherModificationController.cs
 Middleware/SecurityHeadersMiddleware.cs
 obj/Debug/net8.0/
  .NETCoreApp,Version=v8.0.AssemblyAttributes.cs

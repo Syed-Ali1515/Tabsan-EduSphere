@@ -37,6 +37,15 @@ public class User : AuditableEntity
     /// <summary>UTC timestamp of the most recent successful authentication. Used in audit.</summary>
     public DateTime? LastLoginAt { get; private set; }
 
+    /// <summary>Number of consecutive failed login attempts. Reset to 0 on successful login.</summary>
+    public int FailedLoginAttempts { get; private set; } = 0;
+
+    /// <summary>Whether the user account is locked due to too many failed login attempts.</summary>
+    public bool IsLockedOut { get; private set; } = false;
+
+    /// <summary>UTC timestamp when the lock will automatically expire. Null if not locked or if unlocked manually.</summary>
+    public DateTime? LockedOutUntil { get; private set; }
+
     private User() { }
 
     /// <summary>Creates a new user. Password must already be hashed by the caller.</summary>
@@ -53,7 +62,51 @@ public class User : AuditableEntity
     public void RecordLogin()
     {
         LastLoginAt = DateTime.UtcNow;
+        FailedLoginAttempts = 0;
+        IsLockedOut = false;
+        LockedOutUntil = null;
         Touch();
+    }
+
+    /// <summary>Records a failed login attempt and optionally locks the account if the threshold is exceeded.</summary>
+    /// <param name="maxFailedAttempts">Maximum consecutive failed attempts before lockout (default 5).</param>
+    /// <param name="lockoutDurationMinutes">Duration of lockout in minutes (default 15).</param>
+    public void RecordFailedLoginAttempt(int maxFailedAttempts = 5, int lockoutDurationMinutes = 15)
+    {
+        FailedLoginAttempts++;
+        if (FailedLoginAttempts >= maxFailedAttempts)
+        {
+            IsLockedOut = true;
+            LockedOutUntil = DateTime.UtcNow.AddMinutes(lockoutDurationMinutes);
+        }
+        Touch();
+    }
+
+    /// <summary>Manually unlocks the account and resets failed login attempts. Used by admin intervention.</summary>
+    public void UnlockAccount()
+    {
+        IsLockedOut = false;
+        FailedLoginAttempts = 0;
+        LockedOutUntil = null;
+        Touch();
+    }
+
+    /// <summary>Checks if the account is currently locked out (considering automatic expiration).</summary>
+    public bool IsCurrentlyLockedOut()
+    {
+        if (!IsLockedOut)
+            return false;
+
+        if (LockedOutUntil.HasValue && DateTime.UtcNow >= LockedOutUntil)
+        {
+            // Auto-unlock after lockout duration expires
+            IsLockedOut = false;
+            FailedLoginAttempts = 0;
+            LockedOutUntil = null;
+            return false;
+        }
+
+        return true;
     }
 
     /// <summary>Replaces the stored hash with a newly generated hash after a password change.</summary>

@@ -3,17 +3,20 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Tabsan.EduSphere.Infrastructure.Persistence;
 
 #nullable disable
 
-namespace Tabsan.EduSphere.Infrastructure.Migrations
+namespace Tabsan.EduSphere.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260429043652_StudentLifecycle")]
+    partial class StudentLifecycle
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1045,9 +1048,7 @@ namespace Tabsan.EduSphere.Infrastructure.Migrations
                         .HasColumnType("nvarchar(256)");
 
                     b.Property<int>("FailedLoginAttempts")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
+                        .HasColumnType("int");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -1056,9 +1057,7 @@ namespace Tabsan.EduSphere.Infrastructure.Migrations
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsLockedOut")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
+                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("LastLoginAt")
                         .HasColumnType("datetime2");
@@ -1093,10 +1092,6 @@ namespace Tabsan.EduSphere.Infrastructure.Migrations
                         .IsUnique()
                         .HasDatabaseName("IX_users_email")
                         .HasFilter("[email] IS NOT NULL");
-
-                    b.HasIndex("IsLockedOut")
-                        .HasDatabaseName("IX_users_is_locked_out")
-                        .HasFilter("[is_locked_out] = 1");
 
                     b.HasIndex("RoleId");
 

@@ -22,6 +22,9 @@ public interface IUserRepository
     /// <summary>Returns true when the username is already taken.</summary>
     Task<bool> UsernameExistsAsync(string username, CancellationToken ct = default);
 
+    /// <summary>Returns all non-admin user accounts that are currently locked out.</summary>
+    Task<IList<User>> GetLockedAccountsAsync(CancellationToken ct = default);
+
     /// <summary>Persists a new user entity.</summary>
     Task AddAsync(User user, CancellationToken ct = default);
 
