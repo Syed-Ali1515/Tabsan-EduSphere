@@ -47,6 +47,31 @@ public class ApplicationDbContext : DbContext
     /// <summary>Append-only audit log for privileged actions.</summary>
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
+    // ── Phase 2: Academic Core ─────────────────────────────────────────────
+    /// <summary>Degree programmes offered by departments.</summary>
+    public DbSet<AcademicProgram> AcademicPrograms => Set<AcademicProgram>();
+
+    /// <summary>Academic terms (semesters). Locked once closed.</summary>
+    public DbSet<Semester> Semesters => Set<Semester>();
+
+    /// <summary>Course catalogue definitions.</summary>
+    public DbSet<Course> Courses => Set<Course>();
+
+    /// <summary>Course offerings — a course scheduled for a specific semester and faculty.</summary>
+    public DbSet<CourseOffering> CourseOfferings => Set<CourseOffering>();
+
+    /// <summary>Extended academic profile for students.</summary>
+    public DbSet<StudentProfile> StudentProfiles => Set<StudentProfile>();
+
+    /// <summary>Student enrollment records — permanent academic history, never deleted.</summary>
+    public DbSet<Enrollment> Enrollments => Set<Enrollment>();
+
+    /// <summary>Pre-approved registration entries for student self-registration.</summary>
+    public DbSet<RegistrationWhitelist> RegistrationWhitelist => Set<RegistrationWhitelist>();
+
+    /// <summary>Faculty ↔ department access assignments.</summary>
+    public DbSet<FacultyDepartmentAssignment> FacultyDepartmentAssignments => Set<FacultyDepartmentAssignment>();
+
     /// <summary>
     /// Scans the current assembly for all IEntityTypeConfiguration implementations
     /// and applies them automatically. This keeps OnModelCreating clean as the

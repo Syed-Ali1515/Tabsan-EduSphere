@@ -61,6 +61,8 @@ Licensing/LicenseValidationService.cs
 Migrations/
  20260429002542_InitialCreate.cs
  20260429002542_InitialCreate.Designer.cs
+ 20260429004340_AcademicCore.cs
+ 20260429004340_AcademicCore.Designer.cs
  ApplicationDbContextModelSnapshot.cs
 Modules/ModuleEntitlementResolver.cs
 obj/Debug/net8.0/
@@ -70,15 +72,21 @@ obj/Debug/net8.0/
 Persistence/
  ApplicationDbContext.cs
  Configurations/
+  AcademicConfigurations.cs
   AuditLogConfiguration.cs
   DepartmentConfiguration.cs
   LicenseStateConfiguration.cs
   ModuleConfiguration.cs
   RoleConfiguration.cs
+  StudentAcademicConfigurations.cs
   UserConfiguration.cs
   UserSessionConfiguration.cs
  DatabaseSeeder.cs
 Repositories/
+ AcademicRepositories.cs
+ AcademicSupportRepositories.cs
+ CourseRepository.cs
+ DepartmentRepository.cs
  LicenseRepository.cs
  ModuleRepository.cs
  UserRepository.cs

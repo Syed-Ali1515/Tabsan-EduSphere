@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using Tabsan.EduSphere.Application.Auth;
 using Tabsan.EduSphere.Application.Interfaces;
 using Tabsan.EduSphere.Application.Modules;
+using Tabsan.EduSphere.Application.Academic;
 using Tabsan.EduSphere.BackgroundJobs;
 using Tabsan.EduSphere.Domain.Interfaces;
 using Tabsan.EduSphere.Infrastructure.Auditing;
@@ -14,7 +15,6 @@ using Tabsan.EduSphere.Infrastructure.Auth;
 using Tabsan.EduSphere.Infrastructure.Licensing;
 using Tabsan.EduSphere.Infrastructure.Modules;
 using Tabsan.EduSphere.Infrastructure.Persistence;
-using Tabsan.EduSphere.Application.Interfaces;
 using Tabsan.EduSphere.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -81,9 +81,22 @@ builder.Services.AddMemoryCache();
 builder.Services.AddScoped<IModuleEntitlementResolver, ModuleEntitlementResolver>();
 builder.Services.AddScoped<ModuleEntitlementResolver>(); // concrete needed by LicenseController
 
+// ── Phase 2: Academic repositories ─────────────────────────────────────────────
+builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
+builder.Services.AddScoped<IAcademicProgramRepository, AcademicProgramRepository>();
+builder.Services.AddScoped<ISemesterRepository, SemesterRepository>();
+builder.Services.AddScoped<ICourseRepository, CourseRepository>();
+builder.Services.AddScoped<IEnrollmentRepository, EnrollmentRepository>();
+builder.Services.AddScoped<IStudentProfileRepository, StudentProfileRepository>();
+builder.Services.AddScoped<IRegistrationWhitelistRepository, RegistrationWhitelistRepository>();
+builder.Services.AddScoped<IFacultyAssignmentRepository, FacultyAssignmentRepository>();
+
 // ── Application services ────────────────────────────────────────────────────────
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IModuleService, ModuleService>();
+// Phase 2 application services
+builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
+builder.Services.AddScoped<IStudentRegistrationService, StudentRegistrationService>();
 
 // ── Background jobs ─────────────────────────────────────────────────────────────
 builder.Services.AddHostedService<LicenseCheckWorker>();

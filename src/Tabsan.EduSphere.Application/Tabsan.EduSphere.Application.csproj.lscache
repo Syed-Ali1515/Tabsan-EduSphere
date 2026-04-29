@@ -53,13 +53,20 @@ TemporaryDependencyNodeTargetIdentifier=net8.0
 /warnaserror+:NU1605,SYSLIB0011
 
 [sourceFiles]
+Academic/
+ EnrollmentService.cs
+ StudentRegistrationService.cs
 Auth/AuthService.cs
-DTOs/Auth/AuthDtos.cs
+DTOs/
+ Academic/AcademicDtos.cs
+ Auth/AuthDtos.cs
 Interfaces/
  IAuthService.cs
+ IEnrollmentService.cs
  IModuleEntitlementResolver.cs
  IModuleService.cs
  IPasswordHasher.cs
+ IStudentRegistrationService.cs
  ITokenService.cs
  IUserSessionRepository.cs
 Modules/ModuleService.cs

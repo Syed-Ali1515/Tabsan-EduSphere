@@ -268,3 +268,271 @@
 |------|---------|----------|
 | `ExecuteAsync(stoppingToken)` | Main hosted-service loop — waits 30 s on startup, then calls `RunCheckAsync` every 24 hours. | `BackgroundJobs/LicenseCheckWorker.cs` |
 | `RunCheckAsync(ct)` | Opens a fresh DI scope, resolves `LicenseValidationService`, and runs a validation check. Exceptions are caught and logged. | `BackgroundJobs/LicenseCheckWorker.cs` |
+
+---
+
+## Phase 2 — Academic Core
+
+### `AcademicProgram` — `src/Tabsan.EduSphere.Domain/Academic/AcademicProgram.cs`
+
+| Name | Purpose | Location |
+|------|---------|----------|
+| `AcademicProgram(name, code, departmentId, totalSemesters)` | Constructor — creates a new degree programme; normalises code to uppercase. | `Domain/Academic/AcademicProgram.cs` |
+| `Rename(newName)` | Updates the display name of the programme. | `Domain/Academic/AcademicProgram.cs` |
+| `Deactivate()` | Marks the programme inactive so it no longer appears in registration dropdowns. | `Domain/Academic/AcademicProgram.cs` |
+| `Activate()` | Re-activates a previously deactivated programme. | `Domain/Academic/AcademicProgram.cs` |
+
+---
+
+### `Semester` — `src/Tabsan.EduSphere.Domain/Academic/Semester.cs`
+
+| Name | Purpose | Location |
+|------|---------|----------|
+| `Semester(name, startDate, endDate)` | Constructor — creates a new open semester term. | `Domain/Academic/Semester.cs` |
+| `Close()` | Permanently closes the semester. One-way: throws if already closed. | `Domain/Academic/Semester.cs` |
+
+---
+
+### `Course` — `src/Tabsan.EduSphere.Domain/Academic/Course.cs`
+
+| Name | Purpose | Location |
+|------|---------|----------|
+| `Course(title, code, creditHours, departmentId)` | Constructor — creates a new course catalogue entry; normalises code to uppercase. | `Domain/Academic/Course.cs` |
+| `UpdateTitle(newTitle)` | Updates the course display title. | `Domain/Academic/Course.cs` |
+| `Deactivate()` | Soft-deactivates the course so it cannot be offered. | `Domain/Academic/Course.cs` |
+| `Activate()` | Re-activates a deactivated course. | `Domain/Academic/Course.cs` |
+
+---
+
+### `CourseOffering` — `src/Tabsan.EduSphere.Domain/Academic/CourseOffering.cs`
+
+| Name | Purpose | Location |
+|------|---------|----------|
+| `CourseOffering(courseId, semesterId, maxEnrollment, facultyUserId?)` | Constructor — schedules a course for a semester. | `Domain/Academic/CourseOffering.cs` |
+| `AssignFaculty(facultyUserId)` | Assigns or re-assigns a faculty member to this offering. | `Domain/Academic/CourseOffering.cs` |
+| `Close()` | Closes the offering so no new enrollments are accepted. | `Domain/Academic/CourseOffering.cs` |
+| `Reopen()` | Re-opens the offering to accept enrollments again. | `Domain/Academic/CourseOffering.cs` |
+| `UpdateMaxEnrollment(max)` | Changes the maximum enrollment capacity. | `Domain/Academic/CourseOffering.cs` |
+
+---
+
+### `StudentProfile` — `src/Tabsan.EduSphere.Domain/Academic/StudentProfile.cs`
+
+| Name | Purpose | Location |
+|------|---------|----------|
+| `StudentProfile(userId, registrationNumber, programId, departmentId, admissionDate)` | Constructor — creates a student's academic profile. | `Domain/Academic/StudentProfile.cs` |
+| `UpdateCgpa(newCgpa)` | Updates the cumulative GPA after result publication (0.0–4.0 range enforced). | `Domain/Academic/StudentProfile.cs` |
+| `AdvanceSemester()` | Increments the student's current semester number. | `Domain/Academic/StudentProfile.cs` |
+
+---
+
+### `Enrollment` — `src/Tabsan.EduSphere.Domain/Academic/Enrollment.cs`
+
+| Name | Purpose | Location |
+|------|---------|----------|
+| `Enrollment(studentProfileId, courseOfferingId)` | Constructor — records a new active enrollment. | `Domain/Academic/Enrollment.cs` |
+| `Drop()` | Changes status to Dropped and sets DroppedAt. Throws if not Active. | `Domain/Academic/Enrollment.cs` |
+| `Cancel()` | Changes status to Cancelled (used when the offering itself is cancelled). | `Domain/Academic/Enrollment.cs` |
+
+---
+
+### `RegistrationWhitelist` — `src/Tabsan.EduSphere.Domain/Academic/RegistrationWhitelist.cs`
+
+| Name | Purpose | Location |
+|------|---------|----------|
+| `RegistrationWhitelist(identifierType, identifierValue, departmentId, programId)` | Constructor — creates a pre-approved registration entry; normalises identifier to lowercase. | `Domain/Academic/RegistrationWhitelist.cs` |
+| `MarkUsed(createdUserId)` | Marks the entry as consumed after a successful self-registration. Throws if already used. | `Domain/Academic/RegistrationWhitelist.cs` |
+
+---
+
+### `FacultyDepartmentAssignment` — `src/Tabsan.EduSphere.Domain/Academic/FacultyDepartmentAssignment.cs`
+
+| Name | Purpose | Location |
+|------|---------|----------|
+| `FacultyDepartmentAssignment(facultyUserId, departmentId)` | Constructor — creates an active assignment linking a faculty member to a department. | `Domain/Academic/FacultyDepartmentAssignment.cs` |
+| `Remove()` | Marks the assignment as removed by setting RemovedAt. | `Domain/Academic/FacultyDepartmentAssignment.cs` |
+
+---
+
+### `DepartmentRepository` — `src/Tabsan.EduSphere.Infrastructure/Repositories/DepartmentRepository.cs`
+
+| Name | Purpose | Location |
+|------|---------|----------|
+| `GetAllAsync(ct)` | Returns all non-deleted departments ordered by name. | `Infrastructure/Repositories/DepartmentRepository.cs` |
+| `GetByIdAsync(id, ct)` | Returns the department with the given ID, or null. | `Infrastructure/Repositories/DepartmentRepository.cs` |
+| `CodeExistsAsync(code, ct)` | Returns true when the uppercase code is already in use. | `Infrastructure/Repositories/DepartmentRepository.cs` |
+| `AddAsync(department, ct)` | Queues a new department for insertion. | `Infrastructure/Repositories/DepartmentRepository.cs` |
+| `Update(department)` | Marks the department as modified. | `Infrastructure/Repositories/DepartmentRepository.cs` |
+| `SaveChangesAsync(ct)` | Commits pending changes. | `Infrastructure/Repositories/DepartmentRepository.cs` |
+
+---
+
+### `AcademicProgramRepository` + `SemesterRepository` — `src/Tabsan.EduSphere.Infrastructure/Repositories/AcademicRepositories.cs`
+
+| Name | Purpose | Location |
+|------|---------|----------|
+| `AcademicProgramRepository.GetAllAsync(departmentId?, ct)` | Returns all programmes, optionally scoped to a department, with Department loaded. | `Infrastructure/Repositories/AcademicRepositories.cs` |
+| `AcademicProgramRepository.GetByIdAsync(id, ct)` | Returns the programme by ID with Department loaded, or null. | `Infrastructure/Repositories/AcademicRepositories.cs` |
+| `AcademicProgramRepository.CodeExistsAsync(code, ct)` | Returns true when the uppercase code is already taken. | `Infrastructure/Repositories/AcademicRepositories.cs` |
+| `AcademicProgramRepository.AddAsync(program, ct)` | Queues the programme for insertion. | `Infrastructure/Repositories/AcademicRepositories.cs` |
+| `AcademicProgramRepository.Update(program)` | Marks the programme as modified. | `Infrastructure/Repositories/AcademicRepositories.cs` |
+| `AcademicProgramRepository.SaveChangesAsync(ct)` | Commits pending changes. | `Infrastructure/Repositories/AcademicRepositories.cs` |
+| `SemesterRepository.GetAllAsync(ct)` | Returns all semesters ordered by start date descending. | `Infrastructure/Repositories/AcademicRepositories.cs` |
+| `SemesterRepository.GetByIdAsync(id, ct)` | Returns the semester by ID, or null. | `Infrastructure/Repositories/AcademicRepositories.cs` |
+| `SemesterRepository.GetCurrentOpenAsync(ct)` | Returns the most recent open semester, or null. | `Infrastructure/Repositories/AcademicRepositories.cs` |
+| `SemesterRepository.AddAsync(semester, ct)` | Queues the semester for insertion. | `Infrastructure/Repositories/AcademicRepositories.cs` |
+| `SemesterRepository.Update(semester)` | Marks the semester as modified. | `Infrastructure/Repositories/AcademicRepositories.cs` |
+| `SemesterRepository.SaveChangesAsync(ct)` | Commits pending changes. | `Infrastructure/Repositories/AcademicRepositories.cs` |
+
+---
+
+### `CourseRepository` — `src/Tabsan.EduSphere.Infrastructure/Repositories/CourseRepository.cs`
+
+| Name | Purpose | Location |
+|------|---------|----------|
+| `GetAllAsync(departmentId?, ct)` | Returns all courses filtered by department if provided, ordered by code. | `Infrastructure/Repositories/CourseRepository.cs` |
+| `GetByIdAsync(id, ct)` | Returns the course by ID, or null. | `Infrastructure/Repositories/CourseRepository.cs` |
+| `CodeExistsAsync(code, departmentId, ct)` | Returns true when the code+department combination already exists. | `Infrastructure/Repositories/CourseRepository.cs` |
+| `AddAsync(course, ct)` | Queues the course for insertion. | `Infrastructure/Repositories/CourseRepository.cs` |
+| `Update(course)` | Marks the course as modified. | `Infrastructure/Repositories/CourseRepository.cs` |
+| `GetOfferingsBySemesterAsync(semesterId, ct)` | Returns all offerings for a semester with Course and Semester loaded. | `Infrastructure/Repositories/CourseRepository.cs` |
+| `GetOfferingsByFacultyAsync(facultyUserId, ct)` | Returns all offerings assigned to the faculty user. | `Infrastructure/Repositories/CourseRepository.cs` |
+| `GetOfferingByIdAsync(offeringId, ct)` | Returns an offering by ID with navigations loaded, or null. | `Infrastructure/Repositories/CourseRepository.cs` |
+| `GetEnrollmentCountAsync(offeringId, ct)` | Returns the count of active enrollments for the offering. | `Infrastructure/Repositories/CourseRepository.cs` |
+| `AddOfferingAsync(offering, ct)` | Queues the offering for insertion. | `Infrastructure/Repositories/CourseRepository.cs` |
+| `UpdateOffering(offering)` | Marks the offering as modified. | `Infrastructure/Repositories/CourseRepository.cs` |
+| `SaveChangesAsync(ct)` | Commits pending changes. | `Infrastructure/Repositories/CourseRepository.cs` |
+
+---
+
+### Support Repositories — `src/Tabsan.EduSphere.Infrastructure/Repositories/AcademicSupportRepositories.cs`
+
+| Name | Purpose | Location |
+|------|---------|----------|
+| `EnrollmentRepository.GetByStudentAsync(studentProfileId, ct)` | Returns all enrollment records for the student with course/semester details loaded. | `Infrastructure/Repositories/AcademicSupportRepositories.cs` |
+| `EnrollmentRepository.GetByOfferingAsync(courseOfferingId, ct)` | Returns active enrollments for an offering with student profile loaded. | `Infrastructure/Repositories/AcademicSupportRepositories.cs` |
+| `EnrollmentRepository.GetAsync(studentProfileId, courseOfferingId, ct)` | Returns the enrollment for the given pair, or null. | `Infrastructure/Repositories/AcademicSupportRepositories.cs` |
+| `EnrollmentRepository.IsEnrolledAsync(studentProfileId, courseOfferingId, ct)` | Returns true when an active enrollment already exists. | `Infrastructure/Repositories/AcademicSupportRepositories.cs` |
+| `EnrollmentRepository.AddAsync(enrollment, ct)` | Queues a new enrollment for insertion. | `Infrastructure/Repositories/AcademicSupportRepositories.cs` |
+| `EnrollmentRepository.Update(enrollment)` | Marks the enrollment as modified (status change). | `Infrastructure/Repositories/AcademicSupportRepositories.cs` |
+| `EnrollmentRepository.SaveChangesAsync(ct)` | Commits pending changes. | `Infrastructure/Repositories/AcademicSupportRepositories.cs` |
+| `StudentProfileRepository.GetByUserIdAsync(userId, ct)` | Returns the profile linked to the User ID with Program/Department loaded. | `Infrastructure/Repositories/AcademicSupportRepositories.cs` |
+| `StudentProfileRepository.GetByIdAsync(id, ct)` | Returns the profile by ID, or null. | `Infrastructure/Repositories/AcademicSupportRepositories.cs` |
+| `StudentProfileRepository.GetByRegistrationNumberAsync(regNo, ct)` | Returns the profile matching the registration number. | `Infrastructure/Repositories/AcademicSupportRepositories.cs` |
+| `StudentProfileRepository.GetAllAsync(departmentId?, ct)` | Returns all student profiles, optionally scoped to a department. | `Infrastructure/Repositories/AcademicSupportRepositories.cs` |
+| `StudentProfileRepository.RegistrationNumberExistsAsync(regNo, ct)` | Returns true when the registration number is already in use. | `Infrastructure/Repositories/AcademicSupportRepositories.cs` |
+| `StudentProfileRepository.AddAsync(profile, ct)` | Queues the profile for insertion. | `Infrastructure/Repositories/AcademicSupportRepositories.cs` |
+| `StudentProfileRepository.Update(profile)` | Marks the profile as modified. | `Infrastructure/Repositories/AcademicSupportRepositories.cs` |
+| `StudentProfileRepository.SaveChangesAsync(ct)` | Commits pending changes. | `Infrastructure/Repositories/AcademicSupportRepositories.cs` |
+| `RegistrationWhitelistRepository.FindUnusedAsync(identifierValue, ct)` | Returns an unused whitelist entry by identifier value (case-insensitive), or null. | `Infrastructure/Repositories/AcademicSupportRepositories.cs` |
+| `RegistrationWhitelistRepository.AddAsync(entry, ct)` | Queues a new whitelist entry for insertion. | `Infrastructure/Repositories/AcademicSupportRepositories.cs` |
+| `RegistrationWhitelistRepository.AddRangeAsync(entries, ct)` | Bulk-queues multiple whitelist entries for insertion. | `Infrastructure/Repositories/AcademicSupportRepositories.cs` |
+| `RegistrationWhitelistRepository.Update(entry)` | Marks the entry as modified. | `Infrastructure/Repositories/AcademicSupportRepositories.cs` |
+| `RegistrationWhitelistRepository.SaveChangesAsync(ct)` | Commits pending changes. | `Infrastructure/Repositories/AcademicSupportRepositories.cs` |
+| `FacultyAssignmentRepository.GetByFacultyAsync(facultyUserId, ct)` | Returns active assignments for the faculty with Department loaded. | `Infrastructure/Repositories/AcademicSupportRepositories.cs` |
+| `FacultyAssignmentRepository.GetByDepartmentAsync(departmentId, ct)` | Returns active faculty assignments for the department. | `Infrastructure/Repositories/AcademicSupportRepositories.cs` |
+| `FacultyAssignmentRepository.GetAsync(facultyUserId, departmentId, ct)` | Returns the active assignment for the pair, or null. | `Infrastructure/Repositories/AcademicSupportRepositories.cs` |
+| `FacultyAssignmentRepository.GetDepartmentIdsForFacultyAsync(facultyUserId, ct)` | Returns the list of department IDs the faculty is actively assigned to. | `Infrastructure/Repositories/AcademicSupportRepositories.cs` |
+| `FacultyAssignmentRepository.AddAsync(assignment, ct)` | Queues the assignment for insertion. | `Infrastructure/Repositories/AcademicSupportRepositories.cs` |
+| `FacultyAssignmentRepository.Update(assignment)` | Marks the assignment as modified. | `Infrastructure/Repositories/AcademicSupportRepositories.cs` |
+| `FacultyAssignmentRepository.SaveChangesAsync(ct)` | Commits pending changes. | `Infrastructure/Repositories/AcademicSupportRepositories.cs` |
+
+---
+
+### `EnrollmentService` — `src/Tabsan.EduSphere.Application/Academic/EnrollmentService.cs`
+
+| Name | Purpose | Location |
+|------|---------|----------|
+| `EnrollAsync(studentProfileId, request, ct)` | Validates offering state, checks duplicates and seat availability, creates an Enrollment row, and returns a response DTO. Returns null on rejection. | `Application/Academic/EnrollmentService.cs` |
+| `DropAsync(studentProfileId, courseOfferingId, ct)` | Changes an active enrollment's status to Dropped. Returns false when no active enrollment exists. | `Application/Academic/EnrollmentService.cs` |
+| `GetForStudentAsync(studentProfileId, ct)` | Returns all enrollment records for the student (full history). | `Application/Academic/EnrollmentService.cs` |
+| `GetForOfferingAsync(courseOfferingId, ct)` | Returns active enrollments for the given offering (faculty roster). | `Application/Academic/EnrollmentService.cs` |
+
+---
+
+### `StudentRegistrationService` — `src/Tabsan.EduSphere.Application/Academic/StudentRegistrationService.cs`
+
+| Name | Purpose | Location |
+|------|---------|----------|
+| `SelfRegisterAsync(request, ct)` | Whitelist-gated self-registration: validates identifier, creates User + StudentProfile atomically, marks whitelist entry consumed. Returns new User ID or null. | `Application/Academic/StudentRegistrationService.cs` |
+| `CreateProfileAsync(request, ct)` | Admin-managed profile creation for an existing User — bypasses the whitelist gate. Throws on duplicate registration number. | `Application/Academic/StudentRegistrationService.cs` |
+
+---
+
+### `DepartmentController` — `src/Tabsan.EduSphere.API/Controllers/DepartmentController.cs`
+
+| Name | Purpose | Location |
+|------|---------|----------|
+| `GetAll(ct)` | `GET /api/v1/department` — returns all active departments. Authenticated. | `API/Controllers/DepartmentController.cs` |
+| `GetById(id, ct)` | `GET /api/v1/department/{id}` — returns a single department. | `API/Controllers/DepartmentController.cs` |
+| `Create(request, ct)` | `POST /api/v1/department` — creates a new department. Admin+. | `API/Controllers/DepartmentController.cs` |
+| `Update(id, request, ct)` | `PUT /api/v1/department/{id}` — renames the department. Admin+. | `API/Controllers/DepartmentController.cs` |
+| `Deactivate(id, ct)` | `DELETE /api/v1/department/{id}` — soft-deactivates the department. SuperAdmin only. | `API/Controllers/DepartmentController.cs` |
+| `GetUserId()` | Private helper — extracts the JWT sub claim as a GUID. | `API/Controllers/DepartmentController.cs` |
+
+---
+
+### `ProgramController` — `src/Tabsan.EduSphere.API/Controllers/ProgramController.cs`
+
+| Name | Purpose | Location |
+|------|---------|----------|
+| `GetAll(departmentId?, ct)` | `GET /api/v1/program` — returns programmes, optionally filtered by department. | `API/Controllers/ProgramController.cs` |
+| `GetById(id, ct)` | `GET /api/v1/program/{id}` — returns a single programme. | `API/Controllers/ProgramController.cs` |
+| `Create(request, ct)` | `POST /api/v1/program` — creates a new degree programme. Admin+. | `API/Controllers/ProgramController.cs` |
+| `Update(id, request, ct)` | `PUT /api/v1/program/{id}` — renames the programme. Admin+. | `API/Controllers/ProgramController.cs` |
+| `Deactivate(id, ct)` | `DELETE /api/v1/program/{id}` — soft-deactivates. SuperAdmin only. | `API/Controllers/ProgramController.cs` |
+
+---
+
+### `SemesterController` — `src/Tabsan.EduSphere.API/Controllers/SemesterController.cs`
+
+| Name | Purpose | Location |
+|------|---------|----------|
+| `GetAll(ct)` | `GET /api/v1/semester` — returns all semesters ordered by start date. | `API/Controllers/SemesterController.cs` |
+| `GetCurrent(ct)` | `GET /api/v1/semester/current` — returns the current open semester. | `API/Controllers/SemesterController.cs` |
+| `GetById(id, ct)` | `GET /api/v1/semester/{id}` — returns a single semester. | `API/Controllers/SemesterController.cs` |
+| `Create(request, ct)` | `POST /api/v1/semester` — creates a new semester. Admin+. | `API/Controllers/SemesterController.cs` |
+| `Close(id, ct)` | `POST /api/v1/semester/{id}/close` — permanently closes the semester. Admin+. One-way operation. | `API/Controllers/SemesterController.cs` |
+
+---
+
+### `CourseController` — `src/Tabsan.EduSphere.API/Controllers/CourseController.cs`
+
+| Name | Purpose | Location |
+|------|---------|----------|
+| `GetAll(departmentId?, ct)` | `GET /api/v1/course` — returns the course catalogue, optionally filtered. | `API/Controllers/CourseController.cs` |
+| `GetById(id, ct)` | `GET /api/v1/course/{id}` — returns a single course. | `API/Controllers/CourseController.cs` |
+| `Create(request, ct)` | `POST /api/v1/course` — adds a course to the catalogue. Admin+. | `API/Controllers/CourseController.cs` |
+| `UpdateTitle(id, request, ct)` | `PUT /api/v1/course/{id}/title` — updates the course title. Admin+. | `API/Controllers/CourseController.cs` |
+| `Deactivate(id, ct)` | `DELETE /api/v1/course/{id}` — soft-deactivates the course. SuperAdmin. | `API/Controllers/CourseController.cs` |
+| `GetOfferings(semesterId, ct)` | `GET /api/v1/course/offerings?semesterId=` — returns offerings for a semester. | `API/Controllers/CourseController.cs` |
+| `GetMyOfferings(ct)` | `GET /api/v1/course/offerings/my` — returns offerings assigned to the calling faculty, filtered to assigned departments. | `API/Controllers/CourseController.cs` |
+| `CreateOffering(request, ct)` | `POST /api/v1/course/offerings` — creates a course offering. Admin+. | `API/Controllers/CourseController.cs` |
+| `AssignFaculty(id, request, ct)` | `PUT /api/v1/course/offerings/{id}/faculty` — assigns faculty to an offering. Admin+. | `API/Controllers/CourseController.cs` |
+| `GetUserId()` | Private helper — extracts the JWT sub claim as a GUID. | `API/Controllers/CourseController.cs` |
+
+---
+
+### `EnrollmentController` — `src/Tabsan.EduSphere.API/Controllers/EnrollmentController.cs`
+
+| Name | Purpose | Location |
+|------|---------|----------|
+| `Enroll(request, ct)` | `POST /api/v1/enrollment` — enrolls the calling student into a course offering. Student role. | `API/Controllers/EnrollmentController.cs` |
+| `Drop(offeringId, ct)` | `DELETE /api/v1/enrollment/{offeringId}` — drops the student's active enrollment. Student role. | `API/Controllers/EnrollmentController.cs` |
+| `MyCourses(ct)` | `GET /api/v1/enrollment/my-courses` — returns the student's full enrollment history. Student role. | `API/Controllers/EnrollmentController.cs` |
+| `GetRoster(offeringId, ct)` | `GET /api/v1/enrollment/roster/{offeringId}` — returns active enrollments for an offering. Faculty/Admin+. | `API/Controllers/EnrollmentController.cs` |
+| `GetUserId()` | Private helper — extracts the JWT sub claim as a GUID. | `API/Controllers/EnrollmentController.cs` |
+
+---
+
+### `StudentController` — `src/Tabsan.EduSphere.API/Controllers/StudentController.cs`
+
+| Name | Purpose | Location |
+|------|---------|----------|
+| `SelfRegister(request, ct)` | `POST /api/v1/student/register` — public whitelist-gated self-registration. AllowAnonymous. | `API/Controllers/StudentController.cs` |
+| `GetMyProfile(ct)` | `GET /api/v1/student/profile` — returns the calling student's academic profile. Student role. | `API/Controllers/StudentController.cs` |
+| `GetAll(departmentId?, ct)` | `GET /api/v1/student` — returns all student profiles, optionally by department. Admin+. | `API/Controllers/StudentController.cs` |
+| `Create(request, ct)` | `POST /api/v1/student` — Admin-managed student profile creation. Admin+. | `API/Controllers/StudentController.cs` |
+| `AddWhitelistEntry(request, ct)` | `POST /api/v1/student/whitelist` — adds a single registration whitelist entry. Admin+. | `API/Controllers/StudentController.cs` |
+| `BulkAddWhitelistEntries(requests, ct)` | `POST /api/v1/student/whitelist/bulk` — bulk-imports whitelist entries. Admin+. | `API/Controllers/StudentController.cs` |
+| `GetUserId()` | Private helper — extracts the JWT sub claim as a GUID. | `API/Controllers/StudentController.cs` |

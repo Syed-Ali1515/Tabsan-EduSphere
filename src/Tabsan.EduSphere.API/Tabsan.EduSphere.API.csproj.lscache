@@ -55,8 +55,14 @@ TemporaryDependencyNodeTargetIdentifier=net8.0
 [sourceFiles]
 Controllers/
  AuthController.cs
+ CourseController.cs
+ DepartmentController.cs
+ EnrollmentController.cs
  LicenseController.cs
  ModuleController.cs
+ ProgramController.cs
+ SemesterController.cs
+ StudentController.cs
 obj/Debug/net8.0/
  .NETCoreApp,Version=v8.0.AssemblyAttributes.cs
  Tabsan.EduSphere.API.AssemblyInfo.cs

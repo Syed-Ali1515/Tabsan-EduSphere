@@ -72,9 +72,17 @@ Identity/
  User.cs
  UserSession.cs
 Interfaces/
+ IAcademicProgramRepository.cs
  IAuditService.cs
+ ICourseRepository.cs
+ IDepartmentRepository.cs
+ IEnrollmentRepository.cs
+ IFacultyAssignmentRepository.cs
  ILicenseRepository.cs
  IModuleRepository.cs
+ IRegistrationWhitelistRepository.cs
+ ISemesterRepository.cs
+ IStudentProfileRepository.cs
  IUserRepository.cs
 Licensing/
  LicenseEnums.cs
