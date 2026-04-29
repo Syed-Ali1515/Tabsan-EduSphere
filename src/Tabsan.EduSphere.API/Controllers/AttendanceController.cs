@@ -1,0 +1,142 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Tabsan.EduSphere.Application.DTOs.Attendance;
+using Tabsan.EduSphere.Application.Interfaces;
+
+namespace Tabsan.EduSphere.API.Controllers;
+
+/// <summary>
+/// Manages attendance marking, correction, and reporting.
+/// Faculty: mark and bulk-mark daily attendance for their offerings.
+/// Admin: correct records and view any student's attendance.
+/// Students: view their own attendance records and percentages.
+/// </summary>
+[ApiController]
+[Route("api/[controller]")]
+[Authorize]
+public class AttendanceController : ControllerBase
+{
+    private readonly IAttendanceService _service;
+    public AttendanceController(IAttendanceService service) => _service = service;
+
+    // ── Marking ───────────────────────────────────────────────────────────────
+
+    /// <summary>Records attendance for a single student for one session (Faculty/Admin).</summary>
+    [HttpPost]
+    [Authorize(Roles = "SuperAdmin,Admin,Faculty")]
+    public async Task<IActionResult> Mark([FromBody] MarkAttendanceRequest request, CancellationToken ct)
+    {
+        var userId = GetCurrentUserId();
+        if (userId == Guid.Empty) return Unauthorized();
+
+        var ok = await _service.MarkAsync(request, userId, ct);
+        return ok ? Ok() : Conflict("Attendance already recorded for this student / offering / date.");
+    }
+
+    /// <summary>Bulk-marks attendance for a full class for one session (Faculty/Admin).</summary>
+    [HttpPost("bulk")]
+    [Authorize(Roles = "SuperAdmin,Admin,Faculty")]
+    public async Task<IActionResult> BulkMark([FromBody] BulkMarkAttendanceRequest request, CancellationToken ct)
+    {
+        var userId = GetCurrentUserId();
+        if (userId == Guid.Empty) return Unauthorized();
+
+        var inserted = await _service.BulkMarkAsync(request, userId, ct);
+        return Ok(new { inserted });
+    }
+
+    /// <summary>Corrects an existing attendance record (Faculty/Admin).</summary>
+    [HttpPut("correct")]
+    [Authorize(Roles = "SuperAdmin,Admin,Faculty")]
+    public async Task<IActionResult> Correct([FromBody] CorrectAttendanceRequest request, CancellationToken ct)
+    {
+        var userId = GetCurrentUserId();
+        if (userId == Guid.Empty) return Unauthorized();
+
+        var ok = await _service.CorrectAsync(request, userId, ct);
+        return ok ? NoContent() : NotFound("Attendance record not found.");
+    }
+
+    // ── Queries ───────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Returns attendance records for a course offering (Faculty/Admin).
+    /// Supports optional date range filtering via ?from=&amp;to= query parameters.
+    /// </summary>
+    [HttpGet("by-offering/{courseOfferingId:guid}")]
+    [Authorize(Roles = "SuperAdmin,Admin,Faculty")]
+    public async Task<IActionResult> GetByOffering(
+        Guid courseOfferingId,
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to,
+        CancellationToken ct)
+    {
+        var records = await _service.GetByOfferingAsync(courseOfferingId, from, to, ct);
+        return Ok(records);
+    }
+
+    /// <summary>
+    /// Returns attendance records for a specific student (Admin/Faculty).
+    /// Optionally scoped to a single course offering via ?courseOfferingId=.
+    /// </summary>
+    [HttpGet("by-student/{studentProfileId:guid}")]
+    [Authorize(Roles = "SuperAdmin,Admin,Faculty")]
+    public async Task<IActionResult> GetByStudent(
+        Guid studentProfileId,
+        [FromQuery] Guid? courseOfferingId,
+        CancellationToken ct)
+    {
+        var records = await _service.GetByStudentAsync(studentProfileId, courseOfferingId, ct);
+        return Ok(records);
+    }
+
+    /// <summary>Returns the current student's own attendance records (Student).</summary>
+    [HttpGet("my-attendance")]
+    [Authorize(Roles = "Student")]
+    public async Task<IActionResult> GetMyAttendance([FromQuery] Guid? courseOfferingId, CancellationToken ct)
+    {
+        var studentProfileId = GetCurrentStudentProfileId();
+        if (studentProfileId == Guid.Empty) return Unauthorized();
+
+        var records = await _service.GetByStudentAsync(studentProfileId, courseOfferingId, ct);
+        return Ok(records);
+    }
+
+    /// <summary>Returns the attendance percentage summary for a student in one offering (All roles).</summary>
+    [HttpGet("summary/{studentProfileId:guid}/{courseOfferingId:guid}")]
+    public async Task<IActionResult> GetSummary(Guid studentProfileId, Guid courseOfferingId, CancellationToken ct)
+    {
+        var summary = await _service.GetSummaryAsync(studentProfileId, courseOfferingId, ct);
+        return Ok(summary);
+    }
+
+    /// <summary>Returns all students below the given attendance threshold percentage (Admin only).</summary>
+    [HttpGet("below-threshold")]
+    [Authorize(Roles = "SuperAdmin,Admin")]
+    public async Task<IActionResult> GetBelowThreshold([FromQuery] double threshold = 75.0, CancellationToken ct = default)
+    {
+        var results = await _service.GetBelowThresholdAsync(threshold, ct);
+        return Ok(results.Select(x => new
+        {
+            StudentProfileId    = x.StudentProfileId,
+            CourseOfferingId    = x.CourseOfferingId,
+            AttendancePercent   = x.AttendancePercent
+        }));
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    /// <summary>Extracts the authenticated user's ID from JWT claims.</summary>
+    private Guid GetCurrentUserId()
+    {
+        var claim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        return Guid.TryParse(claim, out var id) ? id : Guid.Empty;
+    }
+
+    /// <summary>Extracts the student profile ID from the "studentProfileId" JWT claim.</summary>
+    private Guid GetCurrentStudentProfileId()
+    {
+        var claim = User.FindFirst("studentProfileId")?.Value;
+        return Guid.TryParse(claim, out var id) ? id : Guid.Empty;
+    }
+}

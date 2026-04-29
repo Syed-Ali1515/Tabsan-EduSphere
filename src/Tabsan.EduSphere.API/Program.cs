@@ -9,6 +9,8 @@ using Tabsan.EduSphere.Application.Interfaces;
 using Tabsan.EduSphere.Application.Modules;
 using Tabsan.EduSphere.Application.Academic;
 using Tabsan.EduSphere.Application.Assignments;
+using Tabsan.EduSphere.Application.Attendance;
+using Tabsan.EduSphere.Application.Notifications;
 using Tabsan.EduSphere.BackgroundJobs;
 using Tabsan.EduSphere.Domain.Interfaces;
 using Tabsan.EduSphere.Infrastructure.Auditing;
@@ -105,8 +107,15 @@ builder.Services.AddScoped<IResultRepository, ResultRepository>();
 builder.Services.AddScoped<IAssignmentService, AssignmentService>();
 builder.Services.AddScoped<IResultService, ResultService>();
 
-// ── Background jobs ─────────────────────────────────────────────────────────────
+// ── Phase 4: Notifications and Attendance ─────────────────────────────────
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+builder.Services.AddScoped<IAttendanceRepository, AttendanceRepository>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IAttendanceService, AttendanceService>();
+
+// ── Background jobs ──────────────────────────────────────────────────
 builder.Services.AddHostedService<LicenseCheckWorker>();
+builder.Services.AddHostedService<AttendanceAlertJob>();
 
 // ── API infrastructure ──────────────────────────────────────────────────────────
 builder.Services.AddControllers();

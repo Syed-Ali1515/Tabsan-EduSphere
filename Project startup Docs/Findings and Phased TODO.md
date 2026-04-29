@@ -110,93 +110,171 @@ The provided startup documents define a strong product vision and feature set, b
 
 ## 5. Phased TODO List (Stages and Checklists)
 
-## Phase 0: Foundation and Governance (Sprint 1)
+## Phase 0: Foundation and Governance (Sprint 1) ✅ COMPLETE
 
 ### Stage 0.1 Project Setup
-- [ ] Create .NET 8 solution and project structure
-- [ ] Configure environment profiles (dev/staging/prod)
-- [ ] Configure centralized configuration and secrets strategy
+- [x] Create .NET 8 solution and project structure
+- [x] Configure environment profiles (dev/staging/prod)
+- [x] Configure centralized configuration and secrets strategy
 
 ### Stage 0.2 Engineering Guardrails
-- [ ] Add CI pipeline for build, tests, and static checks
-- [ ] Add coding standards and pull request template
-- [ ] Add baseline logging, tracing, and health checks
+- [x] Add CI pipeline for build, tests, and static checks
+- [x] Add coding standards and pull request template
+- [x] Add baseline logging, tracing, and health checks
 
 ### Stage 0.3 Baseline Documentation
-- [ ] Finalize architecture decision records (ADRs)
-- [ ] Confirm API versioning and error envelope standard
+- [x] Finalize architecture decision records (ADRs)
+- [x] Confirm API versioning and error envelope standard
+
+### ✅ Phase 0 Implementation Summary
+
+| Item | Detail |
+|---|---|
+| Solution structure | `Tabsan.EduSphere.sln` with five projects: `Domain`, `Application`, `Infrastructure`, `API`, `Web`, plus `BackgroundJobs` and `tests/` |
+| Architecture | Clean Architecture (Domain → Application → Infrastructure → API/Web) with Modular Monolith pattern |
+| Target framework | .NET 8 LTS (`net8.0`); SDK 10.0.203 |
+| CI pipeline | `.github/workflows/dotnet-ci.yml` — build + test on push/PR |
+| Configuration | `appsettings.json` + environment-specific overrides; secrets via .NET user-secrets (dev) |
+| Logging | Structured logging via `ILogger<T>` throughout; health-check endpoint registered |
+| Error envelope | `ProblemDetails` standard used across all API controllers |
+| Documentation | `Docs/Function-List.md` established; inline XML summary comments required on all public members |
 
 ---
 
-## Phase 1: Identity, Licensing, and Entitlements (Sprints 2-3)
+## Phase 1: Identity, Licensing, and Entitlements (Sprints 2-3) ✅ COMPLETE
 
 ### Stage 1.1 Identity and Access
-- [ ] Implement ASP.NET Core Identity model
-- [ ] Implement JWT and session management
-- [ ] Implement role and policy authorization matrix
+- [x] Implement ASP.NET Core Identity model
+- [x] Implement JWT and session management
+- [x] Implement role and policy authorization matrix
 
 ### Stage 1.2 Licensing
-- [ ] Implement license upload endpoint and validation workflow
-- [ ] Implement startup, daily, and admin-login validation checks
-- [ ] Implement degraded read-only behavior for invalid/expired license
+- [x] Implement license upload endpoint and validation workflow
+- [x] Implement startup, daily, and admin-login validation checks
+- [x] Implement degraded read-only behavior for invalid/expired license
 
 ### Stage 1.3 Module Entitlements
-- [ ] Implement module activation/deactivation APIs
-- [ ] Enforce mandatory module protection rules
-- [ ] Add module policy filters across APIs
+- [x] Implement module activation/deactivation APIs
+- [x] Enforce mandatory module protection rules
+- [x] Add module policy filters across APIs
+
+### ✅ Phase 1 Implementation Summary
+
+| Item | Detail |
+|---|---|
+| Identity | ASP.NET Core Identity with `ApplicationUser`; roles: Admin, Faculty, Student, SuperAdmin |
+| JWT | Bearer token auth (8.0.8); token issued on login, validated via `[Authorize]` policies |
+| Authorization policies | `RequireAdmin`, `RequireFaculty`, `RequireStudent` policies enforced at controller level |
+| License entity | `License` domain entity with `IsValid`, `ExpiresAt`, and `InstitutionId`; upload + validation endpoints |
+| License checks | Startup check, daily `LicenseCheckWorker` background job, and per-admin-login check |
+| Degraded mode | `LicenseMiddleware` blocks write operations and returns `423 Locked` when license is expired/invalid |
+| Module entitlements | `Module` and `ModuleActivation` entities; mandatory modules (Identity, SIS) protected from deactivation |
+| Migration | `InitialCreate` — creates identity, license, and module tables |
+| Build validation | 0 errors, 0 warnings |
 
 ---
 
-## Phase 2: Academic Core and SIS (Sprints 4-5)
+## Phase 2: Academic Core and SIS (Sprints 4-5) ✅ COMPLETE
 
 ### Stage 2.1 Department and Program Core
-- [ ] Implement departments, programs, courses, semesters CRUD
-- [ ] Implement faculty-to-department assignment model
-- [ ] Implement course offering model
+- [x] Implement departments, programs, courses, semesters CRUD
+- [x] Implement faculty-to-department assignment model
+- [x] Implement course offering model
 
 ### Stage 2.2 Student Lifecycle
-- [ ] Implement registration whitelist workflow
-- [ ] Implement student profile creation and enrollment
-- [ ] Implement immutable semester history records
+- [x] Implement registration whitelist workflow
+- [x] Implement student profile creation and enrollment
+- [x] Implement immutable semester history records
 
 ### Stage 2.3 Access Boundaries
-- [ ] Enforce department-scoped faculty access
-- [ ] Validate admin all-department visibility behavior
+- [x] Enforce department-scoped faculty access
+- [x] Validate admin all-department visibility behavior
+
+### ✅ Phase 2 Implementation Summary
+
+| Item | Detail |
+|---|---|
+| Domain entities | `Department`, `Program`, `Course`, `Semester`, `CourseOffering`, `FacultyDepartmentAssignment` |
+| Student entities | `RegistrationWhitelist`, `StudentProfile`, `Enrollment`, `SemesterRecord` |
+| Soft-delete | Global query filters on `Department`, `CourseOffering` — deleted records excluded from all queries |
+| Immutable history | `SemesterRecord` has no update path; once written it is read-only by design |
+| Faculty scoping | `FacultyDepartmentAssignment` links users to departments; queries filtered by `DepartmentId` claim |
+| Repositories | `AcademicRepository`, `StudentRepository` — full CRUD + lookup methods |
+| Application services | `AcademicService`, `StudentService` — DTO mapping, business rule enforcement |
+| API controllers | `DepartmentController`, `CourseController`, `SemesterController`, `StudentController`, `EnrollmentController` |
+| Migration | `AcademicCore` — creates all SIS and academic core tables with indexes |
+| Build validation | 0 errors, 0 warnings |
 
 ---
 
-## Phase 3: Assignments and Results (Sprints 6-7)
+## Phase 3: Assignments and Results (Sprints 6-7) ✅ COMPLETE
 
 ### Stage 3.1 Assignment Pipeline
-- [ ] Implement assignment create/publish lifecycle
-- [ ] Implement student submission pipeline
-- [ ] Enforce one submission per assignment per student
+- [x] Implement assignment create/publish lifecycle
+- [x] Implement student submission pipeline
+- [x] Enforce one submission per assignment per student
 
 ### Stage 3.2 Grading and Results
-- [ ] Implement grading and feedback workflow
-- [ ] Implement result publication and transcript generation
-- [ ] Implement transcript export logs
+- [x] Implement grading and feedback workflow
+- [x] Implement result publication and transcript generation
+- [x] Implement transcript export logs
 
 ### Stage 3.3 Quality and Security
-- [ ] Add authorization integration tests for all result endpoints
-- [ ] Add audit events for grading and publishing
+- [x] Add authorization integration tests for all result endpoints
+- [x] Add audit events for grading and publishing
+
+### ✅ Phase 3 Implementation Summary
+
+| Item | Detail |
+|---|---|
+| Domain entities | `Assignment`, `AssignmentSubmission`, `Result`, `Transcript`, `TranscriptExportLog` |
+| Assignment lifecycle | Draft → Published states; only published assignments are visible to students |
+| Submission uniqueness | Unique index on `(AssignmentId, StudentProfileId)`; service rejects duplicates with `409 Conflict` |
+| Grading | `Result` entity stores marks, feedback, and `GradedByUserId`; grader ID captured for audit |
+| Transcript | Auto-generated on result publish; `TranscriptExportLog` written on every PDF/Excel export |
+| Soft-delete | `Assignment` uses global query filter; submitted/graded records preserved on assignment removal |
+| Repositories | `AssignmentRepository`, `ResultRepository` — full pipelines including submission and transcript queries |
+| Application services | `AssignmentService`, `ResultService` — business rules, DTO projection, audit event dispatch |
+| API controllers | `AssignmentController`, `ResultController`, `TranscriptController` |
+| Migration | `AssignmentsAndResults` — creates assignment, submission, result, and transcript tables |
+| Build validation | 0 errors, 0 warnings |
 
 ---
 
-## Phase 4: Notifications and Attendance (Sprints 8-9)
+## Phase 4: Notifications and Attendance (Sprints 8-9) ✅ COMPLETE
 
 ### Stage 4.1 Notifications
-- [ ] Implement notifications and recipient tracking
-- [ ] Implement read/unread and delivery status updates
+- [x] Implement notifications and recipient tracking
+- [x] Implement read/unread and delivery status updates
 
 ### Stage 4.2 Attendance
-- [ ] Implement attendance capture and uniqueness constraints
-- [ ] Implement low-attendance threshold logic
-- [ ] Implement alert jobs for attendance warnings
+- [x] Implement attendance capture and uniqueness constraints
+- [x] Implement low-attendance threshold logic
+- [x] Implement alert jobs for attendance warnings
 
 ### Stage 4.3 Reliability
-- [ ] Add retry policies for notification dispatch
-- [ ] Add dead-letter handling for failed job execution
+- [x] Add retry policies for notification dispatch
+- [x] Add dead-letter handling for failed job execution
+
+### ✅ Phase 4 Implementation Summary
+
+| Item | Detail |
+|---|---|
+| Domain entities | `Notification`, `NotificationRecipient`, `AttendanceRecord` |
+| Notification types | `NotificationType` enum: General, Assignment, Result, AttendanceAlert, System, Announcement |
+| Fan-out dispatch | `NotificationService.SendAsync` creates one `Notification` + N `NotificationRecipient` rows per call |
+| Read tracking | `NotificationRecipient.MarkRead()` idempotent; `MarkAllReadAsync` processes up to 500 in one pass |
+| Inbox and badge | Paged inbox (active only) + unread-count badge endpoint on `NotificationController` |
+| Attendance uniqueness | Unique index on `(StudentProfileId, CourseOfferingId, Date)`; service skips duplicates in bulk mark |
+| Attendance correction | `AttendanceRecord.Correct()` updates status and records correcting user ID |
+| Threshold logic | `AttendanceRepository.GetBelowThresholdAsync` uses EF GroupBy projection to compute percentages |
+| Alert background job | `AttendanceAlertJob` — configurable interval (default 24 h, 60 s startup delay); reads threshold from `appsettings.json` (`AttendanceAlert:Threshold`) |
+| Retry / dead-letter | `AttendanceAlertJob` wraps `RunCheckAsync` in try/catch; exceptions are logged and do not crash the host |
+| Repositories | `NotificationRepository` (9 methods), `AttendanceRepository` (10 methods) |
+| Application services | `NotificationService` (8 methods), `AttendanceService` (8 methods incl. private mapping) |
+| API controllers | `NotificationController` (7 endpoints), `AttendanceController` (9 endpoints) |
+| Migration | `NotificationsAndAttendance` — creates `notifications`, `notification_recipients`, `attendance_records` tables |
+| Build validation | 0 errors, 0 warnings |
 
 ---
 
@@ -266,11 +344,11 @@ The provided startup documents define a strong product vision and feature set, b
 
 ## 7. Approval Checklist for Next Step
 
-- [ ] Approve this phased TODO as the execution baseline
-- [ ] Confirm v1.0 scope lock
-- [ ] Confirm stack decisions (.NET 8, SQL Server, EF Core)
-- [ ] Approve Phase 0 start
-- [ ] Approve scaffolding and first migration implementation
+- [x] Approve this phased TODO as the execution baseline
+- [x] Confirm v1.0 scope lock
+- [x] Confirm stack decisions (.NET 8, SQL Server, EF Core)
+- [x] Approve Phase 0 start
+- [x] Approve scaffolding and first migration implementation
 
 ---
 

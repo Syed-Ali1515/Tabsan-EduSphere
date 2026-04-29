@@ -676,3 +676,118 @@
 | `GetTranscriptHistory(studentProfileId, ct)` | `GET /api/result/transcript/{id}/history` — export history for a student. Faculty/Admin. | `API/Controllers/ResultController.cs` |
 | `GetCurrentUserId()` | Private — extracts user ID from JWT NameIdentifier claim. | `API/Controllers/ResultController.cs` |
 | `GetCurrentStudentProfileId()` | Private — extracts student profile ID from "studentProfileId" JWT claim. | `API/Controllers/ResultController.cs` |
+
+---
+
+## Phase 4 — Notifications and Attendance
+
+### Domain — Notification
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `Notification(title, body, type, senderUserId)` | Constructor — user-authored notification. | `Domain/Notifications/Notification.cs` |
+| `Notification(title, body, type)` | Constructor — system-generated notification (no human sender). | `Domain/Notifications/Notification.cs` |
+| `Deactivate()` | Hides the notification from all inboxes. Does not delete it. | `Domain/Notifications/Notification.cs` |
+
+### Domain — NotificationRecipient
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `NotificationRecipient(notificationId, recipientUserId)` | Constructor — creates an unread delivery record for the user. | `Domain/Notifications/NotificationRecipient.cs` |
+| `MarkRead()` | Marks the notification as read. Idempotent. | `Domain/Notifications/NotificationRecipient.cs` |
+
+### Domain — AttendanceRecord
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `AttendanceRecord(studentProfileId, courseOfferingId, date, status, markedByUserId, remarks?)` | Constructor — normalises date to UTC date only. | `Domain/Attendance/AttendanceRecord.cs` |
+| `Correct(newStatus, correctedByUserId, remarks?)` | Corrects status and records the correcting user. | `Domain/Attendance/AttendanceRecord.cs` |
+
+### Infrastructure — NotificationRepository
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetByIdAsync(id, ct)` | Returns notification by ID or null. | `Infrastructure/Repositories/NotificationAttendanceRepositories.cs` |
+| `AddAsync(notification, ct)` | Queues a notification for insertion. | `Infrastructure/Repositories/NotificationAttendanceRepositories.cs` |
+| `Update(notification)` | Marks notification as modified. | `Infrastructure/Repositories/NotificationAttendanceRepositories.cs` |
+| `GetForUserAsync(userId, unreadOnly, skip, take, ct)` | Returns paged inbox for a user (active notifications only). | `Infrastructure/Repositories/NotificationAttendanceRepositories.cs` |
+| `GetUnreadCountAsync(userId, ct)` | Returns unread active notification count for the user's badge. | `Infrastructure/Repositories/NotificationAttendanceRepositories.cs` |
+| `GetRecipientAsync(notificationId, userId, ct)` | Returns a specific delivery record or null. | `Infrastructure/Repositories/NotificationAttendanceRepositories.cs` |
+| `AddRecipientsAsync(recipients, ct)` | Bulk-inserts recipient rows for fan-out on dispatch. | `Infrastructure/Repositories/NotificationAttendanceRepositories.cs` |
+| `UpdateRecipient(recipient)` | Marks a recipient row as modified (read state). | `Infrastructure/Repositories/NotificationAttendanceRepositories.cs` |
+| `SaveChangesAsync(ct)` | Commits pending changes (NotificationRepository). | `Infrastructure/Repositories/NotificationAttendanceRepositories.cs` |
+
+### Infrastructure — AttendanceRepository
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetAsync(studentProfileId, courseOfferingId, date, ct)` | Returns the attendance record for the combination or null. | `Infrastructure/Repositories/NotificationAttendanceRepositories.cs` |
+| `ExistsAsync(studentProfileId, courseOfferingId, date, ct)` | Returns true when a record already exists. | `Infrastructure/Repositories/NotificationAttendanceRepositories.cs` |
+| `GetByOfferingAsync(courseOfferingId, from?, to?, ct)` | Returns records for an offering, optionally filtered by date range. | `Infrastructure/Repositories/NotificationAttendanceRepositories.cs` |
+| `GetByStudentAsync(studentProfileId, courseOfferingId?, ct)` | Returns records for a student, optionally scoped to one offering. | `Infrastructure/Repositories/NotificationAttendanceRepositories.cs` |
+| `GetAttendanceSummaryAsync(studentProfileId, courseOfferingId, ct)` | Returns (TotalSessions, AttendedSessions) for the student. | `Infrastructure/Repositories/NotificationAttendanceRepositories.cs` |
+| `GetBelowThresholdAsync(thresholdPercent, ct)` | Returns all student-offering pairs with attendance below threshold. | `Infrastructure/Repositories/NotificationAttendanceRepositories.cs` |
+| `AddAsync(record, ct)` | Queues a single attendance record for insertion. | `Infrastructure/Repositories/NotificationAttendanceRepositories.cs` |
+| `AddRangeAsync(records, ct)` | Queues multiple records for bulk insertion. | `Infrastructure/Repositories/NotificationAttendanceRepositories.cs` |
+| `Update(record)` | Marks a record as modified (correction). | `Infrastructure/Repositories/NotificationAttendanceRepositories.cs` |
+| `SaveChangesAsync(ct)` | Commits pending changes (AttendanceRepository). | `Infrastructure/Repositories/NotificationAttendanceRepositories.cs` |
+
+### Application — NotificationService
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `SendAsync(request, senderUserId, ct)` | Creates notification and fans out to recipient list. Returns notification ID. | `Application/Notifications/NotificationService.cs` |
+| `SendSystemAsync(title, body, type, recipientUserIds, ct)` | System-generated fan-out (no human sender). Returns notification ID. | `Application/Notifications/NotificationService.cs` |
+| `DeactivateAsync(notificationId, ct)` | Deactivates notification from all inboxes. Returns false if not found. | `Application/Notifications/NotificationService.cs` |
+| `GetInboxAsync(userId, unreadOnly, page, pageSize, ct)` | Returns paged inbox for a user with optional unread filter. | `Application/Notifications/NotificationService.cs` |
+| `GetBadgeAsync(userId, ct)` | Returns unread count for the notification bell badge. | `Application/Notifications/NotificationService.cs` |
+| `MarkReadAsync(notificationId, userId, ct)` | Marks a specific notification as read. Idempotent. | `Application/Notifications/NotificationService.cs` |
+| `MarkAllReadAsync(userId, ct)` | Marks all unread notifications as read for the user. | `Application/Notifications/NotificationService.cs` |
+| `ToResponse(recipient)` | Private — maps NotificationRecipient (with navigation) to DTO. | `Application/Notifications/NotificationService.cs` |
+
+### Application — AttendanceService
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `MarkAsync(request, markedByUserId, ct)` | Records single attendance. Returns false on duplicate. | `Application/Attendance/AttendanceService.cs` |
+| `BulkMarkAsync(request, markedByUserId, ct)` | Bulk-marks a class; skips duplicates. Returns inserted count. | `Application/Attendance/AttendanceService.cs` |
+| `CorrectAsync(request, correctedByUserId, ct)` | Corrects an existing record. Returns false if not found. | `Application/Attendance/AttendanceService.cs` |
+| `GetByOfferingAsync(courseOfferingId, from?, to?, ct)` | Returns records for an offering with optional date filter. | `Application/Attendance/AttendanceService.cs` |
+| `GetByStudentAsync(studentProfileId, courseOfferingId?, ct)` | Returns records for a student, optionally scoped to one offering. | `Application/Attendance/AttendanceService.cs` |
+| `GetSummaryAsync(studentProfileId, courseOfferingId, ct)` | Returns attendance percentage summary for a student in an offering. | `Application/Attendance/AttendanceService.cs` |
+| `GetBelowThresholdAsync(thresholdPercent, ct)` | Returns all student-offering pairs below the threshold. | `Application/Attendance/AttendanceService.cs` |
+| `ToResponse(record)` | Private — maps AttendanceRecord to AttendanceResponse DTO. | `Application/Attendance/AttendanceService.cs` |
+
+### API — NotificationController
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `Send(request, ct)` | `POST /api/notification` — dispatches notification to a user list. Admin/Faculty. | `API/Controllers/NotificationController.cs` |
+| `Deactivate(id, ct)` | `DELETE /api/notification/{id}` — deactivates a notification. Admin. | `API/Controllers/NotificationController.cs` |
+| `GetInbox(unreadOnly, page, pageSize, ct)` | `GET /api/notification/inbox` — paged inbox for current user. | `API/Controllers/NotificationController.cs` |
+| `GetBadge(ct)` | `GET /api/notification/badge` — unread count for the bell icon. | `API/Controllers/NotificationController.cs` |
+| `MarkRead(id, ct)` | `POST /api/notification/{id}/read` — marks one notification read. | `API/Controllers/NotificationController.cs` |
+| `MarkAllRead(ct)` | `POST /api/notification/read-all` — marks all unread as read. | `API/Controllers/NotificationController.cs` |
+| `GetCurrentUserId()` | Private — extracts user ID from JWT NameIdentifier claim. | `API/Controllers/NotificationController.cs` |
+
+### API — AttendanceController
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `Mark(request, ct)` | `POST /api/attendance` — marks attendance for one student. Faculty/Admin. | `API/Controllers/AttendanceController.cs` |
+| `BulkMark(request, ct)` | `POST /api/attendance/bulk` — bulk-marks a full class. Faculty/Admin. | `API/Controllers/AttendanceController.cs` |
+| `Correct(request, ct)` | `PUT /api/attendance/correct` — corrects an existing record. Faculty/Admin. | `API/Controllers/AttendanceController.cs` |
+| `GetByOffering(courseOfferingId, from, to, ct)` | `GET /api/attendance/by-offering/{id}` — records for an offering. Faculty/Admin. | `API/Controllers/AttendanceController.cs` |
+| `GetByStudent(studentProfileId, courseOfferingId, ct)` | `GET /api/attendance/by-student/{id}` — records for a student. Faculty/Admin. | `API/Controllers/AttendanceController.cs` |
+| `GetMyAttendance(courseOfferingId, ct)` | `GET /api/attendance/my-attendance` — student's own records. Student. | `API/Controllers/AttendanceController.cs` |
+| `GetSummary(studentProfileId, courseOfferingId, ct)` | `GET /api/attendance/summary/{studentId}/{offeringId}` — percentage summary. All roles. | `API/Controllers/AttendanceController.cs` |
+| `GetBelowThreshold(threshold, ct)` | `GET /api/attendance/below-threshold` — students below threshold. Admin. | `API/Controllers/AttendanceController.cs` |
+| `GetCurrentUserId()` | Private — extracts user ID from JWT NameIdentifier claim. | `API/Controllers/AttendanceController.cs` |
+| `GetCurrentStudentProfileId()` | Private — extracts student profile ID from "studentProfileId" JWT claim. | `API/Controllers/AttendanceController.cs` |
+
+### Background Job — AttendanceAlertJob
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `ExecuteAsync(stoppingToken)` | Main hosted service loop — waits 60 s startup delay then runs on configured interval. | `BackgroundJobs/AttendanceAlertJob.cs` |
+| `RunCheckAsync(ct)` | Resolves scoped services, finds below-threshold students, dispatches alert notifications. | `BackgroundJobs/AttendanceAlertJob.cs` |

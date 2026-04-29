@@ -1,10 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Tabsan.EduSphere.Domain.Academic;
 using Tabsan.EduSphere.Domain.Assignments;
+using Tabsan.EduSphere.Domain.Attendance;
 using Tabsan.EduSphere.Domain.Auditing;
 using Tabsan.EduSphere.Domain.Identity;
 using Tabsan.EduSphere.Domain.Licensing;
 using Tabsan.EduSphere.Domain.Modules;
+using Tabsan.EduSphere.Domain.Notifications;
 
 namespace Tabsan.EduSphere.Infrastructure.Persistence;
 
@@ -85,6 +87,16 @@ public class ApplicationDbContext : DbContext
 
     /// <summary>Audit log of every transcript export request.</summary>
     public DbSet<TranscriptExportLog> TranscriptExportLogs => Set<TranscriptExportLog>();
+
+    // ── Phase 4: Notifications and Attendance ──────────────────────────────────
+    /// <summary>Notification headers created by users or the system.</summary>
+    public DbSet<Notification> Notifications => Set<Notification>();
+
+    /// <summary>Per-user delivery and read-state records for notifications.</summary>
+    public DbSet<NotificationRecipient> NotificationRecipients => Set<NotificationRecipient>();
+
+    /// <summary>Daily per-student session attendance records.</summary>
+    public DbSet<AttendanceRecord> AttendanceRecords => Set<AttendanceRecord>();
 
     /// <summary>
     /// Scans the current assembly for all IEntityTypeConfiguration implementations

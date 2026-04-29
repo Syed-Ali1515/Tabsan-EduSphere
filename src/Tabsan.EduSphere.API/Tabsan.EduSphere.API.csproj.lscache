@@ -55,12 +55,14 @@ TemporaryDependencyNodeTargetIdentifier=net8.0
 [sourceFiles]
 Controllers/
  AssignmentController.cs
+ AttendanceController.cs
  AuthController.cs
  CourseController.cs
  DepartmentController.cs
  EnrollmentController.cs
  LicenseController.cs
  ModuleController.cs
+ NotificationController.cs
  ProgramController.cs
  ResultController.cs
  SemesterController.cs

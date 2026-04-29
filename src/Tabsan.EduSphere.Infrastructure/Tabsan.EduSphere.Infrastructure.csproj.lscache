@@ -65,6 +65,8 @@ Migrations/
  20260429004340_AcademicCore.Designer.cs
  20260429005740_AssignmentsAndResults.cs
  20260429005740_AssignmentsAndResults.Designer.cs
+ 20260429011542_NotificationsAndAttendance.cs
+ 20260429011542_NotificationsAndAttendance.Designer.cs
  ApplicationDbContextModelSnapshot.cs
 Modules/ModuleEntitlementResolver.cs
 obj/Debug/net8.0/
@@ -76,10 +78,12 @@ Persistence/
  Configurations/
   AcademicConfigurations.cs
   AssignmentConfigurations.cs
+  AttendanceConfigurations.cs
   AuditLogConfiguration.cs
   DepartmentConfiguration.cs
   LicenseStateConfiguration.cs
   ModuleConfiguration.cs
+  NotificationConfigurations.cs
   RoleConfiguration.cs
   StudentAcademicConfigurations.cs
   UserConfiguration.cs
@@ -93,6 +97,7 @@ Repositories/
  DepartmentRepository.cs
  LicenseRepository.cs
  ModuleRepository.cs
+ NotificationAttendanceRepositories.cs
  UserRepository.cs
  UserSessionRepository.cs
 

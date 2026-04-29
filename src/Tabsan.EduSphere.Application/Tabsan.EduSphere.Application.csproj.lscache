@@ -59,23 +59,29 @@ Academic/
 Assignments/
  AssignmentService.cs
  ResultService.cs
+Attendance/AttendanceService.cs
 Auth/AuthService.cs
 DTOs/
  Academic/AcademicDtos.cs
  Assignments/AssignmentDtos.cs
+ Attendance/AttendanceDtos.cs
  Auth/AuthDtos.cs
+ Notifications/NotificationDtos.cs
 Interfaces/
  IAssignmentService.cs
+ IAttendanceService.cs
  IAuthService.cs
  IEnrollmentService.cs
  IModuleEntitlementResolver.cs
  IModuleService.cs
+ INotificationService.cs
  IPasswordHasher.cs
  IResultService.cs
  IStudentRegistrationService.cs
  ITokenService.cs
  IUserSessionRepository.cs
 Modules/ModuleService.cs
+Notifications/NotificationService.cs
 obj/Debug/net8.0/
  .NETCoreApp,Version=v8.0.AssemblyAttributes.cs
  Tabsan.EduSphere.Application.AssemblyInfo.cs

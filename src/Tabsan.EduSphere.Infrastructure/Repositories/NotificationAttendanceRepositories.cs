@@ -1,0 +1,176 @@
+using Microsoft.EntityFrameworkCore;
+using Tabsan.EduSphere.Domain.Attendance;
+using Tabsan.EduSphere.Domain.Interfaces;
+using Tabsan.EduSphere.Domain.Notifications;
+using Tabsan.EduSphere.Infrastructure.Persistence;
+
+namespace Tabsan.EduSphere.Infrastructure.Repositories;
+
+/// <summary>EF Core implementation of INotificationRepository.</summary>
+public class NotificationRepository : INotificationRepository
+{
+    private readonly ApplicationDbContext _db;
+    public NotificationRepository(ApplicationDbContext db) => _db = db;
+
+    // ── Notifications ─────────────────────────────────────────────────────────
+
+    /// <summary>Returns the notification by ID, or null.</summary>
+    public Task<Notification?> GetByIdAsync(Guid id, CancellationToken ct = default)
+        => _db.Notifications.FirstOrDefaultAsync(n => n.Id == id, ct);
+
+    /// <summary>Queues a notification for insertion.</summary>
+    public async Task AddAsync(Notification notification, CancellationToken ct = default)
+        => await _db.Notifications.AddAsync(notification, ct);
+
+    /// <summary>Marks the notification as modified.</summary>
+    public void Update(Notification notification) => _db.Notifications.Update(notification);
+
+    // ── Recipients ────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Returns paged notifications for a user, newest first.
+    /// Only returns records whose parent notification is still active.
+    /// </summary>
+    public async Task<IReadOnlyList<NotificationRecipient>> GetForUserAsync(
+        Guid userId, bool unreadOnly = false, int skip = 0, int take = 20, CancellationToken ct = default)
+    {
+        var query = _db.NotificationRecipients
+            .Include(r => r.Notification)
+            .Where(r => r.RecipientUserId == userId && r.Notification.IsActive);
+
+        if (unreadOnly)
+            query = query.Where(r => !r.IsRead);
+
+        return await query
+            .OrderByDescending(r => r.CreatedAt)
+            .Skip(skip)
+            .Take(take)
+            .ToListAsync(ct);
+    }
+
+    /// <summary>Returns the count of unread, active notifications for a user.</summary>
+    public Task<int> GetUnreadCountAsync(Guid userId, CancellationToken ct = default)
+        => _db.NotificationRecipients
+              .Include(r => r.Notification)
+              .CountAsync(r => r.RecipientUserId == userId && !r.IsRead && r.Notification.IsActive, ct);
+
+    /// <summary>Returns the delivery record for a specific user+notification pair, or null.</summary>
+    public Task<NotificationRecipient?> GetRecipientAsync(Guid notificationId, Guid userId, CancellationToken ct = default)
+        => _db.NotificationRecipients.FirstOrDefaultAsync(
+            r => r.NotificationId == notificationId && r.RecipientUserId == userId, ct);
+
+    /// <summary>Queues multiple recipient rows for bulk insertion (fan-out on dispatch).</summary>
+    public async Task AddRecipientsAsync(IEnumerable<NotificationRecipient> recipients, CancellationToken ct = default)
+        => await _db.NotificationRecipients.AddRangeAsync(recipients, ct);
+
+    /// <summary>Marks a recipient row as modified.</summary>
+    public void UpdateRecipient(NotificationRecipient recipient)
+        => _db.NotificationRecipients.Update(recipient);
+
+    /// <summary>Commits pending changes.</summary>
+    public Task<int> SaveChangesAsync(CancellationToken ct = default) => _db.SaveChangesAsync(ct);
+}
+
+/// <summary>EF Core implementation of IAttendanceRepository.</summary>
+public class AttendanceRepository : IAttendanceRepository
+{
+    private readonly ApplicationDbContext _db;
+    public AttendanceRepository(ApplicationDbContext db) => _db = db;
+
+    /// <summary>Returns the attendance record for a student / offering / date, or null.</summary>
+    public Task<AttendanceRecord?> GetAsync(Guid studentProfileId, Guid courseOfferingId, DateTime date, CancellationToken ct = default)
+        => _db.AttendanceRecords.FirstOrDefaultAsync(a =>
+            a.StudentProfileId == studentProfileId &&
+            a.CourseOfferingId == courseOfferingId &&
+            a.Date == date.Date, ct);
+
+    /// <summary>Returns true when a record already exists for the combination.</summary>
+    public Task<bool> ExistsAsync(Guid studentProfileId, Guid courseOfferingId, DateTime date, CancellationToken ct = default)
+        => _db.AttendanceRecords.AnyAsync(a =>
+            a.StudentProfileId == studentProfileId &&
+            a.CourseOfferingId == courseOfferingId &&
+            a.Date == date.Date, ct);
+
+    /// <summary>Returns all records for a course offering, optionally filtered by date range.</summary>
+    public async Task<IReadOnlyList<AttendanceRecord>> GetByOfferingAsync(
+        Guid courseOfferingId, DateTime? from = null, DateTime? to = null, CancellationToken ct = default)
+    {
+        var query = _db.AttendanceRecords.Where(a => a.CourseOfferingId == courseOfferingId);
+
+        if (from.HasValue) query = query.Where(a => a.Date >= from.Value.Date);
+        if (to.HasValue)   query = query.Where(a => a.Date <= to.Value.Date);
+
+        return await query.OrderBy(a => a.Date).ThenBy(a => a.StudentProfileId).ToListAsync(ct);
+    }
+
+    /// <summary>Returns all records for a student, optionally filtered to a single offering.</summary>
+    public async Task<IReadOnlyList<AttendanceRecord>> GetByStudentAsync(
+        Guid studentProfileId, Guid? courseOfferingId = null, CancellationToken ct = default)
+    {
+        var query = _db.AttendanceRecords.Where(a => a.StudentProfileId == studentProfileId);
+
+        if (courseOfferingId.HasValue)
+            query = query.Where(a => a.CourseOfferingId == courseOfferingId.Value);
+
+        return await query.OrderBy(a => a.CourseOfferingId).ThenBy(a => a.Date).ToListAsync(ct);
+    }
+
+    /// <summary>
+    /// Returns (TotalSessions, AttendedSessions) for a student in an offering.
+    /// Attended = Present or Late.
+    /// </summary>
+    public async Task<(int TotalSessions, int AttendedSessions)> GetAttendanceSummaryAsync(
+        Guid studentProfileId, Guid courseOfferingId, CancellationToken ct = default)
+    {
+        var records = await _db.AttendanceRecords
+            .Where(a => a.StudentProfileId == studentProfileId && a.CourseOfferingId == courseOfferingId)
+            .Select(a => a.Status)
+            .ToListAsync(ct);
+
+        int total    = records.Count;
+        int attended = records.Count(s => s == AttendanceStatus.Present || s == AttendanceStatus.Late);
+        return (total, attended);
+    }
+
+    /// <summary>
+    /// Returns all (studentProfileId, courseOfferingId, attendancePercent) tuples
+    /// where the student's attendance is below <paramref name="thresholdPercent"/>.
+    /// Only students with at least one recorded session are considered.
+    /// </summary>
+    public async Task<IReadOnlyList<(Guid StudentProfileId, Guid CourseOfferingId, double AttendancePercent)>> GetBelowThresholdAsync(
+        double thresholdPercent, CancellationToken ct = default)
+    {
+        var grouped = await _db.AttendanceRecords
+            .GroupBy(a => new { a.StudentProfileId, a.CourseOfferingId })
+            .Select(g => new
+            {
+                g.Key.StudentProfileId,
+                g.Key.CourseOfferingId,
+                Total    = g.Count(),
+                Attended = g.Count(a => a.Status == AttendanceStatus.Present || a.Status == AttendanceStatus.Late)
+            })
+            .ToListAsync(ct);
+
+        return grouped
+            .Select(g => (
+                g.StudentProfileId,
+                g.CourseOfferingId,
+                AttendancePercent: g.Total > 0 ? (double)g.Attended / g.Total * 100.0 : 0.0))
+            .Where(x => x.AttendancePercent < thresholdPercent)
+            .ToList();
+    }
+
+    /// <summary>Queues a single attendance record for insertion.</summary>
+    public async Task AddAsync(AttendanceRecord record, CancellationToken ct = default)
+        => await _db.AttendanceRecords.AddAsync(record, ct);
+
+    /// <summary>Queues multiple records for bulk insertion (full-class session).</summary>
+    public async Task AddRangeAsync(IEnumerable<AttendanceRecord> records, CancellationToken ct = default)
+        => await _db.AttendanceRecords.AddRangeAsync(records, ct);
+
+    /// <summary>Marks a record as modified (correction).</summary>
+    public void Update(AttendanceRecord record) => _db.AttendanceRecords.Update(record);
+
+    /// <summary>Commits pending changes.</summary>
+    public Task<int> SaveChangesAsync(CancellationToken ct = default) => _db.SaveChangesAsync(ct);
+}
