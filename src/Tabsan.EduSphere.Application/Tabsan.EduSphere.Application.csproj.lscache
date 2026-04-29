@@ -66,16 +66,21 @@ DTOs/
  Assignments/AssignmentDtos.cs
  Attendance/AttendanceDtos.cs
  Auth/AuthDtos.cs
+ Fyp/FypDtos.cs
  Notifications/NotificationDtos.cs
+ Quizzes/QuizDtos.cs
+Fyp/FypService.cs
 Interfaces/
  IAssignmentService.cs
  IAttendanceService.cs
  IAuthService.cs
  IEnrollmentService.cs
+ IFypService.cs
  IModuleEntitlementResolver.cs
  IModuleService.cs
  INotificationService.cs
  IPasswordHasher.cs
+ IQuizService.cs
  IResultService.cs
  IStudentRegistrationService.cs
  ITokenService.cs
@@ -86,6 +91,7 @@ obj/Debug/net8.0/
  .NETCoreApp,Version=v8.0.AssemblyAttributes.cs
  Tabsan.EduSphere.Application.AssemblyInfo.cs
  Tabsan.EduSphere.Application.GlobalUsings.g.cs
+Quizzes/QuizService.cs
 
 [metadataReferences]
 ../Tabsan.EduSphere.Domain/obj/Debug/net8.0/ref/Tabsan.EduSphere.Domain.dll

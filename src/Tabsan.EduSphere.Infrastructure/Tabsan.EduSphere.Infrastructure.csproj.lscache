@@ -67,6 +67,8 @@ Migrations/
  20260429005740_AssignmentsAndResults.Designer.cs
  20260429011542_NotificationsAndAttendance.cs
  20260429011542_NotificationsAndAttendance.Designer.cs
+ 20260429013621_QuizzesAndFyp.cs
+ 20260429013621_QuizzesAndFyp.Designer.cs
  ApplicationDbContextModelSnapshot.cs
 Modules/ModuleEntitlementResolver.cs
 obj/Debug/net8.0/
@@ -81,9 +83,11 @@ Persistence/
   AttendanceConfigurations.cs
   AuditLogConfiguration.cs
   DepartmentConfiguration.cs
+  FypConfigurations.cs
   LicenseStateConfiguration.cs
   ModuleConfiguration.cs
   NotificationConfigurations.cs
+  QuizConfigurations.cs
   RoleConfiguration.cs
   StudentAcademicConfigurations.cs
   UserConfiguration.cs
@@ -98,6 +102,7 @@ Repositories/
  LicenseRepository.cs
  ModuleRepository.cs
  NotificationAttendanceRepositories.cs
+ QuizFypRepositories.cs
  UserRepository.cs
  UserSessionRepository.cs
 

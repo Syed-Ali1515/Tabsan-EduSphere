@@ -10,7 +10,9 @@ using Tabsan.EduSphere.Application.Modules;
 using Tabsan.EduSphere.Application.Academic;
 using Tabsan.EduSphere.Application.Assignments;
 using Tabsan.EduSphere.Application.Attendance;
+using Tabsan.EduSphere.Application.Fyp;
 using Tabsan.EduSphere.Application.Notifications;
+using Tabsan.EduSphere.Application.Quizzes;
 using Tabsan.EduSphere.BackgroundJobs;
 using Tabsan.EduSphere.Domain.Interfaces;
 using Tabsan.EduSphere.Infrastructure.Auditing;
@@ -112,7 +114,11 @@ builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<IAttendanceRepository, AttendanceRepository>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IAttendanceService, AttendanceService>();
-
+// ── Phase 5: Quizzes and FYP ──────────────────────────────────────────
+builder.Services.AddScoped<IQuizRepository, QuizRepository>();
+builder.Services.AddScoped<IFypRepository, FypRepository>();
+builder.Services.AddScoped<IQuizService, QuizService>();
+builder.Services.AddScoped<IFypService, FypService>();
 // ── Background jobs ──────────────────────────────────────────────────
 builder.Services.AddHostedService<LicenseCheckWorker>();
 builder.Services.AddHostedService<AttendanceAlertJob>();

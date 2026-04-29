@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.7 (Implementation Baseline)  
+**Version:** 1.8 (Extended Feature Baseline)  
 **Status:** Approved  
 **Prepared By:** Product Team  
 **Last Updated:** 29 April 2026  
@@ -42,6 +42,7 @@ To deliver a scalable, long‑term university management system that preserves a
 - Faculty
 - Admin (All departments access)
 - Super Admin (System authority)
+- Finance (Payment and receipt management)
 - External users (limited access)
 
 ---
@@ -52,12 +53,25 @@ To deliver a scalable, long‑term university management system that preserves a
 - Admissions & enrollment
 - Student Information System (SIS)
 - Assignments & quizzes
-- Notifications & alerts
+- Notifications & alerts (dashboard + email)
 - Final Year Project (FYP) management
 - AI chatbot
 - Reporting & analytics
 - License management & enforcement
-- Multi-theme UI system (15+ themes)
+- Multi-theme UI system (15+ themes, per-user)
+- **Tabsan-Lic** standalone license creation tool
+- Student lifecycle: graduation, semester promotion/failure, dropout, department transfer
+- Finance & payment receipts (with optional online payment gateway)
+- CSV import for student registration whitelist
+- Role-based sidebar navigation with per-role menus and sub-menus
+- System Settings: License, Theme, Report, Module management
+- Departments administration: degrees, semesters, subjects, timetable (PDF/Excel)
+- Teacher modification requests with admin approval workflow
+- Account lockout and admin/super-admin password reset
+- OWASP Top 10 security hardening
+- Database views and stored procedures
+- Free/open-source email API integration
+- Mobile-responsive, WCAG 2.1 AA accessible UI
 
 ### 4.2 Out of Scope
 - Native mobile apps
@@ -183,13 +197,20 @@ If license expires or becomes invalid:
 ## 8. Role-Based Functional Requirements
 
 ### 8.1 Student
-- View full academic history (all semesters)
-- Submit assignments and quizzes
+- View full academic history (all semesters — read-only for past semesters)
+- Submit assignments and quizzes for active semester
 - View attendance, grades, transcripts
-- Receive notifications
+- Receive notifications (dashboard + email)
 - View FYP meeting schedules
 - Interact with AI chatbot
-- Select UI theme
+- Select personal UI theme
+- Self-edit password, email address, and mobile number only
+- Submit admin change request for all other profile fields
+- Upload payment receipt proof and mark as "Payment Submitted"
+- Download timetable (PDF/Excel)
+- **Graduated students**: full read-only dashboard — view and download only; no create/edit/submit
+- **Students with unpaid fees**: read-only mode until Finance confirms payment
+- **Inactive students**: blocked from login; all data preserved
 
 ---
 
@@ -198,12 +219,11 @@ If license expires or becomes invalid:
 - Create assignments and quizzes
 - Grade and provide feedback
 - View student history (department-restricted)
-- Schedule FYP meetings:
-  - Date & time
-  - Department
-  - Room number
-  - Panel participants
+- Schedule FYP meetings (date, time, department, room, panel participants)
 - Send notifications to students
+- Submit attendance/result modification requests with a mandatory reason field
+- Modification takes effect only after Admin approval
+- Self-edit password, email address, and mobile number only; submit admin change request for other fields
 
 ---
 
@@ -212,18 +232,43 @@ If license expires or becomes invalid:
 - Access complete student academic history
 - Generate university-wide reports
 - Send notifications
+- Manage departments: create/edit departments, degree programs, semesters, subjects, timetables
+- Mark students as Graduated (checkbox list by department)
+- Mark semester as completed or failed per student (with subject-level selection)
+- Auto-promote students to next semester on completion
+- Mark students as Inactive (dropout/leave)
+- Transfer student to another department or change program
+- Update student/faculty profiles on change request
+- Approve or reject teacher attendance/result modification requests
+- Enter or import CSV sheet of newly registered students to whitelist
+- Create and manage payment receipts for students
+- Confirm payment received (status → Paid)
+- Unlock and reset passwords for non-admin locked accounts
+- View license status (read-only)
 - No role or system configuration access
 
 ---
 
 ### 8.4 Super Admin
+- All Admin capabilities, plus:
 - Create roles and users
 - Assign departments
-- Manage licenses
-- Configure system settings
-- Control AI chatbot
+- Manage and upload licenses (via System Settings → License Update)
+- Configure system settings: modules, reports, themes
+- Control AI chatbot and online payment gateway toggle
 - Manage UI themes
-- View audit logs
+- View and export audit logs
+- Reset passwords for any locked account including Admin accounts
+- Manage Tabsan-Lic license generation (vendor tool, separate app)
+
+### 8.5 Finance
+- Create and upload payment receipts for students
+- View payment status per student
+- Confirm payment received → mark as Paid
+- Cannot access academic records
+
+### 8.6 External Users
+- Limited read-only access as defined by admin configuration
 
 ---
 
@@ -305,24 +350,117 @@ If license expires or becomes invalid:
 - Minimum **15 themes**
 - Light & Dark included
 - High-contrast accessibility themes
-- User-selectable
+- **Per-user selection** — theme applies to the individual user, not the role
 - Persistent across sessions
 - AI chatbot inherits active theme
+- Admin can set a system default theme; individual users can override it
 
 ---
 
-## 16. Security & Compliance
+## 16. Student Lifecycle Management
 
-- Role-based access control
-- Encrypted data at rest and in transit
-- Secure license validation
-- Full audit logs
-- GDPR / Australian Privacy Act
-- WCAG 2.1 compliance
+### 16.1 Graduation
+- Admin marks students as Graduated via "Graduated Students" menu (per department, checkbox list of final-semester students)
+- Graduated student dashboard becomes permanently read-only: view and download only
+
+### 16.2 Semester Completion & Promotion
+- Admin marks semester as completed per student; selects passed/failed subjects at subject level
+- Students with all subjects passed: auto-promoted to next semester
+- Students with failed subjects: status = "Completed with Failed Subjects"; failed subject list recorded
+- Admin can mark semester as fully Failed: student repeats the semester; added to re-enrollment list
+- Previous semesters always visible to students in read-only form
+
+### 16.3 Student Status Changes
+- Inactive: student blocked from login; all data preserved indefinitely
+- Department/program transfer: admin opens student profile and updates department, program, and semester
+- Admin change request workflow for name, address, and other non-self-editable fields
+
+### 16.4 Student Signup via Registration Number
+- Admin enters or imports a CSV of registration numbers into the whitelist before semester
+- Student signup checks: registration number exists in whitelist + no duplicate account exists
+- Duplicate account error: "An account already exists with this Registration Number. Please contact your admin for further details."
 
 ---
 
-## 17. Non-Functional Requirements
+## 17. Finance & Payments
+
+- Finance role creates fee receipts (amount, description, due date) per student
+- Student uploads proof of payment and marks as "Payment Submitted"
+- Finance confirms → status = **Paid**
+- Until Paid: student account operates in read-only mode
+- **Online payment gateway** (card / bank): disabled by default; Super Admin toggles on/off via Module Settings
+- All payment records stored permanently; no deletion
+
+---
+
+## 18. System Settings
+
+Accessible from the top navigation as a dedicated "Settings" menu:
+
+| Sub-Menu | Access | Description |
+|---|---|---|
+| License Update | Super Admin (upload); Admin (view) | Upload `.tablic` license file; view status table (Status, Expiry Date, Date Updated, Remaining Days) |
+| Theme Settings | All users | Per-user theme picker with preview |
+| Report Settings | Super Admin only | Activate/deactivate reports per role; table: SR#, Report Name, Purpose, Roles (multi-select) |
+| Module Settings | Super Admin only | Activate/deactivate modules per role; table: SR#, Module Name, Purpose, Roles (multi-select), Status (Active/Inactive) |
+
+---
+
+## 19. Tabsan-Lic — License Creation Tool
+
+- Standalone .NET application; separate from EduSphere
+- Generates unique `VerificationKey` per license (one-time use; permanently invalidated after consumption)
+- Operator selects expiry: 1 year / 2 years / 3 years / Permanent
+- License file (`.tablic`) is AES-256 encrypted + RSA-2048 signed — machine-readable only
+- Any modification to the file invalidates the signature
+- EduSphere imports `.tablic`, verifies signature, applies license, marks VerificationKey as consumed
+- Unlimited keys can be generated; each logged with timestamp and expiry choice
+- EduSphere notifies Admin/Super Admin 5 days before license expiry
+
+---
+
+## 20. Security Requirements
+
+- OWASP Top 10 compliance mandatory
+- HTTPS-only; HSTS, CSP, X-Frame-Options, X-Content-Type-Options headers enforced
+- Password policy: minimum 12 characters, uppercase + lowercase + digit + special character required; no common passwords; no last 5 reuse; hashed with Argon2id
+- Rate limiting on authentication and sensitive endpoints
+- Account lockout after 5 consecutive failed login attempts (configurable)
+- Admin or Super Admin resets non-admin locked accounts; only Super Admin resets Admin accounts
+- Dependency vulnerability scanning in CI; zero critical/high CVEs
+- Penetration test sign-off before production release
+
+---
+
+## 21. Performance & Infrastructure Requirements
+
+- Page load < 3 seconds; core dashboard p95 < 200 ms under load
+- Chatbot response < 2 seconds
+- 10,000+ concurrent users
+- 99.9% uptime SLA
+- SQL Views for high-traffic read patterns; Stored Procedures for complex write batches
+- Horizontal scaling-ready (stateless API layer)
+
+---
+
+## 22. Email Integration
+
+- Free/open-source transactional email via `IEmailSender` abstraction (MailKit SMTP, SendGrid free tier, or self-hosted)
+- Email notifications for: results, assignment deadlines, low attendance, license expiry, password reset, account unlock
+- All outbound email attempts logged with status
+
+---
+
+## 23. Mobile & Accessibility
+
+- Responsive UI: tested at 360 px, 768 px, 1280 px viewports
+- WCAG 2.1 AA compliance
+- Touch-friendly controls (44×44 px minimum tap targets)
+- Lighthouse score ≥ 90 for Performance, Accessibility, Best Practices on core pages
+
+---
+
+## 24. Non-Functional Requirements
 
 - Page load < 3 seconds
 - Chatbot response < 2 seconds
@@ -331,18 +469,19 @@ If license expires or becomes invalid:
 
 ---
 
-## 18. Technical Overview
+## 25. Technical Overview
 
-- Frontend: React / Angular
-- Backend: ASP.NET Core / Node.js
-- Database: PostgreSQL / SQL Server
-- REST APIs
-- AI integration (LLM)
-- Cloud-ready (Azure / AWS)
+- Frontend: ASP.NET Core MVC + Razor (Web project); Bootstrap 5 responsive layout
+- Backend: ASP.NET Core 8 Web API
+- Database: SQL Server with EF Core 8; Views and Stored Procedures for performance
+- REST APIs with JWT Bearer authentication
+- AI integration (LLM via abstracted `IAiChatService`)
+- Email: `IEmailSender` abstraction over MailKit/SendGrid
+- Cloud-ready (Azure / AWS); Docker-compatible
 
 ---
 
-## 19. Approval
+## 26. Approval
 
 | Name | Role | Signature | Date |
 |-----|------|----------|------|

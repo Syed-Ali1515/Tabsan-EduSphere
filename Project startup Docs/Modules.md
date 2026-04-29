@@ -1,7 +1,7 @@
 # University Portal – Module Definition, Activation & Packaging
 
-**Document Version:** 1.2 (Implementation Baseline)  
-**Aligned With PRD Version:** 1.6  
+**Document Version:** 1.3 (Implementation Baseline — Extended)  
+**Aligned With PRD Version:** 1.8  
 **Audience:** Super Admin, University Decision Makers  
 **Purpose:** Define selectable system modules, activation rules, and pricing packages  
 
@@ -126,6 +126,22 @@ These modules are required for the portal to function and **cannot be disabled**
 
 ---
 
+### 5.6 Timetable Management Module
+- Admin creates and publishes timetables per department/semester
+- Timetable download for all users in the department (PDF / Excel)
+- Managed under the Departments admin menu
+
+---
+
+### 5.7 Finance & Payments Module
+- Finance role creates and uploads fee receipts per student
+- Students upload payment proof and mark as "Payment Submitted"
+- Finance confirms → status = Paid
+- Student account in read-only mode until fees are marked Paid
+- Optional online payment gateway (card / bank) — Super Admin toggle in Module Settings
+
+---
+
 ## 6. Communication & Coordination Modules
 
 ### 6.1 Notifications Module
@@ -176,9 +192,20 @@ These modules are required for the portal to function and **cannot be disabled**
 - Minimum **15 themes**
 - Light & Dark modes
 - High-contrast accessibility themes
-- User-level theme selection
-- Admin default theme control
-- AI chatbot inherits theme
+- **Per-user** theme selection (not per-role)
+- Persistent across sessions
+- Admin system default theme (overridable by each user)
+- AI chatbot inherits active theme
+
+---
+
+### 8.2 Dashboard & Navigation Module
+- Role-based collapsible sidebar with menus and sub-menus
+- Menus rendered based on active modules and user role
+- Super Admin always sees all menus
+- "Departments" admin menu: create/edit departments, degrees, semesters, subjects, timetables
+- "Graduated Students" menu: department sub-menus with checkbox list of final-semester students
+- "Semester Management" menu: per-department checkbox list for semester completion/promotion
 
 ---
 
@@ -192,6 +219,25 @@ These modules are required for the portal to function and **cannot be disabled**
 
 ---
 
+### 9.2 System Settings Module
+
+Accessible as a dedicated "Settings" menu in the navigation:
+
+#### License Update (Super Admin upload / Admin view)
+- Upload `.tablic` license file
+- Status table: Status, Expiry Date, Date Updated, Remaining Days
+
+#### Report Settings (Super Admin only)
+- Table: SR#, Report Name, Purpose, Roles (multi-select checkbox)
+- Activate or deactivate reports per role
+
+#### Module Settings (Super Admin only)
+- Table: SR#, Module Name, Purpose, Roles (multi-select checkbox), Status (Active/Inactive)
+- Active: module visible and functional for selected roles
+- Inactive: module hidden from all dashboards except Super Admin; no data deleted
+
+---
+
 ## 10. Module Dependency Summary
 
 | Module | Can Be Disabled |
@@ -199,11 +245,15 @@ These modules are required for the portal to function and **cannot be disabled**
 | Authentication & Users | ❌ No |
 | Departments | ❌ No |
 | SIS | ❌ No |
+| System Settings | ❌ No |
+| Dashboard & Navigation | ❌ No |
 | Courses & Programs | ✅ Yes |
 | Assignments | ✅ Yes |
 | Quizzes | ✅ Yes |
 | Attendance | ✅ Yes |
 | Exams & Results | ✅ Yes |
+| Timetable Management | ✅ Yes |
+| Finance & Payments | ✅ Yes |
 | Notifications | ✅ Yes |
 | FYP | ✅ Yes |
 | AI Chatbot | ✅ Yes |
@@ -224,6 +274,9 @@ The **Basic Package** includes:
 - Assignment Management
 - Examination & Results
 - Basic Notifications
+- Timetable Management
+- Dashboard & Navigation
+- System Settings
 - Core Themes (Light & Dark)
 - Core Audit Logging
 
@@ -239,6 +292,8 @@ Modules that can be enabled later (paid):
 - Attendance Management
 - AI Chatbot
 - Final Year Project (FYP)
+- Finance & Payments (including online payment gateway)
+- Timetable Management
 - Advanced Reporting & Analytics
 - Extended Theme Pack (15+ themes)
 - Advanced Audit & Compliance

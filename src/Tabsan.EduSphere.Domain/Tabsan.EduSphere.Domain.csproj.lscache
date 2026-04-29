@@ -73,6 +73,7 @@ Auditing/AuditLog.cs
 Common/
  AuditableEntity.cs
  BaseEntity.cs
+Fyp/FypProject.cs
 Identity/
  Role.cs
  User.cs
@@ -86,9 +87,11 @@ Interfaces/
  IDepartmentRepository.cs
  IEnrollmentRepository.cs
  IFacultyAssignmentRepository.cs
+ IFypRepository.cs
  ILicenseRepository.cs
  IModuleRepository.cs
  INotificationRepository.cs
+ IQuizRepository.cs
  IRegistrationWhitelistRepository.cs
  IResultRepository.cs
  ISemesterRepository.cs
@@ -107,6 +110,9 @@ obj/Debug/net8.0/
  .NETCoreApp,Version=v8.0.AssemblyAttributes.cs
  Tabsan.EduSphere.Domain.AssemblyInfo.cs
  Tabsan.EduSphere.Domain.GlobalUsings.g.cs
+Quizzes/
+ Quiz.cs
+ QuizAttempt.cs
 
 [metadataReferences]
 <DOTNET>/packs/Microsoft.NETCore.App.Ref/8.0.26/ref/net8.0/

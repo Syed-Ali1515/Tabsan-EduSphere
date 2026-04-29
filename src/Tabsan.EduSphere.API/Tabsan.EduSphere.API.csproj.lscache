@@ -60,10 +60,12 @@ Controllers/
  CourseController.cs
  DepartmentController.cs
  EnrollmentController.cs
+ FypController.cs
  LicenseController.cs
  ModuleController.cs
  NotificationController.cs
  ProgramController.cs
+ QuizController.cs
  ResultController.cs
  SemesterController.cs
  StudentController.cs

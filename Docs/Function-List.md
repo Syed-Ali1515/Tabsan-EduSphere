@@ -791,3 +791,411 @@
 |---|---|---|
 | `ExecuteAsync(stoppingToken)` | Main hosted service loop — waits 60 s startup delay then runs on configured interval. | `BackgroundJobs/AttendanceAlertJob.cs` |
 | `RunCheckAsync(ct)` | Resolves scoped services, finds below-threshold students, dispatches alert notifications. | `BackgroundJobs/AttendanceAlertJob.cs` |
+
+---
+
+## Phase 5 — Quizzes and FYP (Sprints 10–11)
+
+### Domain — Quiz
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| Quiz(courseOfferingId, title, createdByUserId, instructions, timeLimitMinutes, maxAttempts, availableFrom, availableUntil) | Creates a new quiz in unpublished state. | Domain/Quizzes/Quiz.cs |
+| Publish() | Marks the quiz as published so students can view and attempt it. | Domain/Quizzes/Quiz.cs |
+| Unpublish() | Reverts the quiz to draft/unpublished state. | Domain/Quizzes/Quiz.cs |
+| Deactivate() | Soft-deletes the quiz by setting IsActive=false. | Domain/Quizzes/Quiz.cs |
+| Update(title, instructions, timeLimitMinutes, maxAttempts, availableFrom, availableUntil) | Updates editable quiz metadata. | Domain/Quizzes/Quiz.cs |
+
+### Domain — QuizQuestion
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| QuizQuestion(quizId, text, type, marks, orderIndex) | Creates a new question within a quiz. | Domain/Quizzes/Quiz.cs |
+| Update(text, marks, orderIndex) | Updates the question text, marks, and display order. | Domain/Quizzes/Quiz.cs |
+
+### Domain — QuizOption
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| QuizOption(quizQuestionId, text, isCorrect, orderIndex) | Creates an answer option for a MCQ or TrueFalse question. | Domain/Quizzes/Quiz.cs |
+
+### Domain — QuizAttempt
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| QuizAttempt(quizId, studentProfileId) | Starts a new attempt, setting status=InProgress and StartedAt=UtcNow. | Domain/Quizzes/QuizAttempt.cs |
+| Submit() | Marks the attempt as Submitted and records FinishedAt. | Domain/Quizzes/QuizAttempt.cs |
+| TimeOut() | Marks the attempt as TimedOut and records FinishedAt. | Domain/Quizzes/QuizAttempt.cs |
+| Abandon() | Marks the attempt as Abandoned and records FinishedAt. | Domain/Quizzes/QuizAttempt.cs |
+| RecordScore(score) | Sets the computed TotalScore on the attempt. | Domain/Quizzes/QuizAttempt.cs |
+
+### Domain — QuizAnswer
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| QuizAnswer(quizAttemptId, quizQuestionId, selectedOptionId) | Records an MCQ or TrueFalse answer by option ID. | Domain/Quizzes/QuizAttempt.cs |
+| QuizAnswer(quizAttemptId, quizQuestionId, textResponse) | Records a ShortAnswer response as free text. | Domain/Quizzes/QuizAttempt.cs |
+| AwardMarks(marks) | Sets the marks awarded for manually graded short answers. | Domain/Quizzes/QuizAttempt.cs |
+
+### Domain — FypProject
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| FypProject(studentProfileId, departmentId, title, description) | Creates a new FYP proposal in Proposed state. | Domain/Fyp/FypProject.cs |
+| Approve(remarks) | Transitions the project to Approved with optional coordinator remarks. | Domain/Fyp/FypProject.cs |
+| Reject(remarks) | Transitions the project to Rejected with mandatory remarks. | Domain/Fyp/FypProject.cs |
+| AssignSupervisor(supervisorUserId) | Records the supervising faculty member and sets status to InProgress. | Domain/Fyp/FypProject.cs |
+| Complete() | Marks the project as Completed. | Domain/Fyp/FypProject.cs |
+| Update(title, description) | Updates the project title and description. | Domain/Fyp/FypProject.cs |
+
+### Domain — FypPanelMember
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| FypPanelMember(fypProjectId, userId, role) | Adds a faculty member to the project panel with a specified role. | Domain/Fyp/FypProject.cs |
+
+### Domain — FypMeeting
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| FypMeeting(fypProjectId, scheduledAt, venue, organiserUserId, agenda) | Schedules a new FYP meeting in Scheduled state. | Domain/Fyp/FypProject.cs |
+| Complete(minutes) | Marks the meeting as Completed and records optional minutes. | Domain/Fyp/FypProject.cs |
+| Cancel() | Cancels a scheduled meeting. | Domain/Fyp/FypProject.cs |
+| Reschedule(scheduledAt, venue, agenda) | Updates the meeting time, venue, and agenda and resets status to Scheduled. | Domain/Fyp/FypProject.cs |
+
+### Infrastructure — QuizRepository
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| GetByIdAsync(id, ct) | Fetches a quiz by primary key. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| GetWithQuestionsAsync(id, ct) | Fetches a quiz with all questions and their options included. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| GetByOfferingAsync(courseOfferingId, ct) | Returns all published quizzes for a course offering. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| AddAsync(quiz, ct) | Persists a new quiz entity. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| Update(quiz) | Marks a quiz as modified in the EF change tracker. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| GetQuestionByIdAsync(questionId, ct) | Fetches a single quiz question by ID. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| AddQuestionAsync(question, ct) | Persists a new quiz question. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| UpdateQuestion(question) | Marks a question as modified. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| RemoveQuestion(question) | Removes a question from the context. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| AddOptionsAsync(options, ct) | Bulk-adds a collection of answer options. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| RemoveOptions(options) | Removes a collection of options from the context. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| GetAttemptByIdAsync(attemptId, ct) | Fetches an attempt with its answers included. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| GetAttemptsAsync(quizId, studentProfileId, ct) | Returns all attempts for a student on a quiz. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| GetAttemptCountAsync(quizId, studentProfileId, ct) | Returns the count of completed or timed-out attempts for cap checking. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| GetInProgressAttemptAsync(quizId, studentProfileId, ct) | Returns any in-progress attempt for a student on a quiz. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| AddAttemptAsync(attempt, ct) | Persists a new quiz attempt. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| UpdateAttempt(attempt) | Marks an attempt as modified. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| AddAnswersAsync(answers, ct) | Bulk-adds a collection of quiz answers. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| GetAnswerByIdAsync(answerId, ct) | Fetches a single answer by ID for manual grading. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| UpdateAnswer(answer) | Marks an answer as modified. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| SaveChangesAsync(ct) | Commits all pending changes to the database. | Infrastructure/Repositories/QuizFypRepositories.cs |
+
+### Infrastructure — FypRepository
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| GetByIdAsync(id, ct) | Fetches an FYP project by primary key. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| GetWithDetailsAsync(id, ct) | Fetches a project with panel members and meetings included. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| GetByStudentAsync(studentProfileId, ct) | Returns all projects for a student. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| GetByDepartmentAsync(departmentId, status, ct) | Returns department projects optionally filtered by status. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| GetBySupervisorAsync(supervisorUserId, ct) | Returns all projects supervised by a given faculty member. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| AddAsync(project, ct) | Persists a new FYP project. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| Update(project) | Marks a project as modified. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| GetPanelMembersAsync(projectId, ct) | Returns all panel members for a project. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| GetPanelMemberAsync(projectId, userId, ct) | Returns a specific panel member by project and user ID. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| AddPanelMemberAsync(member, ct) | Persists a new panel member. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| RemovePanelMember(member) | Removes a panel member from the context. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| GetMeetingByIdAsync(meetingId, ct) | Fetches a meeting by primary key. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| GetMeetingsByProjectAsync(projectId, ct) | Returns all meetings for a project ordered by scheduled date. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| GetUpcomingMeetingsAsync(supervisorUserId, ct) | Returns upcoming scheduled meetings organised by a supervisor. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| AddMeetingAsync(meeting, ct) | Persists a new meeting. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| UpdateMeeting(meeting) | Marks a meeting as modified. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| SaveChangesAsync(ct) | Commits all pending changes to the database. | Infrastructure/Repositories/QuizFypRepositories.cs |
+
+### Application — QuizService
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| CreateAsync(request, facultyUserId, ct) | Creates a new quiz and persists it. | Application/Quizzes/QuizService.cs |
+| UpdateAsync(quizId, request, ct) | Updates quiz metadata; returns false if not found. | Application/Quizzes/QuizService.cs |
+| PublishAsync(quizId, ct) | Publishes a quiz so students can access it. | Application/Quizzes/QuizService.cs |
+| UnpublishAsync(quizId, ct) | Reverts a quiz to draft state. | Application/Quizzes/QuizService.cs |
+| DeactivateAsync(quizId, ct) | Soft-deletes a quiz. | Application/Quizzes/QuizService.cs |
+| AddQuestionAsync(request, ct) | Adds a question with its options to an existing quiz. | Application/Quizzes/QuizService.cs |
+| UpdateQuestionAsync(questionId, request, ct) | Updates question text, marks, and order; replaces options if provided. | Application/Quizzes/QuizService.cs |
+| RemoveQuestionAsync(questionId, ct) | Removes a question and all its options. | Application/Quizzes/QuizService.cs |
+| GetByOfferingAsync(courseOfferingId, ct) | Returns summary list of published quizzes for a course offering. | Application/Quizzes/QuizService.cs |
+| GetDetailAsync(quizId, ct) | Returns full quiz detail including questions and options. | Application/Quizzes/QuizService.cs |
+| StartAttemptAsync(quizId, studentProfileId, ct) | Validates availability, attempt cap, and in-progress check, then creates a new attempt. | Application/Quizzes/QuizService.cs |
+| SubmitAttemptAsync(request, studentProfileId, ct) | Records answers, auto-grades MCQ/TrueFalse, computes score, submits attempt. | Application/Quizzes/QuizService.cs |
+| GetStudentAttemptsAsync(quizId, studentProfileId, ct) | Returns all attempts for a student on a quiz. | Application/Quizzes/QuizService.cs |
+| GetAttemptDetailAsync(attemptId, ct) | Returns detailed attempt data including answer responses. | Application/Quizzes/QuizService.cs |
+| GradeAnswerAsync(request, ct) | Awards marks to a short-answer response and updates attempt total score. | Application/Quizzes/QuizService.cs |
+| ToSummary(quiz) | Private — maps Quiz to QuizSummaryResponse. | Application/Quizzes/QuizService.cs |
+| ToDetail(quiz) | Private — maps Quiz with questions to QuizDetailResponse. | Application/Quizzes/QuizService.cs |
+| ToQuestionResponse(question, hideAnswers) | Private — maps a QuizQuestion to QuestionResponse, optionally hiding correct answers. | Application/Quizzes/QuizService.cs |
+| ToAttemptResponse(attempt) | Private — maps QuizAttempt to AttemptResponse. | Application/Quizzes/QuizService.cs |
+| ToAttemptDetail(attempt) | Private — maps QuizAttempt with answers to AttemptDetailResponse. | Application/Quizzes/QuizService.cs |
+
+### Application — FypService
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| ProposeAsync(request, studentProfileId, ct) | Creates a new FYP project proposal and returns its ID. | Application/Fyp/FypService.cs |
+| UpdateAsync(projectId, request, ct) | Updates project title and description. | Application/Fyp/FypService.cs |
+| ApproveAsync(projectId, request, ct) | Approves a proposal with optional coordinator remarks. | Application/Fyp/FypService.cs |
+| RejectAsync(projectId, request, ct) | Rejects a proposal with mandatory remarks. | Application/Fyp/FypService.cs |
+| AssignSupervisorAsync(projectId, request, ct) | Assigns a supervisor to the project. | Application/Fyp/FypService.cs |
+| CompleteAsync(projectId, ct) | Marks a project as completed. | Application/Fyp/FypService.cs |
+| GetByStudentAsync(studentProfileId, ct) | Returns all projects for a student as summary DTOs. | Application/Fyp/FypService.cs |
+| GetByDepartmentAsync(departmentId, statusString, ct) | Returns department projects filtered by optional status string. | Application/Fyp/FypService.cs |
+| GetBySupervisorAsync(supervisorUserId, ct) | Returns all projects supervised by a faculty user. | Application/Fyp/FypService.cs |
+| GetDetailAsync(projectId, ct) | Returns full project detail with panel and meetings. | Application/Fyp/FypService.cs |
+| AddPanelMemberAsync(projectId, request, ct) | Adds a faculty member to the project panel. | Application/Fyp/FypService.cs |
+| RemovePanelMemberAsync(projectId, userId, ct) | Removes a panel member by user ID. | Application/Fyp/FypService.cs |
+| ScheduleMeetingAsync(request, organiserUserId, ct) | Creates a new scheduled meeting for a project. | Application/Fyp/FypService.cs |
+| RescheduleMeetingAsync(meetingId, request, ct) | Reschedules a meeting to a new time, venue, and agenda. | Application/Fyp/FypService.cs |
+| CompleteMeetingAsync(meetingId, request, ct) | Marks a meeting as completed with optional minutes. | Application/Fyp/FypService.cs |
+| CancelMeetingAsync(meetingId, ct) | Cancels a scheduled meeting. | Application/Fyp/FypService.cs |
+| GetMeetingsByProjectAsync(projectId, ct) | Returns all meetings for a project as response DTOs. | Application/Fyp/FypService.cs |
+| GetUpcomingMeetingsAsync(supervisorUserId, ct) | Returns upcoming meetings organised by the supervisor. | Application/Fyp/FypService.cs |
+| ToSummary(project) | Private — maps FypProject to FypProjectSummaryResponse. | Application/Fyp/FypService.cs |
+| ToDetail(project) | Private — maps FypProject with panel/meetings to FypProjectDetailResponse. | Application/Fyp/FypService.cs |
+| ToMeetingResponse(meeting) | Private — maps FypMeeting to MeetingResponse. | Application/Fyp/FypService.cs |
+
+### API — QuizController
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| Create(request, ct) | POST /api/quiz — Creates a quiz (Faculty). | API/Controllers/QuizController.cs |
+| Update(id, request, ct) | PUT /api/quiz/{id} — Updates quiz metadata (Faculty). | API/Controllers/QuizController.cs |
+| Publish(id, ct) | POST /api/quiz/{id}/publish — Publishes a quiz (Faculty). | API/Controllers/QuizController.cs |
+| Unpublish(id, ct) | POST /api/quiz/{id}/unpublish — Unpublishes a quiz (Faculty). | API/Controllers/QuizController.cs |
+| Deactivate(id, ct) | DELETE /api/quiz/{id} — Soft-deletes a quiz (Admin). | API/Controllers/QuizController.cs |
+| AddQuestion(request, ct) | POST /api/quiz/question — Adds a question to a quiz (Faculty). | API/Controllers/QuizController.cs |
+| UpdateQuestion(questionId, request, ct) | PUT /api/quiz/question/{questionId} — Updates a question (Faculty). | API/Controllers/QuizController.cs |
+| RemoveQuestion(questionId, ct) | DELETE /api/quiz/question/{questionId} — Removes a question (Faculty). | API/Controllers/QuizController.cs |
+| GetByOffering(courseOfferingId, ct) | GET /api/quiz/by-offering/{courseOfferingId} — Lists quizzes for an offering (All). | API/Controllers/QuizController.cs |
+| GetDetail(id, ct) | GET /api/quiz/{id} — Returns full quiz detail (All). | API/Controllers/QuizController.cs |
+| StartAttempt(id, ct) | POST /api/quiz/{id}/start — Starts a student attempt; 409 if cap reached (Student). | API/Controllers/QuizController.cs |
+| SubmitAttempt(request, ct) | POST /api/quiz/attempt/submit — Submits answers and grades MCQ/TrueFalse (Student). | API/Controllers/QuizController.cs |
+| GetMyAttempts(id, ct) | GET /api/quiz/{id}/my-attempts — Returns student's own attempts (Student). | API/Controllers/QuizController.cs |
+| GetAttemptDetail(attemptId, ct) | GET /api/quiz/attempt/{attemptId} — Returns attempt detail with answers (All). | API/Controllers/QuizController.cs |
+| GradeAnswer(request, ct) | POST /api/quiz/attempt/grade-answer — Manually grades a short-answer response (Faculty). | API/Controllers/QuizController.cs |
+| GetCurrentUserId() | Private — Extracts authenticated user ID from JWT NameIdentifier claim. | API/Controllers/QuizController.cs |
+| GetStudentProfileId() | Private — Extracts student profile ID from the studentProfileId JWT claim. | API/Controllers/QuizController.cs |
+
+### API — FypController
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| Propose(request, ct) | POST /api/fyp — Submits an FYP proposal (Student). | API/Controllers/FypController.cs |
+| Update(id, request, ct) | PUT /api/fyp/{id} — Updates project title/description (Student). | API/Controllers/FypController.cs |
+| Approve(id, request, ct) | POST /api/fyp/{id}/approve — Approves a proposal (Admin). | API/Controllers/FypController.cs |
+| Reject(id, request, ct) | POST /api/fyp/{id}/reject — Rejects a proposal with remarks (Admin). | API/Controllers/FypController.cs |
+| AssignSupervisor(id, request, ct) | POST /api/fyp/{id}/assign-supervisor — Assigns a supervisor (Admin). | API/Controllers/FypController.cs |
+| Complete(id, ct) | POST /api/fyp/{id}/complete — Marks a project as completed (Admin). | API/Controllers/FypController.cs |
+| GetMyProjects(ct) | GET /api/fyp/my-projects — Returns current student's projects (Student). | API/Controllers/FypController.cs |
+| GetByDepartment(departmentId, status, ct) | GET /api/fyp/by-department/{departmentId} — Returns department projects (Faculty). | API/Controllers/FypController.cs |
+| GetMySupervised(ct) | GET /api/fyp/my-supervised — Returns projects supervised by current user (Faculty). | API/Controllers/FypController.cs |
+| GetDetail(id, ct) | GET /api/fyp/{id} — Returns full project detail (All). | API/Controllers/FypController.cs |
+| AddPanelMember(id, request, ct) | POST /api/fyp/{id}/panel — Adds a panel member (Admin). | API/Controllers/FypController.cs |
+| RemovePanelMember(id, userId, ct) | DELETE /api/fyp/{id}/panel/{userId} — Removes a panel member (Admin). | API/Controllers/FypController.cs |
+| ScheduleMeeting(request, ct) | POST /api/fyp/meeting — Schedules a new FYP meeting (Faculty). | API/Controllers/FypController.cs |
+| RescheduleMeeting(meetingId, request, ct) | PUT /api/fyp/meeting/{meetingId} — Reschedules a meeting (Faculty). | API/Controllers/FypController.cs |
+| CompleteMeeting(meetingId, request, ct) | POST /api/fyp/meeting/{meetingId}/complete — Completes a meeting (Faculty). | API/Controllers/FypController.cs |
+| CancelMeeting(meetingId, ct) | POST /api/fyp/meeting/{meetingId}/cancel — Cancels a meeting (Faculty). | API/Controllers/FypController.cs |
+| GetMeetings(id, ct) | GET /api/fyp/{id}/meetings — Returns all meetings for a project (All). | API/Controllers/FypController.cs |
+| GetUpcomingMeetings(ct) | GET /api/fyp/meeting/upcoming — Returns upcoming meetings for current supervisor (Faculty). | API/Controllers/FypController.cs |
+| GetCurrentUserId() | Private — Extracts authenticated user ID from JWT NameIdentifier claim. | API/Controllers/FypController.cs |
+| GetStudentProfileId() | Private — Extracts student profile ID from the studentProfileId JWT claim. | API/Controllers/FypController.cs |
+
+---
+
+## Phase 5 — Quizzes and FYP
+
+### Domain — Quiz
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `Quiz(courseOfferingId, title, createdByUserId, ...)` | Creates a new quiz in unpublished state. | `Domain/Quizzes/Quiz.cs` |
+| `Publish()` | Marks the quiz as published and available to students. | `Domain/Quizzes/Quiz.cs` |
+| `Unpublish()` | Reverts the quiz to draft state. | `Domain/Quizzes/Quiz.cs` |
+| `Deactivate()` | Soft-deletes the quiz (IsActive=false). | `Domain/Quizzes/Quiz.cs` |
+| `Update(title, instructions, timeLimitMinutes, maxAttempts, availableFrom, availableUntil)` | Updates mutable quiz metadata. | `Domain/Quizzes/Quiz.cs` |
+| `QuizQuestion(quizId, text, type, marks, orderIndex)` | Creates a new question attached to a quiz. | `Domain/Quizzes/Quiz.cs` |
+| `QuizQuestion.Update(text, marks, orderIndex)` | Updates question text and grading details. | `Domain/Quizzes/Quiz.cs` |
+| `QuizOption(quizQuestionId, text, isCorrect, orderIndex)` | Creates an answer option for a question. | `Domain/Quizzes/Quiz.cs` |
+
+### Domain — QuizAttempt
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `QuizAttempt(quizId, studentProfileId)` | Starts a new in-progress attempt with StartedAt=UtcNow. | `Domain/Quizzes/QuizAttempt.cs` |
+| `Submit()` | Finalises the attempt and records FinishedAt. | `Domain/Quizzes/QuizAttempt.cs` |
+| `TimeOut()` | Marks the attempt as timed-out and records FinishedAt. | `Domain/Quizzes/QuizAttempt.cs` |
+| `Abandon()` | Marks the attempt as abandoned and records FinishedAt. | `Domain/Quizzes/QuizAttempt.cs` |
+| `RecordScore(score)` | Stores the computed total score after grading. | `Domain/Quizzes/QuizAttempt.cs` |
+| `QuizAnswer(quizAttemptId, quizQuestionId, selectedOptionId)` | Records an MCQ/TrueFalse answer with chosen option. | `Domain/Quizzes/QuizAttempt.cs` |
+| `QuizAnswer(quizAttemptId, quizQuestionId, textResponse)` | Records a short-answer textual response. | `Domain/Quizzes/QuizAttempt.cs` |
+| `AwardMarks(marks)` | Stores instructor-awarded marks for a short-answer response. | `Domain/Quizzes/QuizAttempt.cs` |
+
+### Domain — FypProject
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `FypProject(studentProfileId, departmentId, title, description)` | Proposes a new FYP project in Proposed state. | `Domain/Fyp/FypProject.cs` |
+| `Approve(remarks)` | Moves project to Approved state and stores coordinator remarks. | `Domain/Fyp/FypProject.cs` |
+| `Reject(remarks)` | Moves project to Rejected state with mandatory remarks. | `Domain/Fyp/FypProject.cs` |
+| `AssignSupervisor(supervisorUserId)` | Links a supervisor and transitions project to InProgress. | `Domain/Fyp/FypProject.cs` |
+| `Complete()` | Marks the project as Completed. | `Domain/Fyp/FypProject.cs` |
+| `FypProject.Update(title, description)` | Updates project title and description. | `Domain/Fyp/FypProject.cs` |
+| `FypPanelMember(fypProjectId, userId, role)` | Assigns a user to the evaluation panel with a given role. | `Domain/Fyp/FypProject.cs` |
+| `FypMeeting(fypProjectId, scheduledAt, venue, organiserUserId, agenda)` | Schedules a new meeting in Scheduled state. | `Domain/Fyp/FypProject.cs` |
+| `FypMeeting.Complete(minutes)` | Marks meeting as completed and records minutes. | `Domain/Fyp/FypProject.cs` |
+| `FypMeeting.Cancel()` | Cancels a scheduled meeting. | `Domain/Fyp/FypProject.cs` |
+| `FypMeeting.Reschedule(scheduledAt, venue, agenda)` | Updates meeting time, venue and agenda. | `Domain/Fyp/FypProject.cs` |
+
+### Infrastructure — QuizRepository
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetByIdAsync(id, ct)` | Fetches a quiz by primary key. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `GetWithQuestionsAsync(id, ct)` | Fetches quiz with questions and options eager-loaded. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `GetByOfferingAsync(courseOfferingId, ct)` | Lists all quizzes for a course offering. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `AddAsync(quiz, ct)` | Inserts a new quiz. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `Update(quiz)` | Marks quiz entity as modified. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `GetQuestionByIdAsync(questionId, ct)` | Fetches a question by primary key. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `AddQuestionAsync(question, ct)` | Inserts a new question. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `UpdateQuestion(question)` | Marks question as modified. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `RemoveQuestion(question)` | Removes a question from the context. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `AddOptionsAsync(options, ct)` | Bulk inserts a collection of options. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `RemoveOptions(options)` | Bulk removes a collection of options. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `GetAttemptByIdAsync(attemptId, ct)` | Fetches an attempt with its answers. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `GetAttemptsAsync(quizId, studentProfileId, ct)` | Lists all attempts for a student on a quiz. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `GetAttemptCountAsync(quizId, studentProfileId, ct)` | Counts completed/timed-out attempts for cap validation. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `GetInProgressAttemptAsync(quizId, studentProfileId, ct)` | Returns an active (InProgress) attempt if one exists. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `AddAttemptAsync(attempt, ct)` | Inserts a new attempt. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `UpdateAttempt(attempt)` | Marks attempt as modified. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `AddAnswersAsync(answers, ct)` | Bulk inserts submitted answers. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `GetAnswerByIdAsync(answerId, ct)` | Fetches a single answer for manual grading. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `UpdateAnswer(answer)` | Marks answer as modified after manual grading. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+
+### Infrastructure — FypRepository
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetByIdAsync(id, ct)` | Fetches a project by primary key. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `GetWithDetailsAsync(id, ct)` | Fetches project with panel members and meetings eager-loaded. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `GetByStudentAsync(studentProfileId, ct)` | Lists all projects for a student. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `GetByDepartmentAsync(departmentId, status, ct)` | Lists department projects, optionally filtered by status. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `GetBySupervisorAsync(supervisorUserId, ct)` | Lists projects supervised by a faculty user. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `AddAsync(project, ct)` | Inserts a new FYP project. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `Update(project)` | Marks project as modified. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `GetPanelMembersAsync(projectId, ct)` | Lists all panel members for a project. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `GetPanelMemberAsync(projectId, userId, ct)` | Fetches a specific panel member record. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `AddPanelMemberAsync(member, ct)` | Inserts a panel member assignment. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `RemovePanelMember(member)` | Removes a panel member from the context. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `GetMeetingByIdAsync(meetingId, ct)` | Fetches a meeting by primary key. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `GetMeetingsByProjectAsync(projectId, ct)` | Lists all meetings for a project ordered by scheduled date. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `GetUpcomingMeetingsAsync(supervisorUserId, ct)` | Returns future scheduled meetings for a supervisor. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `AddMeetingAsync(meeting, ct)` | Inserts a new meeting. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `UpdateMeeting(meeting)` | Marks meeting as modified. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `SaveChangesAsync(ct)` | Flushes all pending changes to the database. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
+
+### Application — QuizService
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `CreateAsync(request, createdByUserId, ct)` | Creates a new quiz entity and persists it. | `Application/Quizzes/QuizService.cs` |
+| `UpdateAsync(quizId, request, ct)` | Applies metadata updates to an existing quiz. | `Application/Quizzes/QuizService.cs` |
+| `PublishAsync(quizId, ct)` | Publishes a quiz so students can see it. | `Application/Quizzes/QuizService.cs` |
+| `UnpublishAsync(quizId, ct)` | Reverts a quiz to draft. | `Application/Quizzes/QuizService.cs` |
+| `DeactivateAsync(quizId, ct)` | Soft-deletes a quiz. | `Application/Quizzes/QuizService.cs` |
+| `AddQuestionAsync(request, ct)` | Adds a question with options to a quiz. | `Application/Quizzes/QuizService.cs` |
+| `UpdateQuestionAsync(questionId, request, ct)` | Updates question text and grading. | `Application/Quizzes/QuizService.cs` |
+| `RemoveQuestionAsync(questionId, ct)` | Removes a question and its options. | `Application/Quizzes/QuizService.cs` |
+| `GetByOfferingAsync(courseOfferingId, ct)` | Returns summary list of quizzes for a course offering. | `Application/Quizzes/QuizService.cs` |
+| `GetDetailAsync(quizId, ct)` | Returns full quiz detail with questions and options. | `Application/Quizzes/QuizService.cs` |
+| `StartAttemptAsync(quizId, studentProfileId, ct)` | Validates and starts a new quiz attempt. | `Application/Quizzes/QuizService.cs` |
+| `SubmitAttemptAsync(request, ct)` | Records answers, auto-grades MCQ/TrueFalse, computes score. | `Application/Quizzes/QuizService.cs` |
+| `GetStudentAttemptsAsync(quizId, studentProfileId, ct)` | Lists a student's attempts on a quiz. | `Application/Quizzes/QuizService.cs` |
+| `GetAttemptDetailAsync(attemptId, ct)` | Returns full attempt detail with answers. | `Application/Quizzes/QuizService.cs` |
+| `GradeAnswerAsync(request, ct)` | Awards marks to a short-answer response. | `Application/Quizzes/QuizService.cs` |
+| `ToSummary(quiz)` | Maps Quiz entity to QuizSummaryResponse DTO. | `Application/Quizzes/QuizService.cs` |
+| `ToDetail(quiz)` | Maps Quiz with questions to QuizDetailResponse DTO. | `Application/Quizzes/QuizService.cs` |
+| `ToQuestionResponse(q, revealAnswers)` | Maps QuizQuestion to QuestionResponse DTO, optionally revealing correct options. | `Application/Quizzes/QuizService.cs` |
+| `ToAttemptResponse(attempt)` | Maps QuizAttempt to AttemptResponse DTO. | `Application/Quizzes/QuizService.cs` |
+| `ToAttemptDetail(attempt)` | Maps QuizAttempt with answers to AttemptDetailResponse DTO. | `Application/Quizzes/QuizService.cs` |
+
+### Application — FypService
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `ProposeAsync(request, studentProfileId, ct)` | Creates a new FYP project proposal. | `Application/Fyp/FypService.cs` |
+| `UpdateAsync(projectId, request, ct)` | Updates project title and description. | `Application/Fyp/FypService.cs` |
+| `ApproveAsync(projectId, request, ct)` | Approves a project proposal. | `Application/Fyp/FypService.cs` |
+| `RejectAsync(projectId, request, ct)` | Rejects a project proposal with remarks. | `Application/Fyp/FypService.cs` |
+| `AssignSupervisorAsync(projectId, request, ct)` | Assigns a faculty supervisor to a project. | `Application/Fyp/FypService.cs` |
+| `CompleteAsync(projectId, ct)` | Marks a project as completed. | `Application/Fyp/FypService.cs` |
+| `GetByStudentAsync(studentProfileId, ct)` | Returns all FYP projects for a student. | `Application/Fyp/FypService.cs` |
+| `GetByDepartmentAsync(departmentId, status, ct)` | Returns department projects filtered by optional status. | `Application/Fyp/FypService.cs` |
+| `GetBySupervisorAsync(supervisorUserId, ct)` | Returns projects assigned to a supervisor. | `Application/Fyp/FypService.cs` |
+| `GetDetailAsync(projectId, ct)` | Returns full project detail including panel and meetings. | `Application/Fyp/FypService.cs` |
+| `AddPanelMemberAsync(projectId, request, ct)` | Adds a user to the FYP evaluation panel. | `Application/Fyp/FypService.cs` |
+| `RemovePanelMemberAsync(projectId, userId, ct)` | Removes a user from the evaluation panel. | `Application/Fyp/FypService.cs` |
+| `ScheduleMeetingAsync(request, organiserUserId, ct)` | Schedules a new FYP meeting. | `Application/Fyp/FypService.cs` |
+| `RescheduleMeetingAsync(meetingId, request, ct)` | Reschedules an existing meeting. | `Application/Fyp/FypService.cs` |
+| `CompleteMeetingAsync(meetingId, request, ct)` | Marks a meeting as completed and stores minutes. | `Application/Fyp/FypService.cs` |
+| `CancelMeetingAsync(meetingId, ct)` | Cancels a scheduled meeting. | `Application/Fyp/FypService.cs` |
+| `GetMeetingsByProjectAsync(projectId, ct)` | Returns all meetings for a project. | `Application/Fyp/FypService.cs` |
+| `GetUpcomingMeetingsAsync(supervisorUserId, ct)` | Returns future meetings for a supervisor. | `Application/Fyp/FypService.cs` |
+| `ToSummary(project)` | Maps FypProject to FypProjectSummaryResponse DTO. | `Application/Fyp/FypService.cs` |
+| `ToDetail(project)` | Maps FypProject to FypProjectDetailResponse DTO. | `Application/Fyp/FypService.cs` |
+| `ToMeetingResponse(meeting)` | Maps FypMeeting to MeetingResponse DTO. | `Application/Fyp/FypService.cs` |
+
+### API — QuizController
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `Create(request, ct)` | POST /api/quiz — Creates a new quiz. Faculty only. | `API/Controllers/QuizController.cs` |
+| `Update(id, request, ct)` | PUT /api/quiz/{id} — Updates quiz metadata. Faculty only. | `API/Controllers/QuizController.cs` |
+| `Publish(id, ct)` | POST /api/quiz/{id}/publish — Publishes a quiz. Faculty only. | `API/Controllers/QuizController.cs` |
+| `Unpublish(id, ct)` | POST /api/quiz/{id}/unpublish — Reverts quiz to draft. Faculty only. | `API/Controllers/QuizController.cs` |
+| `Deactivate(id, ct)` | DELETE /api/quiz/{id} — Soft-deletes a quiz. Admin only. | `API/Controllers/QuizController.cs` |
+| `AddQuestion(request, ct)` | POST /api/quiz/question — Adds a question to a quiz. Faculty only. | `API/Controllers/QuizController.cs` |
+| `UpdateQuestion(questionId, request, ct)` | PUT /api/quiz/question/{questionId} — Updates a question. Faculty only. | `API/Controllers/QuizController.cs` |
+| `RemoveQuestion(questionId, ct)` | DELETE /api/quiz/question/{questionId} — Removes a question. Faculty only. | `API/Controllers/QuizController.cs` |
+| `GetByOffering(courseOfferingId, ct)` | GET /api/quiz/by-offering/{courseOfferingId} — Lists quizzes for an offering. | `API/Controllers/QuizController.cs` |
+| `GetDetail(id, ct)` | GET /api/quiz/{id} — Returns quiz with questions and options. | `API/Controllers/QuizController.cs` |
+| `StartAttempt(id, ct)` | POST /api/quiz/{id}/start — Starts a new attempt. Student only. | `API/Controllers/QuizController.cs` |
+| `SubmitAttempt(request, ct)` | POST /api/quiz/attempt/submit — Submits and auto-grades an attempt. Student only. | `API/Controllers/QuizController.cs` |
+| `GetMyAttempts(id, ct)` | GET /api/quiz/{id}/my-attempts — Lists a student's own attempts. Student only. | `API/Controllers/QuizController.cs` |
+| `GetAttemptDetail(attemptId, ct)` | GET /api/quiz/attempt/{attemptId} — Returns attempt with answers. | `API/Controllers/QuizController.cs` |
+| `GradeAnswer(request, ct)` | POST /api/quiz/attempt/grade-answer — Awards marks to a short-answer. Faculty only. | `API/Controllers/QuizController.cs` |
+| `GetCurrentUserId()` | Extracts user ID from NameIdentifier JWT claim. | `API/Controllers/QuizController.cs` |
+| `GetStudentProfileId()` | Extracts studentProfileId from JWT claim. | `API/Controllers/QuizController.cs` |
+
+### API — FypController
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `Propose(request, ct)` | POST /api/fyp — Submits a new FYP project proposal. Student only. | `API/Controllers/FypController.cs` |
+| `Update(id, request, ct)` | PUT /api/fyp/{id} — Updates project title/description. Student only. | `API/Controllers/FypController.cs` |
+| `Approve(id, request, ct)` | POST /api/fyp/{id}/approve — Approves a proposal. Admin only. | `API/Controllers/FypController.cs` |
+| `Reject(id, request, ct)` | POST /api/fyp/{id}/reject — Rejects a proposal with remarks. Admin only. | `API/Controllers/FypController.cs` |
+| `AssignSupervisor(id, request, ct)` | POST /api/fyp/{id}/assign-supervisor — Assigns a supervisor. Admin only. | `API/Controllers/FypController.cs` |
+| `Complete(id, ct)` | POST /api/fyp/{id}/complete — Marks a project completed. Admin only. | `API/Controllers/FypController.cs` |
+| `GetMyProjects(ct)` | GET /api/fyp/my-projects — Returns the student's own projects. | `API/Controllers/FypController.cs` |
+| `GetByDepartment(departmentId, status, ct)` | GET /api/fyp/by-department/{departmentId} — Lists department projects. Faculty only. | `API/Controllers/FypController.cs` |
+| `GetMySupervised(ct)` | GET /api/fyp/my-supervised — Returns supervised projects. Faculty only. | `API/Controllers/FypController.cs` |
+| `GetDetail(id, ct)` | GET /api/fyp/{id} — Returns full project detail. | `API/Controllers/FypController.cs` |
+| `AddPanelMember(id, request, ct)` | POST /api/fyp/{id}/panel — Adds a panel member. Admin only. | `API/Controllers/FypController.cs` |
+| `RemovePanelMember(id, userId, ct)` | DELETE /api/fyp/{id}/panel/{userId} — Removes a panel member. Admin only. | `API/Controllers/FypController.cs` |
+| `ScheduleMeeting(request, ct)` | POST /api/fyp/meeting — Schedules an FYP meeting. Faculty only. | `API/Controllers/FypController.cs` |
+| `RescheduleMeeting(meetingId, request, ct)` | PUT /api/fyp/meeting/{meetingId} — Reschedules a meeting. Faculty only. | `API/Controllers/FypController.cs` |
+| `CompleteMeeting(meetingId, request, ct)` | POST /api/fyp/meeting/{meetingId}/complete — Completes a meeting. Faculty only. | `API/Controllers/FypController.cs` |
+| `CancelMeeting(meetingId, ct)` | POST /api/fyp/meeting/{meetingId}/cancel — Cancels a meeting. Faculty only. | `API/Controllers/FypController.cs` |
+| `GetMeetings(id, ct)` | GET /api/fyp/{id}/meetings — Lists all meetings for a project. | `API/Controllers/FypController.cs` |
+| `GetUpcomingMeetings(ct)` | GET /api/fyp/meeting/upcoming — Returns upcoming supervisor meetings. Faculty only. | `API/Controllers/FypController.cs` |
+| `GetCurrentUserId()` | Extracts user ID from NameIdentifier JWT claim. | `API/Controllers/FypController.cs` |
+| `GetStudentProfileId()` | Extracts studentProfileId from JWT claim. | `API/Controllers/FypController.cs` |

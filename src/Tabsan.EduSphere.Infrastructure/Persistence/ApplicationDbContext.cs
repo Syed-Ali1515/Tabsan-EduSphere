@@ -3,10 +3,12 @@ using Tabsan.EduSphere.Domain.Academic;
 using Tabsan.EduSphere.Domain.Assignments;
 using Tabsan.EduSphere.Domain.Attendance;
 using Tabsan.EduSphere.Domain.Auditing;
+using Tabsan.EduSphere.Domain.Fyp;
 using Tabsan.EduSphere.Domain.Identity;
 using Tabsan.EduSphere.Domain.Licensing;
 using Tabsan.EduSphere.Domain.Modules;
 using Tabsan.EduSphere.Domain.Notifications;
+using Tabsan.EduSphere.Domain.Quizzes;
 
 namespace Tabsan.EduSphere.Infrastructure.Persistence;
 
@@ -97,6 +99,32 @@ public class ApplicationDbContext : DbContext
 
     /// <summary>Daily per-student session attendance records.</summary>
     public DbSet<AttendanceRecord> AttendanceRecords => Set<AttendanceRecord>();
+
+    // ── Phase 5: Quizzes ───────────────────────────────────────────────────────
+    /// <summary>Quiz headers authored by faculty for course offerings.</summary>
+    public DbSet<Quiz> Quizzes => Set<Quiz>();
+
+    /// <summary>Questions belonging to quizzes.</summary>
+    public DbSet<QuizQuestion> QuizQuestions => Set<QuizQuestion>();
+
+    /// <summary>Answer options for MCQ and TrueFalse questions.</summary>
+    public DbSet<QuizOption> QuizOptions => Set<QuizOption>();
+
+    /// <summary>Student attempt records for quizzes.</summary>
+    public DbSet<QuizAttempt> QuizAttempts => Set<QuizAttempt>();
+
+    /// <summary>Per-question answers submitted by students within an attempt.</summary>
+    public DbSet<QuizAnswer> QuizAnswers => Set<QuizAnswer>();
+
+    // ── Phase 5: FYP ──────────────────────────────────────────────────────────
+    /// <summary>Final Year Projects proposed and managed by students.</summary>
+    public DbSet<FypProject> FypProjects => Set<FypProject>();
+
+    /// <summary>Faculty panel members (supervisors, co-supervisors, examiners) per project.</summary>
+    public DbSet<FypPanelMember> FypPanelMembers => Set<FypPanelMember>();
+
+    /// <summary>Supervision and review meetings scheduled for FYP projects.</summary>
+    public DbSet<FypMeeting> FypMeetings => Set<FypMeeting>();
 
     /// <summary>
     /// Scans the current assembly for all IEntityTypeConfiguration implementations
