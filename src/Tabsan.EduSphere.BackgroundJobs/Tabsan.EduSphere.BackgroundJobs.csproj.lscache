@@ -55,6 +55,7 @@ TemporaryDependencyNodeTargetIdentifier=net8.0
 [sourceFiles]
 AttendanceAlertJob.cs
 LicenseCheckWorker.cs
+LicenseExpiryWarningJob.cs
 obj/Debug/net8.0/
  .NETCoreApp,Version=v8.0.AssemblyAttributes.cs
  Tabsan.EduSphere.BackgroundJobs.AssemblyInfo.cs

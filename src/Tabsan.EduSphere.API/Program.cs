@@ -78,14 +78,7 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<TokenService>(); // also registered directly for AuthController resolving
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<PasswordHasher>();
-builder.Services.AddScoped<LicenseValidationService>(sp =>
-{
-    var repo   = sp.GetRequiredService<ILicenseRepository>();
-    var logger = sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<LicenseValidationService>>();
-    // RSA public key is stored in configuration — never in source control.
-    var pubKey = builder.Configuration["License:PublicKeyPem"] ?? string.Empty;
-    return new LicenseValidationService(repo, logger, pubKey);
-});
+builder.Services.AddScoped<LicenseValidationService>();
 
 // ── Module entitlement ──────────────────────────────────────────────────────────
 builder.Services.AddMemoryCache();

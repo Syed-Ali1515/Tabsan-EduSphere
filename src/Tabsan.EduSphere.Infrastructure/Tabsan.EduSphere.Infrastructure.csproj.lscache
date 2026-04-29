@@ -59,7 +59,9 @@ Auditing/AuditService.cs
 Auth/
  PasswordHasher.cs
  TokenService.cs
-Licensing/LicenseValidationService.cs
+Licensing/
+ EmbeddedKeys.cs
+ LicenseValidationService.cs
 Migrations/
  20260429002542_InitialCreate.cs
  20260429002542_InitialCreate.Designer.cs
@@ -73,6 +75,8 @@ Migrations/
  20260429013621_QuizzesAndFyp.Designer.cs
  20260429035351_AiAndAnalytics.cs
  20260429035351_AiAndAnalytics.Designer.cs
+ 20260429041941_VerificationKeys.cs
+ 20260429041941_VerificationKeys.Designer.cs
  ApplicationDbContextModelSnapshot.cs
 Modules/ModuleEntitlementResolver.cs
 obj/Debug/net8.0/
@@ -87,6 +91,7 @@ Persistence/
   AssignmentConfigurations.cs
   AttendanceConfigurations.cs
   AuditLogConfiguration.cs
+  ConsumedVerificationKeyConfiguration.cs
   DepartmentConfiguration.cs
   FypConfigurations.cs
   LicenseStateConfiguration.cs

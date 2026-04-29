@@ -41,11 +41,11 @@ public class LicenseController : ControllerBase
         if (file is null || file.Length == 0)
             return BadRequest(new { message = "No file provided." });
 
-        if (!file.FileName.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
-            return BadRequest(new { message = "License file must be a .json file." });
+        if (!file.FileName.EndsWith(".tablic", StringComparison.OrdinalIgnoreCase))
+            return BadRequest(new { message = "License file must be a .tablic file." });
 
         // Save to a temp path with a random name to prevent path traversal.
-        var tempFile = Path.Combine(UploadDirectory, $"{Guid.NewGuid()}.json");
+        var tempFile = Path.Combine(UploadDirectory, $"{Guid.NewGuid()}.tablic");
 
         try
         {

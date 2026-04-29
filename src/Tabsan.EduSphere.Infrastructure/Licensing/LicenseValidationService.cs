@@ -1,3 +1,6 @@
+// ╔══════════════════════════════════════════════════════════════════╗
+// ║  REPLACED IN PHASE 7 — now handles binary .tablic format        ║
+// ╚══════════════════════════════════════════════════════════════════╝
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -8,80 +11,126 @@ using Tabsan.EduSphere.Domain.Licensing;
 namespace Tabsan.EduSphere.Infrastructure.Licensing;
 
 /// <summary>
-/// Validates the cryptographically signed license file and manages the stored license state.
+/// Validates binary .tablic license files and manages the stored <see cref="LicenseState"/>.
 ///
-/// License file format expected (JSON):
-/// {
-///   "licenseType": "Yearly" | "Permanent",
-///   "issuedAt": "2026-01-01T00:00:00Z",
-///   "expiresAt": "2027-01-01T00:00:00Z",  ← null for Permanent
-///   "signature": "&lt;Base64 RSA-SHA256 signature of the payload&gt;"
-/// }
+/// .tablic binary layout
+/// ─────────────────────
+/// Offset   0 –   6 : Magic "TABLIC\x01" (7 bytes)
+/// Offset   7 – 262 : RSA-2048 PKCS#1 v1.5 signature of SHA-256(IV + ciphertext) (256 bytes)
+/// Offset 263 – 278 : AES-256-CBC IV (16 bytes)
+/// Offset 279+      : AES-256-CBC encrypted JSON payload
 ///
-/// The RSA public key is embedded in configuration (never the private key).
-/// The private key lives only in the License Creation Tool.
+/// Activation rules
+/// ────────────────
+/// 1. Magic header must match.
+/// 2. RSA signature over SHA-256(IV + ciphertext) must verify with the embedded public key.
+/// 3. AES-256-CBC decryption must succeed.
+/// 4. verificationKeyHash must not already exist in the ConsumedVerificationKeys table.
 /// </summary>
 public class LicenseValidationService
 {
     private readonly ILicenseRepository _licenseRepo;
     private readonly ILogger<LicenseValidationService> _logger;
 
-    // The RSA public key PEM is loaded from configuration at startup.
-    private readonly string _publicKeyPem;
+    private static readonly byte[] _magic = "TABLIC\x01"u8.ToArray();
+    private const int SignatureOffset  = 7;
+    private const int SignatureLength  = 256;
+    private const int IvOffset         = SignatureOffset + SignatureLength; // 263
+    private const int IvLength         = 16;
+    private const int CiphertextOffset = IvOffset + IvLength;              // 279
+    private const int MinFileLength    = CiphertextOffset + 16;
 
     public LicenseValidationService(
         ILicenseRepository licenseRepo,
-        ILogger<LicenseValidationService> logger,
-        string publicKeyPem)
+        ILogger<LicenseValidationService> logger)
     {
         _licenseRepo = licenseRepo;
-        _logger = logger;
-        _publicKeyPem = publicKeyPem;
+        _logger      = logger;
     }
 
     /// <summary>
-    /// Reads the license file from the given path, verifies the RSA-SHA256 signature,
-    /// and either creates or replaces the LicenseState record in the database.
-    /// Returns true on success; false when the file is invalid or the signature fails.
+    /// Reads the .tablic file at <paramref name="licenseFilePath"/>, verifies the RSA
+    /// signature, decrypts the AES payload, checks the VerificationKey has not been
+    /// consumed, and then creates or replaces the <see cref="LicenseState"/> record.
+    /// Returns true on success; false on any verification or format failure.
     /// </summary>
     public async Task<bool> ActivateFromFileAsync(string licenseFilePath, CancellationToken ct = default)
     {
         try
         {
             var fileBytes = await File.ReadAllBytesAsync(licenseFilePath, ct);
-            var json = Encoding.UTF8.GetString(fileBytes);
-            var payload = JsonSerializer.Deserialize<LicensePayload>(json);
 
-            if (payload is null)
+            // 1. Magic header
+            if (fileBytes.Length < MinFileLength || !fileBytes[..7].SequenceEqual(_magic))
             {
-                _logger.LogWarning("License file could not be deserialised.");
+                _logger.LogWarning("License file has invalid magic header or is too short.");
                 return false;
             }
 
-            if (!VerifySignature(payload))
+            // 2. Extract components
+            var signature  = fileBytes[SignatureOffset..IvOffset];
+            var iv         = fileBytes[IvOffset..CiphertextOffset];
+            var ciphertext = fileBytes[CiphertextOffset..];
+
+            // 3. Verify RSA signature over SHA-256(IV + ciphertext)
+            var signedData = new byte[iv.Length + ciphertext.Length];
+            iv.CopyTo(signedData, 0);
+            ciphertext.CopyTo(signedData, iv.Length);
+
+            if (!VerifyRsaSignature(signedData, signature))
             {
-                _logger.LogWarning("License file signature verification failed. File may be tampered.");
+                _logger.LogWarning("License file RSA signature verification failed. File may be tampered.");
                 return false;
             }
 
-            var hash = ComputeFileHash(fileBytes);
+            // 4. Decrypt payload
+            byte[] plaintext;
+            try { plaintext = DecryptAes(ciphertext, iv); }
+            catch (CryptographicException)
+            {
+                _logger.LogWarning("License file AES decryption failed.");
+                return false;
+            }
+
+            var json    = Encoding.UTF8.GetString(plaintext);
+            var payload = JsonSerializer.Deserialize<TablicPayload>(json, _jsonOptions);
+
+            if (payload is null || string.IsNullOrWhiteSpace(payload.LicenseType) ||
+                string.IsNullOrWhiteSpace(payload.VerificationKeyHash))
+            {
+                _logger.LogWarning("License payload is missing required fields.");
+                return false;
+            }
+
+            // 5. VerificationKey replay guard
+            if (await _licenseRepo.IsVerificationKeyConsumedAsync(payload.VerificationKeyHash, ct))
+            {
+                _logger.LogWarning(
+                    "VerificationKey '{Hash}' already consumed. Activation rejected.",
+                    payload.VerificationKeyHash);
+                return false;
+            }
+
+            // 6. Apply license state
+            var fileHash    = ComputeFileHash(fileBytes);
             var licenseType = Enum.Parse<LicenseType>(payload.LicenseType, ignoreCase: true);
 
             var existing = await _licenseRepo.GetCurrentAsync(ct);
-
             if (existing is null)
-            {
-                var newState = new LicenseState(hash, licenseType, payload.ExpiresAt);
-                await _licenseRepo.AddAsync(newState, ct);
-            }
+                await _licenseRepo.AddAsync(new LicenseState(fileHash, licenseType, payload.ExpiresAt), ct);
             else
             {
-                existing.Replace(hash, licenseType, payload.ExpiresAt);
+                existing.Replace(fileHash, licenseType, payload.ExpiresAt);
                 _licenseRepo.Update(existing);
             }
 
+            await _licenseRepo.AddConsumedKeyAsync(
+                new ConsumedVerificationKey(payload.VerificationKeyHash), ct);
             await _licenseRepo.SaveChangesAsync(ct);
-            _logger.LogInformation("License activated successfully. Type={Type}", licenseType);
+
+            _logger.LogInformation(
+                "License activated. Type={Type}, ExpiresAt={Expiry}",
+                licenseType, payload.ExpiresAt?.ToString("O") ?? "never");
             return true;
         }
         catch (Exception ex)
@@ -92,9 +141,8 @@ public class LicenseValidationService
     }
 
     /// <summary>
-    /// Checks the stored license state and refreshes its status based on expiry.
-    /// Called on application startup, Super Admin login, and daily by the background job.
-    /// Returns the current LicenseStatus after the check.
+    /// Checks the stored <see cref="LicenseState"/> and refreshes its status.
+    /// Called on startup, Super Admin login, and daily by the background job.
     /// </summary>
     public async Task<LicenseStatus> ValidateCurrentAsync(CancellationToken ct = default)
     {
@@ -114,47 +162,56 @@ public class LicenseValidationService
         return state.Status;
     }
 
+    // ── Crypto helpers ────────────────────────────────────────────────────────
+
     /// <summary>
-    /// Verifies the RSA-SHA256 signature embedded in the license payload.
-    /// The payload (licenseType + issuedAt + expiresAt) is reconstructed as a
-    /// canonical string and checked against the Base64-encoded signature using
-    /// the embedded public key.
+    /// Verifies the RSA-PKCS#1 v1.5 SHA-256 signature over <paramref name="data"/>
+    /// using the compile-time embedded public key from <see cref="EmbeddedKeys"/>.
     /// </summary>
-    private bool VerifySignature(LicensePayload payload)
+    private static bool VerifyRsaSignature(byte[] data, byte[] signature)
     {
         try
         {
-            var canonical = $"{payload.LicenseType}|{payload.IssuedAt:O}|{payload.ExpiresAt?.ToString("O") ?? "permanent"}";
-            var dataBytes = Encoding.UTF8.GetBytes(canonical);
-            var signatureBytes = Convert.FromBase64String(payload.Signature);
-
             using var rsa = RSA.Create();
-            rsa.ImportFromPem(_publicKeyPem);
-            return rsa.VerifyData(dataBytes, signatureBytes, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+            rsa.ImportFromPem(EmbeddedKeys.RsaPublicKeyPem);
+            var hash = SHA256.HashData(data);
+            return rsa.VerifyHash(hash, signature, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
         }
-        catch
-        {
-            return false;
-        }
+        catch { return false; }
     }
 
     /// <summary>
-    /// Computes a SHA-256 hash of the raw license file bytes.
-    /// Stored in LicenseState to detect file replacement between validation runs.
+    /// Decrypts AES-256-CBC <paramref name="ciphertext"/> using the embedded AES key
+    /// and the supplied <paramref name="iv"/>.
     /// </summary>
-    private static string ComputeFileHash(byte[] bytes)
+    private static byte[] DecryptAes(byte[] ciphertext, byte[] iv)
     {
-        var hash = SHA256.HashData(bytes);
-        return Convert.ToHexString(hash).ToLowerInvariant();
+        using var aes = Aes.Create();
+        aes.Key     = Convert.FromBase64String(EmbeddedKeys.AesKeyBase64);
+        aes.IV      = iv;
+        aes.Mode    = CipherMode.CBC;
+        aes.Padding = PaddingMode.PKCS7;
+        using var dec = aes.CreateDecryptor();
+        return dec.TransformFinalBlock(ciphertext, 0, ciphertext.Length);
     }
 
+    /// <summary>Computes a SHA-256 hex hash of the raw file bytes for tamper detection.</summary>
+    private static string ComputeFileHash(byte[] bytes)
+        => Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
+
     // ── Internal DTO ──────────────────────────────────────────────────────────
-    /// <summary>Maps directly to the JSON structure of the license file.</summary>
-    private sealed class LicensePayload
+
+    private static readonly JsonSerializerOptions _jsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
+
+    /// <summary>Maps directly to the decrypted JSON payload inside a .tablic file.</summary>
+    private sealed class TablicPayload
     {
         public string LicenseType { get; set; } = default!;
         public DateTime IssuedAt { get; set; }
         public DateTime? ExpiresAt { get; set; }
-        public string Signature { get; set; } = default!;
+        public string VerificationKeyHash { get; set; } = default!;
     }
 }

@@ -3,7 +3,8 @@ using Tabsan.EduSphere.Domain.Licensing;
 namespace Tabsan.EduSphere.Domain.Interfaces;
 
 /// <summary>
-/// Repository interface for reading and persisting the single LicenseState record.
+/// Repository interface for reading and persisting the single LicenseState record
+/// and tracking consumed VerificationKeys to prevent .tablic replay attacks.
 /// </summary>
 public interface ILicenseRepository
 {
@@ -18,6 +19,15 @@ public interface ILicenseRepository
 
     /// <summary>Persists changes to the existing LicenseState row (renewal, status refresh).</summary>
     void Update(LicenseState state);
+
+    /// <summary>
+    /// Returns true when the given VerificationKey hash has already been used to activate
+    /// a license on this installation.  Used to block .tablic replay attacks.
+    /// </summary>
+    Task<bool> IsVerificationKeyConsumedAsync(string keyHash, CancellationToken ct = default);
+
+    /// <summary>Persists a newly consumed VerificationKey hash record.</summary>
+    Task AddConsumedKeyAsync(ConsumedVerificationKey key, CancellationToken ct = default);
 
     /// <summary>Commits pending changes.</summary>
     Task<int> SaveChangesAsync(CancellationToken ct = default);

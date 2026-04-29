@@ -388,34 +388,64 @@ The provided startup documents define a strong product vision and feature set, b
 
 ## Phase 7: Tabsan-Lic — License Creation Tool (Sprints 13–14)
 
+> **Status: ✅ COMPLETE**
+>
+> **Implementation Summary:**
+> - `tools/Tabsan.Lic/` — standalone .NET 8 console application (separate from EduSphere.sln)
+> - Crypto: AES-256-CBC encrypt + RSA-2048 PKCS#1 v1.5 sign; keys in `Crypto/EmbeddedKeys.cs`
+> - SQLite database (`tabsan_lic.db` in `%APPDATA%/Tabsan/`) via EF Core; stores issued keys with hashes only
+> - Interactive menu: generate single/bulk keys, build `.tablic` file, list keys, export CSV
+> - `services/KeyService.cs` — key generation, listing, CSV export; raw token shown once
+> - `services/LicenseBuilder.cs` — builds binary `.tablic` file per key record
+> - `.tablic` format: magic header (7 bytes) + RSA sig (256 bytes) + IV (16 bytes) + AES ciphertext
+>
+> **EduSphere changes:**
+> - `Domain/Licensing/ConsumedVerificationKey.cs` — new entity; tracks consumed key hashes
+> - `Domain/Interfaces/ILicenseRepository.cs` — added `IsVerificationKeyConsumedAsync` + `AddConsumedKeyAsync`
+> - `Infrastructure/Licensing/EmbeddedKeys.cs` — compile-time RSA public key + AES key
+> - `Infrastructure/Licensing/LicenseValidationService.cs` — fully rewritten for `.tablic` binary format
+> - `Infrastructure/Repositories/LicenseRepository.cs` — implements two new interface methods
+> - `Infrastructure/Persistence/ApplicationDbContext.cs` — added `ConsumedVerificationKeys` DbSet
+> - `Infrastructure/Persistence/Configurations/ConsumedVerificationKeyConfiguration.cs` — EF config
+> - `API/Controllers/LicenseController.cs` — now accepts `.tablic` (was `.json`)
+> - `API/Program.cs` — simplified `LicenseValidationService` registration (no factory needed)
+> - `BackgroundJobs/LicenseExpiryWarningJob.cs` — daily check; sends System notification to Admin/SuperAdmin ≤5 days before expiry
+> - `BackgroundJobs/Program.cs` — registered `LicenseExpiryWarningJob` + DB context + notification services
+> - Migration: `VerificationKeys` — creates `consumed_verification_keys` table
+>
+> **Validation:**
+> - `dotnet build Tabsan.EduSphere.sln` → 0 errors, 0 warnings ✅
+> - `dotnet build tools/Tabsan.Lic/` → 0 errors, 0 warnings ✅
+> - EF migration `VerificationKeys` created successfully ✅
+
 > **Scope:** A standalone .NET application (`Tabsan-Lic`) separate from EduSphere that is used exclusively by the vendor/Super Admin to generate encrypted license files.
 
 ### Stage 7.1 License Generation Core
-- [ ] Create `Tabsan-Lic` as a separate .NET console/desktop application
-- [ ] Generate a unique `VerificationKey` per license (GUID + cryptographic salt; one-time use only)
-- [ ] Store issued VerificationKeys in a local sealed database; mark each key as used on first consumption
-- [ ] Prevent re-use of a VerificationKey — once consumed it is permanently invalidated
-- [ ] Prompt operator for expiry type: 1 year / 2 years / 3 years / Permanent
+- [x] Create `Tabsan-Lic` as a separate .NET console/desktop application
+- [x] Generate a unique `VerificationKey` per license (GUID + cryptographic salt; one-time use only)
+- [x] Store issued VerificationKeys in a local sealed database; mark each key as used on first consumption
+- [x] Prevent re-use of a VerificationKey — once consumed it is permanently invalidated
+- [x] Prompt operator for expiry type: 1 year / 2 years / 3 years / Permanent
 
 ### Stage 7.2 License File Security
-- [ ] Serialize license payload (type, expiry, issue date, VerificationKey hash) to JSON
-- [ ] Encrypt the JSON payload using AES-256 with an embedded vendor private key
-- [ ] Sign the encrypted bundle with RSA-2048 digital signature using vendor private key
-- [ ] Write the final `.tablic` file — binary, machine-readable, not human-editable
-- [ ] Any byte-level modification to the file must invalidate the signature and be detected by EduSphere
+- [x] Serialize license payload (type, expiry, issue date, VerificationKey hash) to JSON
+- [x] Encrypt the JSON payload using AES-256 with an embedded vendor private key
+- [x] Sign the encrypted bundle with RSA-2048 digital signature using vendor private key
+- [x] Write the final `.tablic` file — binary, machine-readable, not human-editable
+- [x] Any byte-level modification to the file must invalidate the signature and be detected by EduSphere
 
 ### Stage 7.3 EduSphere License Import
-- [ ] Add "Import License" endpoint in EduSphere (Super Admin only)
-- [ ] EduSphere reads `.tablic` file, verifies RSA signature using embedded public key
-- [ ] Decrypt payload and apply license details (expiry, type, status)
-- [ ] Mark the VerificationKey as consumed; reject future imports using the same key
-- [ ] Send expiry warning notification to Admin 5 days before license expiry date (background job)
-- [ ] Update license status in the License table and broadcast system notification
+- [x] Add "Import License" endpoint in EduSphere (Super Admin only)
+- [x] EduSphere reads `.tablic` file, verifies RSA signature using embedded public key
+- [x] Decrypt payload and apply license details (expiry, type, status)
+- [x] Mark the VerificationKey as consumed; reject future imports using the same key
+- [x] Send expiry warning notification to Admin 5 days before license expiry date (background job)
+- [x] Update license status in the License table and broadcast system notification
 
 ### Stage 7.4 Unlimited Key Generation
-- [ ] Tabsan-Lic supports generating an unlimited number of VerificationKeys
-- [ ] Each generated key is logged with generation timestamp and chosen expiry
-- [ ] Provide export list of generated keys (for vendor audit purposes only)
+- [x] Tabsan-Lic supports generating an unlimited number of VerificationKeys
+- [x] Each generated key is logged with generation timestamp and chosen expiry
+- [x] Provide export list of generated keys (for vendor audit purposes only)
 
 ---
 

@@ -1,0 +1,58 @@
+using System.Text.Json;
+using Tabsan.Lic.Crypto;
+using Tabsan.Lic.Models;
+
+namespace Tabsan.Lic.Services;
+
+/// <summary>
+/// Builds binary .tablic license files from an existing <see cref="IssuedKey"/> record.
+/// The file is AES-256-CBC encrypted and RSA-2048 signed.
+/// </summary>
+public class LicenseBuilder
+{
+    private readonly KeyService _keyService;
+
+    public LicenseBuilder(KeyService keyService) => _keyService = keyService;
+
+    /// <summary>
+    /// Generates a .tablic binary file for the given <paramref name="key"/> and writes it
+    /// to <paramref name="outputPath"/>.
+    /// </summary>
+    /// <param name="key">The IssuedKey record to embed in the license payload.</param>
+    /// <param name="outputPath">Destination file path (should end in .tablic).</param>
+    public async Task BuildAsync(IssuedKey key, string outputPath)
+    {
+        var payload = new TablicPayload
+        {
+            LicenseType         = key.ExpiryType == ExpiryType.Permanent ? "Permanent" : "Yearly",
+            IssuedAt            = key.IssuedAt,
+            ExpiresAt           = key.ExpiresAt,
+            VerificationKeyHash = key.VerificationKeyHash
+        };
+
+        var json     = JsonSerializer.Serialize(payload, TablicJsonOptions.Default);
+        var fileBytes = LicCrypto.BuildTablicFile(json);
+
+        await File.WriteAllBytesAsync(outputPath, fileBytes);
+        await _keyService.MarkLicenseGeneratedAsync(key);
+    }
+
+    // ── Internal payload DTO ──────────────────────────────────────────────────
+
+    private sealed class TablicPayload
+    {
+        public string LicenseType { get; init; } = default!;
+        public DateTime IssuedAt { get; init; }
+        public DateTime? ExpiresAt { get; init; }
+        public string VerificationKeyHash { get; init; } = default!;
+    }
+
+    private static class TablicJsonOptions
+    {
+        internal static readonly JsonSerializerOptions Default = new()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            WriteIndented        = false
+        };
+    }
+}

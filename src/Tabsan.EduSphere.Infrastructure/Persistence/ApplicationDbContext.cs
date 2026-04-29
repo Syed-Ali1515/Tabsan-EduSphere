@@ -42,6 +42,9 @@ public class ApplicationDbContext : DbContext
     /// <summary>Single-row table holding the current validated license state.</summary>
     public DbSet<LicenseState> LicenseStates => Set<LicenseState>();
 
+    /// <summary>Records VerificationKey hashes that have been consumed to prevent replay attacks.</summary>
+    public DbSet<ConsumedVerificationKey> ConsumedVerificationKeys => Set<ConsumedVerificationKey>();
+
     // ── Modules ────────────────────────────────────────────────────────────
     /// <summary>Module definitions seeded at startup.</summary>
     public DbSet<Module> Modules => Set<Module>();

@@ -1270,3 +1270,50 @@
 |---|---|---|
 | `InvokeAsync(context)` | Adds HSTS, X-Content-Type-Options, X-Frame-Options, CSP, Referrer-Policy, Permissions-Policy headers. | `API/Middleware/SecurityHeadersMiddleware.cs` |
 | `UseSecurityHeaders(app)` | Extension method to register the middleware. | `API/Middleware/SecurityHeadersMiddleware.cs` |
+
+## Phase 7: Tabsan-Lic + License Import
+
+### Tabsan.Lic — KeyService (tools/Tabsan.Lic/Services/KeyService.cs)
+| Function | Description | File |
+|---|---|---|
+| `GenerateAsync(expiry, label)` | Generates a random VerificationKey, stores SHA-256 hash in SQLite, returns (record, rawToken). | `tools/Tabsan.Lic/Services/KeyService.cs` |
+| `GenerateBulkAsync(count, expiry, labelPrefix)` | Generates N keys at once with the same expiry type. | `tools/Tabsan.Lic/Services/KeyService.cs` |
+| `ListAllAsync()` | Returns all issued keys ordered by IssuedAt desc. | `tools/Tabsan.Lic/Services/KeyService.cs` |
+| `GetByIdAsync(id)` | Returns a key record by auto-increment Id. | `tools/Tabsan.Lic/Services/KeyService.cs` |
+| `MarkLicenseGeneratedAsync(key)` | Sets IsLicenseGenerated=true on a key record after .tablic file is built. | `tools/Tabsan.Lic/Services/KeyService.cs` |
+| `ExportCsvAsync()` | Exports all issued keys to CSV string (Id, KeyId, ExpiryType, dates, flags, label). | `tools/Tabsan.Lic/Services/KeyService.cs` |
+| `GenerateRawToken()` | Generates 32-byte cryptographically random base64url token. | `tools/Tabsan.Lic/Services/KeyService.cs` |
+| `HashToken(token)` | Returns lowercase hex SHA-256 hash of a raw token string. | `tools/Tabsan.Lic/Services/KeyService.cs` |
+
+### Tabsan.Lic — LicenseBuilder (tools/Tabsan.Lic/Services/LicenseBuilder.cs)
+| Function | Description | File |
+|---|---|---|
+| `BuildAsync(key, outputPath)` | Serialises payload JSON, AES-256 encrypts, RSA signs, writes .tablic binary file. | `tools/Tabsan.Lic/Services/LicenseBuilder.cs` |
+
+### Tabsan.Lic — LicCrypto (tools/Tabsan.Lic/Crypto/LicCrypto.cs)
+| Function | Description | File |
+|---|---|---|
+| `EncryptAes(plaintext)` | AES-256-CBC encrypt with random IV; returns (ciphertext, iv). | `tools/Tabsan.Lic/Crypto/LicCrypto.cs` |
+| `SignRsa(data)` | RSA-2048 PKCS#1 v1.5 sign of SHA-256(data) using embedded private key. | `tools/Tabsan.Lic/Crypto/LicCrypto.cs` |
+| `BuildTablicFile(payloadJson)` | Assembles final .tablic bytes: magic + signature + IV + ciphertext. | `tools/Tabsan.Lic/Crypto/LicCrypto.cs` |
+
+### LicenseValidationService (Infrastructure/Licensing/LicenseValidationService.cs)
+| Function | Description | File |
+|---|---|---|
+| `ActivateFromFileAsync(licenseFilePath, ct)` | Reads .tablic binary, verifies RSA sig, decrypts AES payload, checks replay, applies LicenseState. | `Infrastructure/Licensing/LicenseValidationService.cs` |
+| `ValidateCurrentAsync(ct)` | Refreshes stored LicenseState status. Returns current LicenseStatus. | `Infrastructure/Licensing/LicenseValidationService.cs` |
+| `VerifyRsaSignature(data, signature)` | Verifies RSA-2048 PKCS#1 SHA-256 signature with embedded public key. | `Infrastructure/Licensing/LicenseValidationService.cs` |
+| `DecryptAes(ciphertext, iv)` | AES-256-CBC decrypt using embedded key and supplied IV. | `Infrastructure/Licensing/LicenseValidationService.cs` |
+| `ComputeFileHash(bytes)` | SHA-256 hex hash of raw file bytes for tamper detection. | `Infrastructure/Licensing/LicenseValidationService.cs` |
+
+### LicenseRepository (Infrastructure/Repositories/LicenseRepository.cs)
+| Function | Description | File |
+|---|---|---|
+| `IsVerificationKeyConsumedAsync(keyHash, ct)` | Returns true if the given hash already exists in consumed_verification_keys. | `Infrastructure/Repositories/LicenseRepository.cs` |
+| `AddConsumedKeyAsync(key, ct)` | Queues a new ConsumedVerificationKey record for insertion. | `Infrastructure/Repositories/LicenseRepository.cs` |
+
+### LicenseExpiryWarningJob (BackgroundJobs/LicenseExpiryWarningJob.cs)
+| Function | Description | File |
+|---|---|---|
+| `ExecuteAsync(stoppingToken)` | Main loop: runs daily after 60s startup delay. | `BackgroundJobs/LicenseExpiryWarningJob.cs` |
+| `RunCheckAsync(ct)` | Checks LicenseState.ExpiresAt; sends System notification to Admin/SuperAdmin if within 5 days. | `BackgroundJobs/LicenseExpiryWarningJob.cs` |
