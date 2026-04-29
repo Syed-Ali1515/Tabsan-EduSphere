@@ -1,0 +1,34 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Tabsan.EduSphere.Domain.Academic;
+
+namespace Tabsan.EduSphere.Infrastructure.Persistence.Configurations;
+
+/// <summary>EF Core configuration for the Department entity.</summary>
+public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
+{
+    public void Configure(EntityTypeBuilder<Department> builder)
+    {
+        builder.ToTable("departments");
+
+        builder.HasKey(d => d.Id);
+
+        builder.Property(d => d.Name)
+               .IsRequired()
+               .HasMaxLength(200);
+
+        builder.Property(d => d.Code)
+               .IsRequired()
+               .HasMaxLength(20);
+
+        builder.Property(d => d.RowVersion).IsRowVersion();
+
+        // Unique department code used throughout the system.
+        builder.HasIndex(d => d.Code)
+               .IsUnique()
+               .HasDatabaseName("IX_departments_code");
+
+        // Soft-delete filter — normal queries never see deleted departments.
+        builder.HasQueryFilter(d => !d.IsDeleted);
+    }
+}

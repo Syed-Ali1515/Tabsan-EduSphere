@@ -7,7 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.26" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.8">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.9.0" />
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.9.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="8.0.2" />
@@ -17,6 +23,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Tabsan.EduSphere.Application\Tabsan.EduSphere.Application.csproj" />
     <ProjectReference Include="..\Tabsan.EduSphere.Infrastructure\Tabsan.EduSphere.Infrastructure.csproj" />
+    <ProjectReference Include="..\Tabsan.EduSphere.BackgroundJobs\Tabsan.EduSphere.BackgroundJobs.csproj" />
   </ItemGroup>
 
 </Project>

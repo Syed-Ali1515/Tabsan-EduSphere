@@ -1,0 +1,32 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Tabsan.EduSphere.Domain.Auditing;
+
+namespace Tabsan.EduSphere.Infrastructure.Persistence.Configurations;
+
+/// <summary>EF Core configuration for the append-only AuditLog table.</summary>
+public class AuditLogConfiguration : IEntityTypeConfiguration<AuditLog>
+{
+    public void Configure(EntityTypeBuilder<AuditLog> builder)
+    {
+        builder.ToTable("audit_logs");
+
+        // Use a database-generated bigint for the clustered PK.
+        builder.HasKey(a => a.Id);
+        builder.Property(a => a.Id)
+               .ValueGeneratedOnAdd();
+
+        builder.Property(a => a.Action).IsRequired().HasMaxLength(100);
+        builder.Property(a => a.EntityName).IsRequired().HasMaxLength(100);
+        builder.Property(a => a.EntityId).HasMaxLength(100);
+        builder.Property(a => a.IpAddress).HasMaxLength(64);
+
+        // Time-range queries on audit logs — clustered by OccurredAt.
+        builder.HasIndex(a => a.OccurredAt)
+               .HasDatabaseName("IX_audit_logs_occurred_at");
+
+        // Filter by actor for per-user audit trail.
+        builder.HasIndex(a => a.ActorUserId)
+               .HasDatabaseName("IX_audit_logs_actor");
+    }
+}
