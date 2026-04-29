@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Tabsan.EduSphere.Domain.Academic;
+using Tabsan.EduSphere.Domain.Assignments;
 using Tabsan.EduSphere.Domain.Auditing;
 using Tabsan.EduSphere.Domain.Identity;
 using Tabsan.EduSphere.Domain.Licensing;
@@ -71,6 +72,19 @@ public class ApplicationDbContext : DbContext
 
     /// <summary>Faculty ↔ department access assignments.</summary>
     public DbSet<FacultyDepartmentAssignment> FacultyDepartmentAssignments => Set<FacultyDepartmentAssignment>();
+
+    // ── Phase 3: Assignments and Results ───────────────────────────────────────
+    /// <summary>Faculty-created assignments for course offerings.</summary>
+    public DbSet<Assignment> Assignments => Set<Assignment>();
+
+    /// <summary>Student submissions for assignments — permanent academic evidence.</summary>
+    public DbSet<AssignmentSubmission> AssignmentSubmissions => Set<AssignmentSubmission>();
+
+    /// <summary>Published and draft result marks per student per course offering.</summary>
+    public DbSet<Result> Results => Set<Result>();
+
+    /// <summary>Audit log of every transcript export request.</summary>
+    public DbSet<TranscriptExportLog> TranscriptExportLogs => Set<TranscriptExportLog>();
 
     /// <summary>
     /// Scans the current assembly for all IEntityTypeConfiguration implementations

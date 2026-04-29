@@ -63,6 +63,11 @@ Academic/
  RegistrationWhitelist.cs
  Semester.cs
  StudentProfile.cs
+Assignments/
+ Assignment.cs
+ AssignmentSubmission.cs
+ Result.cs
+ TranscriptExportLog.cs
 Auditing/AuditLog.cs
 Common/
  AuditableEntity.cs
@@ -73,6 +78,7 @@ Identity/
  UserSession.cs
 Interfaces/
  IAcademicProgramRepository.cs
+ IAssignmentRepository.cs
  IAuditService.cs
  ICourseRepository.cs
  IDepartmentRepository.cs
@@ -81,6 +87,7 @@ Interfaces/
  ILicenseRepository.cs
  IModuleRepository.cs
  IRegistrationWhitelistRepository.cs
+ IResultRepository.cs
  ISemesterRepository.cs
  IStudentProfileRepository.cs
  IUserRepository.cs

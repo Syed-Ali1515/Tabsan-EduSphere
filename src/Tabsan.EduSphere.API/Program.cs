@@ -8,6 +8,7 @@ using Tabsan.EduSphere.Application.Auth;
 using Tabsan.EduSphere.Application.Interfaces;
 using Tabsan.EduSphere.Application.Modules;
 using Tabsan.EduSphere.Application.Academic;
+using Tabsan.EduSphere.Application.Assignments;
 using Tabsan.EduSphere.BackgroundJobs;
 using Tabsan.EduSphere.Domain.Interfaces;
 using Tabsan.EduSphere.Infrastructure.Auditing;
@@ -97,6 +98,12 @@ builder.Services.AddScoped<IModuleService, ModuleService>();
 // Phase 2 application services
 builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
 builder.Services.AddScoped<IStudentRegistrationService, StudentRegistrationService>();
+
+// ── Phase 3: Assignments and Results ───────────────────────────────────────────
+builder.Services.AddScoped<IAssignmentRepository, AssignmentRepository>();
+builder.Services.AddScoped<IResultRepository, ResultRepository>();
+builder.Services.AddScoped<IAssignmentService, AssignmentService>();
+builder.Services.AddScoped<IResultService, ResultService>();
 
 // ── Background jobs ─────────────────────────────────────────────────────────────
 builder.Services.AddHostedService<LicenseCheckWorker>();

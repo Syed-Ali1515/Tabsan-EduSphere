@@ -56,16 +56,22 @@ TemporaryDependencyNodeTargetIdentifier=net8.0
 Academic/
  EnrollmentService.cs
  StudentRegistrationService.cs
+Assignments/
+ AssignmentService.cs
+ ResultService.cs
 Auth/AuthService.cs
 DTOs/
  Academic/AcademicDtos.cs
+ Assignments/AssignmentDtos.cs
  Auth/AuthDtos.cs
 Interfaces/
+ IAssignmentService.cs
  IAuthService.cs
  IEnrollmentService.cs
  IModuleEntitlementResolver.cs
  IModuleService.cs
  IPasswordHasher.cs
+ IResultService.cs
  IStudentRegistrationService.cs
  ITokenService.cs
  IUserSessionRepository.cs

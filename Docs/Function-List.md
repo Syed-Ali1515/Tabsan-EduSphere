@@ -536,3 +536,143 @@
 | `AddWhitelistEntry(request, ct)` | `POST /api/v1/student/whitelist` â€” adds a single registration whitelist entry. Admin+. | `API/Controllers/StudentController.cs` |
 | `BulkAddWhitelistEntries(requests, ct)` | `POST /api/v1/student/whitelist/bulk` â€” bulk-imports whitelist entries. Admin+. | `API/Controllers/StudentController.cs` |
 | `GetUserId()` | Private helper â€” extracts the JWT sub claim as a GUID. | `API/Controllers/StudentController.cs` |
+
+---
+
+## Phase 3 — Assignments and Results
+
+### Domain — Assignment
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `Assignment(courseOfferingId, title, description, dueDate, maxMarks)` | Constructor — creates an unpublished assignment. | `Domain/Assignments/Assignment.cs` |
+| `Publish()` | Marks the assignment as published (visible to students). Throws if already published. | `Domain/Assignments/Assignment.cs` |
+| `Retract()` | Withdraws a published assignment. Throws if not published. | `Domain/Assignments/Assignment.cs` |
+| `Update(title, description, dueDate, maxMarks)` | Updates editable fields. Throws if already published. | `Domain/Assignments/Assignment.cs` |
+
+### Domain — AssignmentSubmission
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `AssignmentSubmission(assignmentId, studentProfileId, fileUrl, textContent)` | Constructor — requires at least one of fileUrl/textContent. | `Domain/Assignments/AssignmentSubmission.cs` |
+| `Grade(marksAwarded, feedback, gradedByUserId)` | Records marks and feedback. Throws if submission was Rejected. | `Domain/Assignments/AssignmentSubmission.cs` |
+| `Reject()` | Marks submission as Rejected and clears awarded marks. | `Domain/Assignments/AssignmentSubmission.cs` |
+
+### Domain — Result
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `Result(studentProfileId, courseOfferingId, resultType, marksObtained, maxMarks)` | Constructor — validates marks range. | `Domain/Assignments/Result.cs` |
+| `Publish(publishedByUserId)` | One-way publication. Throws if already published. | `Domain/Assignments/Result.cs` |
+| `CorrectMarks(newMarksObtained, newMaxMarks)` | Admin-only correction of a published result. Validates range. | `Domain/Assignments/Result.cs` |
+
+### Domain — TranscriptExportLog
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `TranscriptExportLog(studentProfileId, requestedByUserId, format, documentUrl?, ipAddress?)` | Constructor — append-only, immutable after creation. | `Domain/Assignments/TranscriptExportLog.cs` |
+
+### Infrastructure — AssignmentRepository
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetByOfferingAsync(courseOfferingId, ct)` | Returns non-deleted assignments for the offering, ordered by due date. | `Infrastructure/Repositories/AssignmentResultRepositories.cs` |
+| `GetByIdAsync(id, ct)` | Returns assignment by ID (soft-delete filter applied). | `Infrastructure/Repositories/AssignmentResultRepositories.cs` |
+| `TitleExistsAsync(courseOfferingId, title, ct)` | Returns true when the offering already has an assignment with that title. | `Infrastructure/Repositories/AssignmentResultRepositories.cs` |
+| `AddAsync(assignment, ct)` | Queues assignment for insertion. | `Infrastructure/Repositories/AssignmentResultRepositories.cs` |
+| `Update(assignment)` | Marks assignment as modified. | `Infrastructure/Repositories/AssignmentResultRepositories.cs` |
+| `GetSubmissionAsync(assignmentId, studentProfileId, ct)` | Returns the submission for a student+assignment pair or null. | `Infrastructure/Repositories/AssignmentResultRepositories.cs` |
+| `GetSubmissionsByAssignmentAsync(assignmentId, ct)` | Returns all submissions for an assignment, ordered by submission date. | `Infrastructure/Repositories/AssignmentResultRepositories.cs` |
+| `GetSubmissionsByStudentAsync(studentProfileId, ct)` | Returns all submissions by a student with assignment navigation loaded. | `Infrastructure/Repositories/AssignmentResultRepositories.cs` |
+| `HasSubmittedAsync(assignmentId, studentProfileId, ct)` | Returns true when the student has already submitted. | `Infrastructure/Repositories/AssignmentResultRepositories.cs` |
+| `GetSubmissionCountAsync(assignmentId, ct)` | Returns the total submission count for an assignment. | `Infrastructure/Repositories/AssignmentResultRepositories.cs` |
+| `AddSubmissionAsync(submission, ct)` | Queues submission for insertion. | `Infrastructure/Repositories/AssignmentResultRepositories.cs` |
+| `UpdateSubmission(submission)` | Marks submission as modified. | `Infrastructure/Repositories/AssignmentResultRepositories.cs` |
+| `SaveChangesAsync(ct)` | Commits pending changes (AssignmentRepository). | `Infrastructure/Repositories/AssignmentResultRepositories.cs` |
+
+### Infrastructure — ResultRepository
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetAsync(studentProfileId, courseOfferingId, resultType, ct)` | Returns the specific result row for the combination or null. | `Infrastructure/Repositories/AssignmentResultRepositories.cs` |
+| `GetByStudentAsync(studentProfileId, ct)` | Returns all results for a student (draft + published). | `Infrastructure/Repositories/AssignmentResultRepositories.cs` |
+| `GetPublishedByStudentAsync(studentProfileId, ct)` | Returns only published results for a student. | `Infrastructure/Repositories/AssignmentResultRepositories.cs` |
+| `GetByOfferingAsync(courseOfferingId, ct)` | Returns all results for a course offering. | `Infrastructure/Repositories/AssignmentResultRepositories.cs` |
+| `ExistsAsync(studentProfileId, courseOfferingId, resultType, ct)` | Returns true when a result row already exists for the combination. | `Infrastructure/Repositories/AssignmentResultRepositories.cs` |
+| `AddAsync(result, ct)` | Queues a result for insertion. | `Infrastructure/Repositories/AssignmentResultRepositories.cs` |
+| `AddRangeAsync(results, ct)` | Queues multiple results for bulk insertion. | `Infrastructure/Repositories/AssignmentResultRepositories.cs` |
+| `Update(result)` | Marks a result as modified. | `Infrastructure/Repositories/AssignmentResultRepositories.cs` |
+| `GetExportLogsAsync(studentProfileId, ct)` | Returns all export logs for a student, newest first. | `Infrastructure/Repositories/AssignmentResultRepositories.cs` |
+| `AddExportLogAsync(log, ct)` | Queues a transcript export log for insertion. | `Infrastructure/Repositories/AssignmentResultRepositories.cs` |
+| `SaveChangesAsync(ct)` | Commits pending changes (ResultRepository). | `Infrastructure/Repositories/AssignmentResultRepositories.cs` |
+
+### Application — AssignmentService
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `CreateAsync(request, createdByUserId, ct)` | Creates an unpublished assignment and logs the action. | `Application/Assignments/AssignmentService.cs` |
+| `UpdateAsync(assignmentId, request, ct)` | Updates draft assignment fields. Returns false if published. | `Application/Assignments/AssignmentService.cs` |
+| `PublishAsync(assignmentId, ct)` | Publishes an assignment so students can submit. | `Application/Assignments/AssignmentService.cs` |
+| `RetractAsync(assignmentId, ct)` | Retracts a published assignment. Fails if submissions exist. | `Application/Assignments/AssignmentService.cs` |
+| `DeleteAsync(assignmentId, ct)` | Soft-deletes an assignment. Fails if submissions exist. | `Application/Assignments/AssignmentService.cs` |
+| `GetByOfferingAsync(courseOfferingId, ct)` | Returns all assignments for an offering with submission counts. | `Application/Assignments/AssignmentService.cs` |
+| `GetByIdAsync(assignmentId, ct)` | Returns a single assignment with submission count, or null. | `Application/Assignments/AssignmentService.cs` |
+| `SubmitAsync(studentProfileId, request, ct)` | Submits student work; enforces published, not past due, no duplicate. | `Application/Assignments/AssignmentService.cs` |
+| `GetMySubmissionsAsync(studentProfileId, ct)` | Returns all submissions by the student with assignment titles. | `Application/Assignments/AssignmentService.cs` |
+| `GetSubmissionsByAssignmentAsync(assignmentId, ct)` | Returns all submissions for an assignment (faculty grading view). | `Application/Assignments/AssignmentService.cs` |
+| `GradeSubmissionAsync(request, gradedByUserId, ct)` | Grades a submission; validates marks <= MaxMarks. | `Application/Assignments/AssignmentService.cs` |
+| `RejectSubmissionAsync(assignmentId, studentProfileId, ct)` | Rejects a submission. Returns false if not found. | `Application/Assignments/AssignmentService.cs` |
+| `ToResponse(assignment, submissionCount)` | Private — maps Assignment to AssignmentResponse DTO. | `Application/Assignments/AssignmentService.cs` |
+| `ToSubmissionResponse(submission, assignmentTitle)` | Private — maps AssignmentSubmission to SubmissionResponse DTO. | `Application/Assignments/AssignmentService.cs` |
+
+### Application — ResultService
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `CreateAsync(request, ct)` | Creates a draft result entry. Throws on duplicate. | `Application/Assignments/ResultService.cs` |
+| `BulkCreateAsync(request, ct)` | Bulk-inserts draft results; skips existing. Returns inserted count. | `Application/Assignments/ResultService.cs` |
+| `PublishAsync(studentProfileId, courseOfferingId, resultType, publishedByUserId, ct)` | Publishes a single result. Returns false if not found or already published. | `Application/Assignments/ResultService.cs` |
+| `PublishAllForOfferingAsync(courseOfferingId, publishedByUserId, ct)` | Bulk-publishes all draft results for an offering. Returns published count. | `Application/Assignments/ResultService.cs` |
+| `CorrectAsync(studentProfileId, courseOfferingId, resultType, request, correctedByUserId, ct)` | Admin correction of a published result with audit logging. | `Application/Assignments/ResultService.cs` |
+| `GetByStudentAsync(studentProfileId, ct)` | Returns all results for a student (draft + published). | `Application/Assignments/ResultService.cs` |
+| `GetPublishedByStudentAsync(studentProfileId, ct)` | Returns only published results for a student. | `Application/Assignments/ResultService.cs` |
+| `GetByOfferingAsync(courseOfferingId, ct)` | Returns all results for a course offering. | `Application/Assignments/ResultService.cs` |
+| `ExportTranscriptAsync(request, requestedByUserId, ipAddress, ct)` | Exports transcript, logs to TranscriptExportLog and AuditLog. | `Application/Assignments/ResultService.cs` |
+| `GetExportHistoryAsync(studentProfileId, ct)` | Returns transcript export history for a student. | `Application/Assignments/ResultService.cs` |
+| `ToResponse(result)` | Private — maps Result to ResultResponse DTO including percentage. | `Application/Assignments/ResultService.cs` |
+
+### API — AssignmentController
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `Create(request, ct)` | `POST /api/assignment` — creates an assignment. Faculty/Admin. | `API/Controllers/AssignmentController.cs` |
+| `Update(id, request, ct)` | `PUT /api/assignment/{id}` — updates a draft assignment. Faculty/Admin. | `API/Controllers/AssignmentController.cs` |
+| `Publish(id, ct)` | `POST /api/assignment/{id}/publish` — publishes an assignment. Faculty/Admin. | `API/Controllers/AssignmentController.cs` |
+| `Retract(id, ct)` | `POST /api/assignment/{id}/retract` — retracts a published assignment. Faculty/Admin. | `API/Controllers/AssignmentController.cs` |
+| `Delete(id, ct)` | `DELETE /api/assignment/{id}` — soft-deletes when no submissions exist. Admin. | `API/Controllers/AssignmentController.cs` |
+| `GetByOffering(courseOfferingId, ct)` | `GET /api/assignment/by-offering/{id}` — lists assignments for an offering. | `API/Controllers/AssignmentController.cs` |
+| `GetById(id, ct)` | `GET /api/assignment/{id}` — returns a single assignment. | `API/Controllers/AssignmentController.cs` |
+| `Submit(request, ct)` | `POST /api/assignment/submit` — student submission. Student. | `API/Controllers/AssignmentController.cs` |
+| `GetMySubmissions(ct)` | `GET /api/assignment/my-submissions` — student's own submissions. Student. | `API/Controllers/AssignmentController.cs` |
+| `GetSubmissions(id, ct)` | `GET /api/assignment/{id}/submissions` — all submissions for an assignment. Faculty/Admin. | `API/Controllers/AssignmentController.cs` |
+| `Grade(request, ct)` | `PUT /api/assignment/submissions/grade` — grades a submission. Faculty/Admin. | `API/Controllers/AssignmentController.cs` |
+| `Reject(assignmentId, studentProfileId, ct)` | `POST /api/assignment/{id}/submissions/{studentId}/reject` — rejects a submission. Faculty/Admin. | `API/Controllers/AssignmentController.cs` |
+| `GetCurrentUserId()` | Private — extracts user ID from JWT NameIdentifier claim. | `API/Controllers/AssignmentController.cs` |
+| `GetCurrentStudentProfileId()` | Private — extracts student profile ID from "studentProfileId" JWT claim. | `API/Controllers/AssignmentController.cs` |
+
+### API — ResultController
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `Create(request, ct)` | `POST /api/result` — creates a draft result. Faculty/Admin. | `API/Controllers/ResultController.cs` |
+| `BulkCreate(request, ct)` | `POST /api/result/bulk` — bulk-creates draft results for a class. Faculty/Admin. | `API/Controllers/ResultController.cs` |
+| `Publish(studentProfileId, courseOfferingId, resultType, ct)` | `POST /api/result/publish` — publishes a single result. Faculty/Admin. | `API/Controllers/ResultController.cs` |
+| `PublishAll(courseOfferingId, ct)` | `POST /api/result/publish-all` — publishes all drafts for an offering. Faculty/Admin. | `API/Controllers/ResultController.cs` |
+| `Correct(studentProfileId, courseOfferingId, resultType, request, ct)` | `PUT /api/result/correct` — Admin correction of a published result. Admin only. | `API/Controllers/ResultController.cs` |
+| `GetMyResults(ct)` | `GET /api/result/my-results` — student's own published results. Student. | `API/Controllers/ResultController.cs` |
+| `GetByStudent(studentProfileId, ct)` | `GET /api/result/by-student/{id}` — all results for a student. Faculty/Admin. | `API/Controllers/ResultController.cs` |
+| `GetByOffering(courseOfferingId, ct)` | `GET /api/result/by-offering/{id}` — all results for an offering. Faculty/Admin. | `API/Controllers/ResultController.cs` |
+| `GetTranscript(studentProfileId, format, ct)` | `GET /api/result/transcript/{id}` — exports transcript, logs request. All roles. | `API/Controllers/ResultController.cs` |
+| `GetTranscriptHistory(studentProfileId, ct)` | `GET /api/result/transcript/{id}/history` — export history for a student. Faculty/Admin. | `API/Controllers/ResultController.cs` |
+| `GetCurrentUserId()` | Private — extracts user ID from JWT NameIdentifier claim. | `API/Controllers/ResultController.cs` |
+| `GetCurrentStudentProfileId()` | Private — extracts student profile ID from "studentProfileId" JWT claim. | `API/Controllers/ResultController.cs` |
