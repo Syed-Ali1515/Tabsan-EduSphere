@@ -20,6 +20,10 @@ public class AssignmentConfiguration : IEntityTypeConfiguration<Assignment>
         builder.HasIndex(a => a.CourseOfferingId)
                .HasDatabaseName("IX_assignments_offering_id");
 
+        // Composite covering index: narrows "published assignments for offering" in one seek.
+        builder.HasIndex(a => new { a.CourseOfferingId, a.IsPublished })
+               .HasDatabaseName("IX_assignments_offering_published");
+
         // Soft-delete filter — retracted/deleted assignments are hidden from normal queries.
         builder.HasQueryFilter(a => !a.IsDeleted);
     }

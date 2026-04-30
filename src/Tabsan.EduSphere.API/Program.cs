@@ -1,11 +1,12 @@
 // ── Builder configuration ──────────────────────────────────────────────────────
 
 using System.Text;
-using System.Threading.RateLimiting;
-using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;using FluentValidation;
+using FluentValidation.AspNetCore;using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Tabsan.EduSphere.Domain.Interfaces;
 using Tabsan.EduSphere.Application.Auth;
 using Tabsan.EduSphere.Application.Interfaces;
 using Tabsan.EduSphere.Application.Modules;
@@ -78,8 +79,7 @@ builder.Services.AddScoped<IAuditService, AuditService>();
 
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<TokenService>(); // also registered directly for AuthController resolving
-builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
-builder.Services.AddScoped<PasswordHasher>();
+builder.Services.AddScoped<IPasswordHasher, Argon2idPasswordHasher>();
 builder.Services.AddScoped<LicenseValidationService>();
 
 // ── Module entitlement ──────────────────────────────────────────────────────────
@@ -154,6 +154,9 @@ builder.Services.AddScoped<IModuleRolesService, ModuleRolesService>();
 builder.Services.AddScoped<IThemeService, ThemeService>();
 builder.Services.AddScoped<ISidebarMenuService, SidebarMenuService>();
 
+// ── Phase 10: Password history ────────────────────────────────────────────
+builder.Services.AddScoped<IPasswordHistoryRepository, Tabsan.EduSphere.Infrastructure.Repositories.PasswordHistoryRepository>();
+
 // ── Rate limiting (OWASP hardening) ─────────────────────────────────────
 builder.Services.AddRateLimiter(opts =>
 {
@@ -177,6 +180,13 @@ builder.Services.AddRateLimiter(opts =>
 });
 builder.Services.AddHostedService<LicenseCheckWorker>();
 builder.Services.AddHostedService<AttendanceAlertJob>();
+
+// ── Email ─────────────────────────────────────────────────────────────────────────
+builder.Services.AddScoped<IEmailSender, Tabsan.EduSphere.Infrastructure.Email.MailKitEmailSender>();
+
+// ── FluentValidation ───────────────────────────────────────────────────────────
+builder.Services.AddValidatorsFromAssemblyContaining<Tabsan.EduSphere.Application.Validators.LoginRequestValidator>();
+builder.Services.AddFluentValidationAutoValidation();
 
 // ── API infrastructure ──────────────────────────────────────────────────────────
 builder.Services.AddControllers();

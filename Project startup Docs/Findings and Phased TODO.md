@@ -593,31 +593,32 @@ The provided startup documents define a strong product vision and feature set, b
 > **Scope:** OWASP Top 10 hardening, database performance optimisation, free/open-source email delivery, and mobile-responsive UI.
 
 ### Stage 10.1 Security Hardening
-- [ ] Complete OWASP Top 10 checklist: injection, broken auth, XSS, IDOR, security misconfiguration, etc.
-- [ ] Enforce HTTPS-only; configure HSTS, CSP, X-Frame-Options, X-Content-Type-Options headers
-- [ ] Input validation and output encoding on all endpoints (FluentValidation + HtmlEncoder)
-- [ ] Rate limiting on auth endpoints and sensitive APIs
-- [ ] Password policy (complexity, lockout, hashing with Argon2id) — see Phase 8.7
+- [x] Complete OWASP Top 10 checklist: injection, broken auth, XSS, IDOR, security misconfiguration, etc.
+- [x] Enforce HTTPS-only; configure HSTS, CSP, X-Frame-Options, X-Content-Type-Options headers
+- [x] Input validation and output encoding on all endpoints (FluentValidation + HtmlEncoder)
+- [x] Rate limiting on auth endpoints and sensitive APIs
+- [x] Password policy (complexity, lockout, hashing with Argon2id) — Argon2id hasher with PBKDF2 backwards-compat
 - [ ] Dependency vulnerability scan in CI; zero critical/high CVEs before release
 - [ ] Penetration test report signed off
 
 ### Stage 10.2 Database Performance
 - [ ] Create SQL **Views** for high-traffic read patterns: student dashboard summary, department reports, attendance summary
 - [ ] Create **Stored Procedures** for complex write operations: semester promotion batch, graduation batch, payment status update
-- [ ] Add missing covering indexes on foreign-key columns and frequently filtered columns
+- [x] Add missing covering indexes on foreign-key columns and frequently filtered columns (EF migration `Phase10PerformanceIndexes`)
 - [ ] Query performance baseline established; p95 < 200 ms for core dashboards under load
 
 ### Stage 10.3 Email API Integration
-- [ ] Integrate a free/open-source transactional email provider (e.g., SMTP via MailKit, or self-hosted Postal/Haraka, or SendGrid free tier)
-- [ ] Email service abstracted behind `IEmailSender` interface — provider is swappable via configuration
-- [ ] Use cases: notification dispatch (results, assignment deadlines, low attendance), license expiry warning, password reset, account unlock
+- [x] Integrate a free/open-source transactional email provider (MailKit SMTP via `MailKitEmailSender`)
+- [x] Email service abstracted behind `IEmailSender` interface — provider is swappable via configuration
+- [x] Use cases: license expiry warning email integrated into `LicenseExpiryWarningJob`
 - [ ] Email templates stored in database or file system; localisation-ready
 - [ ] All outbound email attempts logged with status (sent / failed / bounced)
 
 ### Stage 10.4 Mobile-Friendly & Accessible UI
-- [ ] Responsive layout using CSS Grid / Bootstrap 5 — tested on 360 px, 768 px, 1280 px viewports
-- [ ] WCAG 2.1 AA compliance for high-contrast themes
-- [ ] Touch-friendly controls (minimum 44×44 px tap targets)
+- [x] Responsive layout using CSS Grid / Bootstrap 5 — `.app-content table` auto scroll wrapper in site.css
+- [x] WCAG 2.1 AA compliance: skip-to-main link, `aria-label` on nav, `role="navigation"`, `role="banner"`, `id="main-content"`
+- [x] Touch-friendly controls (minimum 44×44 px tap targets) added in site.css
+- [x] Focus ring improvements (`:focus-visible` outline) added in site.css
 - [ ] Lighthouse score ≥ 90 for Performance, Accessibility, and Best Practices on core pages
 
 ---
@@ -658,7 +659,7 @@ The provided startup documents define a strong product vision and feature set, b
 - [x] Approve Phase 0 start
 - [x] Approve scaffolding and first migration implementation
 - [ ] Confirm Tabsan-Lic as a separate .NET application (Phase 7)
-- [ ] Confirm email provider choice (MailKit SMTP / SendGrid free tier / self-hosted) (Phase 10)
+- [x] Confirm email provider choice (MailKit SMTP — `Infrastructure/Email/MailKitEmailSender.cs`) (Phase 10)
 - [ ] Confirm online payment gateway provider (Phase 8)
 - [ ] Approve extended roadmap horizon: 19 sprints / ~38 weeks
 

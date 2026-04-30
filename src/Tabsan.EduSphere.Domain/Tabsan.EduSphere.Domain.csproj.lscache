@@ -85,6 +85,7 @@ Enums/
  StudentStatus.cs
 Fyp/FypProject.cs
 Identity/
+ PasswordHistoryEntry.cs
  Role.cs
  User.cs
  UserSession.cs
@@ -103,6 +104,7 @@ Interfaces/
  ILicenseRepository.cs
  IModuleRepository.cs
  INotificationRepository.cs
+ IPasswordHistoryRepository.cs
  IQuizRepository.cs
  IRegistrationWhitelistRepository.cs
  IResultRepository.cs
@@ -122,6 +124,7 @@ Modules/
 Notifications/
  Notification.cs
  NotificationRecipient.cs
+ OutboundEmailLog.cs
 obj/Debug/net8.0/
  .NETCoreApp,Version=v8.0.AssemblyAttributes.cs
  Tabsan.EduSphere.Domain.AssemblyInfo.cs

@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using Tabsan.EduSphere.Application.Interfaces;
 using Tabsan.EduSphere.Domain.Notifications;
 using Tabsan.EduSphere.Infrastructure.Persistence;
-
 namespace Tabsan.EduSphere.BackgroundJobs;
 
 /// <summary>
@@ -62,6 +61,7 @@ public class LicenseExpiryWarningJob : BackgroundService
             using var scope = _services.CreateScope();
             var db          = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             var notifSvc    = scope.ServiceProvider.GetRequiredService<INotificationService>();
+            var emailSender = scope.ServiceProvider.GetRequiredService<IEmailSender>();
 
             var license = await db.LicenseStates
                                   .OrderByDescending(l => l.ActivatedAt)
@@ -83,13 +83,13 @@ public class LicenseExpiryWarningJob : BackgroundService
                 return;
             }
 
-            // Collect Admin + SuperAdmin user IDs to receive the notification
-            var recipientIds = await db.Users
-                .Where(u => u.Role.Name == "Admin" || u.Role.Name == "SuperAdmin")
-                .Select(u => u.Id)
+            // Collect Admin + SuperAdmin users for notification and email
+            var recipients = await db.Users
+                .Where(u => (u.Role.Name == "Admin" || u.Role.Name == "SuperAdmin") && u.IsActive)
+                .Select(u => new { u.Id, u.Email })
                 .ToListAsync(ct);
 
-            if (recipientIds.Count == 0)
+            if (recipients.Count == 0)
             {
                 _logger.LogWarning("LicenseExpiryWarningJob: no Admin/SuperAdmin users found to notify.");
                 return;
@@ -99,12 +99,21 @@ public class LicenseExpiryWarningJob : BackgroundService
                 ? "has already expired"
                 : $"expires in {(int)Math.Ceiling(daysLeft)} day(s) on {license.ExpiresAt.Value:yyyy-MM-dd}";
 
+            var recipientIds = recipients.Select(r => r.Id).ToList();
+
             await notifSvc.SendSystemAsync(
                 title:            "License Expiry Warning",
                 body:             $"The Tabsan EduSphere license {expiryLabel}. Please upload a new .tablic license file to avoid service interruption.",
                 type:             NotificationType.System,
                 recipientUserIds: recipientIds,
                 ct:               ct);
+
+            // Also send an email to admins who have email addresses configured
+            var emailTasks = recipients
+                .Where(r => !string.IsNullOrWhiteSpace(r.Email))
+                .Select(r => SendExpiryEmailAsync(emailSender, r.Email!, expiryLabel, ct));
+
+            await Task.WhenAll(emailTasks);
 
             _logger.LogInformation(
                 "LicenseExpiryWarningJob: sent warning to {Count} recipient(s). Days remaining: {Days:F1}",
@@ -114,6 +123,30 @@ public class LicenseExpiryWarningJob : BackgroundService
         catch (Exception ex)
         {
             _logger.LogError(ex, "LicenseExpiryWarningJob encountered an error during the check.");
+        }
+    }
+
+    private async Task SendExpiryEmailAsync(IEmailSender emailSender, string toEmail, string expiryLabel, CancellationToken ct)
+    {
+        try
+        {
+            var subject = "⚠️ Tabsan EduSphere — License Expiry Warning";
+            var body    = $"""
+                <p>Dear Administrator,</p>
+                <p>This is an automated notice that your <strong>Tabsan EduSphere</strong> license
+                <strong>{expiryLabel}</strong>.</p>
+                <p>To avoid service interruption, please upload a new <code>.tablic</code> license
+                file via the administration panel.</p>
+                <p>If you need assistance, contact your Tabsan reseller or support team.</p>
+                <hr />
+                <small>This email was generated automatically. Please do not reply.</small>
+                """;
+
+            await emailSender.SendAsync(toEmail, subject, body, ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "LicenseExpiryWarningJob: failed to send expiry email to {Email}", toEmail);
         }
     }
 }

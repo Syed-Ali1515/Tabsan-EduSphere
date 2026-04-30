@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Tabsan.EduSphere.Application.Interfaces;
 using Tabsan.EduSphere.Domain.Identity;
 using Tabsan.EduSphere.Domain.Modules;
 using Tabsan.EduSphere.Domain.Settings;
 using Tabsan.EduSphere.Infrastructure.Modules;
 using Tabsan.EduSphere.Infrastructure.Persistence;
-using Tabsan.EduSphere.Infrastructure.Auth;
 
 namespace Tabsan.EduSphere.Infrastructure.Persistence;
 
@@ -29,7 +29,7 @@ public static class DatabaseSeeder
     {
         using var scope = services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var hasher = scope.ServiceProvider.GetRequiredService<PasswordHasher>();
+        var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
 
         await db.Database.MigrateAsync();
 
@@ -121,7 +121,7 @@ public static class DatabaseSeeder
     /// The account is only created when no user with the SuperAdmin role exists,
     /// so this is safe to run on every startup.
     /// </summary>
-    private static async Task SeedSuperAdminAsync(ApplicationDbContext db, PasswordHasher hasher)
+    private static async Task SeedSuperAdminAsync(ApplicationDbContext db, IPasswordHasher hasher)
     {
         var superAdminRole = await db.Roles.FirstOrDefaultAsync(r => r.Name == "SuperAdmin");
         if (superAdminRole is null) return; // roles not seeded yet — will run on next start

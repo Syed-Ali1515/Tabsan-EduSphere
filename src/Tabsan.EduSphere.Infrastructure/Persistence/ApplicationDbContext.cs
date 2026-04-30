@@ -177,6 +177,13 @@ public class ApplicationDbContext : DbContext
     /// <summary>Per-role visibility assignments for each sidebar menu item.</summary>
     public DbSet<SidebarMenuRoleAccess> SidebarMenuRoleAccesses => Set<SidebarMenuRoleAccess>();
 
+    // ── Phase 10: Security & Email Infrastructure ──────────────────────────────
+    /// <summary>Append-only log of previous password hashes for reuse-prevention policy.</summary>
+    public DbSet<PasswordHistoryEntry> PasswordHistory => Set<PasswordHistoryEntry>();
+
+    /// <summary>Append-only log of all outbound email send attempts and their outcome.</summary>
+    public DbSet<OutboundEmailLog> OutboundEmailLogs => Set<OutboundEmailLog>();
+
     /// <summary>
     /// Scans the current assembly for all IEntityTypeConfiguration implementations
     /// and applies them automatically. This keeps OnModelCreating clean as the

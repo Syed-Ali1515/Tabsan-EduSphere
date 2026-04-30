@@ -65,9 +65,10 @@
     <link rel="stylesheet" href="~/Tabsan.EduSphere.Web.styles.css" asp-append-version="true" />
 </head>
 <body>
+    <a href="#main-content" class="skip-to-main visually-hidden-focusable">Skip to main content</a>
     <div class="app-shell">
-        <aside class="app-sidebar">
-            <a class="brand-link" asp-controller="Home" asp-action="Index">
+        <aside class="app-sidebar" role="complementary" aria-label="Application sidebar">
+            <a class="brand-link" asp-controller="Home" asp-action="Index" aria-label="Tabsan EduSphere — go to home">
                 <span class="brand-mark">TE</span>
                 <div>
                     <div class="brand-name">Tabsan EduSphere</div>
@@ -75,7 +76,7 @@
                 </div>
             </a>
 
-            <nav class="sidebar-nav">
+            <nav class="sidebar-nav" role="navigation" aria-label="Main navigation">
                 @if (useDynamicMenus)
                 {
                     foreach (var top in visibleMenus.OrderBy(m => m.DisplayOrder))
@@ -145,7 +146,7 @@
         </aside>
 
         <section class="app-main">
-            <header class="app-header">
+            <header class="app-header" role="banner">
                 <h1 class="page-title">@ViewData["Title"]</h1>
                 <div class="auth-chip">
                     @displayName
@@ -160,7 +161,7 @@
                 </div>
             </header>
 
-            <main class="app-content" role="main">
+            <main class="app-content" id="main-content" tabindex="-1">
                 @RenderBody()
             </main>
 

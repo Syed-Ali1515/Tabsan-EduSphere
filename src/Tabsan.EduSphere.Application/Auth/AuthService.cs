@@ -17,19 +17,22 @@ public class AuthService : IAuthService
     private readonly ITokenService _tokenService;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IAuditService _audit;
+    private readonly IPasswordHistoryRepository _passwordHistory;
 
     public AuthService(
         IUserRepository userRepo,
         IUserSessionRepository sessionRepo,
         ITokenService tokenService,
         IPasswordHasher passwordHasher,
-        IAuditService audit)
+        IAuditService audit,
+        IPasswordHistoryRepository passwordHistory)
     {
-        _userRepo = userRepo;
-        _sessionRepo = sessionRepo;
-        _tokenService = tokenService;
-        _passwordHasher = passwordHasher;
-        _audit = audit;
+        _userRepo        = userRepo;
+        _sessionRepo     = sessionRepo;
+        _tokenService    = tokenService;
+        _passwordHasher  = passwordHasher;
+        _audit           = audit;
+        _passwordHistory = passwordHistory;
     }
 
     // ── Login ──────────────────────────────────────────────────────────────────
@@ -158,10 +161,19 @@ public class AuthService : IAuthService
         if (!_passwordHasher.Verify(user.PasswordHash, request.CurrentPassword))
             return false;
 
+        // Enforce no-reuse of last 5 passwords (includes current hash).
+        var recentHashes = await _passwordHistory.GetRecentAsync(userId, 5, ct);
+        if (recentHashes.Any(h => _passwordHasher.Verify(h.PasswordHash, request.NewPassword)))
+            return false; // new password matches a recent one
+
         var newHash = _passwordHasher.Hash(request.NewPassword);
         user.UpdatePasswordHash(newHash);
         _userRepo.Update(user);
         await _userRepo.SaveChangesAsync(ct);
+
+        // Record in password history.
+        await _passwordHistory.AddAsync(new PasswordHistoryEntry(userId, newHash), ct);
+        await _passwordHistory.SaveChangesAsync(ct);
 
         await _audit.LogAsync(new AuditLog("ChangePassword", "User", userId.ToString(),
             actorUserId: userId), ct);

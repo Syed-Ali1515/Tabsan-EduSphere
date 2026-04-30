@@ -1807,3 +1807,52 @@
 | Addition | Description | File |
 |---|---|---|
 | 15 CSS theme definitions | Themes: `ocean_blue`, `emerald_forest`, `sunset_orange`, `royal_purple`, `midnight_dark`, `rose_gold`, `arctic_teal`, `sand_dune`, `slate_grey`, `crimson`, `ivory_classic`, `cobalt_night`, `olive_grove`, `cosmic_violet`, plus default. Each uses `[data-theme="key"]` with 15 CSS custom property overrides. | `Web/wwwroot/css/site.css` |
+
+
+---
+
+## Phase 10: Security, Performance & Email Infrastructure
+
+### Infrastructure — Argon2idPasswordHasher
+| Function | Description | File |
+|---|---|---|
+| `Hash(password)` | Hashes plain-text password with Argon2id (time=3, mem=64MB, parallelism=4, salt=32B). Returns `argon2id:{base64salt}:{base64hash}`. | `Infrastructure/Auth/Argon2idPasswordHasher.cs` |
+| `Verify(storedHash, providedPassword)` | Verifies password against stored hash. Supports both Argon2id (new) and legacy PBKDF2 (old) formats for transparent migration. | `Infrastructure/Auth/Argon2idPasswordHasher.cs` |
+
+### Application — FluentValidation Validators
+| Function | Description | File |
+|---|---|---|
+| `LoginRequestValidator` | Validates Username (NotEmpty, MaxLength 100, no HTML chars) and Password (NotEmpty, MaxLength 128). | `Application/Validators/AuthValidators.cs` |
+| `ChangePasswordRequestValidator` | Validates CurrentPassword (NotEmpty) and NewPassword (complexity: upper+lower+digit+special, 8-128 chars). | `Application/Validators/AuthValidators.cs` |
+| `AdminResetPasswordRequestValidator` | Validates TargetUserId (NotEmpty) and NewPassword (same complexity as ChangePassword). | `Application/Validators/AuthValidators.cs` |
+
+### Application — IEmailSender Interface
+| Function | Description | File |
+|---|---|---|
+| `SendAsync(to, subject, htmlBody, ct)` | Sends an HTML email to a single recipient. | `Application/Interfaces/IEmailSender.cs` |
+| `SendAsync(to, subject, htmlBody, cc, ct)` | Sends an HTML email with optional CC recipients. | `Application/Interfaces/IEmailSender.cs` |
+
+### Infrastructure — MailKitEmailSender
+| Function | Description | File |
+|---|---|---|
+| `SendAsync(to, subject, htmlBody, ct)` | Sends HTML email via MailKit SMTP. Reads config from Email:SmtpHost/Port/Username/Password/FromAddress/EnableSsl. Logs success/failure. | `Infrastructure/Email/MailKitEmailSender.cs` |
+| `SendAsync(to, subject, htmlBody, cc, ct)` | Sends HTML email with CC recipients via MailKit SMTP. | `Infrastructure/Email/MailKitEmailSender.cs` |
+
+### Infrastructure — Phase10PerformanceIndexes (EF Migration)
+| Index | Description | Table |
+|---|---|---|
+| `IX_assignments_offering_published` | Composite covering index on `(CourseOfferingId, IsPublished)` for student assignment list queries. | `assignments` |
+| `IX_audit_logs_entity_occurred_at` | Composite index on `(EntityName, OccurredAt)` for entity-type audit trail pages. | `audit_logs` |
+
+### Web — WCAG / Accessibility (_Layout.cshtml + site.css)
+| Change | Description | File |
+|---|---|---|
+| Skip-to-main link | `<a href="#main-content" class="skip-to-main visually-hidden-focusable">` at top of body for keyboard navigation. | `Web/Views/Shared/_Layout.cshtml` |
+| Sidebar aria-label | `role="complementary" aria-label="Application sidebar"` on `<aside>`. | `Web/Views/Shared/_Layout.cshtml` |
+| Navigation aria-label | `role="navigation" aria-label="Main navigation"` on sidebar `<nav>`. | `Web/Views/Shared/_Layout.cshtml` |
+| Brand link aria-label | `aria-label="Tabsan EduSphere — go to home"` on brand anchor. | `Web/Views/Shared/_Layout.cshtml` |
+| Main content landmark | `id="main-content" tabindex="-1"` on `<main>` for skip-link target. | `Web/Views/Shared/_Layout.cshtml` |
+| Header role | `role="banner"` on `<header class="app-header">`. | `Web/Views/Shared/_Layout.cshtml` |
+| Touch targets | `.btn, button, [type=submit/reset/button] { min-height: 44px; min-width: 44px; }` — WCAG 2.5.5. | `Web/wwwroot/css/site.css` |
+| Table scroll | `.app-content table { overflow-x: auto; }` for responsive tables on small viewports. | `Web/wwwroot/css/site.css` |
+| Focus ring | `:focus-visible { outline: 3px solid #0d6efd; }` for keyboard navigation visibility. | `Web/wwwroot/css/site.css` |

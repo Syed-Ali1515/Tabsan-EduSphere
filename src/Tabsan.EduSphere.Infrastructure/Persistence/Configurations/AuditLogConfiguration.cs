@@ -28,5 +28,9 @@ public class AuditLogConfiguration : IEntityTypeConfiguration<AuditLog>
         // Filter by actor for per-user audit trail.
         builder.HasIndex(a => a.ActorUserId)
                .HasDatabaseName("IX_audit_logs_actor");
+
+        // Composite for entity-type audit trail pages (filter by EntityName, order by OccurredAt).
+        builder.HasIndex(a => new { a.EntityName, a.OccurredAt })
+               .HasDatabaseName("IX_audit_logs_entity_occurred_at");
     }
 }

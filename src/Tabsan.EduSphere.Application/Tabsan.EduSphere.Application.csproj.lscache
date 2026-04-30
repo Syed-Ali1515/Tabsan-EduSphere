@@ -87,6 +87,7 @@ Interfaces/
  IAuthService.cs
  IBuildingRoomService.cs
  ICsvRegistrationImportService.cs
+ IEmailSender.cs
  IEnrollmentService.cs
  IFypService.cs
  ILlmClient.cs
@@ -117,6 +118,7 @@ Services/
  SettingsServices.cs
  StudentLifecycleService.cs
  TimetableService.cs
+Validators/AuthValidators.cs
 
 [metadataReferences]
 ../Tabsan.EduSphere.Domain/obj/Debug/net8.0/ref/Tabsan.EduSphere.Domain.dll

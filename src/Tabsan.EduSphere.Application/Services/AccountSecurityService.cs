@@ -1,5 +1,6 @@
 using Tabsan.EduSphere.Application.Dtos;
 using Tabsan.EduSphere.Application.Interfaces;
+using Tabsan.EduSphere.Domain.Identity;
 using Tabsan.EduSphere.Domain.Interfaces;
 
 namespace Tabsan.EduSphere.Application.Services;
@@ -14,11 +15,19 @@ public class AccountSecurityService : IAccountSecurityService
 {
     private readonly IUserRepository _userRepo;
     private readonly IPasswordHasher _passwordHasher;
+    private readonly IPasswordHistoryRepository _passwordHistory;
+    private readonly IEmailSender _emailSender;
 
-    public AccountSecurityService(IUserRepository userRepo, IPasswordHasher passwordHasher)
+    public AccountSecurityService(
+        IUserRepository userRepo,
+        IPasswordHasher passwordHasher,
+        IPasswordHistoryRepository passwordHistory,
+        IEmailSender emailSender)
     {
-        _userRepo = userRepo;
-        _passwordHasher = passwordHasher;
+        _userRepo        = userRepo;
+        _passwordHasher  = passwordHasher;
+        _passwordHistory = passwordHistory;
+        _emailSender     = emailSender;
     }
 
     public async Task<AccountLockoutStatusDto?> GetLockoutStatusAsync(Guid userId, CancellationToken ct = default)
@@ -49,6 +58,18 @@ public class AccountSecurityService : IAccountSecurityService
         target.UnlockAccount();
         _userRepo.Update(target);
         await _userRepo.SaveChangesAsync(ct);
+
+        // Notify user by email if address is on file.
+        if (!string.IsNullOrWhiteSpace(target.Email))
+        {
+            var body = $"""
+                <p>Dear {target.Username},</p>
+                <p>Your <strong>Tabsan EduSphere</strong> account has been <strong>unlocked</strong> by an administrator.</p>
+                <p>You can now log in normally. If you did not expect this, please contact the system administrator immediately.</p>
+                """;
+            try { await _emailSender.SendAsync(target.Email, "Your account has been unlocked", body, ct); }
+            catch { /* non-fatal — unlock succeeded regardless */ }
+        }
     }
 
     public async Task ResetPasswordAsync(
@@ -75,6 +96,23 @@ public class AccountSecurityService : IAccountSecurityService
 
         _userRepo.Update(target);
         await _userRepo.SaveChangesAsync(ct);
+
+        // Record in password history for reuse-prevention.
+        await _passwordHistory.AddAsync(new PasswordHistoryEntry(target.Id, newHash), ct);
+        await _passwordHistory.SaveChangesAsync(ct);
+
+        // Notify user by email if address is on file.
+        if (!string.IsNullOrWhiteSpace(target.Email))
+        {
+            var body = $"""
+                <p>Dear {target.Username},</p>
+                <p>An administrator has <strong>reset your password</strong> on <strong>Tabsan EduSphere</strong>.</p>
+                <p>Please log in with the new temporary password provided to you and change it immediately.</p>
+                <p>If you did not request a password reset, contact the system administrator immediately.</p>
+                """;
+            try { await _emailSender.SendAsync(target.Email, "Your password has been reset", body, ct); }
+            catch { /* non-fatal — reset succeeded regardless */ }
+        }
     }
 
     public async Task<IList<AccountLockoutStatusDto>> GetLockedAccountsAsync(CancellationToken ct = default)
@@ -89,3 +127,4 @@ public class AccountSecurityService : IAccountSecurityService
         )).ToList();
     }
 }
+

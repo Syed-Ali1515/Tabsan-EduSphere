@@ -57,8 +57,10 @@ AiChat/OpenAiLlmClient.cs
 Analytics/AnalyticsService.cs
 Auditing/AuditService.cs
 Auth/
+ Argon2idPasswordHasher.cs
  PasswordHasher.cs
  TokenService.cs
+Email/MailKitEmailSender.cs
 Licensing/
  EmbeddedKeys.cs
  LicenseValidationService.cs
@@ -98,6 +100,8 @@ Persistence/
   LicenseStateConfiguration.cs
   ModuleConfiguration.cs
   NotificationConfigurations.cs
+  OutboundEmailLogConfiguration.cs
+  PasswordHistoryConfiguration.cs
   PaymentReceiptConfiguration.cs
   Phase9Configurations.cs
   QuizConfigurations.cs
@@ -118,6 +122,8 @@ Persistence/
   20260429230253_Phase9TimetableRedesign.Designer.cs
   20260430000234_Phase9SidebarSettings.cs
   20260430000234_Phase9SidebarSettings.Designer.cs
+  20260430045628_Phase10PerformanceIndexes.cs
+  20260430045628_Phase10PerformanceIndexes.Designer.cs
 Repositories/
  AcademicRepositories.cs
  AcademicSupportRepositories.cs
@@ -129,6 +135,7 @@ Repositories/
  LicenseRepository.cs
  ModuleRepository.cs
  NotificationAttendanceRepositories.cs
+ PasswordHistoryRepository.cs
  QuizFypRepositories.cs
  SettingsRepository.cs
  StudentLifecycleRepository.cs
@@ -310,11 +317,15 @@ Timetable/
 <NUGET>/
  azure.core/1.35.0/lib/net6.0/Azure.Core.dll
  azure.identity/1.10.3/lib/netstandard2.0/Azure.Identity.dll
+ bouncycastle.cryptography/2.4.0/lib/net6.0/BouncyCastle.Cryptography.dll
  closedxml/0.102.3/lib/netstandard2.1/ClosedXML.dll
  documentformat.openxml/2.16.0/lib/netstandard2.0/DocumentFormat.OpenXml.dll
  excelnumberformat/1.1.0/lib/netstandard2.0/ExcelNumberFormat.dll
  fluentvalidation/11.10.0/lib/net8.0/FluentValidation.dll
  irony.netcore/1.0.11/lib/netstandard1.6/Irony.dll
+ konscious.security.cryptography.argon2/1.3.1/lib/net8.0/Konscious.Security.Cryptography.Argon2.dll
+ konscious.security.cryptography.blake2/1.1.1/lib/net8.0/Konscious.Security.Cryptography.Blake2.dll
+ mailkit/4.7.1.1/lib/net8.0/MailKit.dll
  microsoft.aspnetcore.authentication.abstractions/2.2.0/lib/netstandard2.0/Microsoft.AspNetCore.Authentication.Abstractions.dll
  microsoft.aspnetcore.authentication.cookies/2.2.0/lib/netstandard2.0/Microsoft.AspNetCore.Authentication.Cookies.dll
  microsoft.aspnetcore.authentication.core/2.2.0/lib/netstandard2.0/Microsoft.AspNetCore.Authentication.Core.dll
@@ -364,12 +375,14 @@ Timetable/
  microsoft.net.http.headers/2.2.0/lib/netstandard2.0/Microsoft.Net.Http.Headers.dll
  microsoft.sqlserver.server/1.0.0/lib/netstandard2.0/Microsoft.SqlServer.Server.dll
  microsoft.win32.systemevents/6.0.0/lib/net6.0/Microsoft.Win32.SystemEvents.dll
+ mimekit/4.7.1/lib/net8.0/MimeKit.dll
  questpdf/2024.12.0/lib/net8.0/QuestPDF.dll
  sixlabors.fonts/1.0.0/lib/netcoreapp3.1/SixLabors.Fonts.dll
  system.drawing.common/6.0.0/lib/net6.0/System.Drawing.Common.dll
  system.identitymodel.tokens.jwt/7.1.2/lib/net8.0/System.IdentityModel.Tokens.Jwt.dll
  system.io.packaging/6.0.0/lib/net6.0/System.IO.Packaging.dll
  system.memory.data/1.0.2/lib/netstandard2.0/System.Memory.Data.dll
+ system.security.cryptography.pkcs/8.0.0/lib/net8.0/System.Security.Cryptography.Pkcs.dll
  system.security.cryptography.protecteddata/6.0.0/lib/net6.0/System.Security.Cryptography.ProtectedData.dll
  system.security.cryptography.xml/4.5.0/ref/netstandard2.0/System.Security.Cryptography.Xml.dll
  system.security.permissions/6.0.0/lib/net6.0/System.Security.Permissions.dll
