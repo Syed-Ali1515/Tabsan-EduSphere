@@ -1674,6 +1674,52 @@
 ### Web — EduApiClient (sidebar methods)
 | Function | Description | File |
 |---|---|---|
+| `GetSidebarMenusAsync(ct)` | GET /api/v1/sidebar-menu — Fetches all top-level menus for the settings table. | `Web/Services/EduApiClient.cs` |
+| `GetVisibleSidebarMenusForCurrentUserAsync(ct)` | GET /api/v1/sidebar-menu/my-visible — Fetches visible menus for layout rendering. | `Web/Services/EduApiClient.cs` |
+| `GetSidebarSubMenusAsync(parentId, ct)` | GET /api/v1/sidebar-menu/{id}/sub-menus — Fetches sub-menus for a parent. | `Web/Services/EduApiClient.cs` |
+| `SetSidebarMenuRolesAsync(menuId, request, ct)` | PUT /api/v1/sidebar-menu/{id}/roles — Updates role visibility settings. | `Web/Services/EduApiClient.cs` |
+| `SetSidebarMenuStatusAsync(menuId, request, ct)` | PUT /api/v1/sidebar-menu/{id}/status — Toggles menu item active/inactive. | `Web/Services/EduApiClient.cs` |
+
+### Web — PortalController (sidebar settings actions)
+| Function | Description | File |
+|---|---|---|
+| `SidebarSettings(ct)` | GET /portal/settings/sidebar — Loads sidebar settings view with top-level menu table. SuperAdmin. | `Web/Controllers/PortalController.cs` |
+| `UpdateSidebarMenuRoles(id, request, ct)` | POST /portal/settings/sidebar/{id}/roles — Updates role access from form; CSRF-protected. SuperAdmin. | `Web/Controllers/PortalController.cs` |
+| `UpdateSidebarMenuStatus(id, request, ct)` | POST /portal/settings/sidebar/{id}/status — Toggles menu item status from form; CSRF-protected. SuperAdmin. | `Web/Controllers/PortalController.cs` |
+
+---
+
+## Integration Tests (tests/Tabsan.EduSphere.IntegrationTests)
+
+### EduSphereWebFactory (Infrastructure/EduSphereWebFactory.cs)
+| Function | Description | File |
+|---|---|---|
+| `InitializeAsync()` | `IAsyncLifetime` — drops `TabsanEduSphere_IntegrationTests` DB via standalone context before factory builds; ensures clean state for every run. | `tests/.../Infrastructure/EduSphereWebFactory.cs` |
+| `DisposeAsync()` | Drops test DB after all tests in the fixture complete; releases resources. | `tests/.../Infrastructure/EduSphereWebFactory.cs` |
+| `BuildStandaloneContext()` | Creates a standalone `ApplicationDbContext` targeting the test connection string; used for pre-run DB drop outside the factory lifecycle. | `tests/.../Infrastructure/EduSphereWebFactory.cs` |
+| `ConfigureWebHost(builder)` | Overrides connection string to test DB; removes all `IHostedService` registrations to prevent background job interference. | `tests/.../Infrastructure/EduSphereWebFactory.cs` |
+
+### JwtTestHelper (Infrastructure/JwtTestHelper.cs)
+| Function | Description | File |
+|---|---|---|
+| `GenerateToken(role, userId, email)` | Generates a signed JWT for any system role using the same secret/issuer/audience as the API; returns Bearer token string for test HTTP client auth headers. | `tests/.../Infrastructure/JwtTestHelper.cs` |
+
+### SidebarMenuIntegrationTests (SidebarMenuIntegrationTests.cs)
+| Test | Assertion | File |
+|---|---|---|
+| `GetVisible_SuperAdmin_ReturnsAllMenus` | SuperAdmin receives all 11 seeded menu keys via `GET my-visible`. | `tests/.../SidebarMenuIntegrationTests.cs` |
+| `GetVisible_Admin_ReturnsAdminMenusOnly` | Admin receives exactly 5 allowed menu keys. | `tests/.../SidebarMenuIntegrationTests.cs` |
+| `GetVisible_Faculty_ReturnsFacultyMenusOnly` | Faculty receives exactly 2 allowed menu keys. | `tests/.../SidebarMenuIntegrationTests.cs` |
+| `GetVisible_Student_ReturnsStudentMenusOnly` | Student receives exactly 2 allowed menu keys. | `tests/.../SidebarMenuIntegrationTests.cs` |
+| `SetStatus_DisableTimetableTeacher_RemovesFromFaculty_ThenRestore` | Deactivating a menu item removes it from Faculty visible; re-activating restores it. | `tests/.../SidebarMenuIntegrationTests.cs` |
+| `SetRoles_DenyStudent_RemovesFromStudentVisible_ThenRestore` | Revoking Student role access removes menu from student visible; restore re-adds it. | `tests/.../SidebarMenuIntegrationTests.cs` |
+| `SetStatus_SystemMenu_DeactivateAttempt_Returns409Conflict` | Attempting to deactivate a system menu returns `409 Conflict`. | `tests/.../SidebarMenuIntegrationTests.cs` |
+| `GetVisible_NoToken_Returns401` | Unauthenticated request to `my-visible` returns `401 Unauthorized`. | `tests/.../SidebarMenuIntegrationTests.cs` |
+| `SetStatus(id, request, ct)` | PUT /api/v1/sidebar-menu/{id}/status — Toggles active/inactive; 409 if system menu. SuperAdmin. | `API/Controllers/SidebarMenuController.cs` |
+
+### Web — EduApiClient (sidebar methods)
+| Function | Description | File |
+|---|---|---|
 | `GetSidebarMenusAsync(ct)` | GET /api/v1/sidebar-menu — Fetches all top-level menus for settings table. | `Web/Services/EduApiClient.cs` |
 | `GetVisibleSidebarMenusForCurrentUserAsync(ct)` | GET /api/v1/sidebar-menu/my-visible — Fetches visible menus for layout rendering. | `Web/Services/EduApiClient.cs` |
 | `GetSidebarSubMenusAsync(parentId, ct)` | GET /api/v1/sidebar-menu/{id}/sub-menus — Fetches sub-menus for a parent. | `Web/Services/EduApiClient.cs` |
