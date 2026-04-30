@@ -116,6 +116,8 @@ Persistence/
   20260429223425_Phase9DashboardSettings.Designer.cs
   20260429230253_Phase9TimetableRedesign.cs
   20260429230253_Phase9TimetableRedesign.Designer.cs
+  20260430000234_Phase9SidebarSettings.cs
+  20260430000234_Phase9SidebarSettings.Designer.cs
 Repositories/
  AcademicRepositories.cs
  AcademicSupportRepositories.cs

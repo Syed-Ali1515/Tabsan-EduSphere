@@ -42,7 +42,7 @@ The provided startup documents define a strong product vision and feature set, b
 - CSV-based student registration import with duplicate validation — Phase 8
 - Teacher attendance/result modification workflow with admin approval — Phase 8
 - Role-based sidebar navigation, per-user themes, Departments admin menu — Phase 9
-- System Settings menu: License, Theme, Reports, Modules — Phase 9
+- System Settings menu: License, Theme, Reports, Modules, Sidebar Settings — Phase 9
 - OWASP Top 10 security hardening, password policy, account lockout/reset — Phase 10
 - Database views and stored procedures for performance — Phase 10
 - Free/open-source email API integration — Phase 10
@@ -553,6 +553,17 @@ The provided startup documents define a strong product vision and feature set, b
 - [x] `ModuleController` extended with `GET /{key}/roles` + `PUT /{key}/roles` endpoints
 - [x] `IModuleRolesService` + `ModuleRolesService` implementation
 - [ ] Module Settings UI (Razor Pages / MVC)
+
+#### 9.4.5 Sidebar Settings (Super Admin only) — **NEW**
+- [ ] `SidebarMenuItem` domain entity: Id, Name, Purpose, ParentId (nullable — for sub-menus), DisplayOrder, IsActive, IsSystemMenu
+- [ ] `SidebarMenuRoleAccess` domain entity: SidebarMenuItemId, RoleName, IsAllowed
+- [ ] EF Core configurations for both entities; seed default menu items on first run
+- [ ] `ISidebarMenuRepository` + `SidebarMenuRepository` (EF Core)
+- [ ] `ISidebarMenuService` + `SidebarMenuService` — get all menus, get sub-menus by parent, update roles, toggle status
+- [ ] `SidebarMenuController` — 5 endpoints: GET all top-level, GET sub-menus/{parentId}, PUT {id}/roles, PUT {id}/status, GET {id}/details
+- [ ] Web view: `SidebarSettings.cshtml` — top-level menu table with SR#, Name, Purpose, Roles (checkbox list), Status (Active/Inactive checkbox); clicking a row loads sub-menu table below
+- [ ] Super Admin bypass: sidebar rendering always includes all menus for SuperAdmin role regardless of stored settings
+- [ ] Wire sidebar rendering in `_Layout.cshtml` to query `SidebarMenuService` based on current user's role
 
 ### Stage 9.5 License Expiry Notifications
 - [ ] Background job checks license expiry daily

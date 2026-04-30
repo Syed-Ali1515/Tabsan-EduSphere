@@ -201,8 +201,8 @@ These modules are required for the portal to function and **cannot be disabled**
 
 ### 8.2 Dashboard & Navigation Module
 - Role-based collapsible sidebar with menus and sub-menus
-- Menus rendered based on active modules and user role
-- Super Admin always sees all menus
+- Menus rendered based on active modules, user role, and Sidebar Settings configuration
+- Super Admin always sees all menus regardless of Sidebar Settings
 - "Departments" admin menu: create/edit departments, degrees, semesters, subjects, timetables
 - "Graduated Students" menu: department sub-menus with checkbox list of final-semester students
 - "Semester Management" menu: per-department checkbox list for semester completion/promotion
@@ -236,6 +236,14 @@ Accessible as a dedicated "Settings" menu in the navigation:
 - Active: module visible and functional for selected roles
 - Inactive: module hidden from all dashboards except Super Admin; no data deleted
 
+#### Sidebar Settings (Super Admin only)
+- Dedicated sub-menu in Dashboard Settings for controlling sidebar navigation visibility per role
+- **Top-level menu table** columns: SR#, Name (menu label), Purpose (description), Roles (checkbox list of roles that can see this menu), Status (checkbox — Active = visible to permitted roles; Inactive = hidden from all roles except Super Admin)
+- Clicking any top-level menu item reveals its **sub-menu table** in a panel below the top-level table; sub-menu table uses the same columns (SR#, Name, Purpose, Roles, Status)
+- **Super Admin override**: Super Admin always sees every menu item and sub-menu regardless of Status or Roles settings — these settings cannot restrict Super Admin
+- Changes take effect immediately on next page load for affected users; no restart required
+- System menus (License, Theme, Module Settings, Sidebar Settings itself) remain visible to Super Admin and cannot be fully deactivated for that role
+
 ---
 
 ## 10. Module Dependency Summary
@@ -247,6 +255,7 @@ Accessible as a dedicated "Settings" menu in the navigation:
 | SIS | ❌ No |
 | System Settings | ❌ No |
 | Dashboard & Navigation | ❌ No |
+| Sidebar Settings | ❌ No |
 | Courses & Programs | ✅ Yes |
 | Assignments | ✅ Yes |
 | Quizzes | ✅ Yes |

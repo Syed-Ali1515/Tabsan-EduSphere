@@ -1,0 +1,268 @@
+@model Tabsan.EduSphere.Web.Models.Portal.TimetableAdminPageModel
+@using System.Text.Json
+@{
+    ViewData["Title"] = "Manage Timetables";
+    // Serialize rooms keyed by buildingId for client-side filtering
+    var roomsByBuilding = Model.Rooms
+        .GroupBy(r => r.BuildingId)
+        .ToDictionary(g => g.Key.ToString(), g => g.Select(r => new { id = r.Id, number = r.Number }).ToList());
+    var roomsJson = JsonSerializer.Serialize(roomsByBuilding);
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.Message))
+{
+    <div class="alert alert-info">@Model.Message</div>
+}
+
+@if (!Model.IsConnected)
+{
+    <div class="alert alert-warning">
+        API connection is not configured. Please set it on <a asp-action="Dashboard">Dashboard</a>.
+    </div>
+}
+else
+{
+    <div class="row g-3">
+        <div class="col-12 col-xl-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h2 class="h5">Create Timetable</h2>
+                    <form asp-action="CreateTimetable" method="post" class="row g-2">
+                        @Html.AntiForgeryToken()
+                        <div class="col-12">
+                            <label class="form-label">Department</label>
+                            <select class="form-select" name="DepartmentId" required>
+                                @foreach (var d in Model.Departments)
+                                {
+                                    <option value="@d.Id" selected="@(Model.CreateForm.DepartmentId == d.Id)">@d.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Degree Program</label>
+                            <select class="form-select" name="AcademicProgramId" required>
+                                @foreach (var p in Model.Programs)
+                                {
+                                    <option value="@p.Id">@p.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Semester</label>
+                            <select class="form-select" name="SemesterId" required>
+                                @foreach (var s in Model.Semesters)
+                                {
+                                    <option value="@s.Id">@s.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Semester Number</label>
+                            <input class="form-control" type="number" name="SemesterNumber" min="1" value="@Model.CreateForm.SemesterNumber" required />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Effective Date</label>
+                            <input class="form-control" type="date" name="EffectiveDate" value="@Model.CreateForm.EffectiveDate.ToString("yyyy-MM-dd")" required />
+                        </div>
+                        <div class="col-12">
+                            <button class="btn btn-primary" type="submit">Create Timetable</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h2 class="h5">Available Timetables</h2>
+                    @if (Model.Timetables.Count == 0)
+                    {
+                        <p class="text-muted">No timetables found for selected department.</p>
+                    }
+                    else
+                    {
+                        <ul class="list-group list-group-flush">
+                            @foreach (var t in Model.Timetables)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <a asp-action="TimetableAdmin" asp-route-timetableId="@t.Id">@t.Title</a>
+                                        <div class="small text-muted">@t.Id</div>
+                                    </div>
+                                    <span class="badge @(t.IsPublished ? "bg-success" : "bg-secondary")">@(t.IsPublished ? "Published" : "Draft")</span>
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.SelectedTimetable is not null)
+    {
+        <div class="card border-0 shadow-sm mt-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="h5 mb-1">@Model.SelectedTimetable.Title</h3>
+                        <div class="text-muted small">@Model.SelectedTimetable.ProgramName - @Model.SelectedTimetable.SemesterName</div>
+                    </div>
+                    @if (!Model.SelectedTimetable.IsPublished)
+                    {
+                        <form asp-action="PublishTimetable" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="timetableId" value="@Model.SelectedTimetable.Id" />
+                            <button class="btn btn-outline-success" type="submit">Publish</button>
+                        </form>
+                    }
+                </div>
+
+                <hr />
+
+                <h4 class="h6">Add Entry</h4>
+                <form asp-action="AddTimetableEntry" method="post" class="row g-2 mb-3">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="TimetableId" value="@Model.SelectedTimetable.Id" />
+
+                    <div class="col-md-2">
+                        <label class="form-label">Day</label>
+                        <select class="form-select" name="DayOfWeek">
+                            <option value="1">Monday</option>
+                            <option value="2">Tuesday</option>
+                            <option value="3">Wednesday</option>
+                            <option value="4">Thursday</option>
+                            <option value="5">Friday</option>
+                            <option value="6">Saturday</option>
+                            <option value="0">Sunday</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Start</label>
+                        <input class="form-control" type="time" name="StartTime" required />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">End</label>
+                        <input class="form-control" type="time" name="EndTime" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Subject</label>
+                        <select class="form-select" name="CourseId">
+                            <option value="">Select</option>
+                            @foreach (var c in Model.Courses)
+                            {
+                                <option value="@c.Id">@c.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Teacher</label>
+                        <select class="form-select" name="FacultyUserId">
+                            <option value="">Select</option>
+                            @foreach (var f in Model.Faculty)
+                            {
+                                <option value="@f.Id">@f.DisplayName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Building</label>
+                        <select class="form-select" name="BuildingId" id="entryBuildingId" data-rooms='@Html.Raw(roomsJson)'>
+                            <option value="">Select</option>
+                            @foreach (var b in Model.Buildings)
+                            {
+                                <option value="@b.Id">@b.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Room</label>
+                        <select class="form-select" name="RoomId" id="entryRoomId">
+                            <option value="">Select</option>
+                            @foreach (var r in Model.Rooms)
+                            {
+                                <option value="@r.Id">@r.Number (@r.BuildingName)</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Subject (Fallback)</label>
+                        <input class="form-control" type="text" name="SubjectName" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Room (Fallback)</label>
+                        <input class="form-control" type="text" name="RoomNumber" />
+                    </div>
+                    <div class="col-12">
+                        <button class="btn btn-primary" type="submit">Add Entry</button>
+                    </div>
+                </form>
+
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped align-middle">
+                        <thead>
+                            <tr>
+                                <th>SR#</th>
+                                <th>Day</th>
+                                <th>Time</th>
+                                <th>Subject</th>
+                                <th>Teacher</th>
+                                <th>Building</th>
+                                <th>Room</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (var i = 0; i < Model.SelectedTimetable.Entries.Count; i++)
+                            {
+                                var e = Model.SelectedTimetable.Entries[i];
+                                <tr>
+                                    <td>@(i + 1)</td>
+                                    <td>@e.DayName</td>
+                                    <td>@e.StartTime - @e.EndTime</td>
+                                    <td>@e.SubjectName</td>
+                                    <td>@e.FacultyName</td>
+                                    <td>@e.BuildingName</td>
+                                    <td>@e.RoomNumber</td>
+                                </tr>
+
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+@section Scripts {
+<script>
+(function () {
+    const buildingSel = document.getElementById('entryBuildingId');
+    const roomSel     = document.getElementById('entryRoomId');
+    if (!buildingSel || !roomSel) return;
+
+    const roomsByBuilding = JSON.parse(buildingSel.dataset.rooms || '{}');
+
+    function filterRooms(buildingId) {
+        // Keep the blank option
+        while (roomSel.options.length > 1) roomSel.remove(1);
+
+        const rooms = buildingId ? (roomsByBuilding[buildingId] || []) : [];
+        rooms.forEach(function (r) {
+            const opt = document.createElement('option');
+            opt.value = r.id;
+            opt.text  = r.number;
+            roomSel.appendChild(opt);
+        });
+    }
+
+    buildingSel.addEventListener('change', function () {
+        filterRooms(this.value);
+    });
+
+    // Initial filter if a building is pre-selected
+    filterRooms(buildingSel.value);
+}());
+</script>
+}

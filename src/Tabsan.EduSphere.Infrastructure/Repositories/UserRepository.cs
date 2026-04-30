@@ -47,6 +47,14 @@ public class UserRepository : IUserRepository
             .Where(u => u.IsLockedOut && u.Role.Name != "Admin" && u.Role.Name != "SuperAdmin")
             .ToListAsync(ct);
 
+    /// <summary>Returns all active users in Faculty role. Used for timetable teacher dropdowns.</summary>
+    public async Task<IList<User>> GetFacultyUsersAsync(CancellationToken ct = default)
+        => await _db.Users
+            .Include(u => u.Role)
+            .Where(u => u.IsActive && u.Role.Name == "Faculty")
+            .OrderBy(u => u.Username)
+            .ToListAsync(ct);
+
     /// <summary>Queues the new user entity for insertion on the next SaveChanges call.</summary>
     public async Task AddAsync(User user, CancellationToken ct = default)
         => await _db.Users.AddAsync(user, ct);

@@ -54,3 +54,28 @@ public interface IThemeService
     /// <summary>Sets (or clears) the theme key for the specified user.</summary>
     Task SetThemeAsync(Guid userId, SetThemeCommand cmd, CancellationToken ct = default);
 }
+
+/// <summary>
+/// Service contract for managing sidebar navigation visibility per role.
+/// Super Admin always bypasses these settings and sees everything.
+/// </summary>
+public interface ISidebarMenuService
+{
+    /// <summary>Returns all top-level menu items with their role access list and sub-menus.</summary>
+    Task<IList<SidebarMenuItemDto>> GetTopLevelMenusAsync(CancellationToken ct = default);
+
+    /// <summary>Returns all sub-menu items under a given parent menu item.</summary>
+    Task<IList<SidebarMenuItemDto>> GetSubMenusAsync(Guid parentId, CancellationToken ct = default);
+
+    /// <summary>Returns a single menu item by ID with full detail (role accesses + sub-menus).</summary>
+    Task<SidebarMenuItemDto> GetByIdAsync(Guid id, CancellationToken ct = default);
+
+    /// <summary>Returns menu items visible to a given role (IsActive = true and role IsAllowed = true).</summary>
+    Task<IList<SidebarMenuItemDto>> GetVisibleForRoleAsync(string roleName, CancellationToken ct = default);
+
+    /// <summary>Replaces all role access entries for a menu item.</summary>
+    Task SetRolesAsync(Guid id, SetSidebarMenuRolesCommand cmd, CancellationToken ct = default);
+
+    /// <summary>Activates or deactivates a menu item. System menus cannot be deactivated.</summary>
+    Task SetStatusAsync(Guid id, SetSidebarMenuStatusCommand cmd, CancellationToken ct = default);
+}

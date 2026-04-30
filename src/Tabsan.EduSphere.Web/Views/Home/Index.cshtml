@@ -1,8 +1,14 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Welcome";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4 p-md-5">
+        <h1 class="display-6 fw-bold mb-3">Tabsan EduSphere Portal</h1>
+        <p class="text-muted mb-4">
+            Role-aware navigation is now scaffolded. Continue with timetable pages, building and room management,
+            and dashboard integrations in the next implementation phase.
+        </p>
+        <a asp-controller="Portal" asp-action="Dashboard" class="btn btn-primary">Open Dashboard Shell</a>
+    </div>
 </div>

@@ -16,8 +16,15 @@ namespace Tabsan.EduSphere.API.Controllers;
 public class TimetableController : ControllerBase
 {
     private readonly ITimetableService _service;
+    private readonly Tabsan.EduSphere.Domain.Interfaces.IUserRepository _users;
 
-    public TimetableController(ITimetableService service) => _service = service;
+    public TimetableController(
+        ITimetableService service,
+        Tabsan.EduSphere.Domain.Interfaces.IUserRepository users)
+    {
+        _service = service;
+        _users = users;
+    }
 
     // ── GET /api/v1/timetable/department/{departmentId} ───────────────────────
 
@@ -256,6 +263,29 @@ public class TimetableController : ControllerBase
 
         var entries = await _service.GetForTeacherAsync(userId, ct);
         return Ok(entries);
+    }
+
+    // ── GET /api/v1/timetable/faculty ─────────────────────────────────────────
+
+    /// <summary>
+    /// Returns active faculty users for timetable teacher dropdown selection.
+    /// Admin and SuperAdmin only.
+    /// </summary>
+    [HttpGet("faculty")]
+    [Authorize(Roles = "Admin,SuperAdmin")]
+    public async Task<IActionResult> GetFacultyUsers(CancellationToken ct)
+    {
+        var users = await _users.GetFacultyUsersAsync(ct);
+        return Ok(users.Select(u => new
+        {
+            u.Id,
+            u.Username,
+            u.Email,
+            u.DepartmentId,
+            DisplayName = string.IsNullOrWhiteSpace(u.Email)
+                ? u.Username
+                : $"{u.Username} ({u.Email})"
+        }));
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

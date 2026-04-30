@@ -1,48 +1,131 @@
-﻿/* Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-for details on configuring this project to bundle and minify static web assets. */
-
-a.navbar-brand {
-  white-space: normal;
-  text-align: center;
-  word-break: break-all;
+﻿.app-shell {
+  min-height: 100vh;
+  display: flex;
+  background: linear-gradient(160deg, #f7f7ef 0%, #f0f4ff 100%);
 }
 
-a {
-  color: #0077cc;
+.app-sidebar {
+  width: 280px;
+  background: #1f2a3d;
+  color: #f4f7ff;
+  padding: 1.25rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  box-shadow: 4px 0 20px rgba(9, 13, 23, 0.18);
 }
 
-.btn-primary {
-  color: #fff;
-  background-color: #1b6ec2;
-  border-color: #1861ac;
+.brand-link {
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
-.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
-  color: #fff;
-  background-color: #1b6ec2;
-  border-color: #1861ac;
+.brand-mark {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  background: linear-gradient(135deg, #ffc857, #f08700);
+  color: #1f2a3d;
 }
 
-.border-top {
-  border-top: 1px solid #e5e5e5;
-}
-.border-bottom {
-  border-bottom: 1px solid #e5e5e5;
-}
-
-.box-shadow {
-  box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
-}
-
-button.accept-policy {
+.brand-name {
   font-size: 1rem;
-  line-height: inherit;
+  font-weight: 700;
 }
 
-.footer {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  white-space: nowrap;
-  line-height: 60px;
+.brand-subtitle {
+  font-size: 0.75rem;
+  color: #9db1d9;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.menu-label {
+  margin-top: 0.75rem;
+  margin-bottom: 0.2rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #90a6d1;
+}
+
+.menu-link {
+  display: block;
+  text-decoration: none;
+  color: #eaf0ff;
+  border-radius: 8px;
+  padding: 0.48rem 0.62rem;
+}
+
+.menu-link:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.app-header {
+  padding: 1rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #dae0f0;
+  background: rgba(255, 255, 255, 0.84);
+  backdrop-filter: blur(6px);
+}
+
+.page-title {
+  margin: 0;
+  font-size: 1.16rem;
+  font-weight: 700;
+  color: #202a3f;
+}
+
+.auth-chip {
+  background: #202a3f;
+  color: #ffffff;
+  border-radius: 999px;
+  padding: 0.24rem 0.8rem;
+  font-size: 0.85rem;
+}
+
+.app-content {
+  padding: 1.15rem;
+  flex: 1;
+}
+
+.app-footer {
+  border-top: 1px solid #dae0f0;
+  padding: 0.8rem 1.2rem;
+  color: #4d5975;
+  font-size: 0.86rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+@media (max-width: 960px) {
+  .app-shell {
+    flex-direction: column;
+  }
+
+  .app-sidebar {
+    width: 100%;
+    box-shadow: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  }
 }

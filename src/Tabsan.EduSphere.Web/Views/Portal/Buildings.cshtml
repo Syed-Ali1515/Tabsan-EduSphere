@@ -1,0 +1,129 @@
+@model Tabsan.EduSphere.Web.Models.Portal.BuildingsPageModel
+@{
+    ViewData["Title"] = "Buildings";
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.Message))
+{
+    <div class="alert alert-info">@Model.Message</div>
+}
+
+@if (!Model.IsConnected)
+{
+    <div class="alert alert-warning">
+        API connection is not configured. Please set it on <a asp-action="Dashboard">Dashboard</a>.
+    </div>
+}
+else
+{
+    <div class="row g-3">
+        <!-- Left: building list -->
+        <div class="col-12 col-xl-5">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h2 class="h5">Buildings</h2>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Code</th>
+                                    <th>Active</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var b in Model.Buildings)
+                                {
+                                    <tr class="@(Model.SelectedBuilding?.Id == b.Id ? "table-primary" : "")">
+                                        <td><a asp-action="Buildings" asp-route-selectedId="@b.Id">@b.Name</a></td>
+                                        <td>@b.Code</td>
+                                        <td>
+                                            @if (b.IsActive)
+                                            {
+                                                <span class="badge bg-success">Yes</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">No</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <a asp-action="Rooms" asp-route-buildingId="@b.Id" class="btn btn-outline-secondary btn-sm">Rooms</a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: create form + edit panel -->
+        <div class="col-12 col-xl-7">
+            <!-- Create Building -->
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-body">
+                    <h2 class="h5">Add Building</h2>
+                    <form asp-action="CreateBuilding" method="post" class="row g-2">
+                        @Html.AntiForgeryToken()
+                        <div class="col-md-7">
+                            <label class="form-label">Name</label>
+                            <input asp-for="CreateForm.Name" class="form-control" placeholder="e.g. Faculty Block A" required />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Code</label>
+                            <input asp-for="CreateForm.Code" class="form-control" placeholder="e.g. FBA" required maxlength="10" />
+                        </div>
+                        <div class="col-12">
+                            <button class="btn btn-primary" type="submit">Create</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Edit selected building -->
+            @if (Model.SelectedBuilding is not null)
+            {
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h2 class="h5">Edit: @Model.SelectedBuilding.Name</h2>
+                        <form asp-action="UpdateBuilding" method="post" class="row g-2 mb-3">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.SelectedBuilding.Id" />
+                            <div class="col-md-7">
+                                <label class="form-label">Name</label>
+                                <input name="form.Name" class="form-control" value="@Model.EditForm.Name" required />
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Code</label>
+                                <input name="form.Code" class="form-control" value="@Model.EditForm.Code" required maxlength="10" />
+                            </div>
+                            <div class="col-12">
+                                <button class="btn btn-primary" type="submit">Save Changes</button>
+                            </div>
+                        </form>
+
+                        <!-- Activate / Deactivate -->
+                        <form asp-action="SetBuildingActive" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.SelectedBuilding.Id" />
+                            <input type="hidden" name="activate" value="@(!Model.SelectedBuilding.IsActive)" />
+                            @if (Model.SelectedBuilding.IsActive)
+                            {
+                                <button class="btn btn-outline-danger btn-sm" type="submit">Deactivate</button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-outline-success btn-sm" type="submit">Activate</button>
+                            }
+                        </form>
+
+                        <a asp-action="Rooms" asp-route-buildingId="@Model.SelectedBuilding.Id" class="btn btn-outline-secondary btn-sm ms-2">Manage Rooms</a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}

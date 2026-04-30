@@ -1,0 +1,36 @@
+@model Tabsan.EduSphere.Web.Models.Portal.ApiConnectionModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+@if (TempData["PortalMessage"] is string msg && !string.IsNullOrWhiteSpace(msg))
+{
+    <div class="alert alert-info">@msg</div>
+}
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-4">
+        <h2 class="h5 mb-3">API Connection</h2>
+        <p class="text-muted">Set the API base URL, a valid JWT access token, and optional default department for timetable pages.</p>
+
+        <form asp-action="SaveConnection" method="post" class="row g-3">
+            @Html.AntiForgeryToken()
+            <div class="col-12">
+                <label asp-for="ApiBaseUrl" class="form-label">API Base URL</label>
+                <input asp-for="ApiBaseUrl" class="form-control" placeholder="https://localhost:5001" />
+            </div>
+            <div class="col-12">
+                <label asp-for="AccessToken" class="form-label">Access Token (JWT)</label>
+                <textarea asp-for="AccessToken" rows="4" class="form-control" placeholder="Paste bearer token here"></textarea>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="DefaultDepartmentId" class="form-label">Default Department Id (optional)</label>
+                <input asp-for="DefaultDepartmentId" class="form-control" />
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">Save Connection</button>
+                <a asp-action="TimetableAdmin" class="btn btn-outline-secondary ms-2">Go To Timetable Admin</a>
+            </div>
+        </form>
+    </div>
+</div>

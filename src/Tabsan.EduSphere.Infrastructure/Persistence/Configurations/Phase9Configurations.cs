@@ -307,3 +307,80 @@ public class RoomConfiguration : IEntityTypeConfiguration<Room>
         builder.HasQueryFilter(r => !r.IsDeleted);
     }
 }
+
+// -----------------------------------------------------------------------------
+// Sidebar Menu Settings
+// -----------------------------------------------------------------------------
+
+/// <summary>EF Core configuration for SidebarMenuItem.</summary>
+public class SidebarMenuItemConfiguration : IEntityTypeConfiguration<SidebarMenuItem>
+{
+    public void Configure(EntityTypeBuilder<SidebarMenuItem> builder)
+    {
+        builder.ToTable("sidebar_menu_items");
+
+        builder.HasKey(x => x.Id);
+
+        builder.Property(x => x.Key)
+               .IsRequired()
+               .HasMaxLength(100);
+
+        builder.HasIndex(x => x.Key)
+               .IsUnique()
+               .HasDatabaseName("IX_sidebar_menu_items_key");
+
+        builder.Property(x => x.Name)
+               .IsRequired()
+               .HasMaxLength(150);
+
+        builder.Property(x => x.Purpose)
+               .IsRequired()
+               .HasMaxLength(500);
+
+        builder.Property(x => x.DisplayOrder)
+               .IsRequired();
+
+        builder.Property(x => x.IsActive)
+               .IsRequired()
+               .HasDefaultValue(true);
+
+        builder.Property(x => x.IsSystemMenu)
+               .IsRequired()
+               .HasDefaultValue(false);
+
+        // Self-referential parent / sub-menu relationship
+        builder.HasOne(x => x.Parent)
+               .WithMany(x => x.SubMenus)
+               .HasForeignKey(x => x.ParentId)
+               .IsRequired(false)
+               .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasMany(x => x.RoleAccesses)
+               .WithOne(x => x.SidebarMenuItem)
+               .HasForeignKey(x => x.SidebarMenuItemId)
+               .OnDelete(DeleteBehavior.Cascade);
+    }
+}
+
+/// <summary>EF Core configuration for SidebarMenuRoleAccess.</summary>
+public class SidebarMenuRoleAccessConfiguration : IEntityTypeConfiguration<SidebarMenuRoleAccess>
+{
+    public void Configure(EntityTypeBuilder<SidebarMenuRoleAccess> builder)
+    {
+        builder.ToTable("sidebar_menu_role_accesses");
+
+        builder.HasKey(x => x.Id);
+
+        builder.Property(x => x.RoleName)
+               .IsRequired()
+               .HasMaxLength(100);
+
+        builder.Property(x => x.IsAllowed)
+               .IsRequired()
+               .HasDefaultValue(true);
+
+        builder.HasIndex(x => new { x.SidebarMenuItemId, x.RoleName })
+               .IsUnique()
+               .HasDatabaseName("IX_sidebar_menu_role_accesses_item_role");
+    }
+}

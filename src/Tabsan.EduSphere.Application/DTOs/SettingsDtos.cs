@@ -51,3 +51,36 @@ public record UserThemeDto(string? ThemeKey);
 
 /// <summary>Payload to set the authenticated user's theme preference.</summary>
 public record SetThemeCommand(string? ThemeKey);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Sidebar Menu Settings DTOs
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// <summary>A sidebar menu item with its role access list.</summary>
+public record SidebarMenuItemDto(
+    Guid     Id,
+    string   Key,
+    string   Name,
+    string   Purpose,
+    Guid?    ParentId,
+    int      DisplayOrder,
+    bool     IsActive,
+    bool     IsSystemMenu,
+    IList<SidebarMenuRoleAccessDto> RoleAccesses,
+    IList<SidebarMenuItemDto>       SubMenus
+);
+
+/// <summary>Role access entry for a sidebar menu item.</summary>
+public record SidebarMenuRoleAccessDto(
+    string RoleName,
+    bool   IsAllowed
+);
+
+/// <summary>Payload to replace all role access records for a menu item.</summary>
+public record SetSidebarMenuRolesCommand(IList<SidebarRoleAccessEntry> Entries);
+
+/// <summary>Single role + allowed flag pair used when updating sidebar role access.</summary>
+public record SidebarRoleAccessEntry(string RoleName, bool IsAllowed);
+
+/// <summary>Payload to toggle the active status of a sidebar menu item.</summary>
+public record SetSidebarMenuStatusCommand(bool IsActive);

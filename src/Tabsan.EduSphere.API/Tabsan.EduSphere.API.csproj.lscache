@@ -77,6 +77,7 @@ Controllers/
  ResultController.cs
  RoomController.cs
  SemesterController.cs
+ SidebarMenuController.cs
  StudentController.cs
  StudentLifecycleController.cs
  TeacherModificationController.cs

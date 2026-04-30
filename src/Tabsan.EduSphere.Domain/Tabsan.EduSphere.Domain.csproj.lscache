@@ -133,6 +133,8 @@ Settings/
  ModuleRoleAssignment.cs
  ReportDefinition.cs
  ReportRoleAssignment.cs
+ SidebarMenuItem.cs
+ SidebarMenuRoleAccess.cs
 StudentLifecycle/
  AdminChangeRequest.cs
  PaymentReceipt.cs

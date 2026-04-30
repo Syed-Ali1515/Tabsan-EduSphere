@@ -171,6 +171,12 @@ public class ApplicationDbContext : DbContext
     /// <summary>Per-role access assignments for each module (beyond mandatory/licensed).</summary>
     public DbSet<ModuleRoleAssignment> ModuleRoleAssignments => Set<ModuleRoleAssignment>();
 
+    /// <summary>Sidebar navigation menu items (top-level and sub-menus).</summary>
+    public DbSet<SidebarMenuItem> SidebarMenuItems => Set<SidebarMenuItem>();
+
+    /// <summary>Per-role visibility assignments for each sidebar menu item.</summary>
+    public DbSet<SidebarMenuRoleAccess> SidebarMenuRoleAccesses => Set<SidebarMenuRoleAccess>();
+
     /// <summary>
     /// Scans the current assembly for all IEntityTypeConfiguration implementations
     /// and applies them automatically. This keeps OnModelCreating clean as the

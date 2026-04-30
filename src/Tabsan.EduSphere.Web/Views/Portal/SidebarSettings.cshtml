@@ -1,0 +1,209 @@
+@model Tabsan.EduSphere.Web.Models.Portal.SidebarSettingsPageModel
+@{
+    ViewData["Title"] = "Sidebar Settings";
+    var roles = new[] { "Admin", "Faculty", "Student" };
+    var message = TempData["Message"] as string;
+}
+
+<div class="d-flex align-items-center mb-3 gap-2">
+    <h4 class="mb-0"><i class="bi bi-layout-sidebar me-2"></i>Sidebar Settings</h4>
+</div>
+
+@if (!Model.IsConnected)
+{
+    <div class="alert alert-warning">Not connected to the API. Configure your connection in Dashboard.</div>
+}
+else
+{
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            @message
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (!string.IsNullOrEmpty(Model.Message))
+    {
+        <div class="alert alert-danger">@Model.Message</div>
+    }
+
+    <div class="alert alert-info d-flex align-items-start gap-2 mb-3">
+        <i class="bi bi-shield-lock-fill fs-5 text-primary mt-1"></i>
+        <div>
+            <strong>SuperAdmin</strong> always retains full sidebar access regardless of these settings.
+            These controls affect <strong>Admin</strong>, <strong>Faculty</strong>, and <strong>Student</strong> roles only.
+            System menus (marked <span class="badge bg-secondary">System</span>) cannot be deactivated.
+        </div>
+    </div>
+
+    @if (!Model.TopLevelMenus.Any())
+    {
+        <div class="text-muted">No sidebar menu items found. Run the application once to seed defaults.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle table-bordered table-sm">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="width:3rem">#</th>
+                        <th>Name</th>
+                        <th>Purpose</th>
+                        @foreach (var role in roles)
+                        {
+                            <th class="text-center" style="width:6rem">@role</th>
+                        }
+                        <th class="text-center" style="width:6rem">Active</th>
+                        <th class="text-center" style="width:5rem">Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{ int sr = 1; }
+                    @foreach (var item in Model.TopLevelMenus.OrderBy(x => x.DisplayOrder))
+                    {
+                        <tr class="table-primary fw-semibold @(item.SubMenus.Any() ? "has-submenus" : "")"
+                            data-id="@item.Id"
+                            style="cursor:@(item.SubMenus.Any() ? "pointer" : "default")"
+                            onclick="@(item.SubMenus.Any() ? $"toggleSub('{item.Id}')" : "")">
+                            <td>@(sr++)</td>
+                            <td>
+                                @if (item.SubMenus.Any())
+                                {
+                                    <i class="bi bi-chevron-right me-1 toggle-icon" id="icon-@item.Id"></i>
+                                }
+                                @item.Name
+                            </td>
+                            <td class="text-muted small">@item.Purpose</td>
+                            @foreach (var role in roles)
+                            {
+                                var allowed = item.RoleAccesses.TryGetValue(role, out var v) && v;
+                                <td class="text-center">
+                                    <form method="post" asp-action="UpdateSidebarMenuRoles" class="d-inline role-form" data-id="@item.Id">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="menuId" value="@item.Id" />
+                                        <input type="hidden" name="menuName" value="@item.Name" />
+                                        <input type="hidden" name="adminAllowed"   value="@(item.RoleAccesses.TryGetValue("Admin",   out var ar) && ar ? "true" : "false")" />
+                                        <input type="hidden" name="facultyAllowed" value="@(item.RoleAccesses.TryGetValue("Faculty", out var fr) && fr ? "true" : "false")" />
+                                        <input type="hidden" name="studentAllowed" value="@(item.RoleAccesses.TryGetValue("Student", out var sr2) && sr2 ? "true" : "false")" />
+                                        <input class="form-check-input role-check" type="checkbox"
+                                               data-item="@item.Id" data-role="@role"
+                                               @(allowed ? "checked" : "")
+                                               title="Allow @role to see @item.Name" />
+                                    </form>
+                                </td>
+                            }
+                            <td class="text-center">
+                                <form method="post" asp-action="UpdateSidebarMenuStatus" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="menuId" value="@item.Id" />
+                                    <input type="hidden" name="menuName" value="@item.Name" />
+                                    <input class="form-check-input status-check" type="checkbox"
+                                           name="isActive" value="true"
+                                           @(item.IsActive ? "checked" : "")
+                                           @(item.IsSystemMenu ? "disabled title=\"System menus cannot be deactivated\"" : "")
+                                           onchange="this.form.submit()" />
+                                </form>
+                            </td>
+                            <td class="text-center">
+                                @if (item.IsSystemMenu)
+                                {
+                                    <span class="badge bg-secondary">System</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-light text-dark border">Menu</span>
+                                }
+                            </td>
+                        </tr>
+
+                        @* Sub-menu rows (collapsed by default) *@
+                        @if (item.SubMenus.Any())
+                        {
+                            foreach (var sub in item.SubMenus.OrderBy(s => s.DisplayOrder))
+                            {
+                                <tr class="submenu-row d-none table-light" data-parent="@item.Id">
+                                    <td class="ps-4 text-muted small">@(sr++)</td>
+                                    <td class="ps-5 fst-italic">
+                                        <i class="bi bi-arrow-return-right me-1 text-muted"></i>@sub.Name
+                                    </td>
+                                    <td class="text-muted small">@sub.Purpose</td>
+                                    @foreach (var role in roles)
+                                    {
+                                        var subAllowed = sub.RoleAccesses.TryGetValue(role, out var sv) && sv;
+                                        <td class="text-center">
+                                            <form method="post" asp-action="UpdateSidebarMenuRoles" class="d-inline role-form" data-id="@sub.Id">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="menuId" value="@sub.Id" />
+                                                <input type="hidden" name="menuName" value="@sub.Name" />
+                                                <input type="hidden" name="adminAllowed"   value="@(sub.RoleAccesses.TryGetValue("Admin",   out var sar) && sar ? "true" : "false")" />
+                                                <input type="hidden" name="facultyAllowed" value="@(sub.RoleAccesses.TryGetValue("Faculty", out var sfr) && sfr ? "true" : "false")" />
+                                                <input type="hidden" name="studentAllowed" value="@(sub.RoleAccesses.TryGetValue("Student", out var sstr) && sstr ? "true" : "false")" />
+                                                <input class="form-check-input role-check" type="checkbox"
+                                                       data-item="@sub.Id" data-role="@role"
+                                                       @(subAllowed ? "checked" : "")
+                                                       title="Allow @role to see @sub.Name" />
+                                            </form>
+                                        </td>
+                                    }
+                                    <td class="text-center">
+                                        <form method="post" asp-action="UpdateSidebarMenuStatus" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="menuId" value="@sub.Id" />
+                                            <input type="hidden" name="menuName" value="@sub.Name" />
+                                            <input class="form-check-input status-check" type="checkbox"
+                                                   name="isActive" value="true"
+                                                   @(sub.IsActive ? "checked" : "")
+                                                   @(sub.IsSystemMenu ? "disabled title=\"System menus cannot be deactivated\"" : "")
+                                                   onchange="this.form.submit()" />
+                                        </form>
+                                    </td>
+                                    <td class="text-center">
+                                        @if (sub.IsSystemMenu)
+                                        {
+                                            <span class="badge bg-secondary">System</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-light text-dark border">Sub</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+}
+
+@section Scripts {
+<script>
+// Toggle sub-menu row visibility
+function toggleSub(parentId) {
+    const rows   = document.querySelectorAll(`.submenu-row[data-parent="${parentId}"]`);
+    const icon   = document.getElementById(`icon-${parentId}`);
+    const hidden = rows.length > 0 && rows[0].classList.contains('d-none');
+    rows.forEach(r => r.classList.toggle('d-none', !hidden));
+    if (icon) icon.classList.toggle('bi-chevron-right', !hidden);
+    if (icon) icon.classList.toggle('bi-chevron-down',   hidden);
+}
+
+// Role checkbox → update corresponding hidden inputs then submit
+document.querySelectorAll('.role-check').forEach(chk => {
+    chk.addEventListener('change', function () {
+        const itemId  = this.dataset.item;
+        const role    = this.dataset.role;
+        const form    = this.closest('form');
+        const isAllow = this.checked;
+
+        // Update the hidden field for THIS role
+        const fieldMap = { Admin: 'adminAllowed', Faculty: 'facultyAllowed', Student: 'studentAllowed' };
+        const field    = form.querySelector(`input[name="${fieldMap[role]}"]`);
+        if (field) field.value = isAllow ? 'true' : 'false';
+
+        form.submit();
+    });
+});
+</script>
+}

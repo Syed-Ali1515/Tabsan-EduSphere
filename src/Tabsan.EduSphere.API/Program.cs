@@ -152,6 +152,7 @@ builder.Services.AddScoped<IBuildingRoomService, BuildingRoomService>();
 builder.Services.AddScoped<IReportSettingsService, ReportSettingsService>();
 builder.Services.AddScoped<IModuleRolesService, ModuleRolesService>();
 builder.Services.AddScoped<IThemeService, ThemeService>();
+builder.Services.AddScoped<ISidebarMenuService, SidebarMenuService>();
 
 // ── Rate limiting (OWASP hardening) ─────────────────────────────────────
 builder.Services.AddRateLimiter(opts =>

@@ -1,0 +1,76 @@
+@model Tabsan.EduSphere.Web.Models.Portal.TimetableStudentPageModel
+@{
+    ViewData["Title"] = "Student Timetable";
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.Message))
+{
+    <div class="alert alert-info">@Model.Message</div>
+}
+
+@if (!Model.IsConnected)
+{
+    <div class="alert alert-warning">
+        API connection is not configured. Please set it on <a asp-action="Dashboard">Dashboard</a>.
+    </div>
+}
+else
+{
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+            <h2 class="h5">Published Timetables</h2>
+            @if (Model.Timetables.Count == 0)
+            {
+                <p class="text-muted mb-0">No timetable available.</p>
+            }
+            else
+            {
+                <div class="d-flex flex-column gap-2">
+                    @foreach (var t in Model.Timetables)
+                    {
+                        <a asp-action="TimetableStudent" asp-route-departmentId="@Model.DepartmentId" asp-route-timetableId="@t.Id">@t.Title</a>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    @if (Model.SelectedTimetable is not null)
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h3 class="h5">@Model.SelectedTimetable.Title</h3>
+                <div class="table-responsive mt-3">
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th>SR#</th>
+                                <th>Day</th>
+                                <th>Time</th>
+                                <th>Subject</th>
+                                <th>Teacher</th>
+                                <th>Building</th>
+                                <th>Room</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (var i = 0; i < Model.SelectedTimetable.Entries.Count; i++)
+                            {
+                                var e = Model.SelectedTimetable.Entries[i];
+                                <tr>
+                                    <td>@(i + 1)</td>
+                                    <td>@e.DayName</td>
+                                    <td>@e.StartTime - @e.EndTime</td>
+                                    <td>@e.SubjectName</td>
+                                    <td>@e.FacultyName</td>
+                                    <td>@e.BuildingName</td>
+                                    <td>@e.RoomNumber</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+}

@@ -1,46 +1,115 @@
-﻿<!DOCTYPE html>
+﻿@inject Tabsan.EduSphere.Web.Services.IEduApiClient EduApi
+@{
+    var principal   = User;
+    var aspNetAuth  = principal?.Identity?.IsAuthenticated ?? false;
+
+    // Prefer JWT claims decoded at connection-save time; fall back to ASP.NET identity.
+    var sessionId   = EduApi.GetSessionIdentity();
+    var isAdmin     = (sessionId?.IsAdmin ?? false) || (aspNetAuth && (principal!.IsInRole("Admin") || principal.IsInRole("SuperAdmin")));
+    var isSuperAdmin = (sessionId?.IsSuperAdmin ?? false) || (aspNetAuth && principal!.IsInRole("SuperAdmin"));
+    var isFaculty   = (sessionId?.IsFaculty ?? false) || (aspNetAuth && principal!.IsInRole("Faculty"));
+    var isStudent   = (sessionId?.IsStudent ?? false) || (aspNetAuth && principal!.IsInRole("Student"));
+
+    // Connected but no roles resolved yet: show all links (dev/integration convenience).
+    var isConnected = EduApi.IsConnected();
+    var noRoles     = isConnected && sessionId is null;
+    var showAdminLinks      = isAdmin      || noRoles;
+    var showFacultyLinks    = isFaculty    || noRoles;
+    var showStudentLinks    = isStudent    || noRoles;
+    var showSuperAdminLinks = isSuperAdmin || noRoles;
+
+    // Display name for header
+    var displayName = sessionId?.UserName ?? (aspNetAuth ? principal!.Identity!.Name : null) ?? "Guest";
+}
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Tabsan.EduSphere.Web</title>
+    <title>@ViewData["Title"] - Tabsan EduSphere</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Tabsan.EduSphere.Web.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Tabsan.EduSphere.Web</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
+    <div class="app-shell">
+        <aside class="app-sidebar">
+            <a class="brand-link" asp-controller="Home" asp-action="Index">
+                <span class="brand-mark">TE</span>
+                <div>
+                    <div class="brand-name">Tabsan EduSphere</div>
+                    <div class="brand-subtitle">Campus Portal</div>
                 </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+            </a>
+
+            <nav class="sidebar-nav">
+                <div class="menu-label">Overview</div>
+                <a class="menu-link" asp-controller="Portal" asp-action="Dashboard">Dashboard</a>
+
+                <div class="menu-label">Timetable</div>
+                @if (showAdminLinks)
+                {
+                    <a class="menu-link" asp-controller="Portal" asp-action="TimetableAdmin">Manage Timetables</a>
+                }
+
+                @if (showStudentLinks)
+                {
+                    <a class="menu-link" asp-controller="Portal" asp-action="TimetableStudent">Student Timetable</a>
+                }
+
+                @if (showFacultyLinks)
+                {
+                    <a class="menu-link" asp-controller="Portal" asp-action="TimetableTeacher">Teacher Timetable</a>
+                }
+
+                @if (showAdminLinks)
+                {
+                    <div class="menu-label">Lookups</div>
+                    <a class="menu-link" asp-controller="Portal" asp-action="Buildings">Buildings</a>
+                    <a class="menu-link" asp-controller="Portal" asp-action="Rooms">Rooms</a>
+                }
+
+                @if (showSuperAdminLinks)
+                {
+                    <div class="menu-label">System Settings</div>
+                    <a class="menu-link" asp-controller="Portal" asp-action="ReportSettings">Report Settings</a>
+                    <a class="menu-link" asp-controller="Portal" asp-action="ModuleSettings">Module Settings</a>
+                    <a class="menu-link" asp-controller="Portal" asp-action="SidebarSettings">Sidebar Settings</a>
+                }
+
+                <div class="menu-label">General</div>
+                <a class="menu-link" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            </nav>
+        </aside>
+
+        <section class="app-main">
+            <header class="app-header">
+                <h1 class="page-title">@ViewData["Title"]</h1>
+                <div class="auth-chip">
+                    @displayName
+                    @if (sessionId?.Roles.Count > 0)
+                    {
+                        <span class="badge bg-secondary ms-1">@string.Join(", ", sessionId.Roles)</span>
+                    }
+                    @if (isConnected)
+                    {
+                        <a asp-controller="Portal" asp-action="Dashboard" class="ms-2 small text-muted" title="API connected">&#128279;</a>
+                    }
+                </div>
+            </header>
+
+            <main class="app-content" role="main">
+                @RenderBody()
+            </main>
+
+            <footer class="app-footer">
+                <span>Tabsan EduSphere</span>
+                <span>2026</span>
+            </footer>
+        </section>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - Tabsan.EduSphere.Web - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

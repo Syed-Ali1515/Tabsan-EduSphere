@@ -79,4 +79,61 @@ public class SettingsRepository : ISettingsRepository
 
     public Task<int> SaveChangesAsync(CancellationToken ct = default)
         => _db.SaveChangesAsync(ct);
+
+    // ── Sidebar Menu Items ────────────────────────────────────────────────
+
+    public Task<IList<SidebarMenuItem>> GetTopLevelMenusAsync(CancellationToken ct = default)
+        => _db.SidebarMenuItems
+              .Include(m => m.RoleAccesses)
+              .Include(m => m.SubMenus).ThenInclude(s => s.RoleAccesses)
+              .Where(m => m.ParentId == null)
+              .OrderBy(m => m.DisplayOrder)
+              .ToListAsync(ct)
+              .ContinueWith<IList<SidebarMenuItem>>(r => r.Result, ct);
+
+    public Task<IList<SidebarMenuItem>> GetSubMenusAsync(Guid parentId, CancellationToken ct = default)
+        => _db.SidebarMenuItems
+              .Include(m => m.RoleAccesses)
+              .Where(m => m.ParentId == parentId)
+              .OrderBy(m => m.DisplayOrder)
+              .ToListAsync(ct)
+              .ContinueWith<IList<SidebarMenuItem>>(r => r.Result, ct);
+
+    public Task<SidebarMenuItem?> GetMenuByIdAsync(Guid id, CancellationToken ct = default)
+        => _db.SidebarMenuItems
+              .Include(m => m.RoleAccesses)
+              .Include(m => m.SubMenus).ThenInclude(s => s.RoleAccesses)
+              .FirstOrDefaultAsync(m => m.Id == id, ct);
+
+    public Task<SidebarMenuItem?> GetMenuByKeyAsync(string key, CancellationToken ct = default)
+        => _db.SidebarMenuItems
+              .Include(m => m.RoleAccesses)
+              .Include(m => m.SubMenus).ThenInclude(s => s.RoleAccesses)
+              .FirstOrDefaultAsync(m => m.Key == key.ToLowerInvariant(), ct);
+
+    public Task<IList<SidebarMenuItem>> GetVisibleMenusForRoleAsync(string roleName, CancellationToken ct = default)
+        => _db.SidebarMenuItems
+              .Include(m => m.RoleAccesses)
+              .Include(m => m.SubMenus).ThenInclude(s => s.RoleAccesses)
+              .Where(m => m.IsActive
+                       && m.RoleAccesses.Any(r => r.RoleName == roleName && r.IsAllowed))
+              .OrderBy(m => m.DisplayOrder)
+              .ToListAsync(ct)
+              .ContinueWith<IList<SidebarMenuItem>>(r => r.Result, ct);
+
+    public async Task AddMenuAsync(SidebarMenuItem item, CancellationToken ct = default)
+        => await _db.SidebarMenuItems.AddAsync(item, ct);
+
+    public void UpdateMenu(SidebarMenuItem item) => _db.SidebarMenuItems.Update(item);
+
+    public async Task AddMenuRoleAccessAsync(SidebarMenuRoleAccess access, CancellationToken ct = default)
+        => await _db.SidebarMenuRoleAccesses.AddAsync(access, ct);
+
+    public void RemoveMenuRoleAccess(SidebarMenuRoleAccess access)
+        => _db.SidebarMenuRoleAccesses.Remove(access);
+
+    public Task<SidebarMenuRoleAccess?> GetMenuRoleAccessAsync(Guid menuItemId, string roleName, CancellationToken ct = default)
+        => _db.SidebarMenuRoleAccesses
+              .FirstOrDefaultAsync(a => a.SidebarMenuItemId == menuItemId
+                                     && a.RoleName == roleName, ct);
 }

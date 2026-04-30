@@ -1,0 +1,64 @@
+@model Tabsan.EduSphere.Web.Models.Portal.TimetableTeacherPageModel
+@{
+    ViewData["Title"] = "Teacher Timetable";
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.Message))
+{
+    <div class="alert alert-info">@Model.Message</div>
+}
+
+@if (!Model.IsConnected)
+{
+    <div class="alert alert-warning">
+        API connection is not configured. Please set it on <a asp-action="Dashboard">Dashboard</a>.
+    </div>
+}
+else
+{
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <h2 class="h5 mb-3">Assigned Classes</h2>
+
+            @if (Model.Entries.Count == 0)
+            {
+                <p class="text-muted mb-0">No assigned timetable entries found.</p>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th>SR#</th>
+                                <th>Time</th>
+                                <th>Degree Name</th>
+                                <th>Semester</th>
+                                <th>Subject</th>
+                                <th>Building</th>
+                                <th>Room</th>
+                                <th>Title</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (var i = 0; i < Model.Entries.Count; i++)
+                            {
+                                var e = Model.Entries[i];
+                                <tr>
+                                    <td>@(i + 1)</td>
+                                    <td>@e.StartTime - @e.EndTime</td>
+                                    <td>@e.ProgramCode</td>
+                                    <td>@e.SemesterName</td>
+                                    <td>@e.SubjectName</td>
+                                    <td>@e.BuildingName</td>
+                                    <td>@e.RoomNumber</td>
+                                    <td>@e.TimetableTitle</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+}

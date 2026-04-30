@@ -51,4 +51,35 @@ public interface ISettingsRepository
 
     /// <summary>Commits all pending changes.</summary>
     Task<int> SaveChangesAsync(CancellationToken ct = default);
+
+    // ── Sidebar Menu Items ────────────────────────────────────────────────
+    /// <summary>Returns all top-level sidebar menu items (ParentId == null) with role accesses loaded.</summary>
+    Task<IList<SidebarMenuItem>> GetTopLevelMenusAsync(CancellationToken ct = default);
+
+    /// <summary>Returns sub-menu items for a given parent ID with role accesses loaded.</summary>
+    Task<IList<SidebarMenuItem>> GetSubMenusAsync(Guid parentId, CancellationToken ct = default);
+
+    /// <summary>Returns a sidebar menu item by ID with role accesses and sub-menus loaded.</summary>
+    Task<SidebarMenuItem?> GetMenuByIdAsync(Guid id, CancellationToken ct = default);
+
+    /// <summary>Returns a sidebar menu item by stable key.</summary>
+    Task<SidebarMenuItem?> GetMenuByKeyAsync(string key, CancellationToken ct = default);
+
+    /// <summary>Returns all menu items that are active and have the given role in their access list.</summary>
+    Task<IList<SidebarMenuItem>> GetVisibleMenusForRoleAsync(string roleName, CancellationToken ct = default);
+
+    /// <summary>Adds a new sidebar menu item.</summary>
+    Task AddMenuAsync(SidebarMenuItem item, CancellationToken ct = default);
+
+    /// <summary>Marks a sidebar menu item as modified.</summary>
+    void UpdateMenu(SidebarMenuItem item);
+
+    /// <summary>Adds a role access record.</summary>
+    Task AddMenuRoleAccessAsync(SidebarMenuRoleAccess access, CancellationToken ct = default);
+
+    /// <summary>Removes a role access record.</summary>
+    void RemoveMenuRoleAccess(SidebarMenuRoleAccess access);
+
+    /// <summary>Returns an existing role access record, or null.</summary>
+    Task<SidebarMenuRoleAccess?> GetMenuRoleAccessAsync(Guid menuItemId, string roleName, CancellationToken ct = default);
 }

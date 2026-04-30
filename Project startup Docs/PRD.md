@@ -64,7 +64,7 @@ To deliver a scalable, long‑term university management system that preserves a
 - Finance & payment receipts (with optional online payment gateway)
 - CSV import for student registration whitelist
 - Role-based sidebar navigation with per-role menus and sub-menus
-- System Settings: License, Theme, Report, Module management
+- System Settings: License, Theme, Report, Module, Sidebar management
 - Departments administration: degrees, semesters, subjects, timetable (PDF/Excel)
 - Teacher modification requests with admin approval workflow
 - Account lockout and admin/super-admin password reset
@@ -403,6 +403,7 @@ Accessible from the top navigation as a dedicated "Settings" menu:
 | Theme Settings | All users | Per-user theme picker with preview |
 | Report Settings | Super Admin only | Activate/deactivate reports per role; table: SR#, Report Name, Purpose, Roles (multi-select) |
 | Module Settings | Super Admin only | Activate/deactivate modules per role; table: SR#, Module Name, Purpose, Roles (multi-select), Status (Active/Inactive) |
+| Sidebar Settings | Super Admin only | Configure sidebar navigation visibility per role; table: SR#, Name, Purpose, Roles (checkbox list), Status (Active/Inactive). Click any top-level menu to reveal its sub-menus in the panel below. Super Admin always retains full access regardless of settings. |
 
 ---
 

@@ -201,3 +201,121 @@ public class ThemeService : IThemeService
         await _userRepo.SaveChangesAsync(ct);
     }
 }
+
+// -----------------------------------------------------------------------------
+// SidebarMenuService
+// -----------------------------------------------------------------------------
+
+/// <summary>
+/// Manages sidebar navigation menu visibility per role.
+/// Super Admin always bypasses these settings � the service exposes data only;
+/// Super Admin enforcement is done in the sidebar rendering layer.
+/// </summary>
+public class SidebarMenuService : ISidebarMenuService
+{
+    private readonly ISettingsRepository _repo;
+
+    public SidebarMenuService(ISettingsRepository repo) => _repo = repo;
+
+    public async Task<IList<SidebarMenuItemDto>> GetTopLevelMenusAsync(CancellationToken ct = default)
+    {
+        var items = await _repo.GetTopLevelMenusAsync(ct);
+        return items.Select(Map).ToList();
+    }
+
+    public async Task<IList<SidebarMenuItemDto>> GetSubMenusAsync(Guid parentId, CancellationToken ct = default)
+    {
+        var items = await _repo.GetSubMenusAsync(parentId, ct);
+        return items.Select(MapFlat).ToList();
+    }
+
+    public async Task<SidebarMenuItemDto> GetByIdAsync(Guid id, CancellationToken ct = default)
+    {
+        var item = await _repo.GetMenuByIdAsync(id, ct)
+            ?? throw new KeyNotFoundException($"Sidebar menu item '{id}' not found.");
+        return Map(item);
+    }
+
+    public async Task<IList<SidebarMenuItemDto>> GetVisibleForRoleAsync(string roleName, CancellationToken ct = default)
+    {
+        var items = await _repo.GetVisibleMenusForRoleAsync(roleName, ct);
+        return items.Select(Map).ToList();
+    }
+
+    public async Task SetRolesAsync(Guid id, SetSidebarMenuRolesCommand cmd, CancellationToken ct = default)
+    {
+        var item = await _repo.GetMenuByIdAsync(id, ct)
+            ?? throw new KeyNotFoundException($"Sidebar menu item '{id}' not found.");
+
+        var normalized = cmd.Entries
+            .GroupBy(e => e.RoleName.Trim(), StringComparer.OrdinalIgnoreCase)
+            .Select(g => g.Last())
+            .ToDictionary(e => e.RoleName.Trim(), e => e.IsAllowed, StringComparer.OrdinalIgnoreCase);
+
+        // Replace semantics: remove existing roles not present in payload.
+        foreach (var existing in item.RoleAccesses.ToList())
+        {
+            if (!normalized.ContainsKey(existing.RoleName))
+                _repo.RemoveMenuRoleAccess(existing);
+        }
+
+        foreach (var entry in normalized)
+        {
+            var existing = await _repo.GetMenuRoleAccessAsync(id, entry.Key, ct);
+            if (existing is not null)
+            {
+                existing.SetAllowed(entry.Value);
+            }
+            else
+            {
+                var access = new SidebarMenuRoleAccess(id, entry.Key, entry.Value);
+                await _repo.AddMenuRoleAccessAsync(access, ct);
+            }
+        }
+
+        _repo.UpdateMenu(item);
+        await _repo.SaveChangesAsync(ct);
+    }
+
+    public async Task SetStatusAsync(Guid id, SetSidebarMenuStatusCommand cmd, CancellationToken ct = default)
+    {
+        var item = await _repo.GetMenuByIdAsync(id, ct)
+            ?? throw new KeyNotFoundException($"Sidebar menu item '{id}' not found.");
+
+        if (cmd.IsActive)
+            item.Activate();
+        else
+            item.Deactivate();   // throws for system menus
+
+        _repo.UpdateMenu(item);
+        await _repo.SaveChangesAsync(ct);
+    }
+
+    // -- Mapping helpers --------------------------------------------------
+
+    private static SidebarMenuItemDto Map(SidebarMenuItem m) => new(
+        m.Id,
+        m.Key,
+        m.Name,
+        m.Purpose,
+        m.ParentId,
+        m.DisplayOrder,
+        m.IsActive,
+        m.IsSystemMenu,
+        m.RoleAccesses.Select(r => new SidebarMenuRoleAccessDto(r.RoleName, r.IsAllowed)).ToList(),
+        m.SubMenus.Select(MapFlat).ToList()
+    );
+
+    private static SidebarMenuItemDto MapFlat(SidebarMenuItem m) => new(
+        m.Id,
+        m.Key,
+        m.Name,
+        m.Purpose,
+        m.ParentId,
+        m.DisplayOrder,
+        m.IsActive,
+        m.IsSystemMenu,
+        m.RoleAccesses.Select(r => new SidebarMenuRoleAccessDto(r.RoleName, r.IsAllowed)).ToList(),
+        new List<SidebarMenuItemDto>()
+    );
+}
