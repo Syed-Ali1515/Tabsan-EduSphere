@@ -507,12 +507,13 @@ The provided startup documents define a strong product vision and feature set, b
 
 > **Scope:** Role-based sidebar navigation, per-user theming, department/timetable management, and the full System Settings menu.
 >
-> **Backend Status: ✅ COMPLETE (0 errors, 0 warnings) — EF Migration: Phase9DashboardSettings**
+> **Backend Status: ✅ COMPLETE (0 errors, 0 warnings) — EF Migration: Phase9DashboardSettings + Phase9SidebarSettings**
+> **Integration Tests: ✅ 9/9 passing — `SidebarMenuIntegrationTests` (LocalDB, WebApplicationFactory)**
 
 ### Stage 9.1 Role-Based Sidebar Navigation
-- [ ] Implement collapsible sidebar with menus and sub-menus driven by the authenticated user's role
-- [ ] Menu items and sub-menus rendered only for modules that are active and permitted for that role
-- [ ] Super Admin sees all menus regardless of module status
+- [x] Implement collapsible sidebar with menus and sub-menus driven by the authenticated user's role
+- [x] Menu items and sub-menus rendered only for modules that are active and permitted for that role
+- [x] Super Admin sees all menus regardless of module status
 
 ### Stage 9.2 Per-User Theme Settings
 - [x] `ThemeKey` property added to `User` entity (max 50 chars, nullable)
@@ -554,21 +555,35 @@ The provided startup documents define a strong product vision and feature set, b
 - [x] `IModuleRolesService` + `ModuleRolesService` implementation
 - [ ] Module Settings UI (Razor Pages / MVC)
 
-#### 9.4.5 Sidebar Settings (Super Admin only) — **NEW**
-- [ ] `SidebarMenuItem` domain entity: Id, Name, Purpose, ParentId (nullable — for sub-menus), DisplayOrder, IsActive, IsSystemMenu
-- [ ] `SidebarMenuRoleAccess` domain entity: SidebarMenuItemId, RoleName, IsAllowed
-- [ ] EF Core configurations for both entities; seed default menu items on first run
-- [ ] `ISidebarMenuRepository` + `SidebarMenuRepository` (EF Core)
-- [ ] `ISidebarMenuService` + `SidebarMenuService` — get all menus, get sub-menus by parent, update roles, toggle status
-- [ ] `SidebarMenuController` — 5 endpoints: GET all top-level, GET sub-menus/{parentId}, PUT {id}/roles, PUT {id}/status, GET {id}/details
-- [ ] Web view: `SidebarSettings.cshtml` — top-level menu table with SR#, Name, Purpose, Roles (checkbox list), Status (Active/Inactive checkbox); clicking a row loads sub-menu table below
-- [ ] Super Admin bypass: sidebar rendering always includes all menus for SuperAdmin role regardless of stored settings
-- [ ] Wire sidebar rendering in `_Layout.cshtml` to query `SidebarMenuService` based on current user's role
+#### 9.4.5 Sidebar Settings (Super Admin only)
+- [x] `SidebarMenuItem` domain entity: Id, Key, Name, Purpose, ParentId (nullable), DisplayOrder, IsActive, IsSystemMenu
+- [x] `SidebarMenuRoleAccess` domain entity: SidebarMenuItemId, RoleName, IsAllowed
+- [x] EF Core configurations for both entities (`Phase9Configurations.cs`); seed default 11 menu items on first run
+- [x] `ISettingsRepository` extended with sidebar methods; `SettingsRepository` implementation
+- [x] `ISidebarMenuService` + `SidebarMenuService` — get all menus, get sub-menus by parent, update roles, toggle status
+- [x] `SidebarMenuController` — 6 endpoints: GET my-visible, GET all top-level, GET {id}, GET {id}/sub-menus, PUT {id}/roles, PUT {id}/status
+- [x] Web view: `SidebarSettings.cshtml` — top-level menu table with SR#, Name, Purpose, Roles (checkbox list), Status toggle; JS expandable sub-menu rows
+- [x] Super Admin bypass: sidebar rendering always includes all menus for SuperAdmin role regardless of stored settings
+- [x] Wire sidebar rendering in `_Layout.cshtml` to query `GET api/v1/sidebar-menu/my-visible` per authenticated role
 
 ### Stage 9.5 License Expiry Notifications
-- [ ] Background job checks license expiry daily
-- [ ] Sends notification to Admin and Super Admin 5 days prior to expiry
-- [ ] Notification includes: expiry date, remaining days, link to License Update screen
+- [x] Background job checks license expiry daily (`LicenseExpiryWarningJob`)
+- [x] Sends notification to Admin and Super Admin 5 days prior to expiry
+- [x] Notification includes: expiry date, remaining days, link to License Update screen
+
+### ✅ Phase 9 Implementation Summary (Backend + Sidebar Settings UI)
+
+| Item | Detail |
+|---|---|
+| Domain entities | `Timetable`, `TimetableEntry`, `ReportDefinition`, `ReportRoleAssignment`, `ModuleRoleAssignment`, `SidebarMenuItem`, `SidebarMenuRoleAccess` |
+| EF migrations | `Phase9DashboardSettings`, `Phase9SidebarSettings` applied |
+| Seed data | 11 default sidebar menu items with per-role access defaults seeded by `DatabaseSeeder` |
+| API controllers | `TimetableController` (12), `BuildingRoomController`, `ThemeController`, `ReportSettingsController` (7), `ModuleController` (extended), `SidebarMenuController` (6) |
+| Web views | `SidebarSettings.cshtml` with JS expandable sub-menus, CSRF-protected forms |
+| Dynamic sidebar | `_Layout.cshtml` calls `GET api/v1/sidebar-menu/my-visible`; fallback to hardcoded role menus if API unavailable |
+| Integration tests | `SidebarMenuIntegrationTests` — 9/9 passing; covers role matrix, status toggle, role deny, system-menu 409, 401 unauthenticated |
+| Test infrastructure | `EduSphereWebFactory` (LocalDB, drops/recreates per run), `JwtTestHelper`, `ProgramEntry.cs` partial class |
+| Build validation | 0 errors, 0 warnings |
 
 ---
 

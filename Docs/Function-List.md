@@ -1282,6 +1282,439 @@
 | `GetByIdAsync(id)` | Returns a key record by auto-increment Id. | `tools/Tabsan.Lic/Services/KeyService.cs` |
 | `MarkLicenseGeneratedAsync(key)` | Sets IsLicenseGenerated=true on a key record after .tablic file is built. | `tools/Tabsan.Lic/Services/KeyService.cs` |
 | `ExportCsvAsync()` | Exports all issued keys to CSV string (Id, KeyId, ExpiryType, dates, flags, label). | `tools/Tabsan.Lic/Services/KeyService.cs` |
+
+---
+
+## Phase 8: Student Lifecycle, Account Security & Finance (Sprints 15–16)
+
+### Domain — StudentProfile new methods
+| Function | Description | File |
+|---|---|---|
+| `Graduate(adminUserId)` | Sets status to `Graduated`; records graduation timestamp and acting admin. | `Domain/Entities/StudentProfile.cs` |
+| `Deactivate(adminUserId, reason)` | Sets status to `Inactive`; blocks login for the student. | `Domain/Entities/StudentProfile.cs` |
+| `Reactivate(adminUserId)` | Restores status to `Active` from `Inactive`. | `Domain/Entities/StudentProfile.cs` |
+
+### Domain — User new methods
+| Function | Description | File |
+|---|---|---|
+| `RecordFailedLoginAttempt()` | Increments `FailedLoginCount`; locks account (15-min window) after 5 consecutive failures. | `Domain/Entities/User.cs` |
+| `UnlockAccount()` | Resets `FailedLoginCount` to 0 and clears `LockoutEnd`. | `Domain/Entities/User.cs` |
+| `IsCurrentlyLockedOut()` | Returns true if `LockoutEnd` is set and has not yet elapsed. | `Domain/Entities/User.cs` |
+
+### Domain — AdminChangeRequest entity
+| Function | Description | File |
+|---|---|---|
+| `AdminChangeRequest(studentProfileId, requestedByUserId, field, oldValue, newValue)` | Constructor; creates a pending change request for a protected student field. | `Domain/Entities/AdminChangeRequest.cs` |
+| `Approve(adminUserId)` | Sets status to `Approved`; applies the requested field value to the student profile. | `Domain/Entities/AdminChangeRequest.cs` |
+| `Reject(adminUserId, remarks)` | Sets status to `Rejected` with rejection remarks. | `Domain/Entities/AdminChangeRequest.cs` |
+
+### Domain — TeacherModificationRequest entity
+| Function | Description | File |
+|---|---|---|
+| `TeacherModificationRequest(teacherUserId, field, oldValue, newValue)` | Constructor; creates a pending modification request for a teacher-editable field. | `Domain/Entities/TeacherModificationRequest.cs` |
+| `Approve(adminUserId)` | Sets status to `Approved`; applies the requested change. | `Domain/Entities/TeacherModificationRequest.cs` |
+| `Reject(adminUserId, remarks)` | Sets status to `Rejected`. | `Domain/Entities/TeacherModificationRequest.cs` |
+
+### Domain — PaymentReceipt entity
+| Function | Description | File |
+|---|---|---|
+| `PaymentReceipt(studentProfileId, createdByUserId, amount, description, dueDate)` | Constructor; creates a new fee receipt in `Pending` status. | `Domain/Entities/PaymentReceipt.cs` |
+| `SubmitProof(proofFilePath)` | Student action — attaches proof of payment file path; sets status to `ProofSubmitted`. | `Domain/Entities/PaymentReceipt.cs` |
+| `Confirm(financeUserId)` | Finance action — marks receipt as `Paid`; records confirmation timestamp. | `Domain/Entities/PaymentReceipt.cs` |
+| `Cancel(cancelledByUserId, reason)` | Cancels the receipt; status set to `Cancelled`. | `Domain/Entities/PaymentReceipt.cs` |
+
+### Infrastructure — StudentLifecycleRepository
+| Function | Description | File |
+|---|---|---|
+| `GetStudentByIdAsync(studentProfileId, ct)` | Returns StudentProfile with User navigation. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `GetStudentsByDepartmentAsync(departmentId, status, ct)` | Lists students by department with optional status filter. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `GetFinalSemesterStudentsAsync(departmentId, ct)` | Returns students in their final semester, eligible for graduation. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `GraduateAsync(studentProfileId, adminUserId, ct)` | Persists graduation; calls `StudentProfile.Graduate`. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `DeactivateAsync(studentProfileId, adminUserId, reason, ct)` | Persists deactivation. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `ReactivateAsync(studentProfileId, adminUserId, ct)` | Persists reactivation. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `TransferDepartmentAsync(studentProfileId, newDeptId, newProgramId, newSemester, ct)` | Updates student department, program, and semester. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `CreateChangeRequestAsync(request, ct)` | Persists a new `AdminChangeRequest`. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `GetChangeRequestByIdAsync(id, ct)` | Returns a change request by ID. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `GetChangeRequestsForStudentAsync(studentProfileId, ct)` | Returns all change requests for a student. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `GetPendingChangeRequestsAsync(ct)` | Returns all pending change requests across all students. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `ApproveChangeRequestAsync(id, adminUserId, ct)` | Calls `AdminChangeRequest.Approve`; persists. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `RejectChangeRequestAsync(id, adminUserId, remarks, ct)` | Calls `AdminChangeRequest.Reject`; persists. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `CreateTeacherModificationAsync(request, ct)` | Persists a new `TeacherModificationRequest`. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `GetTeacherModificationByIdAsync(id, ct)` | Returns a teacher modification request by ID. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `GetTeacherModificationsByTeacherAsync(teacherUserId, ct)` | Returns all modification requests by a teacher. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `GetPendingTeacherModificationsAsync(ct)` | Returns all pending teacher modification requests. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `ApproveTeacherModificationAsync(id, adminUserId, ct)` | Approves a teacher modification request. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `RejectTeacherModificationAsync(id, adminUserId, remarks, ct)` | Rejects a teacher modification request. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `CreatePaymentReceiptAsync(receipt, ct)` | Persists a new `PaymentReceipt`. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `GetPaymentReceiptByIdAsync(id, ct)` | Returns a payment receipt by ID. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `GetPaymentReceiptsForStudentAsync(studentProfileId, ct)` | Returns all receipts for a student. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `GetPaymentReceiptsByStatusAsync(status, ct)` | Returns all receipts matching a given status. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `SubmitProofAsync(id, proofFilePath, ct)` | Student submits payment proof; calls `PaymentReceipt.SubmitProof`. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `ConfirmPaymentAsync(id, financeUserId, ct)` | Finance confirms payment; calls `PaymentReceipt.Confirm`. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `CancelReceiptAsync(id, cancelledByUserId, reason, ct)` | Cancels a receipt; calls `PaymentReceipt.Cancel`. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `AddRegistrationNumberAsync(registrationNumber, ct)` | Adds a single registration number to the whitelist. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `BulkAddRegistrationNumbersAsync(numbers, ct)` | Adds a list of registration numbers from CSV import. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `RegistrationNumberExistsAsync(registrationNumber, ct)` | Returns true if a registration number is in the whitelist. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `AccountExistsForRegistrationAsync(registrationNumber, ct)` | Returns true if an account already exists for this registration number. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `SaveChangesAsync(ct)` | Commits pending EF changes. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+
+### Infrastructure — UserRepository (extended)
+| Function | Description | File |
+|---|---|---|
+| `GetLockedAccountsAsync(ct)` | Returns all users with active lockouts (`LockoutEnd > UtcNow`). | `Infrastructure/Repositories/UserRepository.cs` |
+
+### Application — StudentLifecycleService
+| Function | Description | File |
+|---|---|---|
+| `GetStudentAsync(id, ct)` | Returns a student profile detail DTO. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
+| `GetStudentsByDepartmentAsync(deptId, status, ct)` | Returns list of students by department. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
+| `GetFinalSemesterStudentsAsync(deptId, ct)` | Returns eligible-for-graduation students. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
+| `GraduateStudentAsync(id, adminUserId, ct)` | Graduates the student. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
+| `DeactivateStudentAsync(id, adminUserId, reason, ct)` | Deactivates a student account. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
+| `ReactivateStudentAsync(id, adminUserId, ct)` | Reactivates a student account. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
+| `TransferStudentAsync(id, newDeptId, newProgramId, newSemester, ct)` | Transfers student to new department/program/semester. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
+| `GetChangeRequestsAsync(studentId, ct)` | Returns all change requests for a student. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
+| `GetPendingChangeRequestsAsync(ct)` | Returns all pending admin change requests. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
+| `CreateChangeRequestAsync(request, ct)` | Creates a new admin change request. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
+| `ApproveChangeRequestAsync(id, adminUserId, ct)` | Approves a change request. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
+| `RejectChangeRequestAsync(id, adminUserId, remarks, ct)` | Rejects a change request. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
+| `CreateTeacherModificationAsync(request, ct)` | Creates a teacher modification request. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
+| `GetTeacherModificationsAsync(teacherId, ct)` | Returns all modification requests by a teacher. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
+| `GetPendingTeacherModificationsAsync(ct)` | Returns all pending teacher modification requests. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
+| `ApproveTeacherModificationAsync(id, adminUserId, ct)` | Approves a teacher modification request. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
+| `RejectTeacherModificationAsync(id, adminUserId, remarks, ct)` | Rejects a teacher modification request. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
+| `CreatePaymentReceiptAsync(request, ct)` | Finance creates a new fee receipt. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
+| `GetReceiptsForStudentAsync(studentId, ct)` | Returns all receipts for a student. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
+| `GetReceiptsByStatusAsync(status, ct)` | Returns receipts by status (Pending/ProofSubmitted/Paid/Cancelled). | `Application/StudentLifecycle/StudentLifecycleService.cs` |
+| `GetReceiptAsync(id, ct)` | Returns a single receipt. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
+| `SubmitPaymentProofAsync(id, proofFilePath, ct)` | Student submits proof of payment. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
+| `ConfirmPaymentAsync(id, financeUserId, ct)` | Finance confirms payment. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
+| `CancelReceiptAsync(id, cancelledByUserId, reason, ct)` | Cancels a payment receipt. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
+| `GetFeeStatusAsync(studentId, ct)` | Returns outstanding fee status (any unpaid receipts). | `Application/StudentLifecycle/StudentLifecycleService.cs` |
+| `ImportRegistrationCsvAsync(csv, ct)` | Parses and bulk-imports registration numbers from CSV string. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
+| `AddRegistrationNumberAsync(number, ct)` | Adds single registration number to whitelist. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
+| `ValidateSignupRegistrationAsync(number, ct)` | Validates number exists in whitelist and has no existing account. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
+| `MapToStudentSummary(profile)` | Maps StudentProfile to StudentSummaryDto. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
+| `MapToStudentDetail(profile)` | Maps StudentProfile + User to StudentDetailDto. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
+| `MapToChangeRequestDto(cr)` | Maps AdminChangeRequest to ChangeRequestDto. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
+| `MapToPaymentReceiptDto(receipt)` | Maps PaymentReceipt to PaymentReceiptDto. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
+
+### Application — AccountSecurityService
+| Function | Description | File |
+|---|---|---|
+| `GetLockoutStatusAsync(userId, ct)` | Returns current lockout status and remaining time for a user. | `Application/AccountSecurity/AccountSecurityService.cs` |
+| `UnlockAccountAsync(userId, adminUserId, ct)` | Unlocks a user account; validates admin privilege rules. | `Application/AccountSecurity/AccountSecurityService.cs` |
+| `ResetPasswordAsync(userId, adminUserId, newPassword, ct)` | Resets a user's password; enforces password history policy. | `Application/AccountSecurity/AccountSecurityService.cs` |
+| `GetLockedAccountsAsync(ct)` | Returns all currently locked-out accounts. | `Application/AccountSecurity/AccountSecurityService.cs` |
+
+### Application — CsvRegistrationImportService
+| Function | Description | File |
+|---|---|---|
+| `ParseAsync(csvContent, ct)` | Parses a CSV string; extracts and validates registration number rows; returns result with errors list. | `Application/Import/CsvRegistrationImportService.cs` |
+| `ImportAsync(numbers, ct)` | Bulk-adds valid registration numbers; skips duplicates; returns import summary. | `Application/Import/CsvRegistrationImportService.cs` |
+
+### API — StudentLifecycleController
+| Function | Description | File |
+|---|---|---|
+| `GetStudents(deptId, status, ct)` | GET /api/v1/students — Lists students by dept/status. Admin+. | `API/Controllers/StudentLifecycleController.cs` |
+| `GetStudent(id, ct)` | GET /api/v1/students/{id} — Returns student detail. Admin+. | `API/Controllers/StudentLifecycleController.cs` |
+| `GetFinalSemester(deptId, ct)` | GET /api/v1/students/final-semester — Graduates-eligible list. Admin. | `API/Controllers/StudentLifecycleController.cs` |
+| `Graduate(id, ct)` | POST /api/v1/students/{id}/graduate — Marks student graduated. Admin. | `API/Controllers/StudentLifecycleController.cs` |
+| `Deactivate(id, request, ct)` | POST /api/v1/students/{id}/deactivate — Deactivates student. Admin. | `API/Controllers/StudentLifecycleController.cs` |
+| `Reactivate(id, ct)` | POST /api/v1/students/{id}/reactivate — Reactivates student. Admin. | `API/Controllers/StudentLifecycleController.cs` |
+| `Transfer(id, request, ct)` | POST /api/v1/students/{id}/transfer — Transfers to new dept/program. Admin. | `API/Controllers/StudentLifecycleController.cs` |
+| `GetCurrentUserId()` | Extracts user ID from JWT NameIdentifier claim. | `API/Controllers/StudentLifecycleController.cs` |
+
+### API — AdminChangeRequestController
+| Function | Description | File |
+|---|---|---|
+| `GetPending(ct)` | GET /api/v1/admin-change-requests/pending — All pending requests. Admin. | `API/Controllers/AdminChangeRequestController.cs` |
+| `GetForStudent(studentId, ct)` | GET /api/v1/admin-change-requests/student/{id} — Requests for student. Admin. | `API/Controllers/AdminChangeRequestController.cs` |
+| `Create(request, ct)` | POST /api/v1/admin-change-requests — Creates a change request. Admin. | `API/Controllers/AdminChangeRequestController.cs` |
+| `Approve(id, ct)` | POST /api/v1/admin-change-requests/{id}/approve — Approves request. Admin. | `API/Controllers/AdminChangeRequestController.cs` |
+| `Reject(id, request, ct)` | POST /api/v1/admin-change-requests/{id}/reject — Rejects request. Admin. | `API/Controllers/AdminChangeRequestController.cs` |
+| `GetCurrentUserId()` | Extracts user ID from JWT. | `API/Controllers/AdminChangeRequestController.cs` |
+
+### API — TeacherModificationController
+| Function | Description | File |
+|---|---|---|
+| `GetPending(ct)` | GET /api/v1/teacher-modifications/pending — All pending requests. Admin. | `API/Controllers/TeacherModificationController.cs` |
+| `GetByTeacher(teacherId, ct)` | GET /api/v1/teacher-modifications/teacher/{id} — Requests by teacher. Admin+. | `API/Controllers/TeacherModificationController.cs` |
+| `Create(request, ct)` | POST /api/v1/teacher-modifications — Submits modification request. Faculty. | `API/Controllers/TeacherModificationController.cs` |
+| `Approve(id, ct)` | POST /api/v1/teacher-modifications/{id}/approve — Approves request. Admin. | `API/Controllers/TeacherModificationController.cs` |
+| `Reject(id, request, ct)` | POST /api/v1/teacher-modifications/{id}/reject — Rejects request. Admin. | `API/Controllers/TeacherModificationController.cs` |
+| `GetCurrentUserId()` | Extracts user ID from JWT. | `API/Controllers/TeacherModificationController.cs` |
+
+### API — PaymentReceiptController
+| Function | Description | File |
+|---|---|---|
+| `Create(request, ct)` | POST /api/v1/payment-receipts — Finance creates fee receipt. Finance role. | `API/Controllers/PaymentReceiptController.cs` |
+| `GetForStudent(studentId, ct)` | GET /api/v1/payment-receipts/student/{id} — Receipts for student. Finance/Admin. | `API/Controllers/PaymentReceiptController.cs` |
+| `GetByStatus(status, ct)` | GET /api/v1/payment-receipts/by-status — Receipts by status. Finance. | `API/Controllers/PaymentReceiptController.cs` |
+| `GetReceipt(id, ct)` | GET /api/v1/payment-receipts/{id} — Single receipt. | `API/Controllers/PaymentReceiptController.cs` |
+| `SubmitProof(id, file, ct)` | POST /api/v1/payment-receipts/{id}/proof — Student uploads proof; validated file upload. | `API/Controllers/PaymentReceiptController.cs` |
+| `Confirm(id, ct)` | POST /api/v1/payment-receipts/{id}/confirm — Finance confirms. Finance. | `API/Controllers/PaymentReceiptController.cs` |
+| `Cancel(id, request, ct)` | POST /api/v1/payment-receipts/{id}/cancel — Cancels receipt. Finance/Admin. | `API/Controllers/PaymentReceiptController.cs` |
+| `GetFeeStatus(studentId, ct)` | GET /api/v1/payment-receipts/fee-status/{id} — Outstanding fee flag. | `API/Controllers/PaymentReceiptController.cs` |
+
+### API — RegistrationImportController
+| Function | Description | File |
+|---|---|---|
+| `ImportCsv(file, ct)` | POST /api/v1/registration-import/csv — Imports CSV of registration numbers. Admin. | `API/Controllers/RegistrationImportController.cs` |
+| `AddSingle(request, ct)` | POST /api/v1/registration-import/single — Adds one registration number. Admin. | `API/Controllers/RegistrationImportController.cs` |
+
+### API — AccountSecurityController
+| Function | Description | File |
+|---|---|---|
+| `GetLocked(ct)` | GET /api/v1/account-security/locked — Returns all locked accounts. Admin+. | `API/Controllers/AccountSecurityController.cs` |
+| `GetLockoutStatus(userId, ct)` | GET /api/v1/account-security/{userId}/lockout-status — Status for user. Admin+. | `API/Controllers/AccountSecurityController.cs` |
+| `Unlock(userId, ct)` | POST /api/v1/account-security/{userId}/unlock — Unlocks an account. Admin/SuperAdmin; role rules enforced. | `API/Controllers/AccountSecurityController.cs` |
+| `ResetPassword(userId, request, ct)` | POST /api/v1/account-security/{userId}/reset-password — Admin resets password. Admin+. | `API/Controllers/AccountSecurityController.cs` |
+
+---
+
+## Phase 9: Dashboard, Navigation & System Settings (Sprints 17–18)
+
+### Domain — Timetable aggregate
+| Function | Description | File |
+|---|---|---|
+| `Timetable(departmentId, semesterId, name)` | Constructor; creates a draft timetable for a dept/semester. | `Domain/Entities/Timetable.cs` |
+| `Publish()` | Sets `IsPublished = true`; timetable becomes visible to students/faculty. | `Domain/Entities/Timetable.cs` |
+| `Unpublish()` | Reverts `IsPublished = false`; hides from students/faculty. | `Domain/Entities/Timetable.cs` |
+| `TimetableEntry(timetableId, courseOfferingId, roomId, dayOfWeek, startTime, endTime)` | Constructor; adds a single slot to a timetable. | `Domain/Entities/TimetableEntry.cs` |
+
+### Domain — Settings entities
+| Function | Description | File |
+|---|---|---|
+| `ReportDefinition(key, name, purpose)` | Constructor; creates a report definition record. | `Domain/Entities/ReportDefinition.cs` |
+| `ReportRoleAssignment(reportKey, roleName, isAllowed)` | Constructor; grants or denies a role access to a report. | `Domain/Entities/ReportRoleAssignment.cs` |
+| `ModuleRoleAssignment(moduleKey, roleName, isAllowed)` | Constructor; controls per-role module visibility. | `Domain/Entities/ModuleRoleAssignment.cs` |
+| `SidebarMenuItem(key, name, purpose, displayOrder, parentId)` | Constructor; creates a navigable sidebar entry. | `Domain/Entities/SidebarMenuItem.cs` |
+| `Activate()` | Sets `IsActive = true` on the sidebar menu item. | `Domain/Entities/SidebarMenuItem.cs` |
+| `Deactivate()` | Sets `IsActive = false`; hidden from all non-SuperAdmin roles. | `Domain/Entities/SidebarMenuItem.cs` |
+| `SidebarMenuRoleAccess(sidebarMenuItemId, roleName, isAllowed)` | Constructor; per-role access record for a menu item. | `Domain/Entities/SidebarMenuRoleAccess.cs` |
+| `SetAllowed(isAllowed)` | Updates the `IsAllowed` flag for this role-access record. | `Domain/Entities/SidebarMenuRoleAccess.cs` |
+
+### Infrastructure — TimetableRepository
+| Function | Description | File |
+|---|---|---|
+| `GetByIdAsync(id, ct)` | Returns a timetable with entries. | `Infrastructure/Repositories/TimetableRepository.cs` |
+| `GetByDepartmentAsync(deptId, semesterId, ct)` | Lists timetables for a department and semester. | `Infrastructure/Repositories/TimetableRepository.cs` |
+| `CreateAsync(timetable, ct)` | Persists a new timetable. | `Infrastructure/Repositories/TimetableRepository.cs` |
+| `UpdateAsync(timetable, ct)` | Persists timetable metadata changes. | `Infrastructure/Repositories/TimetableRepository.cs` |
+| `DeleteAsync(id, ct)` | Deletes a timetable and its entries. | `Infrastructure/Repositories/TimetableRepository.cs` |
+| `PublishAsync(id, ct)` | Calls `Timetable.Publish`; persists. | `Infrastructure/Repositories/TimetableRepository.cs` |
+| `UnpublishAsync(id, ct)` | Calls `Timetable.Unpublish`; persists. | `Infrastructure/Repositories/TimetableRepository.cs` |
+| `AddEntryAsync(entry, ct)` | Persists a new `TimetableEntry`. | `Infrastructure/Repositories/TimetableRepository.cs` |
+| `UpdateEntryAsync(entry, ct)` | Updates a timetable entry (room, time, day). | `Infrastructure/Repositories/TimetableRepository.cs` |
+| `DeleteEntryAsync(entryId, ct)` | Removes a single timetable slot. | `Infrastructure/Repositories/TimetableRepository.cs` |
+| `ExportToExcelAsync(id, ct)` | Returns Excel byte array for a timetable (ClosedXML). | `Infrastructure/Repositories/TimetableRepository.cs` |
+| `ExportToPdfAsync(id, ct)` | Returns PDF byte array for a timetable (QuestPDF). | `Infrastructure/Repositories/TimetableRepository.cs` |
+
+### Infrastructure — BuildingRoomRepository
+| Function | Description | File |
+|---|---|---|
+| `GetAllAsync(ct)` | Returns all buildings with rooms. | `Infrastructure/Repositories/BuildingRoomRepository.cs` |
+| `GetBuildingAsync(id, ct)` | Returns a single building with rooms. | `Infrastructure/Repositories/BuildingRoomRepository.cs` |
+| `CreateBuildingAsync(building, ct)` | Creates a new building. | `Infrastructure/Repositories/BuildingRoomRepository.cs` |
+| `UpdateBuildingAsync(building, ct)` | Updates building name. | `Infrastructure/Repositories/BuildingRoomRepository.cs` |
+| `DeleteBuildingAsync(id, ct)` | Deletes a building (and its rooms if empty). | `Infrastructure/Repositories/BuildingRoomRepository.cs` |
+| `CreateRoomAsync(room, ct)` | Creates a room inside a building. | `Infrastructure/Repositories/BuildingRoomRepository.cs` |
+| `UpdateRoomAsync(room, ct)` | Updates room details (name, capacity). | `Infrastructure/Repositories/BuildingRoomRepository.cs` |
+| `DeleteRoomAsync(id, ct)` | Deletes a room. | `Infrastructure/Repositories/BuildingRoomRepository.cs` |
+
+### Infrastructure — SettingsRepository (sidebar & settings methods)
+| Function | Description | File |
+|---|---|---|
+| `GetSidebarMenusAsync(ct)` | Returns all top-level sidebar items with their `SidebarMenuRoleAccess` collection. | `Infrastructure/Repositories/SettingsRepository.cs` |
+| `GetSubMenusAsync(parentId, ct)` | Returns sub-menu items for a given parent ID. | `Infrastructure/Repositories/SettingsRepository.cs` |
+| `GetSidebarMenuByIdAsync(id, ct)` | Returns a single sidebar menu item with role access. | `Infrastructure/Repositories/SettingsRepository.cs` |
+| `GetVisibleSidebarMenusForRoleAsync(roleName, ct)` | Returns sidebar items where `IsActive=true` and the role's `IsAllowed=true`; SuperAdmin bypasses filter. | `Infrastructure/Repositories/SettingsRepository.cs` |
+| `SetSidebarMenuRolesAsync(menuId, roleAssignments, ct)` | Replaces all `SidebarMenuRoleAccess` rows for a menu item. | `Infrastructure/Repositories/SettingsRepository.cs` |
+| `SetSidebarMenuStatusAsync(menuId, isActive, ct)` | Sets `IsActive` on a menu item; throws `DomainException` if `IsSystemMenu=true`. | `Infrastructure/Repositories/SettingsRepository.cs` |
+| `GetReportDefinitionsAsync(ct)` | Returns all report definitions with role assignments. | `Infrastructure/Repositories/SettingsRepository.cs` |
+| `SetReportRolesAsync(reportKey, roleAssignments, ct)` | Replaces role assignments for a report. | `Infrastructure/Repositories/SettingsRepository.cs` |
+| `GetModuleRolesAsync(moduleKey, ct)` | Returns role assignments for a module. | `Infrastructure/Repositories/SettingsRepository.cs` |
+| `SetModuleRolesAsync(moduleKey, roleAssignments, ct)` | Replaces role assignments for a module. | `Infrastructure/Repositories/SettingsRepository.cs` |
+
+### Infrastructure — TimetableExcelExporter / TimetablePdfExporter
+| Function | Description | File |
+|---|---|---|
+| `ExportAsync(timetable, ct)` | Generates a ClosedXML Excel workbook for a timetable; returns byte array. | `Infrastructure/Exporters/TimetableExcelExporter.cs` |
+| `ExportAsync(timetable, ct)` | Generates a QuestPDF landscape A4 PDF for a timetable; returns byte array. | `Infrastructure/Exporters/TimetablePdfExporter.cs` |
+
+### Infrastructure — DatabaseSeeder (extended)
+| Function | Description | File |
+|---|---|---|
+| `SeedSidebarMenusAsync(context, ct)` | Seeds default 11 sidebar menu items and their per-role `SidebarMenuRoleAccess` rows on first run. | `Infrastructure/Seeding/DatabaseSeeder.cs` |
+
+### Application — TimetableService
+| Function | Description | File |
+|---|---|---|
+| `GetTimetablesAsync(deptId, semesterId, ct)` | Returns timetables for a dept/semester. | `Application/Timetable/TimetableService.cs` |
+| `GetTimetableAsync(id, ct)` | Returns full timetable detail with entries. | `Application/Timetable/TimetableService.cs` |
+| `CreateTimetableAsync(request, ct)` | Creates a draft timetable. Admin. | `Application/Timetable/TimetableService.cs` |
+| `UpdateTimetableAsync(id, request, ct)` | Updates timetable metadata. Admin. | `Application/Timetable/TimetableService.cs` |
+| `DeleteTimetableAsync(id, ct)` | Deletes a timetable. Admin. | `Application/Timetable/TimetableService.cs` |
+| `PublishAsync(id, ct)` | Publishes a timetable. Admin. | `Application/Timetable/TimetableService.cs` |
+| `UnpublishAsync(id, ct)` | Unpublishes a timetable. Admin. | `Application/Timetable/TimetableService.cs` |
+| `AddEntryAsync(id, request, ct)` | Adds a slot to a timetable. Admin. | `Application/Timetable/TimetableService.cs` |
+| `UpdateEntryAsync(entryId, request, ct)` | Updates a timetable slot. Admin. | `Application/Timetable/TimetableService.cs` |
+| `DeleteEntryAsync(entryId, ct)` | Removes a timetable slot. Admin. | `Application/Timetable/TimetableService.cs` |
+| `ExportExcelAsync(id, ct)` | Returns Excel export for a timetable. | `Application/Timetable/TimetableService.cs` |
+| `ExportPdfAsync(id, ct)` | Returns PDF export for a timetable. | `Application/Timetable/TimetableService.cs` |
+
+### Application — BuildingRoomService
+| Function | Description | File |
+|---|---|---|
+| `GetAllAsync(ct)` | Returns all buildings with rooms. | `Application/BuildingRoom/BuildingRoomService.cs` |
+| `GetBuildingAsync(id, ct)` | Returns a single building. | `Application/BuildingRoom/BuildingRoomService.cs` |
+| `CreateBuildingAsync(request, ct)` | Creates a new building. | `Application/BuildingRoom/BuildingRoomService.cs` |
+| `UpdateBuildingAsync(id, request, ct)` | Updates building name. | `Application/BuildingRoom/BuildingRoomService.cs` |
+| `DeleteBuildingAsync(id, ct)` | Deletes a building. | `Application/BuildingRoom/BuildingRoomService.cs` |
+| `CreateRoomAsync(buildingId, request, ct)` | Creates a room. | `Application/BuildingRoom/BuildingRoomService.cs` |
+| `UpdateRoomAsync(roomId, request, ct)` | Updates room details. | `Application/BuildingRoom/BuildingRoomService.cs` |
+| `DeleteRoomAsync(roomId, ct)` | Deletes a room. | `Application/BuildingRoom/BuildingRoomService.cs` |
+
+### Application — ReportSettingsService
+| Function | Description | File |
+|---|---|---|
+| `GetAllReportsAsync(ct)` | Returns all report definitions with role assignments. | `Application/Settings/ReportSettingsService.cs` |
+| `GetReportAsync(key, ct)` | Returns a single report definition. | `Application/Settings/ReportSettingsService.cs` |
+| `SetReportRolesAsync(key, roleAssignments, ct)` | Updates role access for a report. SuperAdmin only. | `Application/Settings/ReportSettingsService.cs` |
+| `ExportReportsExcelAsync(ct)` | Exports report definitions to Excel. | `Application/Settings/ReportSettingsService.cs` |
+| `ExportReportsPdfAsync(ct)` | Exports report definitions to PDF. | `Application/Settings/ReportSettingsService.cs` |
+| `GetActiveReportKeysForRoleAsync(roleName, ct)` | Returns report keys available for a given role. | `Application/Settings/ReportSettingsService.cs` |
+| `MapToReportDto(report)` | Maps ReportDefinition to DTO. | `Application/Settings/ReportSettingsService.cs` |
+
+### Application — ModuleRolesService
+| Function | Description | File |
+|---|---|---|
+| `GetModuleRolesAsync(moduleKey, ct)` | Returns role assignments for a module. | `Application/Settings/ModuleRolesService.cs` |
+| `SetModuleRolesAsync(moduleKey, roleAssignments, ct)` | Updates role access for a module. SuperAdmin only. | `Application/Settings/ModuleRolesService.cs` |
+
+### Application — ThemeService
+| Function | Description | File |
+|---|---|---|
+| `GetThemeAsync(userId, ct)` | Returns the user's current theme key. | `Application/Theme/ThemeService.cs` |
+| `SetThemeAsync(userId, themeKey, ct)` | Persists the user's theme selection. | `Application/Theme/ThemeService.cs` |
+
+### Application — SidebarMenuService
+| Function | Description | File |
+|---|---|---|
+| `GetTopLevelMenusAsync(ct)` | Returns all top-level sidebar menu items with role access data. | `Application/Sidebar/SidebarMenuService.cs` |
+| `GetSubMenusAsync(parentId, ct)` | Returns sub-menu items for a parent menu item. | `Application/Sidebar/SidebarMenuService.cs` |
+| `GetByIdAsync(id, ct)` | Returns a single sidebar menu item with role access. | `Application/Sidebar/SidebarMenuService.cs` |
+| `GetVisibleForRoleAsync(roleName, ct)` | Returns items visible to a role (active + allowed); SuperAdmin sees all. | `Application/Sidebar/SidebarMenuService.cs` |
+| `SetRolesAsync(menuId, roleAssignments, ct)` | Replaces role assignments for a menu item; validates not locked system menu. | `Application/Sidebar/SidebarMenuService.cs` |
+| `SetStatusAsync(menuId, isActive, ct)` | Toggles menu item status; returns 409 Conflict if `IsSystemMenu=true`. | `Application/Sidebar/SidebarMenuService.cs` |
+
+### API — TimetableController
+| Function | Description | File |
+|---|---|---|
+| `GetAll(deptId, semesterId, ct)` | GET /api/v1/timetables — Lists timetables. | `API/Controllers/TimetableController.cs` |
+| `GetById(id, ct)` | GET /api/v1/timetables/{id} — Returns full timetable detail. | `API/Controllers/TimetableController.cs` |
+| `Create(request, ct)` | POST /api/v1/timetables — Creates a draft timetable. Admin. | `API/Controllers/TimetableController.cs` |
+| `Update(id, request, ct)` | PUT /api/v1/timetables/{id} — Updates timetable metadata. Admin. | `API/Controllers/TimetableController.cs` |
+| `Delete(id, ct)` | DELETE /api/v1/timetables/{id} — Deletes timetable. Admin. | `API/Controllers/TimetableController.cs` |
+| `Publish(id, ct)` | POST /api/v1/timetables/{id}/publish — Publishes. Admin. | `API/Controllers/TimetableController.cs` |
+| `Unpublish(id, ct)` | POST /api/v1/timetables/{id}/unpublish — Unpublishes. Admin. | `API/Controllers/TimetableController.cs` |
+| `AddEntry(id, request, ct)` | POST /api/v1/timetables/{id}/entries — Adds a slot. Admin. | `API/Controllers/TimetableController.cs` |
+| `UpdateEntry(entryId, request, ct)` | PUT /api/v1/timetables/entries/{entryId} — Updates a slot. Admin. | `API/Controllers/TimetableController.cs` |
+| `DeleteEntry(entryId, ct)` | DELETE /api/v1/timetables/entries/{entryId} — Removes a slot. Admin. | `API/Controllers/TimetableController.cs` |
+| `ExportExcel(id, ct)` | GET /api/v1/timetables/{id}/export/excel — Excel export. | `API/Controllers/TimetableController.cs` |
+| `ExportPdf(id, ct)` | GET /api/v1/timetables/{id}/export/pdf — PDF export. | `API/Controllers/TimetableController.cs` |
+
+### API — BuildingRoomController
+| Function | Description | File |
+|---|---|---|
+| `GetAll(ct)` | GET /api/v1/buildings — Returns all buildings with rooms. | `API/Controllers/BuildingRoomController.cs` |
+| `GetBuilding(id, ct)` | GET /api/v1/buildings/{id} — Single building. | `API/Controllers/BuildingRoomController.cs` |
+| `CreateBuilding(request, ct)` | POST /api/v1/buildings — Admin. | `API/Controllers/BuildingRoomController.cs` |
+| `UpdateBuilding(id, request, ct)` | PUT /api/v1/buildings/{id} — Admin. | `API/Controllers/BuildingRoomController.cs` |
+| `DeleteBuilding(id, ct)` | DELETE /api/v1/buildings/{id} — Admin. | `API/Controllers/BuildingRoomController.cs` |
+| `CreateRoom(buildingId, request, ct)` | POST /api/v1/buildings/{id}/rooms — Admin. | `API/Controllers/BuildingRoomController.cs` |
+| `UpdateRoom(roomId, request, ct)` | PUT /api/v1/buildings/rooms/{roomId} — Admin. | `API/Controllers/BuildingRoomController.cs` |
+| `DeleteRoom(roomId, ct)` | DELETE /api/v1/buildings/rooms/{roomId} — Admin. | `API/Controllers/BuildingRoomController.cs` |
+
+### API — ReportSettingsController
+| Function | Description | File |
+|---|---|---|
+| `GetAll(ct)` | GET /api/v1/settings/reports — Lists all report definitions. SuperAdmin. | `API/Controllers/ReportSettingsController.cs` |
+| `GetReport(key, ct)` | GET /api/v1/settings/reports/{key} — Single report. SuperAdmin. | `API/Controllers/ReportSettingsController.cs` |
+| `SetRoles(key, request, ct)` | PUT /api/v1/settings/reports/{key}/roles — Updates role access. SuperAdmin. | `API/Controllers/ReportSettingsController.cs` |
+| `ExportExcel(ct)` | GET /api/v1/settings/reports/export/excel — Excel export. SuperAdmin. | `API/Controllers/ReportSettingsController.cs` |
+| `ExportPdf(ct)` | GET /api/v1/settings/reports/export/pdf — PDF export. SuperAdmin. | `API/Controllers/ReportSettingsController.cs` |
+| `GetForRole(role, ct)` | GET /api/v1/settings/reports/for-role/{role} — Active reports for a role. | `API/Controllers/ReportSettingsController.cs` |
+| `GetCurrentUserId()` | Extracts user ID from JWT. | `API/Controllers/ReportSettingsController.cs` |
+
+### API — ModuleController (extended)
+| Function | Description | File |
+|---|---|---|
+| `GetModuleRoles(key, ct)` | GET /api/v1/modules/{key}/roles — Returns role assignments for a module. SuperAdmin. | `API/Controllers/ModuleController.cs` |
+| `SetModuleRoles(key, request, ct)` | PUT /api/v1/modules/{key}/roles — Updates role access for a module. SuperAdmin. | `API/Controllers/ModuleController.cs` |
+
+### API — ThemeController
+| Function | Description | File |
+|---|---|---|
+| `GetTheme(ct)` | GET /api/v1/theme — Returns current user's theme key. Authenticated. | `API/Controllers/ThemeController.cs` |
+| `SetTheme(request, ct)` | PUT /api/v1/theme — Persists user's theme selection. Authenticated. | `API/Controllers/ThemeController.cs` |
+| `GetCurrentUserId()` | Extracts user ID from JWT. | `API/Controllers/ThemeController.cs` |
+
+### API — SidebarMenuController
+| Function | Description | File |
+|---|---|---|
+| `GetMyVisible(ct)` | GET /api/v1/sidebar-menu/my-visible — Returns visible menus for the calling user's role. Authenticated. | `API/Controllers/SidebarMenuController.cs` |
+| `GetAll(ct)` | GET /api/v1/sidebar-menu — Returns all top-level sidebar items with role access. SuperAdmin. | `API/Controllers/SidebarMenuController.cs` |
+| `GetById(id, ct)` | GET /api/v1/sidebar-menu/{id} — Single menu item. SuperAdmin. | `API/Controllers/SidebarMenuController.cs` |
+| `GetSubMenus(id, ct)` | GET /api/v1/sidebar-menu/{id}/sub-menus — Sub-menus for parent. SuperAdmin. | `API/Controllers/SidebarMenuController.cs` |
+| `SetRoles(id, request, ct)` | PUT /api/v1/sidebar-menu/{id}/roles — Updates role visibility. SuperAdmin. | `API/Controllers/SidebarMenuController.cs` |
+| `SetStatus(id, request, ct)` | PUT /api/v1/sidebar-menu/{id}/status — Toggles active/inactive; 409 if system menu. SuperAdmin. | `API/Controllers/SidebarMenuController.cs` |
+
+### Web — EduApiClient (sidebar methods)
+| Function | Description | File |
+|---|---|---|
+| `GetSidebarMenusAsync(ct)` | GET /api/v1/sidebar-menu — Fetches all top-level menus for settings table. | `Web/Services/EduApiClient.cs` |
+| `GetVisibleSidebarMenusForCurrentUserAsync(ct)` | GET /api/v1/sidebar-menu/my-visible — Fetches visible menus for layout rendering. | `Web/Services/EduApiClient.cs` |
+| `GetSidebarSubMenusAsync(parentId, ct)` | GET /api/v1/sidebar-menu/{id}/sub-menus — Fetches sub-menus for a parent. | `Web/Services/EduApiClient.cs` |
+| `SetSidebarMenuRolesAsync(menuId, request, ct)` | PUT /api/v1/sidebar-menu/{id}/roles — Updates role visibility settings. | `Web/Services/EduApiClient.cs` |
+| `SetSidebarMenuStatusAsync(menuId, request, ct)` | PUT /api/v1/sidebar-menu/{id}/status — Toggles menu item status. | `Web/Services/EduApiClient.cs` |
+
+### Web — PortalController (sidebar settings actions)
+| Function | Description | File |
+|---|---|---|
+| `SidebarSettings(ct)` | GET /portal/settings/sidebar — Loads sidebar settings view with menu table. | `Web/Controllers/PortalController.cs` |
+| `UpdateSidebarMenuRoles(id, request, ct)` | POST /portal/settings/sidebar/{id}/roles — Updates role access from form; CSRF protected. | `Web/Controllers/PortalController.cs` |
+| `UpdateSidebarMenuStatus(id, request, ct)` | POST /portal/settings/sidebar/{id}/status — Toggles menu item status from form; CSRF protected. | `Web/Controllers/PortalController.cs` |
+
+---
+
+## Integration Tests (tests/Tabsan.EduSphere.IntegrationTests)
+
+### EduSphereWebFactory (Infrastructure/EduSphereWebFactory.cs)
+| Function | Description | File |
+|---|---|---|
+| `InitializeAsync()` | `IAsyncLifetime` — drops `TabsanEduSphere_IntegrationTests` DB via standalone context before factory builds; ensures clean state. | `tests/.../Infrastructure/EduSphereWebFactory.cs` |
+| `DisposeAsync()` | Drops test DB after all tests complete; cleans up. | `tests/.../Infrastructure/EduSphereWebFactory.cs` |
+| `BuildStandaloneContext()` | Creates a standalone `ApplicationDbContext` using test connection string; used for DB drop/recreate outside factory lifecycle. | `tests/.../Infrastructure/EduSphereWebFactory.cs` |
+| `ConfigureWebHost(builder)` | Overrides connection string to test DB; removes `IHostedService` background jobs to prevent interference. | `tests/.../Infrastructure/EduSphereWebFactory.cs` |
+
+### JwtTestHelper (Infrastructure/JwtTestHelper.cs)
+| Function | Description | File |
+|---|---|---|
+| `GenerateToken(role, userId, email)` | Generates a signed JWT for any system role using same secret/issuer/audience as API; used to authenticate test HTTP clients. | `tests/.../Infrastructure/JwtTestHelper.cs` |
+
+### SidebarMenuIntegrationTests (SidebarMenuIntegrationTests.cs)
+| Test | Assertion | File |
+|---|---|---|
+| `GetVisible_SuperAdmin_ReturnsAllMenus` | SuperAdmin sees all 11 seeded menu keys. | `tests/.../SidebarMenuIntegrationTests.cs` |
+| `GetVisible_Admin_ReturnsAdminMenusOnly` | Admin sees exactly 5 menu keys. | `tests/.../SidebarMenuIntegrationTests.cs` |
+| `GetVisible_Faculty_ReturnsFacultyMenusOnly` | Faculty sees exactly 2 menu keys. | `tests/.../SidebarMenuIntegrationTests.cs` |
+| `GetVisible_Student_ReturnsStudentMenusOnly` | Student sees exactly 2 menu keys. | `tests/.../SidebarMenuIntegrationTests.cs` |
+| `SetStatus_DisableTimetableTeacher_RemovesFromFaculty_ThenRestore` | Disabling timetable-teacher menu removes it from Faculty visible; re-enable restores it. | `tests/.../SidebarMenuIntegrationTests.cs` |
+| `SetRoles_DenyStudent_RemovesFromStudentVisible_ThenRestore` | Revoking student role access removes menu from student visible; restore re-adds it. | `tests/.../SidebarMenuIntegrationTests.cs` |
+| `SetStatus_SystemMenu_DeactivateAttempt_Returns409Conflict` | Deactivating a system menu returns `409 Conflict`. | `tests/.../SidebarMenuIntegrationTests.cs` |
+| `GetVisible_NoToken_Returns401` | Unauthenticated request to my-visible returns `401 Unauthorized`. | `tests/.../SidebarMenuIntegrationTests.cs` |
 | `GenerateRawToken()` | Generates 32-byte cryptographically random base64url token. | `tools/Tabsan.Lic/Services/KeyService.cs` |
 | `HashToken(token)` | Returns lowercase hex SHA-256 hash of a raw token string. | `tools/Tabsan.Lic/Services/KeyService.cs` |
 
