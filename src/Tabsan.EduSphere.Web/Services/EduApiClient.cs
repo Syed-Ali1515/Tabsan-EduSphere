@@ -46,6 +46,7 @@ public interface IEduApiClient
 
     // Sidebar Settings
     Task<List<SidebarMenuItemWebModel>> GetSidebarMenusAsync(CancellationToken ct);
+    Task<List<SidebarMenuItemWebModel>> GetVisibleSidebarMenusForCurrentUserAsync(CancellationToken ct);
     Task SetSidebarMenuRolesAsync(Guid id, Dictionary<string, bool> roles, CancellationToken ct);
     Task SetSidebarMenuStatusAsync(Guid id, bool isActive, CancellationToken ct);
 }
@@ -342,6 +343,12 @@ public class EduApiClient : IEduApiClient
     public async Task<List<SidebarMenuItemWebModel>> GetSidebarMenusAsync(CancellationToken ct)
     {
         var raw = await GetAsync<List<SidebarMenuApiDto>>("api/v1/sidebar-menu", ct) ?? new();
+        return raw.Select(MapSidebarItem).ToList();
+    }
+
+    public async Task<List<SidebarMenuItemWebModel>> GetVisibleSidebarMenusForCurrentUserAsync(CancellationToken ct)
+    {
+        var raw = await GetAsync<List<SidebarMenuApiDto>>("api/v1/sidebar-menu/my-visible", ct) ?? new();
         return raw.Select(MapSidebarItem).ToList();
     }
 

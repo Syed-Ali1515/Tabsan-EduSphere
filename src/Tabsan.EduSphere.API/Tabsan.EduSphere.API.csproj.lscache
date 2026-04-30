@@ -89,6 +89,7 @@ obj/Debug/net8.0/
  Tabsan.EduSphere.API.AssemblyInfo.cs
  Tabsan.EduSphere.API.GlobalUsings.g.cs
 Program.cs
+ProgramEntry.cs
 
 [metadataReferences]
 ../

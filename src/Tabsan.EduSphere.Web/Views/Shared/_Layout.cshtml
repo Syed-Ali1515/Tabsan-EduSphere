@@ -20,6 +20,36 @@
 
     // Display name for header
     var displayName = sessionId?.UserName ?? (aspNetAuth ? principal!.Identity!.Name : null) ?? "Guest";
+
+    // Resolve visible sidebar menu structure from API (role + status aware).
+    var visibleMenus = new List<Tabsan.EduSphere.Web.Models.Portal.SidebarMenuItemWebModel>();
+    if (isConnected)
+    {
+        try
+        {
+            visibleMenus = await EduApi.GetVisibleSidebarMenusForCurrentUserAsync(CancellationToken.None);
+        }
+        catch
+        {
+            // Fallback to legacy hardcoded menu if API fetch fails.
+        }
+    }
+
+    var useDynamicMenus = visibleMenus.Count > 0;
+
+    static (string Controller, string Action)? ResolveRoute(string key) => key switch
+    {
+        "dashboard"         => ("Portal", "Dashboard"),
+        "timetable_admin"   => ("Portal", "TimetableAdmin"),
+        "timetable_student" => ("Portal", "TimetableStudent"),
+        "timetable_teacher" => ("Portal", "TimetableTeacher"),
+        "buildings"         => ("Portal", "Buildings"),
+        "rooms"             => ("Portal", "Rooms"),
+        "report_settings"   => ("Portal", "ReportSettings"),
+        "module_settings"   => ("Portal", "ModuleSettings"),
+        "sidebar_settings"  => ("Portal", "SidebarSettings"),
+        _                    => null
+    };
 }
 
 <!DOCTYPE html>
@@ -44,38 +74,65 @@
             </a>
 
             <nav class="sidebar-nav">
-                <div class="menu-label">Overview</div>
-                <a class="menu-link" asp-controller="Portal" asp-action="Dashboard">Dashboard</a>
-
-                <div class="menu-label">Timetable</div>
-                @if (showAdminLinks)
+                @if (useDynamicMenus)
                 {
-                    <a class="menu-link" asp-controller="Portal" asp-action="TimetableAdmin">Manage Timetables</a>
+                    foreach (var top in visibleMenus.OrderBy(m => m.DisplayOrder))
+                    {
+                        var topRoute = ResolveRoute(top.Key);
+                        var subMenus = top.SubMenus.OrderBy(s => s.DisplayOrder).ToList();
+
+                        if (subMenus.Count > 0)
+                        {
+                            <div class="menu-label">@top.Name</div>
+                            foreach (var sub in subMenus)
+                            {
+                                var subRoute = ResolveRoute(sub.Key);
+                                if (subRoute is null) { continue; }
+
+                                <a class="menu-link" asp-controller="@subRoute.Value.Controller" asp-action="@subRoute.Value.Action">@sub.Name</a>
+                            }
+                        }
+                        else if (topRoute is not null)
+                        {
+                            <a class="menu-link" asp-controller="@topRoute.Value.Controller" asp-action="@topRoute.Value.Action">@top.Name</a>
+                        }
+                    }
                 }
-
-                @if (showStudentLinks)
+                else
                 {
-                    <a class="menu-link" asp-controller="Portal" asp-action="TimetableStudent">Student Timetable</a>
-                }
+                    <div class="menu-label">Overview</div>
+                    <a class="menu-link" asp-controller="Portal" asp-action="Dashboard">Dashboard</a>
 
-                @if (showFacultyLinks)
-                {
-                    <a class="menu-link" asp-controller="Portal" asp-action="TimetableTeacher">Teacher Timetable</a>
-                }
+                    <div class="menu-label">Timetable</div>
+                    @if (showAdminLinks)
+                    {
+                        <a class="menu-link" asp-controller="Portal" asp-action="TimetableAdmin">Manage Timetables</a>
+                    }
 
-                @if (showAdminLinks)
-                {
-                    <div class="menu-label">Lookups</div>
-                    <a class="menu-link" asp-controller="Portal" asp-action="Buildings">Buildings</a>
-                    <a class="menu-link" asp-controller="Portal" asp-action="Rooms">Rooms</a>
-                }
+                    @if (showStudentLinks)
+                    {
+                        <a class="menu-link" asp-controller="Portal" asp-action="TimetableStudent">Student Timetable</a>
+                    }
 
-                @if (showSuperAdminLinks)
-                {
-                    <div class="menu-label">System Settings</div>
-                    <a class="menu-link" asp-controller="Portal" asp-action="ReportSettings">Report Settings</a>
-                    <a class="menu-link" asp-controller="Portal" asp-action="ModuleSettings">Module Settings</a>
-                    <a class="menu-link" asp-controller="Portal" asp-action="SidebarSettings">Sidebar Settings</a>
+                    @if (showFacultyLinks)
+                    {
+                        <a class="menu-link" asp-controller="Portal" asp-action="TimetableTeacher">Teacher Timetable</a>
+                    }
+
+                    @if (showAdminLinks)
+                    {
+                        <div class="menu-label">Lookups</div>
+                        <a class="menu-link" asp-controller="Portal" asp-action="Buildings">Buildings</a>
+                        <a class="menu-link" asp-controller="Portal" asp-action="Rooms">Rooms</a>
+                    }
+
+                    @if (showSuperAdminLinks)
+                    {
+                        <div class="menu-label">System Settings</div>
+                        <a class="menu-link" asp-controller="Portal" asp-action="ReportSettings">Report Settings</a>
+                        <a class="menu-link" asp-controller="Portal" asp-action="ModuleSettings">Module Settings</a>
+                        <a class="menu-link" asp-controller="Portal" asp-action="SidebarSettings">Sidebar Settings</a>
+                    }
                 }
 
                 <div class="menu-label">General</div>

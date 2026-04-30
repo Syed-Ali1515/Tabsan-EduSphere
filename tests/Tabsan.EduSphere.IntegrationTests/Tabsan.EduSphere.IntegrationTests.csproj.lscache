@@ -54,10 +54,14 @@ TemporaryDependencyNodeTargetIdentifier=net8.0
 
 [sourceFiles]
 <NUGET>/microsoft.net.test.sdk/17.8.0/build/netcoreapp3.1/Microsoft.NET.Test.Sdk.Program.cs
+Infrastructure/
+ EduSphereWebFactory.cs
+ JwtTestHelper.cs
 obj/Debug/net8.0/
  .NETCoreApp,Version=v8.0.AssemblyAttributes.cs
  Tabsan.EduSphere.IntegrationTests.AssemblyInfo.cs
  Tabsan.EduSphere.IntegrationTests.GlobalUsings.g.cs
+SidebarMenuIntegrationTests.cs
 UnitTest1.cs
 
 [metadataReferences]
