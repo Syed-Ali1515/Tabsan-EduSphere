@@ -42,6 +42,16 @@ public record ModuleRolesDto(
     IList<string> AssignedRoles
 );
 
+/// <summary>Full module settings entry: identity, activation state and assigned roles.</summary>
+public record ModuleSettingsDto(
+    Guid Id,
+    string Key,
+    string Name,
+    bool IsMandatory,
+    bool IsActive,
+    IList<string> AssignedRoles
+);
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Theme DTOs
 // ─────────────────────────────────────────────────────────────────────────────

@@ -49,6 +49,25 @@ public interface IEduApiClient
     Task<List<SidebarMenuItemWebModel>> GetVisibleSidebarMenusForCurrentUserAsync(CancellationToken ct);
     Task SetSidebarMenuRolesAsync(Guid id, Dictionary<string, bool> roles, CancellationToken ct);
     Task SetSidebarMenuStatusAsync(Guid id, bool isActive, CancellationToken ct);
+
+    // License
+    Task<LicenseUpdatePageModel> GetLicenseDetailsAsync(CancellationToken ct);
+    Task<string> UploadLicenseAsync(Stream fileStream, string fileName, CancellationToken ct);
+
+    // Theme
+    Task<string?> GetCurrentThemeAsync(CancellationToken ct);
+    Task SetThemeAsync(string? themeKey, CancellationToken ct);
+
+    // Report Settings
+    Task<List<ReportDefinitionWebModel>> GetReportDefinitionsAsync(CancellationToken ct);
+    Task CreateReportDefinitionAsync(CreateReportForm form, CancellationToken ct);
+    Task SetReportActiveAsync(Guid id, bool activate, CancellationToken ct);
+    Task SetReportRolesAsync(Guid id, List<string> roles, CancellationToken ct);
+
+    // Module Settings
+    Task<List<ModuleSettingsWebModel>> GetModuleSettingsAsync(CancellationToken ct);
+    Task SetModuleActiveAsync(string key, bool activate, CancellationToken ct);
+    Task SetModuleRolesAsync(string key, List<string> roles, CancellationToken ct);
 }
 
 public class EduApiClient : IEduApiClient
@@ -397,4 +416,146 @@ public class EduApiClient : IEduApiClient
         public string RoleName  { get; set; } = string.Empty;
         public bool   IsAllowed { get; set; }
     }
+
+    // ── License ───────────────────────────────────────────────────────────────
+
+    public async Task<LicenseUpdatePageModel> GetLicenseDetailsAsync(CancellationToken ct)
+    {
+        var req = CreateRequest(HttpMethod.Get, "api/v1/license/details");
+        using var client = CreateClient();
+        using var resp   = await client.SendAsync(req, ct);
+        if (!resp.IsSuccessStatusCode)
+            return new LicenseUpdatePageModel { IsConnected = true, Message = $"API error: {(int)resp.StatusCode}" };
+
+        using var stream = await resp.Content.ReadAsStreamAsync(ct);
+        var dto = await JsonSerializer.DeserializeAsync<LicenseDetailsDto>(stream, _jsonOptions, ct);
+        return new LicenseUpdatePageModel
+        {
+            IsConnected  = true,
+            Status       = dto?.Status,
+            LicenseType  = dto?.LicenseType,
+            ActivatedAt  = dto?.ActivatedAt,
+            ExpiresAt    = dto?.ExpiresAt,
+            UpdatedAt    = dto?.UpdatedAt,
+            RemainingDays= dto?.RemainingDays,
+        };
+    }
+
+    public async Task<string> UploadLicenseAsync(Stream fileStream, string fileName, CancellationToken ct)
+    {
+        var req = CreateRequest(HttpMethod.Post, "api/v1/license/upload");
+        var content = new MultipartFormDataContent();
+        content.Add(new StreamContent(fileStream), "file", fileName);
+        req.Content = content;
+        using var client = CreateClient();
+        using var resp   = await client.SendAsync(req, ct);
+        var body = await resp.Content.ReadAsStringAsync(ct);
+        return resp.IsSuccessStatusCode ? "License uploaded successfully." : $"Upload failed: {body}";
+    }
+
+    private sealed class LicenseDetailsDto
+    {
+        public string?   Status        { get; set; }
+        public string?   LicenseType   { get; set; }
+        public DateTime? ActivatedAt   { get; set; }
+        public DateTime? ExpiresAt     { get; set; }
+        public DateTime? UpdatedAt     { get; set; }
+        public int?      RemainingDays { get; set; }
+    }
+
+    // ── Theme ─────────────────────────────────────────────────────────────────
+
+    public async Task<string?> GetCurrentThemeAsync(CancellationToken ct)
+    {
+        var req = CreateRequest(HttpMethod.Get, "api/v1/theme");
+        using var client = CreateClient();
+        using var resp   = await client.SendAsync(req, ct);
+        if (!resp.IsSuccessStatusCode) return null;
+        using var stream = await resp.Content.ReadAsStreamAsync(ct);
+        var dto = await JsonSerializer.DeserializeAsync<ThemeDto>(stream, _jsonOptions, ct);
+        return dto?.ThemeKey;
+    }
+
+    public Task SetThemeAsync(string? themeKey, CancellationToken ct)
+        => PutAsync<object, object>("api/v1/theme", new { themeKey }, ct);
+
+    private sealed class ThemeDto { public string? ThemeKey { get; set; } }
+
+    // ── Report Settings ───────────────────────────────────────────────────────
+
+    public async Task<List<ReportDefinitionWebModel>> GetReportDefinitionsAsync(CancellationToken ct)
+    {
+        var req = CreateRequest(HttpMethod.Get, "api/v1/report-settings");
+        using var client = CreateClient();
+        using var resp   = await client.SendAsync(req, ct);
+        if (!resp.IsSuccessStatusCode) return new();
+        using var stream = await resp.Content.ReadAsStreamAsync(ct);
+        var dtos = await JsonSerializer.DeserializeAsync<List<ReportDefinitionApiDto>>(stream, _jsonOptions, ct);
+        return dtos?.Select(d => new ReportDefinitionWebModel
+        {
+            Id            = d.Id,
+            Key           = d.Key ?? "",
+            Name          = d.Name ?? "",
+            Purpose       = d.Purpose ?? "",
+            IsActive      = d.IsActive,
+            AssignedRoles = d.AssignedRoles ?? new()
+        }).ToList() ?? new();
+    }
+
+    public Task CreateReportDefinitionAsync(CreateReportForm form, CancellationToken ct)
+        => PostAsync<object, object>("api/v1/report-settings", new { form.Key, form.Name, form.Purpose }, ct);
+
+    public Task SetReportActiveAsync(Guid id, bool activate, CancellationToken ct)
+        => PostAsync<object, object>($"api/v1/report-settings/{id}/{(activate ? "activate" : "deactivate")}", new { }, ct);
+
+    public Task SetReportRolesAsync(Guid id, List<string> roles, CancellationToken ct)
+        => PutAsync<object, object>($"api/v1/report-settings/{id}/roles", new { roleNames = roles }, ct);
+
+    private sealed class ReportDefinitionApiDto
+    {
+        public Guid         Id            { get; set; }
+        public string?      Key           { get; set; }
+        public string?      Name          { get; set; }
+        public string?      Purpose       { get; set; }
+        public bool         IsActive      { get; set; }
+        public List<string> AssignedRoles { get; set; } = new();
+    }
+
+    // ── Module Settings ───────────────────────────────────────────────────────
+
+    public async Task<List<ModuleSettingsWebModel>> GetModuleSettingsAsync(CancellationToken ct)
+    {
+        var req = CreateRequest(HttpMethod.Get, "api/v1/modules/all-settings");
+        using var client = CreateClient();
+        using var resp   = await client.SendAsync(req, ct);
+        if (!resp.IsSuccessStatusCode) return new();
+        using var stream = await resp.Content.ReadAsStreamAsync(ct);
+        var dtos = await JsonSerializer.DeserializeAsync<List<ModuleSettingsApiDto>>(stream, _jsonOptions, ct);
+        return dtos?.Select(d => new ModuleSettingsWebModel
+        {
+            Id            = d.Id,
+            Key           = d.Key ?? "",
+            Name          = d.Name ?? "",
+            IsMandatory   = d.IsMandatory,
+            IsActive      = d.IsActive,
+            AssignedRoles = d.AssignedRoles ?? new()
+        }).ToList() ?? new();
+    }
+
+    public Task SetModuleActiveAsync(string key, bool activate, CancellationToken ct)
+        => PostAsync<object, object>($"api/v1/modules/{key}/{(activate ? "activate" : "deactivate")}", new { }, ct);
+
+    public Task SetModuleRolesAsync(string key, List<string> roles, CancellationToken ct)
+        => PutAsync<object, object>($"api/v1/modules/{key}/roles", new { roleNames = roles }, ct);
+
+    private sealed class ModuleSettingsApiDto
+    {
+        public Guid         Id            { get; set; }
+        public string?      Key           { get; set; }
+        public string?      Name          { get; set; }
+        public bool         IsMandatory   { get; set; }
+        public bool         IsActive      { get; set; }
+        public List<string> AssignedRoles { get; set; } = new();
+    }
 }
+

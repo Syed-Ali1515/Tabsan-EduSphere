@@ -29,6 +29,36 @@ public class ModuleController : ControllerBase
         _moduleRoles = moduleRoles;
     }
 
+    // ── GET /api/v1/modules/all-settings ─────────────────────────────────────
+
+    /// <summary>
+    /// Returns every module with its activation state and assigned roles combined
+    /// into a single list. Used by the Super Admin Module Settings view.
+    /// </summary>
+    [HttpGet("all-settings")]
+    public async Task<IActionResult> AllSettings(CancellationToken ct)
+    {
+        var modules   = await _modules.GetAllAsync(ct);
+        var rolesList = await _moduleRoles.GetAllAsync(ct);
+        var rolesMap  = rolesList.ToDictionary(r => r.ModuleId);
+
+        var result = new List<ModuleSettingsDto>(modules.Count);
+        foreach (var m in modules)
+        {
+            var isActive = await _resolver.IsActiveAsync(m.Key, ct);
+            rolesMap.TryGetValue(m.Id, out var roles);
+            result.Add(new ModuleSettingsDto(
+                m.Id,
+                m.Key,
+                m.Name,
+                m.IsMandatory,
+                isActive,
+                roles?.AssignedRoles ?? new List<string>()
+            ));
+        }
+        return Ok(result);
+    }
+
     // ── GET /api/v1/modules ────────────────────────────────────────────────────
 
     /// <summary>Returns all modules with their current active/inactive status.</summary>

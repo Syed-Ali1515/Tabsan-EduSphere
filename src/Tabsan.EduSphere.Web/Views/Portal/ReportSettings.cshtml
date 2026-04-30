@@ -1,0 +1,159 @@
+@model Tabsan.EduSphere.Web.Models.Portal.ReportSettingsPageModel
+@{
+    ViewData["Title"] = "Report Settings";
+    var tempMsg = TempData["Message"] as string ?? Model.Message;
+    var allRoles = new[] { "Admin", "Faculty", "Student" };
+}
+
+<div class="row g-4">
+
+    @if (!Model.IsConnected)
+    {
+        <div class="col-12">
+            <div class="alert alert-warning d-flex align-items-center gap-2">
+                <i class="bi bi-plug-fill"></i>
+                Not connected to the API. Configure the connection on the Dashboard.
+            </div>
+        </div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(tempMsg))
+    {
+        <div class="col-12">
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                @tempMsg
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </div>
+    }
+
+    @* ── Create New Report ───────────────────────────────────────────────── *@
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex align-items-center gap-2" role="button"
+                 data-bs-toggle="collapse" data-bs-target="#createReportPanel" aria-expanded="false">
+                <i class="bi bi-plus-circle-fill text-primary"></i>
+                <strong>Create New Report Definition</strong>
+                <i class="bi bi-chevron-down ms-auto"></i>
+            </div>
+            <div id="createReportPanel" class="collapse">
+                <div class="card-body">
+                    <form asp-action="CreateReport" method="post" class="row g-3">
+                        @Html.AntiForgeryToken()
+                        <div class="col-md-4">
+                            <label class="form-label">Key</label>
+                            <input name="Key" class="form-control" placeholder="e.g. attendance_summary"
+                                   required @(Model.IsConnected ? "" : "disabled") />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Name</label>
+                            <input name="Name" class="form-control" placeholder="Display name"
+                                   required @(Model.IsConnected ? "" : "disabled") />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Purpose</label>
+                            <input name="Purpose" class="form-control" placeholder="Short description"
+                                   @(Model.IsConnected ? "" : "disabled") />
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary" @(Model.IsConnected ? "" : "disabled")>
+                                <i class="bi bi-plus me-1"></i> Create
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* ── Report List ─────────────────────────────────────────────────────── *@
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex align-items-center gap-2">
+                <i class="bi bi-file-earmark-bar-graph-fill text-primary"></i>
+                <strong>Report Definitions</strong>
+                <span class="badge bg-secondary ms-auto">@Model.Reports.Count</span>
+            </div>
+            <div class="card-body p-0">
+                @if (Model.Reports.Count == 0)
+                {
+                    <p class="text-muted p-3 mb-0">No report definitions found.</p>
+                }
+                else
+                {
+                    <div class="accordion accordion-flush" id="reportsAccordion">
+                        @foreach (var rpt in Model.Reports)
+                        {
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed py-2" type="button"
+                                            data-bs-toggle="collapse"
+                                            data-bs-target="#rpt-@rpt.Id"
+                                            aria-expanded="false">
+                                        <span class="me-2">
+                                            @if (rpt.IsActive)
+                                            {
+                                                <span class="badge bg-success">Active</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">Inactive</span>
+                                            }
+                                        </span>
+                                        <strong>@rpt.Name</strong>
+                                        <code class="ms-2 text-muted small">@rpt.Key</code>
+                                    </button>
+                                </h2>
+                                <div id="rpt-@rpt.Id" class="accordion-collapse collapse">
+                                    <div class="accordion-body row g-3">
+                                        <div class="col-12 text-muted small">@rpt.Purpose</div>
+
+                                        @* Toggle active *@
+                                        <div class="col-auto">
+                                            <form asp-action="ToggleReport" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@rpt.Id" />
+                                                <input type="hidden" name="activate" value="@(!rpt.IsActive)" />
+                                                <button type="submit" class="btn btn-sm @(rpt.IsActive ? "btn-outline-warning" : "btn-outline-success")"
+                                                        @(Model.IsConnected ? "" : "disabled")>
+                                                    @(rpt.IsActive ? "Deactivate" : "Activate")
+                                                </button>
+                                            </form>
+                                        </div>
+
+                                        @* Role assignment *@
+                                        <div class="col-12">
+                                            <form asp-action="UpdateReportRoles" method="post" class="d-flex align-items-center gap-3 flex-wrap">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@rpt.Id" />
+                                                <span class="fw-semibold small">Role Access:</span>
+                                                @foreach (var role in allRoles)
+                                                {
+                                                    var fieldName  = $"{role.ToLower()}Allowed";
+                                                    var isChecked  = rpt.AssignedRoles.Contains(role);
+                                                    <div class="form-check form-check-inline">
+                                                        <input class="form-check-input" type="checkbox"
+                                                               name="@fieldName" value="true"
+                                                               id="rpt-@rpt.Id-@role"
+                                                               @(isChecked ? "checked" : "")
+                                                               @(Model.IsConnected ? "" : "disabled") />
+                                                        <label class="form-check-label" for="rpt-@rpt.Id-@role">@role</label>
+                                                    </div>
+                                                }
+                                                <button type="submit" class="btn btn-sm btn-outline-primary"
+                                                        @(Model.IsConnected ? "" : "disabled")>
+                                                    <i class="bi bi-floppy me-1"></i> Save Roles
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+</div>

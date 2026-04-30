@@ -508,7 +508,8 @@ The provided startup documents define a strong product vision and feature set, b
 > **Scope:** Role-based sidebar navigation, per-user theming, department/timetable management, and the full System Settings menu.
 >
 > **Backend Status: ✅ COMPLETE (0 errors, 0 warnings) — EF Migration: Phase9DashboardSettings + Phase9SidebarSettings**
-> **Integration Tests: ✅ 9/9 passing — `SidebarMenuIntegrationTests` (LocalDB, WebApplicationFactory)**
+> **Web UI Status: ✅ COMPLETE — LicenseUpdate, ThemeSettings, ReportSettings, ModuleSettings views implemented**
+> **Integration Tests: ✅ 8/8 passing — `SidebarMenuIntegrationTests` (LocalDB, WebApplicationFactory) — SuperAdmin:13, Admin:7, Faculty:4, Student:4**
 
 ### Stage 9.1 Role-Based Sidebar Navigation
 - [x] Implement collapsible sidebar with menus and sub-menus driven by the authenticated user's role
@@ -520,7 +521,7 @@ The provided startup documents define a strong product vision and feature set, b
 - [x] `SetTheme(themeKey)` domain method added
 - [x] `ThemeController` — `GET /api/v1/theme` + `PUT /api/v1/theme`
 - [x] `IThemeService` + `ThemeService` implementation
-- [ ] Theme picker UI (Razor Pages / MVC)
+- [x] Theme picker UI (Razor Pages / MVC)
 
 ### Stage 9.3 Departments Administration Menu
 - [x] Timetable aggregate: `Timetable` + `TimetableEntry` domain entities created
@@ -529,31 +530,31 @@ The provided startup documents define a strong product vision and feature set, b
 - [x] `ITimetableRepository` + `TimetableRepository` (EF Core)
 - [x] `TimetableExcelExporter` using ClosedXML (colour-coded weekly grid)
 - [x] `TimetablePdfExporter` using QuestPDF (landscape A4, active-days grid)
-- [ ] Timetable admin UI (Razor Pages / MVC)
+- [x] Timetable admin UI (Razor Pages / MVC)
 
 ### Stage 9.4 System Settings Menu
 
 #### 9.4.1 License Update (Super Admin only)
-- [ ] UI to upload a `.tablic` license file; calls the Phase 7 import endpoint
-- [ ] License status table: columns — Status, Expiry Date, Date Updated, Remaining Days
-- [ ] Visible to Super Admin and Admin (Admin: read-only view; Super Admin: read + upload)
+- [x] UI to upload a `.tablic` license file; calls the Phase 7 import endpoint
+- [x] License status table: columns — Status, Expiry Date, Date Updated, Remaining Days
+- [x] Visible to Super Admin and Admin (Admin: read-only view; Super Admin: read + upload)
 
 #### 9.4.2 Theme Settings
-- [ ] Per-user theme picker; persists across sessions
-- [ ] Preview mode before applying
+- [x] Per-user theme picker; persists across sessions
+- [x] Preview mode before applying
 
 #### 9.4.3 Report Settings (Super Admin only)
 - [x] `ReportDefinition` + `ReportRoleAssignment` domain entities created
 - [x] `ReportSettingsController` — 7 endpoints (CRUD, activate/deactivate, set roles)
 - [x] `IReportSettingsService` + `ReportSettingsService` implementation
 - [x] `ISettingsRepository` + `SettingsRepository` (EF Core)
-- [ ] Report Settings UI (Razor Pages / MVC)
+- [x] Report Settings UI (Razor Pages / MVC)
 
 #### 9.4.4 Module Settings (Super Admin only)
 - [x] `ModuleRoleAssignment` domain entity created (`Domain/Settings/ModuleRoleAssignment.cs`)
 - [x] `ModuleController` extended with `GET /{key}/roles` + `PUT /{key}/roles` endpoints
 - [x] `IModuleRolesService` + `ModuleRolesService` implementation
-- [ ] Module Settings UI (Razor Pages / MVC)
+- [x] Module Settings UI (Razor Pages / MVC)
 
 #### 9.4.5 Sidebar Settings (Super Admin only)
 - [x] `SidebarMenuItem` domain entity: Id, Key, Name, Purpose, ParentId (nullable), DisplayOrder, IsActive, IsSystemMenu
@@ -571,17 +572,17 @@ The provided startup documents define a strong product vision and feature set, b
 - [x] Sends notification to Admin and Super Admin 5 days prior to expiry
 - [x] Notification includes: expiry date, remaining days, link to License Update screen
 
-### ✅ Phase 9 Implementation Summary (Backend + Sidebar Settings UI)
+### ✅ Phase 9 Implementation Summary (Complete — Backend + Web UI)
 
 | Item | Detail |
 |---|---|
 | Domain entities | `Timetable`, `TimetableEntry`, `ReportDefinition`, `ReportRoleAssignment`, `ModuleRoleAssignment`, `SidebarMenuItem`, `SidebarMenuRoleAccess` |
 | EF migrations | `Phase9DashboardSettings`, `Phase9SidebarSettings` applied |
-| Seed data | 11 default sidebar menu items with per-role access defaults seeded by `DatabaseSeeder` |
-| API controllers | `TimetableController` (12), `BuildingRoomController`, `ThemeController`, `ReportSettingsController` (7), `ModuleController` (extended), `SidebarMenuController` (6) |
-| Web views | `SidebarSettings.cshtml` with JS expandable sub-menus, CSRF-protected forms |
+| Seed data | 13 sidebar menu items (idempotent upsert-by-key); added `license_update` (SuperAdmin) and `theme_settings` (all roles) |
+| API controllers | `TimetableController` (12), `BuildingRoomController`, `ThemeController`, `ReportSettingsController` (7), `ModuleController` (extended + `all-settings`), `SidebarMenuController` (6), `LicenseController` (extended + `details`) |
+| Web views | `SidebarSettings.cshtml`, `LicenseUpdate.cshtml`, `ThemeSettings.cshtml` (15-theme swatch picker + JS preview), `ReportSettings.cshtml` (accordion + role toggles), `ModuleSettings.cshtml` (accordion + mandatory badge) |
 | Dynamic sidebar | `_Layout.cshtml` calls `GET api/v1/sidebar-menu/my-visible`; fallback to hardcoded role menus if API unavailable |
-| Integration tests | `SidebarMenuIntegrationTests` — 9/9 passing; covers role matrix, status toggle, role deny, system-menu 409, 401 unauthenticated |
+| Integration tests | `SidebarMenuIntegrationTests` — 8/8 passing; covers role matrix (SuperAdmin 13, Admin 7, Faculty 4, Student 4), status toggle, role deny, system-menu 409, 401 unauthenticated |
 | Test infrastructure | `EduSphereWebFactory` (LocalDB, drops/recreates per run), `JwtTestHelper`, `ProgramEntry.cs` partial class |
 | Build validation | 0 errors, 0 warnings |
 

@@ -152,64 +152,89 @@ public static class DatabaseSeeder
     /// </summary>
     private static async Task SeedSidebarMenusAsync(ApplicationDbContext db)
     {
-        if (await db.SidebarMenuItems.AnyAsync()) return;
+        // ── Helper: upsert by key ─────────────────────────────────────────────
+        async Task<SidebarMenuItem> Upsert(
+            string key, string label, string description, int order,
+            Guid? parentId = null, bool isSystemMenu = false)
+        {
+            var existing = await db.SidebarMenuItems.FirstOrDefaultAsync(x => x.Key == key);
+            if (existing is not null) return existing;
+            var item = new SidebarMenuItem(key, label, description, order, parentId: parentId, isSystemMenu: isSystemMenu);
+            db.SidebarMenuItems.Add(item);
+            return item;
+        }
+
+        void EnsureRoleAccess(Guid itemId, string role, bool isAllowed)
+        {
+            if (!db.SidebarMenuRoleAccesses.Local.Any(r => r.SidebarMenuItemId == itemId && r.RoleName == role)
+             && !db.SidebarMenuRoleAccesses.Any(r => r.SidebarMenuItemId == itemId && r.RoleName == role))
+                db.SidebarMenuRoleAccesses.Add(new SidebarMenuRoleAccess(itemId, role, isAllowed));
+        }
 
         // ── Top-level menus ──────────────────────────────────────────────────
-        var dashboard      = new SidebarMenuItem("dashboard",         "Dashboard",          "Main landing page",                               1);
-        var timetableAdmin = new SidebarMenuItem("timetable_admin",   "Timetable Admin",    "Manage timetables (Admin/SuperAdmin)",             2);
-        var timetableFaculty = new SidebarMenuItem("timetable_teacher","Teacher Timetable", "View own teaching timetable",                     3);
-        var timetableStudent = new SidebarMenuItem("timetable_student","Student Timetable", "View own class timetable",                        4);
-        var lookups        = new SidebarMenuItem("lookups",           "Lookups",            "Reference data management (Admin/SuperAdmin)",    5,  isSystemMenu: false);
-        var systemSettings = new SidebarMenuItem("system_settings",   "System Settings",   "Platform configuration — SuperAdmin only",        6,  isSystemMenu: true);
+        var dashboard        = await Upsert("dashboard",         "Dashboard",          "Main landing page",                               1);
+        var timetableAdmin   = await Upsert("timetable_admin",   "Timetable Admin",    "Manage timetables (Admin/SuperAdmin)",             2);
+        var timetableFaculty = await Upsert("timetable_teacher", "Teacher Timetable",  "View own teaching timetable",                     3);
+        var timetableStudent = await Upsert("timetable_student", "Student Timetable",  "View own class timetable",                        4);
+        var lookups          = await Upsert("lookups",           "Lookups",            "Reference data management (Admin/SuperAdmin)",    5, isSystemMenu: false);
+        var systemSettings   = await Upsert("system_settings",   "System Settings",   "Platform configuration — SuperAdmin only",        6, isSystemMenu: true);
 
-        db.SidebarMenuItems.AddRange(dashboard, timetableAdmin, timetableFaculty, timetableStudent, lookups, systemSettings);
+        await db.SaveChangesAsync(); // ensure IDs are set before use as parentId
 
         // ── Sub-menus of Lookups ─────────────────────────────────────────────
-        var buildings = new SidebarMenuItem("buildings", "Buildings", "Manage campus buildings",         1, parentId: lookups.Id);
-        var rooms     = new SidebarMenuItem("rooms",     "Rooms",     "Manage rooms within buildings",   2, parentId: lookups.Id);
-        db.SidebarMenuItems.AddRange(buildings, rooms);
+        var buildings = await Upsert("buildings", "Buildings", "Manage campus buildings",       1, parentId: lookups.Id);
+        var rooms     = await Upsert("rooms",     "Rooms",     "Manage rooms within buildings", 2, parentId: lookups.Id);
 
         // ── Sub-menus of System Settings ─────────────────────────────────────
-        var reportSettings  = new SidebarMenuItem("report_settings",  "Report Settings",  "Configure report definitions",        1, parentId: systemSettings.Id, isSystemMenu: true);
-        var moduleSettings  = new SidebarMenuItem("module_settings",  "Module Settings",  "Enable / disable feature modules",    2, parentId: systemSettings.Id, isSystemMenu: true);
-        var sidebarSettings = new SidebarMenuItem("sidebar_settings", "Sidebar Settings", "Control sidebar visibility per role", 3, parentId: systemSettings.Id, isSystemMenu: true);
-        db.SidebarMenuItems.AddRange(reportSettings, moduleSettings, sidebarSettings);
+        var reportSettings  = await Upsert("report_settings",  "Report Settings",  "Configure report definitions",        1, parentId: systemSettings.Id, isSystemMenu: true);
+        var moduleSettings  = await Upsert("module_settings",  "Module Settings",  "Enable / disable feature modules",    2, parentId: systemSettings.Id, isSystemMenu: true);
+        var sidebarSettings = await Upsert("sidebar_settings", "Sidebar Settings", "Control sidebar visibility per role", 3, parentId: systemSettings.Id, isSystemMenu: true);
+        var themeSettings   = await Upsert("theme_settings",   "Theme Settings",   "Choose the portal colour theme",      4, parentId: systemSettings.Id, isSystemMenu: false);
+        var licenseUpdate   = await Upsert("license_update",   "License Update",   "Upload and review the product license", 5, parentId: systemSettings.Id, isSystemMenu: true);
+
+        await db.SaveChangesAsync(); // flush new items before adding role rows
 
         // ── Default role access ───────────────────────────────────────────────
         // Dashboard: all roles
         foreach (var role in new[] { "Admin", "Faculty", "Student" })
-            db.SidebarMenuRoleAccesses.Add(new SidebarMenuRoleAccess(dashboard.Id, role, isAllowed: true));
+            EnsureRoleAccess(dashboard.Id, role, isAllowed: true);
 
-        // Timetable Admin: Admin only (SuperAdmin always sees it)
-        db.SidebarMenuRoleAccesses.Add(new SidebarMenuRoleAccess(timetableAdmin.Id, "Admin", isAllowed: true));
-        db.SidebarMenuRoleAccesses.Add(new SidebarMenuRoleAccess(timetableAdmin.Id, "Faculty", isAllowed: false));
-        db.SidebarMenuRoleAccesses.Add(new SidebarMenuRoleAccess(timetableAdmin.Id, "Student", isAllowed: false));
+        // Timetable Admin: Admin only
+        EnsureRoleAccess(timetableAdmin.Id, "Admin",   isAllowed: true);
+        EnsureRoleAccess(timetableAdmin.Id, "Faculty", isAllowed: false);
+        EnsureRoleAccess(timetableAdmin.Id, "Student", isAllowed: false);
 
         // Teacher Timetable: Faculty only
-        db.SidebarMenuRoleAccesses.Add(new SidebarMenuRoleAccess(timetableFaculty.Id, "Admin",   isAllowed: false));
-        db.SidebarMenuRoleAccesses.Add(new SidebarMenuRoleAccess(timetableFaculty.Id, "Faculty", isAllowed: true));
-        db.SidebarMenuRoleAccesses.Add(new SidebarMenuRoleAccess(timetableFaculty.Id, "Student", isAllowed: false));
+        EnsureRoleAccess(timetableFaculty.Id, "Admin",   isAllowed: false);
+        EnsureRoleAccess(timetableFaculty.Id, "Faculty", isAllowed: true);
+        EnsureRoleAccess(timetableFaculty.Id, "Student", isAllowed: false);
 
         // Student Timetable: Student only
-        db.SidebarMenuRoleAccesses.Add(new SidebarMenuRoleAccess(timetableStudent.Id, "Admin",   isAllowed: false));
-        db.SidebarMenuRoleAccesses.Add(new SidebarMenuRoleAccess(timetableStudent.Id, "Faculty", isAllowed: false));
-        db.SidebarMenuRoleAccesses.Add(new SidebarMenuRoleAccess(timetableStudent.Id, "Student", isAllowed: true));
+        EnsureRoleAccess(timetableStudent.Id, "Admin",   isAllowed: false);
+        EnsureRoleAccess(timetableStudent.Id, "Faculty", isAllowed: false);
+        EnsureRoleAccess(timetableStudent.Id, "Student", isAllowed: true);
 
         // Lookups + sub-menus: Admin only
-        foreach (var item in new[] { lookups.Id, buildings.Id, rooms.Id })
+        foreach (var id in new[] { lookups.Id, buildings.Id, rooms.Id })
         {
-            db.SidebarMenuRoleAccesses.Add(new SidebarMenuRoleAccess(item, "Admin",   isAllowed: true));
-            db.SidebarMenuRoleAccesses.Add(new SidebarMenuRoleAccess(item, "Faculty", isAllowed: false));
-            db.SidebarMenuRoleAccesses.Add(new SidebarMenuRoleAccess(item, "Student", isAllowed: false));
+            EnsureRoleAccess(id, "Admin",   isAllowed: true);
+            EnsureRoleAccess(id, "Faculty", isAllowed: false);
+            EnsureRoleAccess(id, "Student", isAllowed: false);
         }
 
-        // System Settings + sub-menus: SuperAdmin only (no explicit rows needed — SuperAdmin bypasses checks)
-        // We still set false for all other roles for clarity
-        foreach (var item in new[] { systemSettings.Id, reportSettings.Id, moduleSettings.Id, sidebarSettings.Id })
+        // System Settings + sub-menus: SuperAdmin only; other roles explicitly false
+        // Theme Settings is also accessible to any authenticated user (personal preference)
+        foreach (var id in new[] { systemSettings.Id, reportSettings.Id, moduleSettings.Id, sidebarSettings.Id, licenseUpdate.Id })
         {
-            db.SidebarMenuRoleAccesses.Add(new SidebarMenuRoleAccess(item, "Admin",   isAllowed: false));
-            db.SidebarMenuRoleAccesses.Add(new SidebarMenuRoleAccess(item, "Faculty", isAllowed: false));
-            db.SidebarMenuRoleAccesses.Add(new SidebarMenuRoleAccess(item, "Student", isAllowed: false));
+            EnsureRoleAccess(id, "Admin",   isAllowed: false);
+            EnsureRoleAccess(id, "Faculty", isAllowed: false);
+            EnsureRoleAccess(id, "Student", isAllowed: false);
         }
+
+        // Theme Settings: all roles may access (personal preference)
+        foreach (var role in new[] { "Admin", "Faculty", "Student" })
+            EnsureRoleAccess(themeSettings.Id, role, isAllowed: true);
+
+        await db.SaveChangesAsync();
     }
 }

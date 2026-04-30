@@ -449,9 +449,13 @@ Views/Home/
 Views/Portal/
  Buildings.cshtml
  Dashboard.cshtml
+ LicenseUpdate.cshtml
+ ModuleSettings.cshtml
+ ReportSettings.cshtml
  Rooms.cshtml
  Section.cshtml
  SidebarSettings.cshtml
+ ThemeSettings.cshtml
  TimetableAdmin.cshtml
  TimetableStudent.cshtml
  TimetableTeacher.cshtml
@@ -470,9 +474,13 @@ Views/Home/
 Views/Portal/
  Buildings.cshtml
  Dashboard.cshtml
+ LicenseUpdate.cshtml
+ ModuleSettings.cshtml
+ ReportSettings.cshtml
  Rooms.cshtml
  Section.cshtml
  SidebarSettings.cshtml
+ ThemeSettings.cshtml
  TimetableAdmin.cshtml
  TimetableStudent.cshtml
  TimetableTeacher.cshtml

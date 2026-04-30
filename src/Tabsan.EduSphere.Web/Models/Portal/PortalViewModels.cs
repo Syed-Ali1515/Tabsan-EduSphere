@@ -237,3 +237,98 @@ public class SidebarSettingsPageModel
     public string? Message  { get; set; }
     public List<SidebarMenuItemWebModel> TopLevelMenus { get; set; } = new();
 }
+
+// ── License Update ────────────────────────────────────────────────────────────
+
+public class LicenseUpdatePageModel
+{
+    public bool    IsConnected   { get; set; }
+    public string? Message       { get; set; }
+    // Current license details (null when no license is loaded)
+    public string? Status        { get; set; }
+    public string? LicenseType   { get; set; }
+    public DateTime? ActivatedAt { get; set; }
+    public DateTime? ExpiresAt   { get; set; }
+    public DateTime? UpdatedAt   { get; set; }
+    public int?    RemainingDays { get; set; }
+}
+
+// ── Theme Settings ────────────────────────────────────────────────────────────
+
+public class ThemeOption
+{
+    public string Key         { get; init; } = "";
+    public string DisplayName { get; init; } = "";
+    public string PreviewColor{ get; init; } = "#0d6efd"; // representative accent colour
+}
+
+public class ThemeSettingsPageModel
+{
+    public bool    IsConnected   { get; set; }
+    public string? Message       { get; set; }
+    public string? CurrentTheme  { get; set; }
+    public List<ThemeOption> Themes { get; set; } = new()
+    {
+        new() { Key = "",              DisplayName = "Default (Bootstrap)",  PreviewColor = "#0d6efd" },
+        new() { Key = "ocean_blue",    DisplayName = "Ocean Blue",           PreviewColor = "#0277bd" },
+        new() { Key = "emerald_forest",DisplayName = "Emerald Forest",       PreviewColor = "#2e7d32" },
+        new() { Key = "sunset_orange", DisplayName = "Sunset Orange",        PreviewColor = "#e64a19" },
+        new() { Key = "royal_purple",  DisplayName = "Royal Purple",         PreviewColor = "#6a1b9a" },
+        new() { Key = "midnight_dark", DisplayName = "Midnight Dark",        PreviewColor = "#1a1a2e" },
+        new() { Key = "rose_gold",     DisplayName = "Rose Gold",            PreviewColor = "#c2185b" },
+        new() { Key = "arctic_teal",   DisplayName = "Arctic Teal",          PreviewColor = "#00796b" },
+        new() { Key = "sand_dune",     DisplayName = "Sand Dune",            PreviewColor = "#6d4c41" },
+        new() { Key = "slate_grey",    DisplayName = "Slate Grey",           PreviewColor = "#455a64" },
+        new() { Key = "crimson",       DisplayName = "Crimson",              PreviewColor = "#c62828" },
+        new() { Key = "ivory_classic", DisplayName = "Ivory Classic",        PreviewColor = "#5d4037" },
+        new() { Key = "cobalt_night",  DisplayName = "Cobalt Night",         PreviewColor = "#1565c0" },
+        new() { Key = "olive_grove",   DisplayName = "Olive Grove",          PreviewColor = "#558b2f" },
+        new() { Key = "cosmic_violet", DisplayName = "Cosmic Violet",        PreviewColor = "#7b1fa2" },
+    };
+}
+
+// ── Report Settings ───────────────────────────────────────────────────────────
+
+public class ReportDefinitionWebModel
+{
+    public Guid          Id            { get; set; }
+    public string        Key           { get; set; } = "";
+    public string        Name          { get; set; } = "";
+    public string        Purpose       { get; set; } = "";
+    public bool          IsActive      { get; set; }
+    public List<string>  AssignedRoles { get; set; } = new();
+}
+
+public class ReportSettingsPageModel
+{
+    public bool IsConnected { get; set; }
+    public string? Message  { get; set; }
+    public List<ReportDefinitionWebModel> Reports { get; set; } = new();
+}
+
+public class CreateReportForm
+{
+    public string Key     { get; set; } = "";
+    public string Name    { get; set; } = "";
+    public string Purpose { get; set; } = "";
+}
+
+// ── Module Settings ───────────────────────────────────────────────────────────
+
+public class ModuleSettingsWebModel
+{
+    public Guid         Id            { get; set; }
+    public string       Key           { get; set; } = "";
+    public string       Name          { get; set; } = "";
+    public bool         IsMandatory   { get; set; }
+    public bool         IsActive      { get; set; }
+    public List<string> AssignedRoles { get; set; } = new();
+}
+
+public class ModuleSettingsPageModel
+{
+    public bool IsConnected { get; set; }
+    public string? Message  { get; set; }
+    public List<ModuleSettingsWebModel> Modules { get; set; } = new();
+}
+

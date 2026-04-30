@@ -1,0 +1,124 @@
+@model Tabsan.EduSphere.Web.Models.Portal.ModuleSettingsPageModel
+@{
+    ViewData["Title"] = "Module Settings";
+    var tempMsg = TempData["Message"] as string ?? Model.Message;
+    var allRoles = new[] { "Admin", "Faculty", "Student" };
+}
+
+<div class="row g-4">
+
+    @if (!Model.IsConnected)
+    {
+        <div class="col-12">
+            <div class="alert alert-warning d-flex align-items-center gap-2">
+                <i class="bi bi-plug-fill"></i>
+                Not connected to the API. Configure the connection on the Dashboard.
+            </div>
+        </div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(tempMsg))
+    {
+        <div class="col-12">
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                @tempMsg
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </div>
+    }
+
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex align-items-center gap-2">
+                <i class="bi bi-puzzle-fill text-primary"></i>
+                <strong>Feature Modules</strong>
+                <span class="badge bg-secondary ms-auto">@Model.Modules.Count</span>
+            </div>
+            <div class="card-body p-0">
+                @if (Model.Modules.Count == 0)
+                {
+                    <p class="text-muted p-3 mb-0">No modules registered.</p>
+                }
+                else
+                {
+                    <div class="accordion accordion-flush" id="modulesAccordion">
+                        @foreach (var mod in Model.Modules)
+                        {
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed py-2" type="button"
+                                            data-bs-toggle="collapse"
+                                            data-bs-target="#mod-@mod.Id"
+                                            aria-expanded="false">
+                                        <span class="me-2">
+                                            @if (mod.IsActive)
+                                            {
+                                                <span class="badge bg-success">Active</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">Inactive</span>
+                                            }
+                                        </span>
+                                        <strong>@mod.Name</strong>
+                                        <code class="ms-2 text-muted small">@mod.Key</code>
+                                        @if (mod.IsMandatory)
+                                        {
+                                            <span class="badge bg-primary ms-2">Mandatory</span>
+                                        }
+                                    </button>
+                                </h2>
+                                <div id="mod-@mod.Id" class="accordion-collapse collapse">
+                                    <div class="accordion-body row g-3">
+
+                                        @* Toggle active (disabled for mandatory modules) *@
+                                        <div class="col-auto">
+                                            <form asp-action="ToggleModule" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="key"      value="@mod.Key" />
+                                                <input type="hidden" name="activate" value="@(!mod.IsActive)" />
+                                                <button type="submit"
+                                                        class="btn btn-sm @(mod.IsActive ? "btn-outline-warning" : "btn-outline-success")"
+                                                        @(Model.IsConnected && !mod.IsMandatory ? "" : "disabled")
+                                                        title="@(mod.IsMandatory ? "Mandatory modules cannot be deactivated" : "")">
+                                                    @(mod.IsActive ? "Deactivate" : "Activate")
+                                                </button>
+                                            </form>
+                                        </div>
+
+                                        @* Role assignment *@
+                                        <div class="col-12">
+                                            <form asp-action="UpdateModuleRoles" method="post" class="d-flex align-items-center gap-3 flex-wrap">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="key" value="@mod.Key" />
+                                                <span class="fw-semibold small">Role Access:</span>
+                                                @foreach (var role in allRoles)
+                                                {
+                                                    var fieldName = $"{role.ToLower()}Allowed";
+                                                    var isChecked = mod.AssignedRoles.Contains(role);
+                                                    <div class="form-check form-check-inline">
+                                                        <input class="form-check-input" type="checkbox"
+                                                               name="@fieldName" value="true"
+                                                               id="mod-@mod.Id-@role"
+                                                               @(isChecked ? "checked" : "")
+                                                               @(Model.IsConnected ? "" : "disabled") />
+                                                        <label class="form-check-label" for="mod-@mod.Id-@role">@role</label>
+                                                    </div>
+                                                }
+                                                <button type="submit" class="btn btn-sm btn-outline-primary"
+                                                        @(Model.IsConnected ? "" : "disabled")>
+                                                    <i class="bi bi-floppy me-1"></i> Save Roles
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+</div>

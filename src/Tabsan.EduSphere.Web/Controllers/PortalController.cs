@@ -398,10 +398,194 @@ public class PortalController : Controller
         return RedirectToAction(nameof(Rooms), new { buildingId, selectedId = id });
     }
 
-    // ── Remaining sections (placeholder) ───────────────────────────────────
+    // ── License Update ─────────────────────────────────────────────────────
 
-    public IActionResult ReportSettings() => Section("Report Settings", "SuperAdmin report visibility and role assignment settings.");
-    public IActionResult ModuleSettings()  => Section("Module Settings", "SuperAdmin module-role assignment settings.");
+    public async Task<IActionResult> LicenseUpdate(CancellationToken ct)
+    {
+        var model = new LicenseUpdatePageModel { IsConnected = _api.IsConnected() };
+        if (model.IsConnected)
+        {
+            try
+            {
+                var details = await _api.GetLicenseDetailsAsync(ct);
+                model.Status       = details.Status;
+                model.LicenseType  = details.LicenseType;
+                model.ActivatedAt  = details.ActivatedAt;
+                model.ExpiresAt    = details.ExpiresAt;
+                model.UpdatedAt    = details.UpdatedAt;
+                model.RemainingDays= details.RemainingDays;
+                model.Message      = details.Message;
+            }
+            catch (Exception ex)
+            {
+                model.Message = $"Error loading license details: {ex.Message}";
+            }
+        }
+        return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UploadLicense(IFormFile licenseFile, CancellationToken ct)
+    {
+        if (licenseFile is null || licenseFile.Length == 0)
+        {
+            TempData["Message"] = "Please select a valid .tablic file.";
+            return RedirectToAction(nameof(LicenseUpdate));
+        }
+        if (!licenseFile.FileName.EndsWith(".tablic", StringComparison.OrdinalIgnoreCase))
+        {
+            TempData["Message"] = "Invalid file type. Only .tablic files are accepted.";
+            return RedirectToAction(nameof(LicenseUpdate));
+        }
+        if (_api.IsConnected())
+        {
+            try
+            {
+                using var stream = licenseFile.OpenReadStream();
+                var result = await _api.UploadLicenseAsync(stream, licenseFile.FileName, ct);
+                TempData["Message"] = result;
+            }
+            catch (Exception ex)
+            {
+                TempData["Message"] = $"Upload error: {ex.Message}";
+            }
+        }
+        return RedirectToAction(nameof(LicenseUpdate));
+    }
+
+    // ── Theme Settings ─────────────────────────────────────────────────────
+
+    public async Task<IActionResult> ThemeSettings(CancellationToken ct)
+    {
+        var model = new ThemeSettingsPageModel { IsConnected = _api.IsConnected() };
+        if (model.IsConnected)
+        {
+            try { model.CurrentTheme = await _api.GetCurrentThemeAsync(ct); }
+            catch (Exception ex) { model.Message = $"Error loading theme: {ex.Message}"; }
+        }
+        return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SetTheme(string? themeKey, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try
+            {
+                await _api.SetThemeAsync(themeKey, ct);
+                TempData["Message"] = "Theme updated.";
+            }
+            catch (Exception ex) { TempData["Message"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(ThemeSettings));
+    }
+
+    // ── Report Settings ────────────────────────────────────────────────────
+
+    public async Task<IActionResult> ReportSettings(CancellationToken ct)
+    {
+        var model = new ReportSettingsPageModel { IsConnected = _api.IsConnected() };
+        if (model.IsConnected)
+        {
+            try { model.Reports = await _api.GetReportDefinitionsAsync(ct); }
+            catch (Exception ex) { model.Message = $"Error loading reports: {ex.Message}"; }
+        }
+        return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateReport(CreateReportForm form, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.CreateReportDefinitionAsync(form, ct); TempData["Message"] = "Report created."; }
+            catch (Exception ex) { TempData["Message"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(ReportSettings));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ToggleReport(Guid id, bool activate, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.SetReportActiveAsync(id, activate, ct); }
+            catch (Exception ex) { TempData["Message"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(ReportSettings));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateReportRoles(Guid id, [FromForm] bool adminAllowed,
+        [FromForm] bool facultyAllowed, [FromForm] bool studentAllowed, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try
+            {
+                var roles = new List<string>();
+                if (adminAllowed)   roles.Add("Admin");
+                if (facultyAllowed) roles.Add("Faculty");
+                if (studentAllowed) roles.Add("Student");
+                await _api.SetReportRolesAsync(id, roles, ct);
+                TempData["Message"] = "Roles updated.";
+            }
+            catch (Exception ex) { TempData["Message"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(ReportSettings));
+    }
+
+    // ── Module Settings ────────────────────────────────────────────────────
+
+    public async Task<IActionResult> ModuleSettings(CancellationToken ct)
+    {
+        var model = new ModuleSettingsPageModel { IsConnected = _api.IsConnected() };
+        if (model.IsConnected)
+        {
+            try { model.Modules = await _api.GetModuleSettingsAsync(ct); }
+            catch (Exception ex) { model.Message = $"Error loading modules: {ex.Message}"; }
+        }
+        return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ToggleModule(string key, bool activate, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.SetModuleActiveAsync(key, activate, ct); }
+            catch (Exception ex) { TempData["Message"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(ModuleSettings));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateModuleRoles(string key, [FromForm] bool adminAllowed,
+        [FromForm] bool facultyAllowed, [FromForm] bool studentAllowed, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try
+            {
+                var roles = new List<string>();
+                if (adminAllowed)   roles.Add("Admin");
+                if (facultyAllowed) roles.Add("Faculty");
+                if (studentAllowed) roles.Add("Student");
+                await _api.SetModuleRolesAsync(key, roles, ct);
+                TempData["Message"] = "Roles updated.";
+            }
+            catch (Exception ex) { TempData["Message"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(ModuleSettings));
+    }
 
     // ── Sidebar Settings ────────────────────────────────────────────────────
 

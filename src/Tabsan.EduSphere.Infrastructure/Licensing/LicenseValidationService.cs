@@ -162,6 +162,13 @@ public class LicenseValidationService
         return state.Status;
     }
 
+    /// <summary>
+    /// Returns the raw <see cref="LicenseState"/> without refreshing it.
+    /// Used by the Super Admin / Admin license-detail view.
+    /// </summary>
+    public Task<LicenseState?> GetCurrentStateAsync(CancellationToken ct = default)
+        => _licenseRepo.GetCurrentAsync(ct);
+
     // ── Crypto helpers ────────────────────────────────────────────────────────
 
     /// <summary>

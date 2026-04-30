@@ -67,7 +67,7 @@ public class SidebarMenuIntegrationTests : IClassFixture<EduSphereWebFactory>
 
     // ── Role matrix ───────────────────────────────────────────────────────────
 
-    /// <summary>SuperAdmin should see every seeded menu item (11 keys total).</summary>
+    /// <summary>SuperAdmin should see every seeded menu item (13 keys total).</summary>
     [Fact]
     public async Task GetVisible_SuperAdmin_ReturnsAllMenus()
     {
@@ -86,10 +86,12 @@ public class SidebarMenuIntegrationTests : IClassFixture<EduSphereWebFactory>
         Assert.Contains("module_settings",  keys);
         Assert.Contains("report_settings",  keys);
         Assert.Contains("sidebar_settings", keys);
-        Assert.Equal(11, keys.Count);
+        Assert.Contains("theme_settings",   keys);
+        Assert.Contains("license_update",   keys);
+        Assert.Equal(13, keys.Count);
     }
 
-    /// <summary>Admin should see: dashboard, timetable_admin, lookups, buildings, rooms.</summary>
+    /// <summary>Admin should see: dashboard, timetable_admin, lookups, buildings, rooms, system_settings (parent of theme_settings), theme_settings.</summary>
     [Fact]
     public async Task GetVisible_Admin_ReturnsAdminMenusOnly()
     {
@@ -102,10 +104,12 @@ public class SidebarMenuIntegrationTests : IClassFixture<EduSphereWebFactory>
         Assert.Contains("lookups",         keys);
         Assert.Contains("buildings",       keys);
         Assert.Contains("rooms",           keys);
-        Assert.Equal(5, keys.Count);
+        Assert.Contains("system_settings", keys); // included as parent of visible theme_settings
+        Assert.Contains("theme_settings",  keys);
+        Assert.Equal(7, keys.Count);
     }
 
-    /// <summary>Faculty should see: dashboard, timetable_teacher.</summary>
+    /// <summary>Faculty should see: dashboard, timetable_teacher, system_settings (parent of theme_settings), theme_settings.</summary>
     [Fact]
     public async Task GetVisible_Faculty_ReturnsFacultyMenusOnly()
     {
@@ -115,10 +119,12 @@ public class SidebarMenuIntegrationTests : IClassFixture<EduSphereWebFactory>
 
         Assert.Contains("dashboard",         keys);
         Assert.Contains("timetable_teacher", keys);
-        Assert.Equal(2, keys.Count);
+        Assert.Contains("system_settings",   keys); // included as parent of visible theme_settings
+        Assert.Contains("theme_settings",    keys);
+        Assert.Equal(4, keys.Count);
     }
 
-    /// <summary>Student should see: dashboard, timetable_student.</summary>
+    /// <summary>Student should see: dashboard, timetable_student, system_settings (parent of theme_settings), theme_settings.</summary>
     [Fact]
     public async Task GetVisible_Student_ReturnsStudentMenusOnly()
     {
@@ -128,7 +134,9 @@ public class SidebarMenuIntegrationTests : IClassFixture<EduSphereWebFactory>
 
         Assert.Contains("dashboard",         keys);
         Assert.Contains("timetable_student", keys);
-        Assert.Equal(2, keys.Count);
+        Assert.Contains("system_settings",   keys); // included as parent of visible theme_settings
+        Assert.Contains("theme_settings",    keys);
+        Assert.Equal(4, keys.Count);
     }
 
     // ── Status toggle ─────────────────────────────────────────────────────────

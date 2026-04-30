@@ -1,0 +1,121 @@
+@model Tabsan.EduSphere.Web.Models.Portal.LicenseUpdatePageModel
+@{
+    ViewData["Title"] = "License Update";
+    var tempMsg = TempData["Message"] as string ?? Model.Message;
+}
+
+<div class="row g-4">
+
+    @if (!Model.IsConnected)
+    {
+        <div class="col-12">
+            <div class="alert alert-warning d-flex align-items-center gap-2">
+                <i class="bi bi-plug-fill"></i>
+                Not connected to the API. Configure the connection on the Dashboard.
+            </div>
+        </div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(tempMsg))
+    {
+        <div class="col-12">
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                @tempMsg
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </div>
+    }
+
+    @* ── Current License Status ──────────────────────────────────────────── *@
+    <div class="col-12 col-lg-6">
+        <div class="card h-100">
+            <div class="card-header d-flex align-items-center gap-2">
+                <i class="bi bi-key-fill text-primary"></i>
+                <strong>Current License</strong>
+            </div>
+            <div class="card-body">
+                @if (Model.Status is null)
+                {
+                    <p class="text-muted mb-0">No license information available.</p>
+                }
+                else
+                {
+                    var badgeClass = Model.Status switch
+                    {
+                        "Active"  => "bg-success",
+                        "Expired" => "bg-danger",
+                        "Invalid" => "bg-warning text-dark",
+                        "None"    => "bg-secondary",
+                        _         => "bg-secondary"
+                    };
+                    <table class="table table-borderless mb-0">
+                        <tbody>
+                            <tr>
+                                <th class="text-muted fw-normal" style="width:45%">Status</th>
+                                <td><span class="badge @badgeClass">@Model.Status</span></td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted fw-normal">License Type</th>
+                                <td>@(Model.LicenseType ?? "—")</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted fw-normal">Activated At</th>
+                                <td>@(Model.ActivatedAt?.ToString("dd MMM yyyy HH:mm") ?? "—")</td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted fw-normal">Expires At</th>
+                                <td>
+                                    @if (Model.ExpiresAt.HasValue)
+                                    {
+                                        @Model.ExpiresAt.Value.ToString("dd MMM yyyy HH:mm")
+                                        if (Model.RemainingDays.HasValue)
+                                        {
+                                            <span class="ms-1 text-muted small">(@Model.RemainingDays days remaining)</span>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="text-success">Permanent</span>
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted fw-normal">Last Updated</th>
+                                <td>@(Model.UpdatedAt?.ToString("dd MMM yyyy HH:mm") ?? "—")</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+
+    @* ── Upload New License ──────────────────────────────────────────────── *@
+    <div class="col-12 col-lg-6">
+        <div class="card h-100">
+            <div class="card-header d-flex align-items-center gap-2">
+                <i class="bi bi-upload text-primary"></i>
+                <strong>Upload License File</strong>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">
+                    Upload a signed <code>.tablic</code> license file issued by Tabsan.
+                    The file is validated server-side before activation.
+                </p>
+                <form asp-action="UploadLicense" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label for="licenseFile" class="form-label">License File (.tablic)</label>
+                        <input class="form-control" type="file" id="licenseFile" name="licenseFile"
+                               accept=".tablic" required @(Model.IsConnected ? "" : "disabled") />
+                        <div class="form-text">Maximum file size: 64 KB</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" @(Model.IsConnected ? "" : "disabled")>
+                        <i class="bi bi-cloud-upload me-1"></i> Upload &amp; Activate
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>

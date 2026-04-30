@@ -1,4 +1,4 @@
-# Function List — Tabsan EduSphere
+﻿# Function List â€” Tabsan EduSphere
 
 > **Maintenance rule**: Every function added to the codebase must be registered here with Name, Purpose, and Location.
 > Format: `Name | Purpose | Location`
@@ -7,7 +7,7 @@
 
 ## Domain Layer
 
-### `BaseEntity` — `src/Tabsan.EduSphere.Domain/Common/BaseEntity.cs`
+### `BaseEntity` â€” `src/Tabsan.EduSphere.Domain/Common/BaseEntity.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
@@ -15,16 +15,16 @@
 
 ---
 
-### `AuditableEntity` — `src/Tabsan.EduSphere.Domain/Common/AuditableEntity.cs`
+### `AuditableEntity` â€” `src/Tabsan.EduSphere.Domain/Common/AuditableEntity.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
 | `SoftDelete()` | Marks the entity as deleted (`IsDeleted = true`, sets `DeletedAt`) without physically removing the database row. | `Domain/Common/AuditableEntity.cs` |
-| `Restore()` | Reverses a soft delete — clears `IsDeleted` and `DeletedAt`. | `Domain/Common/AuditableEntity.cs` |
+| `Restore()` | Reverses a soft delete â€” clears `IsDeleted` and `DeletedAt`. | `Domain/Common/AuditableEntity.cs` |
 
 ---
 
-### `User` — `src/Tabsan.EduSphere.Domain/Identity/User.cs`
+### `User` â€” `src/Tabsan.EduSphere.Domain/Identity/User.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
@@ -36,17 +36,17 @@
 
 ---
 
-### `UserSession` — `src/Tabsan.EduSphere.Domain/Identity/UserSession.cs`
+### `UserSession` â€” `src/Tabsan.EduSphere.Domain/Identity/UserSession.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
 | `IsActive` (computed property) | Returns true when the session has not been revoked and the expiry is in the future. | `Domain/Identity/UserSession.cs` |
 | `Revoke()` | Stamps `RevokedAt` with the current UTC time, invalidating the session for all future refresh attempts. | `Domain/Identity/UserSession.cs` |
-| `Rotate(newHash, newExpiry)` | Replaces the refresh token hash and extends the expiry — used during token rotation on refresh. | `Domain/Identity/UserSession.cs` |
+| `Rotate(newHash, newExpiry)` | Replaces the refresh token hash and extends the expiry â€” used during token rotation on refresh. | `Domain/Identity/UserSession.cs` |
 
 ---
 
-### `Department` — `src/Tabsan.EduSphere.Domain/Academic/Department.cs`
+### `Department` â€” `src/Tabsan.EduSphere.Domain/Academic/Department.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
@@ -56,7 +56,7 @@
 
 ---
 
-### `LicenseState` — `src/Tabsan.EduSphere.Domain/Licensing/LicenseState.cs`
+### `LicenseState` â€” `src/Tabsan.EduSphere.Domain/Licensing/LicenseState.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
@@ -66,7 +66,7 @@
 
 ---
 
-### `ModuleStatus` — `src/Tabsan.EduSphere.Domain/Modules/ModuleStatus.cs`
+### `ModuleStatus` â€” `src/Tabsan.EduSphere.Domain/Modules/ModuleStatus.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
@@ -75,17 +75,17 @@
 
 ---
 
-### `AuditLog` — `src/Tabsan.EduSphere.Domain/Auditing/AuditLog.cs`
+### `AuditLog` â€” `src/Tabsan.EduSphere.Domain/Auditing/AuditLog.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
-| `AuditLog(action, entityName, ...)` | Constructor — creates an immutable audit record for a privileged action. All audit writes use this constructor to ensure no field is omitted. | `Domain/Auditing/AuditLog.cs` |
+| `AuditLog(action, entityName, ...)` | Constructor â€” creates an immutable audit record for a privileged action. All audit writes use this constructor to ensure no field is omitted. | `Domain/Auditing/AuditLog.cs` |
 
 ---
 
 ## Infrastructure Layer
 
-### `ApplicationDbContext` — `src/Tabsan.EduSphere.Infrastructure/Persistence/ApplicationDbContext.cs`
+### `ApplicationDbContext` â€” `src/Tabsan.EduSphere.Infrastructure/Persistence/ApplicationDbContext.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
@@ -95,7 +95,7 @@
 
 ---
 
-### `UserRepository` — `src/Tabsan.EduSphere.Infrastructure/Repositories/UserRepository.cs`
+### `UserRepository` â€” `src/Tabsan.EduSphere.Infrastructure/Repositories/UserRepository.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
@@ -109,7 +109,7 @@
 
 ---
 
-### `LicenseRepository` — `src/Tabsan.EduSphere.Infrastructure/Repositories/LicenseRepository.cs`
+### `LicenseRepository` â€” `src/Tabsan.EduSphere.Infrastructure/Repositories/LicenseRepository.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
@@ -120,7 +120,7 @@
 
 ---
 
-### `ModuleRepository` — `src/Tabsan.EduSphere.Infrastructure/Repositories/ModuleRepository.cs`
+### `ModuleRepository` â€” `src/Tabsan.EduSphere.Infrastructure/Repositories/ModuleRepository.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
@@ -132,7 +132,7 @@
 
 ---
 
-### `UserSessionRepository` — `src/Tabsan.EduSphere.Infrastructure/Repositories/UserSessionRepository.cs`
+### `UserSessionRepository` â€” `src/Tabsan.EduSphere.Infrastructure/Repositories/UserSessionRepository.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
@@ -143,7 +143,7 @@
 
 ---
 
-### `TokenService` — `src/Tabsan.EduSphere.Infrastructure/Auth/TokenService.cs`
+### `TokenService` â€” `src/Tabsan.EduSphere.Infrastructure/Auth/TokenService.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
@@ -154,7 +154,7 @@
 
 ---
 
-### `PasswordHasher` — `src/Tabsan.EduSphere.Infrastructure/Auth/PasswordHasher.cs`
+### `PasswordHasher` â€” `src/Tabsan.EduSphere.Infrastructure/Auth/PasswordHasher.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
@@ -163,7 +163,7 @@
 
 ---
 
-### `LicenseValidationService` — `src/Tabsan.EduSphere.Infrastructure/Licensing/LicenseValidationService.cs`
+### `LicenseValidationService` â€” `src/Tabsan.EduSphere.Infrastructure/Licensing/LicenseValidationService.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
@@ -174,7 +174,7 @@
 
 ---
 
-### `ModuleEntitlementResolver` — `src/Tabsan.EduSphere.Infrastructure/Modules/ModuleEntitlementResolver.cs`
+### `ModuleEntitlementResolver` â€” `src/Tabsan.EduSphere.Infrastructure/Modules/ModuleEntitlementResolver.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
@@ -184,7 +184,7 @@
 
 ---
 
-### `AuditService` — `src/Tabsan.EduSphere.Infrastructure/Auditing/AuditService.cs`
+### `AuditService` â€” `src/Tabsan.EduSphere.Infrastructure/Auditing/AuditService.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
@@ -192,7 +192,7 @@
 
 ---
 
-### `DatabaseSeeder` — `src/Tabsan.EduSphere.Infrastructure/Persistence/DatabaseSeeder.cs`
+### `DatabaseSeeder` â€” `src/Tabsan.EduSphere.Infrastructure/Persistence/DatabaseSeeder.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
@@ -205,7 +205,7 @@
 
 ## Application Layer
 
-### `AuthService` — `src/Tabsan.EduSphere.Application/Auth/AuthService.cs`
+### `AuthService` â€” `src/Tabsan.EduSphere.Application/Auth/AuthService.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
@@ -216,7 +216,7 @@
 
 ---
 
-### `ModuleService` — `src/Tabsan.EduSphere.Application/Modules/ModuleService.cs`
+### `ModuleService` â€” `src/Tabsan.EduSphere.Application/Modules/ModuleService.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
@@ -228,87 +228,87 @@
 
 ## API Layer
 
-### `AuthController` — `src/Tabsan.EduSphere.API/Controllers/AuthController.cs`
+### `AuthController` â€” `src/Tabsan.EduSphere.API/Controllers/AuthController.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
-| `Login(request, ct)` | `POST /api/v1/auth/login` — authenticates the user and returns tokens. | `API/Controllers/AuthController.cs` |
-| `Refresh(request, ct)` | `POST /api/v1/auth/refresh` — rotates the refresh token and returns a new pair. | `API/Controllers/AuthController.cs` |
-| `Logout(request, ct)` | `POST /api/v1/auth/logout` — revokes the session. | `API/Controllers/AuthController.cs` |
-| `ChangePassword(request, ct)` | `PUT /api/v1/auth/change-password` — changes the authenticated user's password. | `API/Controllers/AuthController.cs` |
+| `Login(request, ct)` | `POST /api/v1/auth/login` â€” authenticates the user and returns tokens. | `API/Controllers/AuthController.cs` |
+| `Refresh(request, ct)` | `POST /api/v1/auth/refresh` â€” rotates the refresh token and returns a new pair. | `API/Controllers/AuthController.cs` |
+| `Logout(request, ct)` | `POST /api/v1/auth/logout` â€” revokes the session. | `API/Controllers/AuthController.cs` |
+| `ChangePassword(request, ct)` | `PUT /api/v1/auth/change-password` â€” changes the authenticated user's password. | `API/Controllers/AuthController.cs` |
 
 ---
 
-### `ModuleController` — `src/Tabsan.EduSphere.API/Controllers/ModuleController.cs`
+### `ModuleController` â€” `src/Tabsan.EduSphere.API/Controllers/ModuleController.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
-| `GetAll(ct)` | `GET /api/v1/modules` — returns all modules with status. Requires SuperAdmin. | `API/Controllers/ModuleController.cs` |
-| `Activate(key, ct)` | `POST /api/v1/modules/{key}/activate` — activates the named module. Requires SuperAdmin. | `API/Controllers/ModuleController.cs` |
-| `Deactivate(key, ct)` | `POST /api/v1/modules/{key}/deactivate` — deactivates the named module. Requires SuperAdmin. | `API/Controllers/ModuleController.cs` |
-| `Status(key, ct)` | `GET /api/v1/modules/{key}/status` — returns the current active/inactive state from cache. | `API/Controllers/ModuleController.cs` |
-| `GetUserId()` | Private helper — extracts the authenticated user's GUID from the JWT sub claim. | `API/Controllers/ModuleController.cs` |
+| `GetAll(ct)` | `GET /api/v1/modules` â€” returns all modules with status. Requires SuperAdmin. | `API/Controllers/ModuleController.cs` |
+| `Activate(key, ct)` | `POST /api/v1/modules/{key}/activate` â€” activates the named module. Requires SuperAdmin. | `API/Controllers/ModuleController.cs` |
+| `Deactivate(key, ct)` | `POST /api/v1/modules/{key}/deactivate` â€” deactivates the named module. Requires SuperAdmin. | `API/Controllers/ModuleController.cs` |
+| `Status(key, ct)` | `GET /api/v1/modules/{key}/status` â€” returns the current active/inactive state from cache. | `API/Controllers/ModuleController.cs` |
+| `GetUserId()` | Private helper â€” extracts the authenticated user's GUID from the JWT sub claim. | `API/Controllers/ModuleController.cs` |
 
 ---
 
-### `LicenseController` — `src/Tabsan.EduSphere.API/Controllers/LicenseController.cs`
+### `LicenseController` â€” `src/Tabsan.EduSphere.API/Controllers/LicenseController.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
-| `Upload(file, ct)` | `POST /api/v1/license/upload` — saves and validates a new license file. Requires SuperAdmin. | `API/Controllers/LicenseController.cs` |
-| `Status(ct)` | `GET /api/v1/license/status` — runs an on-demand license check and returns current status. Requires SuperAdmin. | `API/Controllers/LicenseController.cs` |
+| `Upload(file, ct)` | `POST /api/v1/license/upload` â€” saves and validates a new license file. Requires SuperAdmin. | `API/Controllers/LicenseController.cs` |
+| `Status(ct)` | `GET /api/v1/license/status` â€” runs an on-demand license check and returns current status. Requires SuperAdmin. | `API/Controllers/LicenseController.cs` |
 
 ---
 
 ## Background Jobs
 
-### `LicenseCheckWorker` — `src/Tabsan.EduSphere.BackgroundJobs/LicenseCheckWorker.cs`
+### `LicenseCheckWorker` â€” `src/Tabsan.EduSphere.BackgroundJobs/LicenseCheckWorker.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
-| `ExecuteAsync(stoppingToken)` | Main hosted-service loop — waits 30 s on startup, then calls `RunCheckAsync` every 24 hours. | `BackgroundJobs/LicenseCheckWorker.cs` |
+| `ExecuteAsync(stoppingToken)` | Main hosted-service loop â€” waits 30 s on startup, then calls `RunCheckAsync` every 24 hours. | `BackgroundJobs/LicenseCheckWorker.cs` |
 | `RunCheckAsync(ct)` | Opens a fresh DI scope, resolves `LicenseValidationService`, and runs a validation check. Exceptions are caught and logged. | `BackgroundJobs/LicenseCheckWorker.cs` |
 
 ---
 
-## Phase 2 — Academic Core
+## Phase 2 â€” Academic Core
 
-### `AcademicProgram` — `src/Tabsan.EduSphere.Domain/Academic/AcademicProgram.cs`
+### `AcademicProgram` â€” `src/Tabsan.EduSphere.Domain/Academic/AcademicProgram.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
-| `AcademicProgram(name, code, departmentId, totalSemesters)` | Constructor — creates a new degree programme; normalises code to uppercase. | `Domain/Academic/AcademicProgram.cs` |
+| `AcademicProgram(name, code, departmentId, totalSemesters)` | Constructor â€” creates a new degree programme; normalises code to uppercase. | `Domain/Academic/AcademicProgram.cs` |
 | `Rename(newName)` | Updates the display name of the programme. | `Domain/Academic/AcademicProgram.cs` |
 | `Deactivate()` | Marks the programme inactive so it no longer appears in registration dropdowns. | `Domain/Academic/AcademicProgram.cs` |
 | `Activate()` | Re-activates a previously deactivated programme. | `Domain/Academic/AcademicProgram.cs` |
 
 ---
 
-### `Semester` — `src/Tabsan.EduSphere.Domain/Academic/Semester.cs`
+### `Semester` â€” `src/Tabsan.EduSphere.Domain/Academic/Semester.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
-| `Semester(name, startDate, endDate)` | Constructor — creates a new open semester term. | `Domain/Academic/Semester.cs` |
+| `Semester(name, startDate, endDate)` | Constructor â€” creates a new open semester term. | `Domain/Academic/Semester.cs` |
 | `Close()` | Permanently closes the semester. One-way: throws if already closed. | `Domain/Academic/Semester.cs` |
 
 ---
 
-### `Course` — `src/Tabsan.EduSphere.Domain/Academic/Course.cs`
+### `Course` â€” `src/Tabsan.EduSphere.Domain/Academic/Course.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
-| `Course(title, code, creditHours, departmentId)` | Constructor — creates a new course catalogue entry; normalises code to uppercase. | `Domain/Academic/Course.cs` |
+| `Course(title, code, creditHours, departmentId)` | Constructor â€” creates a new course catalogue entry; normalises code to uppercase. | `Domain/Academic/Course.cs` |
 | `UpdateTitle(newTitle)` | Updates the course display title. | `Domain/Academic/Course.cs` |
 | `Deactivate()` | Soft-deactivates the course so it cannot be offered. | `Domain/Academic/Course.cs` |
 | `Activate()` | Re-activates a deactivated course. | `Domain/Academic/Course.cs` |
 
 ---
 
-### `CourseOffering` — `src/Tabsan.EduSphere.Domain/Academic/CourseOffering.cs`
+### `CourseOffering` â€” `src/Tabsan.EduSphere.Domain/Academic/CourseOffering.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
-| `CourseOffering(courseId, semesterId, maxEnrollment, facultyUserId?)` | Constructor — schedules a course for a semester. | `Domain/Academic/CourseOffering.cs` |
+| `CourseOffering(courseId, semesterId, maxEnrollment, facultyUserId?)` | Constructor â€” schedules a course for a semester. | `Domain/Academic/CourseOffering.cs` |
 | `AssignFaculty(facultyUserId)` | Assigns or re-assigns a faculty member to this offering. | `Domain/Academic/CourseOffering.cs` |
 | `Close()` | Closes the offering so no new enrollments are accepted. | `Domain/Academic/CourseOffering.cs` |
 | `Reopen()` | Re-opens the offering to accept enrollments again. | `Domain/Academic/CourseOffering.cs` |
@@ -316,45 +316,45 @@
 
 ---
 
-### `StudentProfile` — `src/Tabsan.EduSphere.Domain/Academic/StudentProfile.cs`
+### `StudentProfile` â€” `src/Tabsan.EduSphere.Domain/Academic/StudentProfile.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
-| `StudentProfile(userId, registrationNumber, programId, departmentId, admissionDate)` | Constructor — creates a student's academic profile. | `Domain/Academic/StudentProfile.cs` |
-| `UpdateCgpa(newCgpa)` | Updates the cumulative GPA after result publication (0.0–4.0 range enforced). | `Domain/Academic/StudentProfile.cs` |
+| `StudentProfile(userId, registrationNumber, programId, departmentId, admissionDate)` | Constructor â€” creates a student's academic profile. | `Domain/Academic/StudentProfile.cs` |
+| `UpdateCgpa(newCgpa)` | Updates the cumulative GPA after result publication (0.0â€“4.0 range enforced). | `Domain/Academic/StudentProfile.cs` |
 | `AdvanceSemester()` | Increments the student's current semester number. | `Domain/Academic/StudentProfile.cs` |
 
 ---
 
-### `Enrollment` — `src/Tabsan.EduSphere.Domain/Academic/Enrollment.cs`
+### `Enrollment` â€” `src/Tabsan.EduSphere.Domain/Academic/Enrollment.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
-| `Enrollment(studentProfileId, courseOfferingId)` | Constructor — records a new active enrollment. | `Domain/Academic/Enrollment.cs` |
+| `Enrollment(studentProfileId, courseOfferingId)` | Constructor â€” records a new active enrollment. | `Domain/Academic/Enrollment.cs` |
 | `Drop()` | Changes status to Dropped and sets DroppedAt. Throws if not Active. | `Domain/Academic/Enrollment.cs` |
 | `Cancel()` | Changes status to Cancelled (used when the offering itself is cancelled). | `Domain/Academic/Enrollment.cs` |
 
 ---
 
-### `RegistrationWhitelist` — `src/Tabsan.EduSphere.Domain/Academic/RegistrationWhitelist.cs`
+### `RegistrationWhitelist` â€” `src/Tabsan.EduSphere.Domain/Academic/RegistrationWhitelist.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
-| `RegistrationWhitelist(identifierType, identifierValue, departmentId, programId)` | Constructor — creates a pre-approved registration entry; normalises identifier to lowercase. | `Domain/Academic/RegistrationWhitelist.cs` |
+| `RegistrationWhitelist(identifierType, identifierValue, departmentId, programId)` | Constructor â€” creates a pre-approved registration entry; normalises identifier to lowercase. | `Domain/Academic/RegistrationWhitelist.cs` |
 | `MarkUsed(createdUserId)` | Marks the entry as consumed after a successful self-registration. Throws if already used. | `Domain/Academic/RegistrationWhitelist.cs` |
 
 ---
 
-### `FacultyDepartmentAssignment` — `src/Tabsan.EduSphere.Domain/Academic/FacultyDepartmentAssignment.cs`
+### `FacultyDepartmentAssignment` â€” `src/Tabsan.EduSphere.Domain/Academic/FacultyDepartmentAssignment.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
-| `FacultyDepartmentAssignment(facultyUserId, departmentId)` | Constructor — creates an active assignment linking a faculty member to a department. | `Domain/Academic/FacultyDepartmentAssignment.cs` |
+| `FacultyDepartmentAssignment(facultyUserId, departmentId)` | Constructor â€” creates an active assignment linking a faculty member to a department. | `Domain/Academic/FacultyDepartmentAssignment.cs` |
 | `Remove()` | Marks the assignment as removed by setting RemovedAt. | `Domain/Academic/FacultyDepartmentAssignment.cs` |
 
 ---
 
-### `DepartmentRepository` — `src/Tabsan.EduSphere.Infrastructure/Repositories/DepartmentRepository.cs`
+### `DepartmentRepository` â€” `src/Tabsan.EduSphere.Infrastructure/Repositories/DepartmentRepository.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
@@ -367,7 +367,7 @@
 
 ---
 
-### `AcademicProgramRepository` + `SemesterRepository` — `src/Tabsan.EduSphere.Infrastructure/Repositories/AcademicRepositories.cs`
+### `AcademicProgramRepository` + `SemesterRepository` â€” `src/Tabsan.EduSphere.Infrastructure/Repositories/AcademicRepositories.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
@@ -386,7 +386,7 @@
 
 ---
 
-### `CourseRepository` — `src/Tabsan.EduSphere.Infrastructure/Repositories/CourseRepository.cs`
+### `CourseRepository` â€” `src/Tabsan.EduSphere.Infrastructure/Repositories/CourseRepository.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
@@ -405,7 +405,7 @@
 
 ---
 
-### Support Repositories — `src/Tabsan.EduSphere.Infrastructure/Repositories/AcademicSupportRepositories.cs`
+### Support Repositories â€” `src/Tabsan.EduSphere.Infrastructure/Repositories/AcademicSupportRepositories.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
@@ -439,7 +439,7 @@
 
 ---
 
-### `EnrollmentService` — `src/Tabsan.EduSphere.Application/Academic/EnrollmentService.cs`
+### `EnrollmentService` â€” `src/Tabsan.EduSphere.Application/Academic/EnrollmentService.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
@@ -450,129 +450,129 @@
 
 ---
 
-### `StudentRegistrationService` — `src/Tabsan.EduSphere.Application/Academic/StudentRegistrationService.cs`
+### `StudentRegistrationService` â€” `src/Tabsan.EduSphere.Application/Academic/StudentRegistrationService.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
 | `SelfRegisterAsync(request, ct)` | Whitelist-gated self-registration: validates identifier, creates User + StudentProfile atomically, marks whitelist entry consumed. Returns new User ID or null. | `Application/Academic/StudentRegistrationService.cs` |
-| `CreateProfileAsync(request, ct)` | Admin-managed profile creation for an existing User — bypasses the whitelist gate. Throws on duplicate registration number. | `Application/Academic/StudentRegistrationService.cs` |
+| `CreateProfileAsync(request, ct)` | Admin-managed profile creation for an existing User â€” bypasses the whitelist gate. Throws on duplicate registration number. | `Application/Academic/StudentRegistrationService.cs` |
 
 ---
 
-### `DepartmentController` — `src/Tabsan.EduSphere.API/Controllers/DepartmentController.cs`
+### `DepartmentController` â€” `src/Tabsan.EduSphere.API/Controllers/DepartmentController.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
-| `GetAll(ct)` | `GET /api/v1/department` — returns all active departments. Authenticated. | `API/Controllers/DepartmentController.cs` |
-| `GetById(id, ct)` | `GET /api/v1/department/{id}` — returns a single department. | `API/Controllers/DepartmentController.cs` |
-| `Create(request, ct)` | `POST /api/v1/department` — creates a new department. Admin+. | `API/Controllers/DepartmentController.cs` |
-| `Update(id, request, ct)` | `PUT /api/v1/department/{id}` — renames the department. Admin+. | `API/Controllers/DepartmentController.cs` |
-| `Deactivate(id, ct)` | `DELETE /api/v1/department/{id}` — soft-deactivates the department. SuperAdmin only. | `API/Controllers/DepartmentController.cs` |
-| `GetUserId()` | Private helper — extracts the JWT sub claim as a GUID. | `API/Controllers/DepartmentController.cs` |
+| `GetAll(ct)` | `GET /api/v1/department` â€” returns all active departments. Authenticated. | `API/Controllers/DepartmentController.cs` |
+| `GetById(id, ct)` | `GET /api/v1/department/{id}` â€” returns a single department. | `API/Controllers/DepartmentController.cs` |
+| `Create(request, ct)` | `POST /api/v1/department` â€” creates a new department. Admin+. | `API/Controllers/DepartmentController.cs` |
+| `Update(id, request, ct)` | `PUT /api/v1/department/{id}` â€” renames the department. Admin+. | `API/Controllers/DepartmentController.cs` |
+| `Deactivate(id, ct)` | `DELETE /api/v1/department/{id}` â€” soft-deactivates the department. SuperAdmin only. | `API/Controllers/DepartmentController.cs` |
+| `GetUserId()` | Private helper â€” extracts the JWT sub claim as a GUID. | `API/Controllers/DepartmentController.cs` |
 
 ---
 
-### `ProgramController` — `src/Tabsan.EduSphere.API/Controllers/ProgramController.cs`
+### `ProgramController` â€” `src/Tabsan.EduSphere.API/Controllers/ProgramController.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
-| `GetAll(departmentId?, ct)` | `GET /api/v1/program` — returns programmes, optionally filtered by department. | `API/Controllers/ProgramController.cs` |
-| `GetById(id, ct)` | `GET /api/v1/program/{id}` — returns a single programme. | `API/Controllers/ProgramController.cs` |
-| `Create(request, ct)` | `POST /api/v1/program` — creates a new degree programme. Admin+. | `API/Controllers/ProgramController.cs` |
-| `Update(id, request, ct)` | `PUT /api/v1/program/{id}` — renames the programme. Admin+. | `API/Controllers/ProgramController.cs` |
-| `Deactivate(id, ct)` | `DELETE /api/v1/program/{id}` — soft-deactivates. SuperAdmin only. | `API/Controllers/ProgramController.cs` |
+| `GetAll(departmentId?, ct)` | `GET /api/v1/program` â€” returns programmes, optionally filtered by department. | `API/Controllers/ProgramController.cs` |
+| `GetById(id, ct)` | `GET /api/v1/program/{id}` â€” returns a single programme. | `API/Controllers/ProgramController.cs` |
+| `Create(request, ct)` | `POST /api/v1/program` â€” creates a new degree programme. Admin+. | `API/Controllers/ProgramController.cs` |
+| `Update(id, request, ct)` | `PUT /api/v1/program/{id}` â€” renames the programme. Admin+. | `API/Controllers/ProgramController.cs` |
+| `Deactivate(id, ct)` | `DELETE /api/v1/program/{id}` â€” soft-deactivates. SuperAdmin only. | `API/Controllers/ProgramController.cs` |
 
 ---
 
-### `SemesterController` — `src/Tabsan.EduSphere.API/Controllers/SemesterController.cs`
+### `SemesterController` â€” `src/Tabsan.EduSphere.API/Controllers/SemesterController.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
-| `GetAll(ct)` | `GET /api/v1/semester` — returns all semesters ordered by start date. | `API/Controllers/SemesterController.cs` |
-| `GetCurrent(ct)` | `GET /api/v1/semester/current` — returns the current open semester. | `API/Controllers/SemesterController.cs` |
-| `GetById(id, ct)` | `GET /api/v1/semester/{id}` — returns a single semester. | `API/Controllers/SemesterController.cs` |
-| `Create(request, ct)` | `POST /api/v1/semester` — creates a new semester. Admin+. | `API/Controllers/SemesterController.cs` |
-| `Close(id, ct)` | `POST /api/v1/semester/{id}/close` — permanently closes the semester. Admin+. One-way operation. | `API/Controllers/SemesterController.cs` |
+| `GetAll(ct)` | `GET /api/v1/semester` â€” returns all semesters ordered by start date. | `API/Controllers/SemesterController.cs` |
+| `GetCurrent(ct)` | `GET /api/v1/semester/current` â€” returns the current open semester. | `API/Controllers/SemesterController.cs` |
+| `GetById(id, ct)` | `GET /api/v1/semester/{id}` â€” returns a single semester. | `API/Controllers/SemesterController.cs` |
+| `Create(request, ct)` | `POST /api/v1/semester` â€” creates a new semester. Admin+. | `API/Controllers/SemesterController.cs` |
+| `Close(id, ct)` | `POST /api/v1/semester/{id}/close` â€” permanently closes the semester. Admin+. One-way operation. | `API/Controllers/SemesterController.cs` |
 
 ---
 
-### `CourseController` — `src/Tabsan.EduSphere.API/Controllers/CourseController.cs`
+### `CourseController` â€” `src/Tabsan.EduSphere.API/Controllers/CourseController.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
-| `GetAll(departmentId?, ct)` | `GET /api/v1/course` — returns the course catalogue, optionally filtered. | `API/Controllers/CourseController.cs` |
-| `GetById(id, ct)` | `GET /api/v1/course/{id}` — returns a single course. | `API/Controllers/CourseController.cs` |
-| `Create(request, ct)` | `POST /api/v1/course` — adds a course to the catalogue. Admin+. | `API/Controllers/CourseController.cs` |
-| `UpdateTitle(id, request, ct)` | `PUT /api/v1/course/{id}/title` — updates the course title. Admin+. | `API/Controllers/CourseController.cs` |
-| `Deactivate(id, ct)` | `DELETE /api/v1/course/{id}` — soft-deactivates the course. SuperAdmin. | `API/Controllers/CourseController.cs` |
-| `GetOfferings(semesterId, ct)` | `GET /api/v1/course/offerings?semesterId=` — returns offerings for a semester. | `API/Controllers/CourseController.cs` |
-| `GetMyOfferings(ct)` | `GET /api/v1/course/offerings/my` — returns offerings assigned to the calling faculty, filtered to assigned departments. | `API/Controllers/CourseController.cs` |
-| `CreateOffering(request, ct)` | `POST /api/v1/course/offerings` — creates a course offering. Admin+. | `API/Controllers/CourseController.cs` |
-| `AssignFaculty(id, request, ct)` | `PUT /api/v1/course/offerings/{id}/faculty` — assigns faculty to an offering. Admin+. | `API/Controllers/CourseController.cs` |
-| `GetUserId()` | Private helper — extracts the JWT sub claim as a GUID. | `API/Controllers/CourseController.cs` |
+| `GetAll(departmentId?, ct)` | `GET /api/v1/course` â€” returns the course catalogue, optionally filtered. | `API/Controllers/CourseController.cs` |
+| `GetById(id, ct)` | `GET /api/v1/course/{id}` â€” returns a single course. | `API/Controllers/CourseController.cs` |
+| `Create(request, ct)` | `POST /api/v1/course` â€” adds a course to the catalogue. Admin+. | `API/Controllers/CourseController.cs` |
+| `UpdateTitle(id, request, ct)` | `PUT /api/v1/course/{id}/title` â€” updates the course title. Admin+. | `API/Controllers/CourseController.cs` |
+| `Deactivate(id, ct)` | `DELETE /api/v1/course/{id}` â€” soft-deactivates the course. SuperAdmin. | `API/Controllers/CourseController.cs` |
+| `GetOfferings(semesterId, ct)` | `GET /api/v1/course/offerings?semesterId=` â€” returns offerings for a semester. | `API/Controllers/CourseController.cs` |
+| `GetMyOfferings(ct)` | `GET /api/v1/course/offerings/my` â€” returns offerings assigned to the calling faculty, filtered to assigned departments. | `API/Controllers/CourseController.cs` |
+| `CreateOffering(request, ct)` | `POST /api/v1/course/offerings` â€” creates a course offering. Admin+. | `API/Controllers/CourseController.cs` |
+| `AssignFaculty(id, request, ct)` | `PUT /api/v1/course/offerings/{id}/faculty` â€” assigns faculty to an offering. Admin+. | `API/Controllers/CourseController.cs` |
+| `GetUserId()` | Private helper â€” extracts the JWT sub claim as a GUID. | `API/Controllers/CourseController.cs` |
 
 ---
 
-### `EnrollmentController` — `src/Tabsan.EduSphere.API/Controllers/EnrollmentController.cs`
+### `EnrollmentController` â€” `src/Tabsan.EduSphere.API/Controllers/EnrollmentController.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
-| `Enroll(request, ct)` | `POST /api/v1/enrollment` — enrolls the calling student into a course offering. Student role. | `API/Controllers/EnrollmentController.cs` |
-| `Drop(offeringId, ct)` | `DELETE /api/v1/enrollment/{offeringId}` — drops the student's active enrollment. Student role. | `API/Controllers/EnrollmentController.cs` |
-| `MyCourses(ct)` | `GET /api/v1/enrollment/my-courses` — returns the student's full enrollment history. Student role. | `API/Controllers/EnrollmentController.cs` |
-| `GetRoster(offeringId, ct)` | `GET /api/v1/enrollment/roster/{offeringId}` — returns active enrollments for an offering. Faculty/Admin+. | `API/Controllers/EnrollmentController.cs` |
-| `GetUserId()` | Private helper — extracts the JWT sub claim as a GUID. | `API/Controllers/EnrollmentController.cs` |
+| `Enroll(request, ct)` | `POST /api/v1/enrollment` â€” enrolls the calling student into a course offering. Student role. | `API/Controllers/EnrollmentController.cs` |
+| `Drop(offeringId, ct)` | `DELETE /api/v1/enrollment/{offeringId}` â€” drops the student's active enrollment. Student role. | `API/Controllers/EnrollmentController.cs` |
+| `MyCourses(ct)` | `GET /api/v1/enrollment/my-courses` â€” returns the student's full enrollment history. Student role. | `API/Controllers/EnrollmentController.cs` |
+| `GetRoster(offeringId, ct)` | `GET /api/v1/enrollment/roster/{offeringId}` â€” returns active enrollments for an offering. Faculty/Admin+. | `API/Controllers/EnrollmentController.cs` |
+| `GetUserId()` | Private helper â€” extracts the JWT sub claim as a GUID. | `API/Controllers/EnrollmentController.cs` |
 
 ---
 
-### `StudentController` — `src/Tabsan.EduSphere.API/Controllers/StudentController.cs`
+### `StudentController` â€” `src/Tabsan.EduSphere.API/Controllers/StudentController.cs`
 
 | Name | Purpose | Location |
 |------|---------|----------|
-| `SelfRegister(request, ct)` | `POST /api/v1/student/register` — public whitelist-gated self-registration. AllowAnonymous. | `API/Controllers/StudentController.cs` |
-| `GetMyProfile(ct)` | `GET /api/v1/student/profile` — returns the calling student's academic profile. Student role. | `API/Controllers/StudentController.cs` |
-| `GetAll(departmentId?, ct)` | `GET /api/v1/student` — returns all student profiles, optionally by department. Admin+. | `API/Controllers/StudentController.cs` |
-| `Create(request, ct)` | `POST /api/v1/student` — Admin-managed student profile creation. Admin+. | `API/Controllers/StudentController.cs` |
-| `AddWhitelistEntry(request, ct)` | `POST /api/v1/student/whitelist` — adds a single registration whitelist entry. Admin+. | `API/Controllers/StudentController.cs` |
-| `BulkAddWhitelistEntries(requests, ct)` | `POST /api/v1/student/whitelist/bulk` — bulk-imports whitelist entries. Admin+. | `API/Controllers/StudentController.cs` |
-| `GetUserId()` | Private helper — extracts the JWT sub claim as a GUID. | `API/Controllers/StudentController.cs` |
+| `SelfRegister(request, ct)` | `POST /api/v1/student/register` â€” public whitelist-gated self-registration. AllowAnonymous. | `API/Controllers/StudentController.cs` |
+| `GetMyProfile(ct)` | `GET /api/v1/student/profile` â€” returns the calling student's academic profile. Student role. | `API/Controllers/StudentController.cs` |
+| `GetAll(departmentId?, ct)` | `GET /api/v1/student` â€” returns all student profiles, optionally by department. Admin+. | `API/Controllers/StudentController.cs` |
+| `Create(request, ct)` | `POST /api/v1/student` â€” Admin-managed student profile creation. Admin+. | `API/Controllers/StudentController.cs` |
+| `AddWhitelistEntry(request, ct)` | `POST /api/v1/student/whitelist` â€” adds a single registration whitelist entry. Admin+. | `API/Controllers/StudentController.cs` |
+| `BulkAddWhitelistEntries(requests, ct)` | `POST /api/v1/student/whitelist/bulk` â€” bulk-imports whitelist entries. Admin+. | `API/Controllers/StudentController.cs` |
+| `GetUserId()` | Private helper â€” extracts the JWT sub claim as a GUID. | `API/Controllers/StudentController.cs` |
 
 ---
 
-## Phase 3 � Assignments and Results
+## Phase 3 ï¿½ Assignments and Results
 
-### Domain � Assignment
+### Domain ï¿½ Assignment
 
 | Function Name | Purpose | Location |
 |---|---|---|
-| `Assignment(courseOfferingId, title, description, dueDate, maxMarks)` | Constructor � creates an unpublished assignment. | `Domain/Assignments/Assignment.cs` |
+| `Assignment(courseOfferingId, title, description, dueDate, maxMarks)` | Constructor ï¿½ creates an unpublished assignment. | `Domain/Assignments/Assignment.cs` |
 | `Publish()` | Marks the assignment as published (visible to students). Throws if already published. | `Domain/Assignments/Assignment.cs` |
 | `Retract()` | Withdraws a published assignment. Throws if not published. | `Domain/Assignments/Assignment.cs` |
 | `Update(title, description, dueDate, maxMarks)` | Updates editable fields. Throws if already published. | `Domain/Assignments/Assignment.cs` |
 
-### Domain � AssignmentSubmission
+### Domain ï¿½ AssignmentSubmission
 
 | Function Name | Purpose | Location |
 |---|---|---|
-| `AssignmentSubmission(assignmentId, studentProfileId, fileUrl, textContent)` | Constructor � requires at least one of fileUrl/textContent. | `Domain/Assignments/AssignmentSubmission.cs` |
+| `AssignmentSubmission(assignmentId, studentProfileId, fileUrl, textContent)` | Constructor ï¿½ requires at least one of fileUrl/textContent. | `Domain/Assignments/AssignmentSubmission.cs` |
 | `Grade(marksAwarded, feedback, gradedByUserId)` | Records marks and feedback. Throws if submission was Rejected. | `Domain/Assignments/AssignmentSubmission.cs` |
 | `Reject()` | Marks submission as Rejected and clears awarded marks. | `Domain/Assignments/AssignmentSubmission.cs` |
 
-### Domain � Result
+### Domain ï¿½ Result
 
 | Function Name | Purpose | Location |
 |---|---|---|
-| `Result(studentProfileId, courseOfferingId, resultType, marksObtained, maxMarks)` | Constructor � validates marks range. | `Domain/Assignments/Result.cs` |
+| `Result(studentProfileId, courseOfferingId, resultType, marksObtained, maxMarks)` | Constructor ï¿½ validates marks range. | `Domain/Assignments/Result.cs` |
 | `Publish(publishedByUserId)` | One-way publication. Throws if already published. | `Domain/Assignments/Result.cs` |
 | `CorrectMarks(newMarksObtained, newMaxMarks)` | Admin-only correction of a published result. Validates range. | `Domain/Assignments/Result.cs` |
 
-### Domain � TranscriptExportLog
+### Domain ï¿½ TranscriptExportLog
 
 | Function Name | Purpose | Location |
 |---|---|---|
-| `TranscriptExportLog(studentProfileId, requestedByUserId, format, documentUrl?, ipAddress?)` | Constructor � append-only, immutable after creation. | `Domain/Assignments/TranscriptExportLog.cs` |
+| `TranscriptExportLog(studentProfileId, requestedByUserId, format, documentUrl?, ipAddress?)` | Constructor ï¿½ append-only, immutable after creation. | `Domain/Assignments/TranscriptExportLog.cs` |
 
-### Infrastructure � AssignmentRepository
+### Infrastructure ï¿½ AssignmentRepository
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -590,7 +590,7 @@
 | `UpdateSubmission(submission)` | Marks submission as modified. | `Infrastructure/Repositories/AssignmentResultRepositories.cs` |
 | `SaveChangesAsync(ct)` | Commits pending changes (AssignmentRepository). | `Infrastructure/Repositories/AssignmentResultRepositories.cs` |
 
-### Infrastructure � ResultRepository
+### Infrastructure ï¿½ ResultRepository
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -606,7 +606,7 @@
 | `AddExportLogAsync(log, ct)` | Queues a transcript export log for insertion. | `Infrastructure/Repositories/AssignmentResultRepositories.cs` |
 | `SaveChangesAsync(ct)` | Commits pending changes (ResultRepository). | `Infrastructure/Repositories/AssignmentResultRepositories.cs` |
 
-### Application � AssignmentService
+### Application ï¿½ AssignmentService
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -622,10 +622,10 @@
 | `GetSubmissionsByAssignmentAsync(assignmentId, ct)` | Returns all submissions for an assignment (faculty grading view). | `Application/Assignments/AssignmentService.cs` |
 | `GradeSubmissionAsync(request, gradedByUserId, ct)` | Grades a submission; validates marks <= MaxMarks. | `Application/Assignments/AssignmentService.cs` |
 | `RejectSubmissionAsync(assignmentId, studentProfileId, ct)` | Rejects a submission. Returns false if not found. | `Application/Assignments/AssignmentService.cs` |
-| `ToResponse(assignment, submissionCount)` | Private � maps Assignment to AssignmentResponse DTO. | `Application/Assignments/AssignmentService.cs` |
-| `ToSubmissionResponse(submission, assignmentTitle)` | Private � maps AssignmentSubmission to SubmissionResponse DTO. | `Application/Assignments/AssignmentService.cs` |
+| `ToResponse(assignment, submissionCount)` | Private ï¿½ maps Assignment to AssignmentResponse DTO. | `Application/Assignments/AssignmentService.cs` |
+| `ToSubmissionResponse(submission, assignmentTitle)` | Private ï¿½ maps AssignmentSubmission to SubmissionResponse DTO. | `Application/Assignments/AssignmentService.cs` |
 
-### Application � ResultService
+### Application ï¿½ ResultService
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -639,71 +639,71 @@
 | `GetByOfferingAsync(courseOfferingId, ct)` | Returns all results for a course offering. | `Application/Assignments/ResultService.cs` |
 | `ExportTranscriptAsync(request, requestedByUserId, ipAddress, ct)` | Exports transcript, logs to TranscriptExportLog and AuditLog. | `Application/Assignments/ResultService.cs` |
 | `GetExportHistoryAsync(studentProfileId, ct)` | Returns transcript export history for a student. | `Application/Assignments/ResultService.cs` |
-| `ToResponse(result)` | Private � maps Result to ResultResponse DTO including percentage. | `Application/Assignments/ResultService.cs` |
+| `ToResponse(result)` | Private ï¿½ maps Result to ResultResponse DTO including percentage. | `Application/Assignments/ResultService.cs` |
 
-### API � AssignmentController
-
-| Function Name | Purpose | Location |
-|---|---|---|
-| `Create(request, ct)` | `POST /api/assignment` � creates an assignment. Faculty/Admin. | `API/Controllers/AssignmentController.cs` |
-| `Update(id, request, ct)` | `PUT /api/assignment/{id}` � updates a draft assignment. Faculty/Admin. | `API/Controllers/AssignmentController.cs` |
-| `Publish(id, ct)` | `POST /api/assignment/{id}/publish` � publishes an assignment. Faculty/Admin. | `API/Controllers/AssignmentController.cs` |
-| `Retract(id, ct)` | `POST /api/assignment/{id}/retract` � retracts a published assignment. Faculty/Admin. | `API/Controllers/AssignmentController.cs` |
-| `Delete(id, ct)` | `DELETE /api/assignment/{id}` � soft-deletes when no submissions exist. Admin. | `API/Controllers/AssignmentController.cs` |
-| `GetByOffering(courseOfferingId, ct)` | `GET /api/assignment/by-offering/{id}` � lists assignments for an offering. | `API/Controllers/AssignmentController.cs` |
-| `GetById(id, ct)` | `GET /api/assignment/{id}` � returns a single assignment. | `API/Controllers/AssignmentController.cs` |
-| `Submit(request, ct)` | `POST /api/assignment/submit` � student submission. Student. | `API/Controllers/AssignmentController.cs` |
-| `GetMySubmissions(ct)` | `GET /api/assignment/my-submissions` � student's own submissions. Student. | `API/Controllers/AssignmentController.cs` |
-| `GetSubmissions(id, ct)` | `GET /api/assignment/{id}/submissions` � all submissions for an assignment. Faculty/Admin. | `API/Controllers/AssignmentController.cs` |
-| `Grade(request, ct)` | `PUT /api/assignment/submissions/grade` � grades a submission. Faculty/Admin. | `API/Controllers/AssignmentController.cs` |
-| `Reject(assignmentId, studentProfileId, ct)` | `POST /api/assignment/{id}/submissions/{studentId}/reject` � rejects a submission. Faculty/Admin. | `API/Controllers/AssignmentController.cs` |
-| `GetCurrentUserId()` | Private � extracts user ID from JWT NameIdentifier claim. | `API/Controllers/AssignmentController.cs` |
-| `GetCurrentStudentProfileId()` | Private � extracts student profile ID from "studentProfileId" JWT claim. | `API/Controllers/AssignmentController.cs` |
-
-### API � ResultController
+### API ï¿½ AssignmentController
 
 | Function Name | Purpose | Location |
 |---|---|---|
-| `Create(request, ct)` | `POST /api/result` � creates a draft result. Faculty/Admin. | `API/Controllers/ResultController.cs` |
-| `BulkCreate(request, ct)` | `POST /api/result/bulk` � bulk-creates draft results for a class. Faculty/Admin. | `API/Controllers/ResultController.cs` |
-| `Publish(studentProfileId, courseOfferingId, resultType, ct)` | `POST /api/result/publish` � publishes a single result. Faculty/Admin. | `API/Controllers/ResultController.cs` |
-| `PublishAll(courseOfferingId, ct)` | `POST /api/result/publish-all` � publishes all drafts for an offering. Faculty/Admin. | `API/Controllers/ResultController.cs` |
-| `Correct(studentProfileId, courseOfferingId, resultType, request, ct)` | `PUT /api/result/correct` � Admin correction of a published result. Admin only. | `API/Controllers/ResultController.cs` |
-| `GetMyResults(ct)` | `GET /api/result/my-results` � student's own published results. Student. | `API/Controllers/ResultController.cs` |
-| `GetByStudent(studentProfileId, ct)` | `GET /api/result/by-student/{id}` � all results for a student. Faculty/Admin. | `API/Controllers/ResultController.cs` |
-| `GetByOffering(courseOfferingId, ct)` | `GET /api/result/by-offering/{id}` � all results for an offering. Faculty/Admin. | `API/Controllers/ResultController.cs` |
-| `GetTranscript(studentProfileId, format, ct)` | `GET /api/result/transcript/{id}` � exports transcript, logs request. All roles. | `API/Controllers/ResultController.cs` |
-| `GetTranscriptHistory(studentProfileId, ct)` | `GET /api/result/transcript/{id}/history` � export history for a student. Faculty/Admin. | `API/Controllers/ResultController.cs` |
-| `GetCurrentUserId()` | Private � extracts user ID from JWT NameIdentifier claim. | `API/Controllers/ResultController.cs` |
-| `GetCurrentStudentProfileId()` | Private � extracts student profile ID from "studentProfileId" JWT claim. | `API/Controllers/ResultController.cs` |
+| `Create(request, ct)` | `POST /api/assignment` ï¿½ creates an assignment. Faculty/Admin. | `API/Controllers/AssignmentController.cs` |
+| `Update(id, request, ct)` | `PUT /api/assignment/{id}` ï¿½ updates a draft assignment. Faculty/Admin. | `API/Controllers/AssignmentController.cs` |
+| `Publish(id, ct)` | `POST /api/assignment/{id}/publish` ï¿½ publishes an assignment. Faculty/Admin. | `API/Controllers/AssignmentController.cs` |
+| `Retract(id, ct)` | `POST /api/assignment/{id}/retract` ï¿½ retracts a published assignment. Faculty/Admin. | `API/Controllers/AssignmentController.cs` |
+| `Delete(id, ct)` | `DELETE /api/assignment/{id}` ï¿½ soft-deletes when no submissions exist. Admin. | `API/Controllers/AssignmentController.cs` |
+| `GetByOffering(courseOfferingId, ct)` | `GET /api/assignment/by-offering/{id}` ï¿½ lists assignments for an offering. | `API/Controllers/AssignmentController.cs` |
+| `GetById(id, ct)` | `GET /api/assignment/{id}` ï¿½ returns a single assignment. | `API/Controllers/AssignmentController.cs` |
+| `Submit(request, ct)` | `POST /api/assignment/submit` ï¿½ student submission. Student. | `API/Controllers/AssignmentController.cs` |
+| `GetMySubmissions(ct)` | `GET /api/assignment/my-submissions` ï¿½ student's own submissions. Student. | `API/Controllers/AssignmentController.cs` |
+| `GetSubmissions(id, ct)` | `GET /api/assignment/{id}/submissions` ï¿½ all submissions for an assignment. Faculty/Admin. | `API/Controllers/AssignmentController.cs` |
+| `Grade(request, ct)` | `PUT /api/assignment/submissions/grade` ï¿½ grades a submission. Faculty/Admin. | `API/Controllers/AssignmentController.cs` |
+| `Reject(assignmentId, studentProfileId, ct)` | `POST /api/assignment/{id}/submissions/{studentId}/reject` ï¿½ rejects a submission. Faculty/Admin. | `API/Controllers/AssignmentController.cs` |
+| `GetCurrentUserId()` | Private ï¿½ extracts user ID from JWT NameIdentifier claim. | `API/Controllers/AssignmentController.cs` |
+| `GetCurrentStudentProfileId()` | Private ï¿½ extracts student profile ID from "studentProfileId" JWT claim. | `API/Controllers/AssignmentController.cs` |
+
+### API ï¿½ ResultController
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `Create(request, ct)` | `POST /api/result` ï¿½ creates a draft result. Faculty/Admin. | `API/Controllers/ResultController.cs` |
+| `BulkCreate(request, ct)` | `POST /api/result/bulk` ï¿½ bulk-creates draft results for a class. Faculty/Admin. | `API/Controllers/ResultController.cs` |
+| `Publish(studentProfileId, courseOfferingId, resultType, ct)` | `POST /api/result/publish` ï¿½ publishes a single result. Faculty/Admin. | `API/Controllers/ResultController.cs` |
+| `PublishAll(courseOfferingId, ct)` | `POST /api/result/publish-all` ï¿½ publishes all drafts for an offering. Faculty/Admin. | `API/Controllers/ResultController.cs` |
+| `Correct(studentProfileId, courseOfferingId, resultType, request, ct)` | `PUT /api/result/correct` ï¿½ Admin correction of a published result. Admin only. | `API/Controllers/ResultController.cs` |
+| `GetMyResults(ct)` | `GET /api/result/my-results` ï¿½ student's own published results. Student. | `API/Controllers/ResultController.cs` |
+| `GetByStudent(studentProfileId, ct)` | `GET /api/result/by-student/{id}` ï¿½ all results for a student. Faculty/Admin. | `API/Controllers/ResultController.cs` |
+| `GetByOffering(courseOfferingId, ct)` | `GET /api/result/by-offering/{id}` ï¿½ all results for an offering. Faculty/Admin. | `API/Controllers/ResultController.cs` |
+| `GetTranscript(studentProfileId, format, ct)` | `GET /api/result/transcript/{id}` ï¿½ exports transcript, logs request. All roles. | `API/Controllers/ResultController.cs` |
+| `GetTranscriptHistory(studentProfileId, ct)` | `GET /api/result/transcript/{id}/history` ï¿½ export history for a student. Faculty/Admin. | `API/Controllers/ResultController.cs` |
+| `GetCurrentUserId()` | Private ï¿½ extracts user ID from JWT NameIdentifier claim. | `API/Controllers/ResultController.cs` |
+| `GetCurrentStudentProfileId()` | Private ï¿½ extracts student profile ID from "studentProfileId" JWT claim. | `API/Controllers/ResultController.cs` |
 
 ---
 
-## Phase 4 � Notifications and Attendance
+## Phase 4 ï¿½ Notifications and Attendance
 
-### Domain � Notification
+### Domain ï¿½ Notification
 
 | Function Name | Purpose | Location |
 |---|---|---|
-| `Notification(title, body, type, senderUserId)` | Constructor � user-authored notification. | `Domain/Notifications/Notification.cs` |
-| `Notification(title, body, type)` | Constructor � system-generated notification (no human sender). | `Domain/Notifications/Notification.cs` |
+| `Notification(title, body, type, senderUserId)` | Constructor ï¿½ user-authored notification. | `Domain/Notifications/Notification.cs` |
+| `Notification(title, body, type)` | Constructor ï¿½ system-generated notification (no human sender). | `Domain/Notifications/Notification.cs` |
 | `Deactivate()` | Hides the notification from all inboxes. Does not delete it. | `Domain/Notifications/Notification.cs` |
 
-### Domain � NotificationRecipient
+### Domain ï¿½ NotificationRecipient
 
 | Function Name | Purpose | Location |
 |---|---|---|
-| `NotificationRecipient(notificationId, recipientUserId)` | Constructor � creates an unread delivery record for the user. | `Domain/Notifications/NotificationRecipient.cs` |
+| `NotificationRecipient(notificationId, recipientUserId)` | Constructor ï¿½ creates an unread delivery record for the user. | `Domain/Notifications/NotificationRecipient.cs` |
 | `MarkRead()` | Marks the notification as read. Idempotent. | `Domain/Notifications/NotificationRecipient.cs` |
 
-### Domain � AttendanceRecord
+### Domain ï¿½ AttendanceRecord
 
 | Function Name | Purpose | Location |
 |---|---|---|
-| `AttendanceRecord(studentProfileId, courseOfferingId, date, status, markedByUserId, remarks?)` | Constructor � normalises date to UTC date only. | `Domain/Attendance/AttendanceRecord.cs` |
+| `AttendanceRecord(studentProfileId, courseOfferingId, date, status, markedByUserId, remarks?)` | Constructor ï¿½ normalises date to UTC date only. | `Domain/Attendance/AttendanceRecord.cs` |
 | `Correct(newStatus, correctedByUserId, remarks?)` | Corrects status and records the correcting user. | `Domain/Attendance/AttendanceRecord.cs` |
 
-### Infrastructure � NotificationRepository
+### Infrastructure ï¿½ NotificationRepository
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -717,7 +717,7 @@
 | `UpdateRecipient(recipient)` | Marks a recipient row as modified (read state). | `Infrastructure/Repositories/NotificationAttendanceRepositories.cs` |
 | `SaveChangesAsync(ct)` | Commits pending changes (NotificationRepository). | `Infrastructure/Repositories/NotificationAttendanceRepositories.cs` |
 
-### Infrastructure � AttendanceRepository
+### Infrastructure ï¿½ AttendanceRepository
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -732,7 +732,7 @@
 | `Update(record)` | Marks a record as modified (correction). | `Infrastructure/Repositories/NotificationAttendanceRepositories.cs` |
 | `SaveChangesAsync(ct)` | Commits pending changes (AttendanceRepository). | `Infrastructure/Repositories/NotificationAttendanceRepositories.cs` |
 
-### Application � NotificationService
+### Application ï¿½ NotificationService
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -743,9 +743,9 @@
 | `GetBadgeAsync(userId, ct)` | Returns unread count for the notification bell badge. | `Application/Notifications/NotificationService.cs` |
 | `MarkReadAsync(notificationId, userId, ct)` | Marks a specific notification as read. Idempotent. | `Application/Notifications/NotificationService.cs` |
 | `MarkAllReadAsync(userId, ct)` | Marks all unread notifications as read for the user. | `Application/Notifications/NotificationService.cs` |
-| `ToResponse(recipient)` | Private � maps NotificationRecipient (with navigation) to DTO. | `Application/Notifications/NotificationService.cs` |
+| `ToResponse(recipient)` | Private ï¿½ maps NotificationRecipient (with navigation) to DTO. | `Application/Notifications/NotificationService.cs` |
 
-### Application � AttendanceService
+### Application ï¿½ AttendanceService
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -756,47 +756,47 @@
 | `GetByStudentAsync(studentProfileId, courseOfferingId?, ct)` | Returns records for a student, optionally scoped to one offering. | `Application/Attendance/AttendanceService.cs` |
 | `GetSummaryAsync(studentProfileId, courseOfferingId, ct)` | Returns attendance percentage summary for a student in an offering. | `Application/Attendance/AttendanceService.cs` |
 | `GetBelowThresholdAsync(thresholdPercent, ct)` | Returns all student-offering pairs below the threshold. | `Application/Attendance/AttendanceService.cs` |
-| `ToResponse(record)` | Private � maps AttendanceRecord to AttendanceResponse DTO. | `Application/Attendance/AttendanceService.cs` |
+| `ToResponse(record)` | Private ï¿½ maps AttendanceRecord to AttendanceResponse DTO. | `Application/Attendance/AttendanceService.cs` |
 
-### API � NotificationController
-
-| Function Name | Purpose | Location |
-|---|---|---|
-| `Send(request, ct)` | `POST /api/notification` � dispatches notification to a user list. Admin/Faculty. | `API/Controllers/NotificationController.cs` |
-| `Deactivate(id, ct)` | `DELETE /api/notification/{id}` � deactivates a notification. Admin. | `API/Controllers/NotificationController.cs` |
-| `GetInbox(unreadOnly, page, pageSize, ct)` | `GET /api/notification/inbox` � paged inbox for current user. | `API/Controllers/NotificationController.cs` |
-| `GetBadge(ct)` | `GET /api/notification/badge` � unread count for the bell icon. | `API/Controllers/NotificationController.cs` |
-| `MarkRead(id, ct)` | `POST /api/notification/{id}/read` � marks one notification read. | `API/Controllers/NotificationController.cs` |
-| `MarkAllRead(ct)` | `POST /api/notification/read-all` � marks all unread as read. | `API/Controllers/NotificationController.cs` |
-| `GetCurrentUserId()` | Private � extracts user ID from JWT NameIdentifier claim. | `API/Controllers/NotificationController.cs` |
-
-### API � AttendanceController
+### API ï¿½ NotificationController
 
 | Function Name | Purpose | Location |
 |---|---|---|
-| `Mark(request, ct)` | `POST /api/attendance` � marks attendance for one student. Faculty/Admin. | `API/Controllers/AttendanceController.cs` |
-| `BulkMark(request, ct)` | `POST /api/attendance/bulk` � bulk-marks a full class. Faculty/Admin. | `API/Controllers/AttendanceController.cs` |
-| `Correct(request, ct)` | `PUT /api/attendance/correct` � corrects an existing record. Faculty/Admin. | `API/Controllers/AttendanceController.cs` |
-| `GetByOffering(courseOfferingId, from, to, ct)` | `GET /api/attendance/by-offering/{id}` � records for an offering. Faculty/Admin. | `API/Controllers/AttendanceController.cs` |
-| `GetByStudent(studentProfileId, courseOfferingId, ct)` | `GET /api/attendance/by-student/{id}` � records for a student. Faculty/Admin. | `API/Controllers/AttendanceController.cs` |
-| `GetMyAttendance(courseOfferingId, ct)` | `GET /api/attendance/my-attendance` � student's own records. Student. | `API/Controllers/AttendanceController.cs` |
-| `GetSummary(studentProfileId, courseOfferingId, ct)` | `GET /api/attendance/summary/{studentId}/{offeringId}` � percentage summary. All roles. | `API/Controllers/AttendanceController.cs` |
-| `GetBelowThreshold(threshold, ct)` | `GET /api/attendance/below-threshold` � students below threshold. Admin. | `API/Controllers/AttendanceController.cs` |
-| `GetCurrentUserId()` | Private � extracts user ID from JWT NameIdentifier claim. | `API/Controllers/AttendanceController.cs` |
-| `GetCurrentStudentProfileId()` | Private � extracts student profile ID from "studentProfileId" JWT claim. | `API/Controllers/AttendanceController.cs` |
+| `Send(request, ct)` | `POST /api/notification` ï¿½ dispatches notification to a user list. Admin/Faculty. | `API/Controllers/NotificationController.cs` |
+| `Deactivate(id, ct)` | `DELETE /api/notification/{id}` ï¿½ deactivates a notification. Admin. | `API/Controllers/NotificationController.cs` |
+| `GetInbox(unreadOnly, page, pageSize, ct)` | `GET /api/notification/inbox` ï¿½ paged inbox for current user. | `API/Controllers/NotificationController.cs` |
+| `GetBadge(ct)` | `GET /api/notification/badge` ï¿½ unread count for the bell icon. | `API/Controllers/NotificationController.cs` |
+| `MarkRead(id, ct)` | `POST /api/notification/{id}/read` ï¿½ marks one notification read. | `API/Controllers/NotificationController.cs` |
+| `MarkAllRead(ct)` | `POST /api/notification/read-all` ï¿½ marks all unread as read. | `API/Controllers/NotificationController.cs` |
+| `GetCurrentUserId()` | Private ï¿½ extracts user ID from JWT NameIdentifier claim. | `API/Controllers/NotificationController.cs` |
 
-### Background Job � AttendanceAlertJob
+### API ï¿½ AttendanceController
 
 | Function Name | Purpose | Location |
 |---|---|---|
-| `ExecuteAsync(stoppingToken)` | Main hosted service loop � waits 60 s startup delay then runs on configured interval. | `BackgroundJobs/AttendanceAlertJob.cs` |
+| `Mark(request, ct)` | `POST /api/attendance` ï¿½ marks attendance for one student. Faculty/Admin. | `API/Controllers/AttendanceController.cs` |
+| `BulkMark(request, ct)` | `POST /api/attendance/bulk` ï¿½ bulk-marks a full class. Faculty/Admin. | `API/Controllers/AttendanceController.cs` |
+| `Correct(request, ct)` | `PUT /api/attendance/correct` ï¿½ corrects an existing record. Faculty/Admin. | `API/Controllers/AttendanceController.cs` |
+| `GetByOffering(courseOfferingId, from, to, ct)` | `GET /api/attendance/by-offering/{id}` ï¿½ records for an offering. Faculty/Admin. | `API/Controllers/AttendanceController.cs` |
+| `GetByStudent(studentProfileId, courseOfferingId, ct)` | `GET /api/attendance/by-student/{id}` ï¿½ records for a student. Faculty/Admin. | `API/Controllers/AttendanceController.cs` |
+| `GetMyAttendance(courseOfferingId, ct)` | `GET /api/attendance/my-attendance` ï¿½ student's own records. Student. | `API/Controllers/AttendanceController.cs` |
+| `GetSummary(studentProfileId, courseOfferingId, ct)` | `GET /api/attendance/summary/{studentId}/{offeringId}` ï¿½ percentage summary. All roles. | `API/Controllers/AttendanceController.cs` |
+| `GetBelowThreshold(threshold, ct)` | `GET /api/attendance/below-threshold` ï¿½ students below threshold. Admin. | `API/Controllers/AttendanceController.cs` |
+| `GetCurrentUserId()` | Private ï¿½ extracts user ID from JWT NameIdentifier claim. | `API/Controllers/AttendanceController.cs` |
+| `GetCurrentStudentProfileId()` | Private ï¿½ extracts student profile ID from "studentProfileId" JWT claim. | `API/Controllers/AttendanceController.cs` |
+
+### Background Job ï¿½ AttendanceAlertJob
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `ExecuteAsync(stoppingToken)` | Main hosted service loop ï¿½ waits 60 s startup delay then runs on configured interval. | `BackgroundJobs/AttendanceAlertJob.cs` |
 | `RunCheckAsync(ct)` | Resolves scoped services, finds below-threshold students, dispatches alert notifications. | `BackgroundJobs/AttendanceAlertJob.cs` |
 
 ---
 
-## Phase 5 � Quizzes and FYP (Sprints 10�11)
+## Phase 5 ï¿½ Quizzes and FYP (Sprints 10ï¿½11)
 
-### Domain � Quiz
+### Domain ï¿½ Quiz
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -806,20 +806,20 @@
 | Deactivate() | Soft-deletes the quiz by setting IsActive=false. | Domain/Quizzes/Quiz.cs |
 | Update(title, instructions, timeLimitMinutes, maxAttempts, availableFrom, availableUntil) | Updates editable quiz metadata. | Domain/Quizzes/Quiz.cs |
 
-### Domain � QuizQuestion
+### Domain ï¿½ QuizQuestion
 
 | Function Name | Purpose | Location |
 |---|---|---|
 | QuizQuestion(quizId, text, type, marks, orderIndex) | Creates a new question within a quiz. | Domain/Quizzes/Quiz.cs |
 | Update(text, marks, orderIndex) | Updates the question text, marks, and display order. | Domain/Quizzes/Quiz.cs |
 
-### Domain � QuizOption
+### Domain ï¿½ QuizOption
 
 | Function Name | Purpose | Location |
 |---|---|---|
 | QuizOption(quizQuestionId, text, isCorrect, orderIndex) | Creates an answer option for a MCQ or TrueFalse question. | Domain/Quizzes/Quiz.cs |
 
-### Domain � QuizAttempt
+### Domain ï¿½ QuizAttempt
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -829,7 +829,7 @@
 | Abandon() | Marks the attempt as Abandoned and records FinishedAt. | Domain/Quizzes/QuizAttempt.cs |
 | RecordScore(score) | Sets the computed TotalScore on the attempt. | Domain/Quizzes/QuizAttempt.cs |
 
-### Domain � QuizAnswer
+### Domain ï¿½ QuizAnswer
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -837,7 +837,7 @@
 | QuizAnswer(quizAttemptId, quizQuestionId, textResponse) | Records a ShortAnswer response as free text. | Domain/Quizzes/QuizAttempt.cs |
 | AwardMarks(marks) | Sets the marks awarded for manually graded short answers. | Domain/Quizzes/QuizAttempt.cs |
 
-### Domain � FypProject
+### Domain ï¿½ FypProject
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -848,13 +848,13 @@
 | Complete() | Marks the project as Completed. | Domain/Fyp/FypProject.cs |
 | Update(title, description) | Updates the project title and description. | Domain/Fyp/FypProject.cs |
 
-### Domain � FypPanelMember
+### Domain ï¿½ FypPanelMember
 
 | Function Name | Purpose | Location |
 |---|---|---|
 | FypPanelMember(fypProjectId, userId, role) | Adds a faculty member to the project panel with a specified role. | Domain/Fyp/FypProject.cs |
 
-### Domain � FypMeeting
+### Domain ï¿½ FypMeeting
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -863,7 +863,7 @@
 | Cancel() | Cancels a scheduled meeting. | Domain/Fyp/FypProject.cs |
 | Reschedule(scheduledAt, venue, agenda) | Updates the meeting time, venue, and agenda and resets status to Scheduled. | Domain/Fyp/FypProject.cs |
 
-### Infrastructure � QuizRepository
+### Infrastructure ï¿½ QuizRepository
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -889,7 +889,7 @@
 | UpdateAnswer(answer) | Marks an answer as modified. | Infrastructure/Repositories/QuizFypRepositories.cs |
 | SaveChangesAsync(ct) | Commits all pending changes to the database. | Infrastructure/Repositories/QuizFypRepositories.cs |
 
-### Infrastructure � FypRepository
+### Infrastructure ï¿½ FypRepository
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -911,7 +911,7 @@
 | UpdateMeeting(meeting) | Marks a meeting as modified. | Infrastructure/Repositories/QuizFypRepositories.cs |
 | SaveChangesAsync(ct) | Commits all pending changes to the database. | Infrastructure/Repositories/QuizFypRepositories.cs |
 
-### Application � QuizService
+### Application ï¿½ QuizService
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -930,13 +930,13 @@
 | GetStudentAttemptsAsync(quizId, studentProfileId, ct) | Returns all attempts for a student on a quiz. | Application/Quizzes/QuizService.cs |
 | GetAttemptDetailAsync(attemptId, ct) | Returns detailed attempt data including answer responses. | Application/Quizzes/QuizService.cs |
 | GradeAnswerAsync(request, ct) | Awards marks to a short-answer response and updates attempt total score. | Application/Quizzes/QuizService.cs |
-| ToSummary(quiz) | Private � maps Quiz to QuizSummaryResponse. | Application/Quizzes/QuizService.cs |
-| ToDetail(quiz) | Private � maps Quiz with questions to QuizDetailResponse. | Application/Quizzes/QuizService.cs |
-| ToQuestionResponse(question, hideAnswers) | Private � maps a QuizQuestion to QuestionResponse, optionally hiding correct answers. | Application/Quizzes/QuizService.cs |
-| ToAttemptResponse(attempt) | Private � maps QuizAttempt to AttemptResponse. | Application/Quizzes/QuizService.cs |
-| ToAttemptDetail(attempt) | Private � maps QuizAttempt with answers to AttemptDetailResponse. | Application/Quizzes/QuizService.cs |
+| ToSummary(quiz) | Private ï¿½ maps Quiz to QuizSummaryResponse. | Application/Quizzes/QuizService.cs |
+| ToDetail(quiz) | Private ï¿½ maps Quiz with questions to QuizDetailResponse. | Application/Quizzes/QuizService.cs |
+| ToQuestionResponse(question, hideAnswers) | Private ï¿½ maps a QuizQuestion to QuestionResponse, optionally hiding correct answers. | Application/Quizzes/QuizService.cs |
+| ToAttemptResponse(attempt) | Private ï¿½ maps QuizAttempt to AttemptResponse. | Application/Quizzes/QuizService.cs |
+| ToAttemptDetail(attempt) | Private ï¿½ maps QuizAttempt with answers to AttemptDetailResponse. | Application/Quizzes/QuizService.cs |
 
-### Application � FypService
+### Application ï¿½ FypService
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -958,62 +958,62 @@
 | CancelMeetingAsync(meetingId, ct) | Cancels a scheduled meeting. | Application/Fyp/FypService.cs |
 | GetMeetingsByProjectAsync(projectId, ct) | Returns all meetings for a project as response DTOs. | Application/Fyp/FypService.cs |
 | GetUpcomingMeetingsAsync(supervisorUserId, ct) | Returns upcoming meetings organised by the supervisor. | Application/Fyp/FypService.cs |
-| ToSummary(project) | Private � maps FypProject to FypProjectSummaryResponse. | Application/Fyp/FypService.cs |
-| ToDetail(project) | Private � maps FypProject with panel/meetings to FypProjectDetailResponse. | Application/Fyp/FypService.cs |
-| ToMeetingResponse(meeting) | Private � maps FypMeeting to MeetingResponse. | Application/Fyp/FypService.cs |
+| ToSummary(project) | Private ï¿½ maps FypProject to FypProjectSummaryResponse. | Application/Fyp/FypService.cs |
+| ToDetail(project) | Private ï¿½ maps FypProject with panel/meetings to FypProjectDetailResponse. | Application/Fyp/FypService.cs |
+| ToMeetingResponse(meeting) | Private ï¿½ maps FypMeeting to MeetingResponse. | Application/Fyp/FypService.cs |
 
-### API � QuizController
-
-| Function Name | Purpose | Location |
-|---|---|---|
-| Create(request, ct) | POST /api/quiz � Creates a quiz (Faculty). | API/Controllers/QuizController.cs |
-| Update(id, request, ct) | PUT /api/quiz/{id} � Updates quiz metadata (Faculty). | API/Controllers/QuizController.cs |
-| Publish(id, ct) | POST /api/quiz/{id}/publish � Publishes a quiz (Faculty). | API/Controllers/QuizController.cs |
-| Unpublish(id, ct) | POST /api/quiz/{id}/unpublish � Unpublishes a quiz (Faculty). | API/Controllers/QuizController.cs |
-| Deactivate(id, ct) | DELETE /api/quiz/{id} � Soft-deletes a quiz (Admin). | API/Controllers/QuizController.cs |
-| AddQuestion(request, ct) | POST /api/quiz/question � Adds a question to a quiz (Faculty). | API/Controllers/QuizController.cs |
-| UpdateQuestion(questionId, request, ct) | PUT /api/quiz/question/{questionId} � Updates a question (Faculty). | API/Controllers/QuizController.cs |
-| RemoveQuestion(questionId, ct) | DELETE /api/quiz/question/{questionId} � Removes a question (Faculty). | API/Controllers/QuizController.cs |
-| GetByOffering(courseOfferingId, ct) | GET /api/quiz/by-offering/{courseOfferingId} � Lists quizzes for an offering (All). | API/Controllers/QuizController.cs |
-| GetDetail(id, ct) | GET /api/quiz/{id} � Returns full quiz detail (All). | API/Controllers/QuizController.cs |
-| StartAttempt(id, ct) | POST /api/quiz/{id}/start � Starts a student attempt; 409 if cap reached (Student). | API/Controllers/QuizController.cs |
-| SubmitAttempt(request, ct) | POST /api/quiz/attempt/submit � Submits answers and grades MCQ/TrueFalse (Student). | API/Controllers/QuizController.cs |
-| GetMyAttempts(id, ct) | GET /api/quiz/{id}/my-attempts � Returns student's own attempts (Student). | API/Controllers/QuizController.cs |
-| GetAttemptDetail(attemptId, ct) | GET /api/quiz/attempt/{attemptId} � Returns attempt detail with answers (All). | API/Controllers/QuizController.cs |
-| GradeAnswer(request, ct) | POST /api/quiz/attempt/grade-answer � Manually grades a short-answer response (Faculty). | API/Controllers/QuizController.cs |
-| GetCurrentUserId() | Private � Extracts authenticated user ID from JWT NameIdentifier claim. | API/Controllers/QuizController.cs |
-| GetStudentProfileId() | Private � Extracts student profile ID from the studentProfileId JWT claim. | API/Controllers/QuizController.cs |
-
-### API � FypController
+### API ï¿½ QuizController
 
 | Function Name | Purpose | Location |
 |---|---|---|
-| Propose(request, ct) | POST /api/fyp � Submits an FYP proposal (Student). | API/Controllers/FypController.cs |
-| Update(id, request, ct) | PUT /api/fyp/{id} � Updates project title/description (Student). | API/Controllers/FypController.cs |
-| Approve(id, request, ct) | POST /api/fyp/{id}/approve � Approves a proposal (Admin). | API/Controllers/FypController.cs |
-| Reject(id, request, ct) | POST /api/fyp/{id}/reject � Rejects a proposal with remarks (Admin). | API/Controllers/FypController.cs |
-| AssignSupervisor(id, request, ct) | POST /api/fyp/{id}/assign-supervisor � Assigns a supervisor (Admin). | API/Controllers/FypController.cs |
-| Complete(id, ct) | POST /api/fyp/{id}/complete � Marks a project as completed (Admin). | API/Controllers/FypController.cs |
-| GetMyProjects(ct) | GET /api/fyp/my-projects � Returns current student's projects (Student). | API/Controllers/FypController.cs |
-| GetByDepartment(departmentId, status, ct) | GET /api/fyp/by-department/{departmentId} � Returns department projects (Faculty). | API/Controllers/FypController.cs |
-| GetMySupervised(ct) | GET /api/fyp/my-supervised � Returns projects supervised by current user (Faculty). | API/Controllers/FypController.cs |
-| GetDetail(id, ct) | GET /api/fyp/{id} � Returns full project detail (All). | API/Controllers/FypController.cs |
-| AddPanelMember(id, request, ct) | POST /api/fyp/{id}/panel � Adds a panel member (Admin). | API/Controllers/FypController.cs |
-| RemovePanelMember(id, userId, ct) | DELETE /api/fyp/{id}/panel/{userId} � Removes a panel member (Admin). | API/Controllers/FypController.cs |
-| ScheduleMeeting(request, ct) | POST /api/fyp/meeting � Schedules a new FYP meeting (Faculty). | API/Controllers/FypController.cs |
-| RescheduleMeeting(meetingId, request, ct) | PUT /api/fyp/meeting/{meetingId} � Reschedules a meeting (Faculty). | API/Controllers/FypController.cs |
-| CompleteMeeting(meetingId, request, ct) | POST /api/fyp/meeting/{meetingId}/complete � Completes a meeting (Faculty). | API/Controllers/FypController.cs |
-| CancelMeeting(meetingId, ct) | POST /api/fyp/meeting/{meetingId}/cancel � Cancels a meeting (Faculty). | API/Controllers/FypController.cs |
-| GetMeetings(id, ct) | GET /api/fyp/{id}/meetings � Returns all meetings for a project (All). | API/Controllers/FypController.cs |
-| GetUpcomingMeetings(ct) | GET /api/fyp/meeting/upcoming � Returns upcoming meetings for current supervisor (Faculty). | API/Controllers/FypController.cs |
-| GetCurrentUserId() | Private � Extracts authenticated user ID from JWT NameIdentifier claim. | API/Controllers/FypController.cs |
-| GetStudentProfileId() | Private � Extracts student profile ID from the studentProfileId JWT claim. | API/Controllers/FypController.cs |
+| Create(request, ct) | POST /api/quiz ï¿½ Creates a quiz (Faculty). | API/Controllers/QuizController.cs |
+| Update(id, request, ct) | PUT /api/quiz/{id} ï¿½ Updates quiz metadata (Faculty). | API/Controllers/QuizController.cs |
+| Publish(id, ct) | POST /api/quiz/{id}/publish ï¿½ Publishes a quiz (Faculty). | API/Controllers/QuizController.cs |
+| Unpublish(id, ct) | POST /api/quiz/{id}/unpublish ï¿½ Unpublishes a quiz (Faculty). | API/Controllers/QuizController.cs |
+| Deactivate(id, ct) | DELETE /api/quiz/{id} ï¿½ Soft-deletes a quiz (Admin). | API/Controllers/QuizController.cs |
+| AddQuestion(request, ct) | POST /api/quiz/question ï¿½ Adds a question to a quiz (Faculty). | API/Controllers/QuizController.cs |
+| UpdateQuestion(questionId, request, ct) | PUT /api/quiz/question/{questionId} ï¿½ Updates a question (Faculty). | API/Controllers/QuizController.cs |
+| RemoveQuestion(questionId, ct) | DELETE /api/quiz/question/{questionId} ï¿½ Removes a question (Faculty). | API/Controllers/QuizController.cs |
+| GetByOffering(courseOfferingId, ct) | GET /api/quiz/by-offering/{courseOfferingId} ï¿½ Lists quizzes for an offering (All). | API/Controllers/QuizController.cs |
+| GetDetail(id, ct) | GET /api/quiz/{id} ï¿½ Returns full quiz detail (All). | API/Controllers/QuizController.cs |
+| StartAttempt(id, ct) | POST /api/quiz/{id}/start ï¿½ Starts a student attempt; 409 if cap reached (Student). | API/Controllers/QuizController.cs |
+| SubmitAttempt(request, ct) | POST /api/quiz/attempt/submit ï¿½ Submits answers and grades MCQ/TrueFalse (Student). | API/Controllers/QuizController.cs |
+| GetMyAttempts(id, ct) | GET /api/quiz/{id}/my-attempts ï¿½ Returns student's own attempts (Student). | API/Controllers/QuizController.cs |
+| GetAttemptDetail(attemptId, ct) | GET /api/quiz/attempt/{attemptId} ï¿½ Returns attempt detail with answers (All). | API/Controllers/QuizController.cs |
+| GradeAnswer(request, ct) | POST /api/quiz/attempt/grade-answer ï¿½ Manually grades a short-answer response (Faculty). | API/Controllers/QuizController.cs |
+| GetCurrentUserId() | Private ï¿½ Extracts authenticated user ID from JWT NameIdentifier claim. | API/Controllers/QuizController.cs |
+| GetStudentProfileId() | Private ï¿½ Extracts student profile ID from the studentProfileId JWT claim. | API/Controllers/QuizController.cs |
+
+### API ï¿½ FypController
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| Propose(request, ct) | POST /api/fyp ï¿½ Submits an FYP proposal (Student). | API/Controllers/FypController.cs |
+| Update(id, request, ct) | PUT /api/fyp/{id} ï¿½ Updates project title/description (Student). | API/Controllers/FypController.cs |
+| Approve(id, request, ct) | POST /api/fyp/{id}/approve ï¿½ Approves a proposal (Admin). | API/Controllers/FypController.cs |
+| Reject(id, request, ct) | POST /api/fyp/{id}/reject ï¿½ Rejects a proposal with remarks (Admin). | API/Controllers/FypController.cs |
+| AssignSupervisor(id, request, ct) | POST /api/fyp/{id}/assign-supervisor ï¿½ Assigns a supervisor (Admin). | API/Controllers/FypController.cs |
+| Complete(id, ct) | POST /api/fyp/{id}/complete ï¿½ Marks a project as completed (Admin). | API/Controllers/FypController.cs |
+| GetMyProjects(ct) | GET /api/fyp/my-projects ï¿½ Returns current student's projects (Student). | API/Controllers/FypController.cs |
+| GetByDepartment(departmentId, status, ct) | GET /api/fyp/by-department/{departmentId} ï¿½ Returns department projects (Faculty). | API/Controllers/FypController.cs |
+| GetMySupervised(ct) | GET /api/fyp/my-supervised ï¿½ Returns projects supervised by current user (Faculty). | API/Controllers/FypController.cs |
+| GetDetail(id, ct) | GET /api/fyp/{id} ï¿½ Returns full project detail (All). | API/Controllers/FypController.cs |
+| AddPanelMember(id, request, ct) | POST /api/fyp/{id}/panel ï¿½ Adds a panel member (Admin). | API/Controllers/FypController.cs |
+| RemovePanelMember(id, userId, ct) | DELETE /api/fyp/{id}/panel/{userId} ï¿½ Removes a panel member (Admin). | API/Controllers/FypController.cs |
+| ScheduleMeeting(request, ct) | POST /api/fyp/meeting ï¿½ Schedules a new FYP meeting (Faculty). | API/Controllers/FypController.cs |
+| RescheduleMeeting(meetingId, request, ct) | PUT /api/fyp/meeting/{meetingId} ï¿½ Reschedules a meeting (Faculty). | API/Controllers/FypController.cs |
+| CompleteMeeting(meetingId, request, ct) | POST /api/fyp/meeting/{meetingId}/complete ï¿½ Completes a meeting (Faculty). | API/Controllers/FypController.cs |
+| CancelMeeting(meetingId, ct) | POST /api/fyp/meeting/{meetingId}/cancel ï¿½ Cancels a meeting (Faculty). | API/Controllers/FypController.cs |
+| GetMeetings(id, ct) | GET /api/fyp/{id}/meetings ï¿½ Returns all meetings for a project (All). | API/Controllers/FypController.cs |
+| GetUpcomingMeetings(ct) | GET /api/fyp/meeting/upcoming ï¿½ Returns upcoming meetings for current supervisor (Faculty). | API/Controllers/FypController.cs |
+| GetCurrentUserId() | Private ï¿½ Extracts authenticated user ID from JWT NameIdentifier claim. | API/Controllers/FypController.cs |
+| GetStudentProfileId() | Private ï¿½ Extracts student profile ID from the studentProfileId JWT claim. | API/Controllers/FypController.cs |
 
 ---
 
-## Phase 5 � Quizzes and FYP
+## Phase 5 ï¿½ Quizzes and FYP
 
-### Domain � Quiz
+### Domain ï¿½ Quiz
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -1026,7 +1026,7 @@
 | `QuizQuestion.Update(text, marks, orderIndex)` | Updates question text and grading details. | `Domain/Quizzes/Quiz.cs` |
 | `QuizOption(quizQuestionId, text, isCorrect, orderIndex)` | Creates an answer option for a question. | `Domain/Quizzes/Quiz.cs` |
 
-### Domain � QuizAttempt
+### Domain ï¿½ QuizAttempt
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -1039,7 +1039,7 @@
 | `QuizAnswer(quizAttemptId, quizQuestionId, textResponse)` | Records a short-answer textual response. | `Domain/Quizzes/QuizAttempt.cs` |
 | `AwardMarks(marks)` | Stores instructor-awarded marks for a short-answer response. | `Domain/Quizzes/QuizAttempt.cs` |
 
-### Domain � FypProject
+### Domain ï¿½ FypProject
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -1055,7 +1055,7 @@
 | `FypMeeting.Cancel()` | Cancels a scheduled meeting. | `Domain/Fyp/FypProject.cs` |
 | `FypMeeting.Reschedule(scheduledAt, venue, agenda)` | Updates meeting time, venue and agenda. | `Domain/Fyp/FypProject.cs` |
 
-### Infrastructure � QuizRepository
+### Infrastructure ï¿½ QuizRepository
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -1080,7 +1080,7 @@
 | `GetAnswerByIdAsync(answerId, ct)` | Fetches a single answer for manual grading. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
 | `UpdateAnswer(answer)` | Marks answer as modified after manual grading. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
 
-### Infrastructure � FypRepository
+### Infrastructure ï¿½ FypRepository
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -1102,7 +1102,7 @@
 | `UpdateMeeting(meeting)` | Marks meeting as modified. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
 | `SaveChangesAsync(ct)` | Flushes all pending changes to the database. | `Infrastructure/Repositories/QuizFypRepositories.cs` |
 
-### Application � QuizService
+### Application ï¿½ QuizService
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -1127,7 +1127,7 @@
 | `ToAttemptResponse(attempt)` | Maps QuizAttempt to AttemptResponse DTO. | `Application/Quizzes/QuizService.cs` |
 | `ToAttemptDetail(attempt)` | Maps QuizAttempt with answers to AttemptDetailResponse DTO. | `Application/Quizzes/QuizService.cs` |
 
-### Application � FypService
+### Application ï¿½ FypService
 
 | Function Name | Purpose | Location |
 |---|---|---|
@@ -1153,56 +1153,56 @@
 | `ToDetail(project)` | Maps FypProject to FypProjectDetailResponse DTO. | `Application/Fyp/FypService.cs` |
 | `ToMeetingResponse(meeting)` | Maps FypMeeting to MeetingResponse DTO. | `Application/Fyp/FypService.cs` |
 
-### API � QuizController
+### API ï¿½ QuizController
 
 | Function Name | Purpose | Location |
 |---|---|---|
-| `Create(request, ct)` | POST /api/quiz � Creates a new quiz. Faculty only. | `API/Controllers/QuizController.cs` |
-| `Update(id, request, ct)` | PUT /api/quiz/{id} � Updates quiz metadata. Faculty only. | `API/Controllers/QuizController.cs` |
-| `Publish(id, ct)` | POST /api/quiz/{id}/publish � Publishes a quiz. Faculty only. | `API/Controllers/QuizController.cs` |
-| `Unpublish(id, ct)` | POST /api/quiz/{id}/unpublish � Reverts quiz to draft. Faculty only. | `API/Controllers/QuizController.cs` |
-| `Deactivate(id, ct)` | DELETE /api/quiz/{id} � Soft-deletes a quiz. Admin only. | `API/Controllers/QuizController.cs` |
-| `AddQuestion(request, ct)` | POST /api/quiz/question � Adds a question to a quiz. Faculty only. | `API/Controllers/QuizController.cs` |
-| `UpdateQuestion(questionId, request, ct)` | PUT /api/quiz/question/{questionId} � Updates a question. Faculty only. | `API/Controllers/QuizController.cs` |
-| `RemoveQuestion(questionId, ct)` | DELETE /api/quiz/question/{questionId} � Removes a question. Faculty only. | `API/Controllers/QuizController.cs` |
-| `GetByOffering(courseOfferingId, ct)` | GET /api/quiz/by-offering/{courseOfferingId} � Lists quizzes for an offering. | `API/Controllers/QuizController.cs` |
-| `GetDetail(id, ct)` | GET /api/quiz/{id} � Returns quiz with questions and options. | `API/Controllers/QuizController.cs` |
-| `StartAttempt(id, ct)` | POST /api/quiz/{id}/start � Starts a new attempt. Student only. | `API/Controllers/QuizController.cs` |
-| `SubmitAttempt(request, ct)` | POST /api/quiz/attempt/submit � Submits and auto-grades an attempt. Student only. | `API/Controllers/QuizController.cs` |
-| `GetMyAttempts(id, ct)` | GET /api/quiz/{id}/my-attempts � Lists a student's own attempts. Student only. | `API/Controllers/QuizController.cs` |
-| `GetAttemptDetail(attemptId, ct)` | GET /api/quiz/attempt/{attemptId} � Returns attempt with answers. | `API/Controllers/QuizController.cs` |
-| `GradeAnswer(request, ct)` | POST /api/quiz/attempt/grade-answer � Awards marks to a short-answer. Faculty only. | `API/Controllers/QuizController.cs` |
+| `Create(request, ct)` | POST /api/quiz ï¿½ Creates a new quiz. Faculty only. | `API/Controllers/QuizController.cs` |
+| `Update(id, request, ct)` | PUT /api/quiz/{id} ï¿½ Updates quiz metadata. Faculty only. | `API/Controllers/QuizController.cs` |
+| `Publish(id, ct)` | POST /api/quiz/{id}/publish ï¿½ Publishes a quiz. Faculty only. | `API/Controllers/QuizController.cs` |
+| `Unpublish(id, ct)` | POST /api/quiz/{id}/unpublish ï¿½ Reverts quiz to draft. Faculty only. | `API/Controllers/QuizController.cs` |
+| `Deactivate(id, ct)` | DELETE /api/quiz/{id} ï¿½ Soft-deletes a quiz. Admin only. | `API/Controllers/QuizController.cs` |
+| `AddQuestion(request, ct)` | POST /api/quiz/question ï¿½ Adds a question to a quiz. Faculty only. | `API/Controllers/QuizController.cs` |
+| `UpdateQuestion(questionId, request, ct)` | PUT /api/quiz/question/{questionId} ï¿½ Updates a question. Faculty only. | `API/Controllers/QuizController.cs` |
+| `RemoveQuestion(questionId, ct)` | DELETE /api/quiz/question/{questionId} ï¿½ Removes a question. Faculty only. | `API/Controllers/QuizController.cs` |
+| `GetByOffering(courseOfferingId, ct)` | GET /api/quiz/by-offering/{courseOfferingId} ï¿½ Lists quizzes for an offering. | `API/Controllers/QuizController.cs` |
+| `GetDetail(id, ct)` | GET /api/quiz/{id} ï¿½ Returns quiz with questions and options. | `API/Controllers/QuizController.cs` |
+| `StartAttempt(id, ct)` | POST /api/quiz/{id}/start ï¿½ Starts a new attempt. Student only. | `API/Controllers/QuizController.cs` |
+| `SubmitAttempt(request, ct)` | POST /api/quiz/attempt/submit ï¿½ Submits and auto-grades an attempt. Student only. | `API/Controllers/QuizController.cs` |
+| `GetMyAttempts(id, ct)` | GET /api/quiz/{id}/my-attempts ï¿½ Lists a student's own attempts. Student only. | `API/Controllers/QuizController.cs` |
+| `GetAttemptDetail(attemptId, ct)` | GET /api/quiz/attempt/{attemptId} ï¿½ Returns attempt with answers. | `API/Controllers/QuizController.cs` |
+| `GradeAnswer(request, ct)` | POST /api/quiz/attempt/grade-answer ï¿½ Awards marks to a short-answer. Faculty only. | `API/Controllers/QuizController.cs` |
 | `GetCurrentUserId()` | Extracts user ID from NameIdentifier JWT claim. | `API/Controllers/QuizController.cs` |
 | `GetStudentProfileId()` | Extracts studentProfileId from JWT claim. | `API/Controllers/QuizController.cs` |
 
-### API � FypController
+### API ï¿½ FypController
 
 | Function Name | Purpose | Location |
 |---|---|---|
-| `Propose(request, ct)` | POST /api/fyp � Submits a new FYP project proposal. Student only. | `API/Controllers/FypController.cs` |
-| `Update(id, request, ct)` | PUT /api/fyp/{id} � Updates project title/description. Student only. | `API/Controllers/FypController.cs` |
-| `Approve(id, request, ct)` | POST /api/fyp/{id}/approve � Approves a proposal. Admin only. | `API/Controllers/FypController.cs` |
-| `Reject(id, request, ct)` | POST /api/fyp/{id}/reject � Rejects a proposal with remarks. Admin only. | `API/Controllers/FypController.cs` |
-| `AssignSupervisor(id, request, ct)` | POST /api/fyp/{id}/assign-supervisor � Assigns a supervisor. Admin only. | `API/Controllers/FypController.cs` |
-| `Complete(id, ct)` | POST /api/fyp/{id}/complete � Marks a project completed. Admin only. | `API/Controllers/FypController.cs` |
-| `GetMyProjects(ct)` | GET /api/fyp/my-projects � Returns the student's own projects. | `API/Controllers/FypController.cs` |
-| `GetByDepartment(departmentId, status, ct)` | GET /api/fyp/by-department/{departmentId} � Lists department projects. Faculty only. | `API/Controllers/FypController.cs` |
-| `GetMySupervised(ct)` | GET /api/fyp/my-supervised � Returns supervised projects. Faculty only. | `API/Controllers/FypController.cs` |
-| `GetDetail(id, ct)` | GET /api/fyp/{id} � Returns full project detail. | `API/Controllers/FypController.cs` |
-| `AddPanelMember(id, request, ct)` | POST /api/fyp/{id}/panel � Adds a panel member. Admin only. | `API/Controllers/FypController.cs` |
-| `RemovePanelMember(id, userId, ct)` | DELETE /api/fyp/{id}/panel/{userId} � Removes a panel member. Admin only. | `API/Controllers/FypController.cs` |
-| `ScheduleMeeting(request, ct)` | POST /api/fyp/meeting � Schedules an FYP meeting. Faculty only. | `API/Controllers/FypController.cs` |
-| `RescheduleMeeting(meetingId, request, ct)` | PUT /api/fyp/meeting/{meetingId} � Reschedules a meeting. Faculty only. | `API/Controllers/FypController.cs` |
-| `CompleteMeeting(meetingId, request, ct)` | POST /api/fyp/meeting/{meetingId}/complete � Completes a meeting. Faculty only. | `API/Controllers/FypController.cs` |
-| `CancelMeeting(meetingId, ct)` | POST /api/fyp/meeting/{meetingId}/cancel � Cancels a meeting. Faculty only. | `API/Controllers/FypController.cs` |
-| `GetMeetings(id, ct)` | GET /api/fyp/{id}/meetings � Lists all meetings for a project. | `API/Controllers/FypController.cs` |
-| `GetUpcomingMeetings(ct)` | GET /api/fyp/meeting/upcoming � Returns upcoming supervisor meetings. Faculty only. | `API/Controllers/FypController.cs` |
+| `Propose(request, ct)` | POST /api/fyp ï¿½ Submits a new FYP project proposal. Student only. | `API/Controllers/FypController.cs` |
+| `Update(id, request, ct)` | PUT /api/fyp/{id} ï¿½ Updates project title/description. Student only. | `API/Controllers/FypController.cs` |
+| `Approve(id, request, ct)` | POST /api/fyp/{id}/approve ï¿½ Approves a proposal. Admin only. | `API/Controllers/FypController.cs` |
+| `Reject(id, request, ct)` | POST /api/fyp/{id}/reject ï¿½ Rejects a proposal with remarks. Admin only. | `API/Controllers/FypController.cs` |
+| `AssignSupervisor(id, request, ct)` | POST /api/fyp/{id}/assign-supervisor ï¿½ Assigns a supervisor. Admin only. | `API/Controllers/FypController.cs` |
+| `Complete(id, ct)` | POST /api/fyp/{id}/complete ï¿½ Marks a project completed. Admin only. | `API/Controllers/FypController.cs` |
+| `GetMyProjects(ct)` | GET /api/fyp/my-projects ï¿½ Returns the student's own projects. | `API/Controllers/FypController.cs` |
+| `GetByDepartment(departmentId, status, ct)` | GET /api/fyp/by-department/{departmentId} ï¿½ Lists department projects. Faculty only. | `API/Controllers/FypController.cs` |
+| `GetMySupervised(ct)` | GET /api/fyp/my-supervised ï¿½ Returns supervised projects. Faculty only. | `API/Controllers/FypController.cs` |
+| `GetDetail(id, ct)` | GET /api/fyp/{id} ï¿½ Returns full project detail. | `API/Controllers/FypController.cs` |
+| `AddPanelMember(id, request, ct)` | POST /api/fyp/{id}/panel ï¿½ Adds a panel member. Admin only. | `API/Controllers/FypController.cs` |
+| `RemovePanelMember(id, userId, ct)` | DELETE /api/fyp/{id}/panel/{userId} ï¿½ Removes a panel member. Admin only. | `API/Controllers/FypController.cs` |
+| `ScheduleMeeting(request, ct)` | POST /api/fyp/meeting ï¿½ Schedules an FYP meeting. Faculty only. | `API/Controllers/FypController.cs` |
+| `RescheduleMeeting(meetingId, request, ct)` | PUT /api/fyp/meeting/{meetingId} ï¿½ Reschedules a meeting. Faculty only. | `API/Controllers/FypController.cs` |
+| `CompleteMeeting(meetingId, request, ct)` | POST /api/fyp/meeting/{meetingId}/complete ï¿½ Completes a meeting. Faculty only. | `API/Controllers/FypController.cs` |
+| `CancelMeeting(meetingId, ct)` | POST /api/fyp/meeting/{meetingId}/cancel ï¿½ Cancels a meeting. Faculty only. | `API/Controllers/FypController.cs` |
+| `GetMeetings(id, ct)` | GET /api/fyp/{id}/meetings ï¿½ Lists all meetings for a project. | `API/Controllers/FypController.cs` |
+| `GetUpcomingMeetings(ct)` | GET /api/fyp/meeting/upcoming ï¿½ Returns upcoming supervisor meetings. Faculty only. | `API/Controllers/FypController.cs` |
 | `GetCurrentUserId()` | Extracts user ID from NameIdentifier JWT claim. | `API/Controllers/FypController.cs` |
 | `GetStudentProfileId()` | Extracts studentProfileId from JWT claim. | `API/Controllers/FypController.cs` |
 
 ---
 
-## Phase 6 � AI Chat Assistant & Analytics
+## Phase 6 ï¿½ AI Chat Assistant & Analytics
 
 ### AiChatService (Application/AiChat/AiChatService.cs)
 | Function | Description | File |
@@ -1246,23 +1246,23 @@
 ### AiChatController (API/Controllers/AiChatController.cs)
 | Function | Description | File |
 |---|---|---|
-| `SendMessage(request, ct)` | POST /api/ai/message � Send message to AI. All authenticated roles. | `API/Controllers/AiChatController.cs` |
-| `GetConversations(ct)` | GET /api/ai/conversations � List user conversations. | `API/Controllers/AiChatController.cs` |
-| `GetConversation(conversationId, ct)` | GET /api/ai/conversations/{id} � Get conversation history. | `API/Controllers/AiChatController.cs` |
+| `SendMessage(request, ct)` | POST /api/ai/message ï¿½ Send message to AI. All authenticated roles. | `API/Controllers/AiChatController.cs` |
+| `GetConversations(ct)` | GET /api/ai/conversations ï¿½ List user conversations. | `API/Controllers/AiChatController.cs` |
+| `GetConversation(conversationId, ct)` | GET /api/ai/conversations/{id} ï¿½ Get conversation history. | `API/Controllers/AiChatController.cs` |
 | `GetCurrentUserId()` | Extracts user ID from NameIdentifier JWT claim. | `API/Controllers/AiChatController.cs` |
 | `GetDepartmentId()` | Extracts optional departmentId from JWT claim. | `API/Controllers/AiChatController.cs` |
 
 ### AnalyticsController (API/Controllers/AnalyticsController.cs)
 | Function | Description | File |
 |---|---|---|
-| `GetPerformance(departmentId, ct)` | GET /api/analytics/performance � Faculty+ scoped. | `API/Controllers/AnalyticsController.cs` |
-| `GetAttendance(departmentId, ct)` | GET /api/analytics/attendance � Faculty+ scoped. | `API/Controllers/AnalyticsController.cs` |
-| `GetAssignmentStats(departmentId, ct)` | GET /api/analytics/assignments � Faculty+ scoped. | `API/Controllers/AnalyticsController.cs` |
-| `GetQuizStats(departmentId, ct)` | GET /api/analytics/quizzes � Faculty+ scoped. | `API/Controllers/AnalyticsController.cs` |
-| `ExportPerformancePdf(departmentId, ct)` | GET /api/analytics/performance/export/pdf � Admin+ only. | `API/Controllers/AnalyticsController.cs` |
-| `ExportPerformanceExcel(departmentId, ct)` | GET /api/analytics/performance/export/excel � Admin+ only. | `API/Controllers/AnalyticsController.cs` |
-| `ExportAttendancePdf(departmentId, ct)` | GET /api/analytics/attendance/export/pdf � Admin+ only. | `API/Controllers/AnalyticsController.cs` |
-| `ExportAttendanceExcelAsync(departmentId, ct)` | GET /api/analytics/attendance/export/excel � Admin+ only. | `API/Controllers/AnalyticsController.cs` |
+| `GetPerformance(departmentId, ct)` | GET /api/analytics/performance ï¿½ Faculty+ scoped. | `API/Controllers/AnalyticsController.cs` |
+| `GetAttendance(departmentId, ct)` | GET /api/analytics/attendance ï¿½ Faculty+ scoped. | `API/Controllers/AnalyticsController.cs` |
+| `GetAssignmentStats(departmentId, ct)` | GET /api/analytics/assignments ï¿½ Faculty+ scoped. | `API/Controllers/AnalyticsController.cs` |
+| `GetQuizStats(departmentId, ct)` | GET /api/analytics/quizzes ï¿½ Faculty+ scoped. | `API/Controllers/AnalyticsController.cs` |
+| `ExportPerformancePdf(departmentId, ct)` | GET /api/analytics/performance/export/pdf ï¿½ Admin+ only. | `API/Controllers/AnalyticsController.cs` |
+| `ExportPerformanceExcel(departmentId, ct)` | GET /api/analytics/performance/export/excel ï¿½ Admin+ only. | `API/Controllers/AnalyticsController.cs` |
+| `ExportAttendancePdf(departmentId, ct)` | GET /api/analytics/attendance/export/pdf ï¿½ Admin+ only. | `API/Controllers/AnalyticsController.cs` |
+| `ExportAttendanceExcelAsync(departmentId, ct)` | GET /api/analytics/attendance/export/excel ï¿½ Admin+ only. | `API/Controllers/AnalyticsController.cs` |
 | `ResolveEffectiveDepartment(requested)` | Scopes Faculty to own dept; Admin/SuperAdmin see all. | `API/Controllers/AnalyticsController.cs` |
 
 ### SecurityHeadersMiddleware (API/Middleware/SecurityHeadersMiddleware.cs)
@@ -1273,7 +1273,7 @@
 
 ## Phase 7: Tabsan-Lic + License Import
 
-### Tabsan.Lic � KeyService (tools/Tabsan.Lic/Services/KeyService.cs)
+### Tabsan.Lic ï¿½ KeyService (tools/Tabsan.Lic/Services/KeyService.cs)
 | Function | Description | File |
 |---|---|---|
 | `GenerateAsync(expiry, label)` | Generates a random VerificationKey, stores SHA-256 hash in SQLite, returns (record, rawToken). | `tools/Tabsan.Lic/Services/KeyService.cs` |
@@ -1285,45 +1285,45 @@
 
 ---
 
-## Phase 8: Student Lifecycle, Account Security & Finance (Sprints 15–16)
+## Phase 8: Student Lifecycle, Account Security & Finance (Sprints 15â€“16)
 
-### Domain — StudentProfile new methods
+### Domain â€” StudentProfile new methods
 | Function | Description | File |
 |---|---|---|
 | `Graduate(adminUserId)` | Sets status to `Graduated`; records graduation timestamp and acting admin. | `Domain/Entities/StudentProfile.cs` |
 | `Deactivate(adminUserId, reason)` | Sets status to `Inactive`; blocks login for the student. | `Domain/Entities/StudentProfile.cs` |
 | `Reactivate(adminUserId)` | Restores status to `Active` from `Inactive`. | `Domain/Entities/StudentProfile.cs` |
 
-### Domain — User new methods
+### Domain â€” User new methods
 | Function | Description | File |
 |---|---|---|
 | `RecordFailedLoginAttempt()` | Increments `FailedLoginCount`; locks account (15-min window) after 5 consecutive failures. | `Domain/Entities/User.cs` |
 | `UnlockAccount()` | Resets `FailedLoginCount` to 0 and clears `LockoutEnd`. | `Domain/Entities/User.cs` |
 | `IsCurrentlyLockedOut()` | Returns true if `LockoutEnd` is set and has not yet elapsed. | `Domain/Entities/User.cs` |
 
-### Domain — AdminChangeRequest entity
+### Domain â€” AdminChangeRequest entity
 | Function | Description | File |
 |---|---|---|
 | `AdminChangeRequest(studentProfileId, requestedByUserId, field, oldValue, newValue)` | Constructor; creates a pending change request for a protected student field. | `Domain/Entities/AdminChangeRequest.cs` |
 | `Approve(adminUserId)` | Sets status to `Approved`; applies the requested field value to the student profile. | `Domain/Entities/AdminChangeRequest.cs` |
 | `Reject(adminUserId, remarks)` | Sets status to `Rejected` with rejection remarks. | `Domain/Entities/AdminChangeRequest.cs` |
 
-### Domain — TeacherModificationRequest entity
+### Domain â€” TeacherModificationRequest entity
 | Function | Description | File |
 |---|---|---|
 | `TeacherModificationRequest(teacherUserId, field, oldValue, newValue)` | Constructor; creates a pending modification request for a teacher-editable field. | `Domain/Entities/TeacherModificationRequest.cs` |
 | `Approve(adminUserId)` | Sets status to `Approved`; applies the requested change. | `Domain/Entities/TeacherModificationRequest.cs` |
 | `Reject(adminUserId, remarks)` | Sets status to `Rejected`. | `Domain/Entities/TeacherModificationRequest.cs` |
 
-### Domain — PaymentReceipt entity
+### Domain â€” PaymentReceipt entity
 | Function | Description | File |
 |---|---|---|
 | `PaymentReceipt(studentProfileId, createdByUserId, amount, description, dueDate)` | Constructor; creates a new fee receipt in `Pending` status. | `Domain/Entities/PaymentReceipt.cs` |
-| `SubmitProof(proofFilePath)` | Student action — attaches proof of payment file path; sets status to `ProofSubmitted`. | `Domain/Entities/PaymentReceipt.cs` |
-| `Confirm(financeUserId)` | Finance action — marks receipt as `Paid`; records confirmation timestamp. | `Domain/Entities/PaymentReceipt.cs` |
+| `SubmitProof(proofFilePath)` | Student action â€” attaches proof of payment file path; sets status to `ProofSubmitted`. | `Domain/Entities/PaymentReceipt.cs` |
+| `Confirm(financeUserId)` | Finance action â€” marks receipt as `Paid`; records confirmation timestamp. | `Domain/Entities/PaymentReceipt.cs` |
 | `Cancel(cancelledByUserId, reason)` | Cancels the receipt; status set to `Cancelled`. | `Domain/Entities/PaymentReceipt.cs` |
 
-### Infrastructure — StudentLifecycleRepository
+### Infrastructure â€” StudentLifecycleRepository
 | Function | Description | File |
 |---|---|---|
 | `GetStudentByIdAsync(studentProfileId, ct)` | Returns StudentProfile with User navigation. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
@@ -1358,12 +1358,12 @@
 | `AccountExistsForRegistrationAsync(registrationNumber, ct)` | Returns true if an account already exists for this registration number. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
 | `SaveChangesAsync(ct)` | Commits pending EF changes. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
 
-### Infrastructure — UserRepository (extended)
+### Infrastructure â€” UserRepository (extended)
 | Function | Description | File |
 |---|---|---|
 | `GetLockedAccountsAsync(ct)` | Returns all users with active lockouts (`LockoutEnd > UtcNow`). | `Infrastructure/Repositories/UserRepository.cs` |
 
-### Application — StudentLifecycleService
+### Application â€” StudentLifecycleService
 | Function | Description | File |
 |---|---|---|
 | `GetStudentAsync(id, ct)` | Returns a student profile detail DTO. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
@@ -1399,7 +1399,7 @@
 | `MapToChangeRequestDto(cr)` | Maps AdminChangeRequest to ChangeRequestDto. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
 | `MapToPaymentReceiptDto(receipt)` | Maps PaymentReceipt to PaymentReceiptDto. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
 
-### Application — AccountSecurityService
+### Application â€” AccountSecurityService
 | Function | Description | File |
 |---|---|---|
 | `GetLockoutStatusAsync(userId, ct)` | Returns current lockout status and remaining time for a user. | `Application/AccountSecurity/AccountSecurityService.cs` |
@@ -1407,75 +1407,75 @@
 | `ResetPasswordAsync(userId, adminUserId, newPassword, ct)` | Resets a user's password; enforces password history policy. | `Application/AccountSecurity/AccountSecurityService.cs` |
 | `GetLockedAccountsAsync(ct)` | Returns all currently locked-out accounts. | `Application/AccountSecurity/AccountSecurityService.cs` |
 
-### Application — CsvRegistrationImportService
+### Application â€” CsvRegistrationImportService
 | Function | Description | File |
 |---|---|---|
 | `ParseAsync(csvContent, ct)` | Parses a CSV string; extracts and validates registration number rows; returns result with errors list. | `Application/Import/CsvRegistrationImportService.cs` |
 | `ImportAsync(numbers, ct)` | Bulk-adds valid registration numbers; skips duplicates; returns import summary. | `Application/Import/CsvRegistrationImportService.cs` |
 
-### API — StudentLifecycleController
+### API â€” StudentLifecycleController
 | Function | Description | File |
 |---|---|---|
-| `GetStudents(deptId, status, ct)` | GET /api/v1/students — Lists students by dept/status. Admin+. | `API/Controllers/StudentLifecycleController.cs` |
-| `GetStudent(id, ct)` | GET /api/v1/students/{id} — Returns student detail. Admin+. | `API/Controllers/StudentLifecycleController.cs` |
-| `GetFinalSemester(deptId, ct)` | GET /api/v1/students/final-semester — Graduates-eligible list. Admin. | `API/Controllers/StudentLifecycleController.cs` |
-| `Graduate(id, ct)` | POST /api/v1/students/{id}/graduate — Marks student graduated. Admin. | `API/Controllers/StudentLifecycleController.cs` |
-| `Deactivate(id, request, ct)` | POST /api/v1/students/{id}/deactivate — Deactivates student. Admin. | `API/Controllers/StudentLifecycleController.cs` |
-| `Reactivate(id, ct)` | POST /api/v1/students/{id}/reactivate — Reactivates student. Admin. | `API/Controllers/StudentLifecycleController.cs` |
-| `Transfer(id, request, ct)` | POST /api/v1/students/{id}/transfer — Transfers to new dept/program. Admin. | `API/Controllers/StudentLifecycleController.cs` |
+| `GetStudents(deptId, status, ct)` | GET /api/v1/students â€” Lists students by dept/status. Admin+. | `API/Controllers/StudentLifecycleController.cs` |
+| `GetStudent(id, ct)` | GET /api/v1/students/{id} â€” Returns student detail. Admin+. | `API/Controllers/StudentLifecycleController.cs` |
+| `GetFinalSemester(deptId, ct)` | GET /api/v1/students/final-semester â€” Graduates-eligible list. Admin. | `API/Controllers/StudentLifecycleController.cs` |
+| `Graduate(id, ct)` | POST /api/v1/students/{id}/graduate â€” Marks student graduated. Admin. | `API/Controllers/StudentLifecycleController.cs` |
+| `Deactivate(id, request, ct)` | POST /api/v1/students/{id}/deactivate â€” Deactivates student. Admin. | `API/Controllers/StudentLifecycleController.cs` |
+| `Reactivate(id, ct)` | POST /api/v1/students/{id}/reactivate â€” Reactivates student. Admin. | `API/Controllers/StudentLifecycleController.cs` |
+| `Transfer(id, request, ct)` | POST /api/v1/students/{id}/transfer â€” Transfers to new dept/program. Admin. | `API/Controllers/StudentLifecycleController.cs` |
 | `GetCurrentUserId()` | Extracts user ID from JWT NameIdentifier claim. | `API/Controllers/StudentLifecycleController.cs` |
 
-### API — AdminChangeRequestController
+### API â€” AdminChangeRequestController
 | Function | Description | File |
 |---|---|---|
-| `GetPending(ct)` | GET /api/v1/admin-change-requests/pending — All pending requests. Admin. | `API/Controllers/AdminChangeRequestController.cs` |
-| `GetForStudent(studentId, ct)` | GET /api/v1/admin-change-requests/student/{id} — Requests for student. Admin. | `API/Controllers/AdminChangeRequestController.cs` |
-| `Create(request, ct)` | POST /api/v1/admin-change-requests — Creates a change request. Admin. | `API/Controllers/AdminChangeRequestController.cs` |
-| `Approve(id, ct)` | POST /api/v1/admin-change-requests/{id}/approve — Approves request. Admin. | `API/Controllers/AdminChangeRequestController.cs` |
-| `Reject(id, request, ct)` | POST /api/v1/admin-change-requests/{id}/reject — Rejects request. Admin. | `API/Controllers/AdminChangeRequestController.cs` |
+| `GetPending(ct)` | GET /api/v1/admin-change-requests/pending â€” All pending requests. Admin. | `API/Controllers/AdminChangeRequestController.cs` |
+| `GetForStudent(studentId, ct)` | GET /api/v1/admin-change-requests/student/{id} â€” Requests for student. Admin. | `API/Controllers/AdminChangeRequestController.cs` |
+| `Create(request, ct)` | POST /api/v1/admin-change-requests â€” Creates a change request. Admin. | `API/Controllers/AdminChangeRequestController.cs` |
+| `Approve(id, ct)` | POST /api/v1/admin-change-requests/{id}/approve â€” Approves request. Admin. | `API/Controllers/AdminChangeRequestController.cs` |
+| `Reject(id, request, ct)` | POST /api/v1/admin-change-requests/{id}/reject â€” Rejects request. Admin. | `API/Controllers/AdminChangeRequestController.cs` |
 | `GetCurrentUserId()` | Extracts user ID from JWT. | `API/Controllers/AdminChangeRequestController.cs` |
 
-### API — TeacherModificationController
+### API â€” TeacherModificationController
 | Function | Description | File |
 |---|---|---|
-| `GetPending(ct)` | GET /api/v1/teacher-modifications/pending — All pending requests. Admin. | `API/Controllers/TeacherModificationController.cs` |
-| `GetByTeacher(teacherId, ct)` | GET /api/v1/teacher-modifications/teacher/{id} — Requests by teacher. Admin+. | `API/Controllers/TeacherModificationController.cs` |
-| `Create(request, ct)` | POST /api/v1/teacher-modifications — Submits modification request. Faculty. | `API/Controllers/TeacherModificationController.cs` |
-| `Approve(id, ct)` | POST /api/v1/teacher-modifications/{id}/approve — Approves request. Admin. | `API/Controllers/TeacherModificationController.cs` |
-| `Reject(id, request, ct)` | POST /api/v1/teacher-modifications/{id}/reject — Rejects request. Admin. | `API/Controllers/TeacherModificationController.cs` |
+| `GetPending(ct)` | GET /api/v1/teacher-modifications/pending â€” All pending requests. Admin. | `API/Controllers/TeacherModificationController.cs` |
+| `GetByTeacher(teacherId, ct)` | GET /api/v1/teacher-modifications/teacher/{id} â€” Requests by teacher. Admin+. | `API/Controllers/TeacherModificationController.cs` |
+| `Create(request, ct)` | POST /api/v1/teacher-modifications â€” Submits modification request. Faculty. | `API/Controllers/TeacherModificationController.cs` |
+| `Approve(id, ct)` | POST /api/v1/teacher-modifications/{id}/approve â€” Approves request. Admin. | `API/Controllers/TeacherModificationController.cs` |
+| `Reject(id, request, ct)` | POST /api/v1/teacher-modifications/{id}/reject â€” Rejects request. Admin. | `API/Controllers/TeacherModificationController.cs` |
 | `GetCurrentUserId()` | Extracts user ID from JWT. | `API/Controllers/TeacherModificationController.cs` |
 
-### API — PaymentReceiptController
+### API â€” PaymentReceiptController
 | Function | Description | File |
 |---|---|---|
-| `Create(request, ct)` | POST /api/v1/payment-receipts — Finance creates fee receipt. Finance role. | `API/Controllers/PaymentReceiptController.cs` |
-| `GetForStudent(studentId, ct)` | GET /api/v1/payment-receipts/student/{id} — Receipts for student. Finance/Admin. | `API/Controllers/PaymentReceiptController.cs` |
-| `GetByStatus(status, ct)` | GET /api/v1/payment-receipts/by-status — Receipts by status. Finance. | `API/Controllers/PaymentReceiptController.cs` |
-| `GetReceipt(id, ct)` | GET /api/v1/payment-receipts/{id} — Single receipt. | `API/Controllers/PaymentReceiptController.cs` |
-| `SubmitProof(id, file, ct)` | POST /api/v1/payment-receipts/{id}/proof — Student uploads proof; validated file upload. | `API/Controllers/PaymentReceiptController.cs` |
-| `Confirm(id, ct)` | POST /api/v1/payment-receipts/{id}/confirm — Finance confirms. Finance. | `API/Controllers/PaymentReceiptController.cs` |
-| `Cancel(id, request, ct)` | POST /api/v1/payment-receipts/{id}/cancel — Cancels receipt. Finance/Admin. | `API/Controllers/PaymentReceiptController.cs` |
-| `GetFeeStatus(studentId, ct)` | GET /api/v1/payment-receipts/fee-status/{id} — Outstanding fee flag. | `API/Controllers/PaymentReceiptController.cs` |
+| `Create(request, ct)` | POST /api/v1/payment-receipts â€” Finance creates fee receipt. Finance role. | `API/Controllers/PaymentReceiptController.cs` |
+| `GetForStudent(studentId, ct)` | GET /api/v1/payment-receipts/student/{id} â€” Receipts for student. Finance/Admin. | `API/Controllers/PaymentReceiptController.cs` |
+| `GetByStatus(status, ct)` | GET /api/v1/payment-receipts/by-status â€” Receipts by status. Finance. | `API/Controllers/PaymentReceiptController.cs` |
+| `GetReceipt(id, ct)` | GET /api/v1/payment-receipts/{id} â€” Single receipt. | `API/Controllers/PaymentReceiptController.cs` |
+| `SubmitProof(id, file, ct)` | POST /api/v1/payment-receipts/{id}/proof â€” Student uploads proof; validated file upload. | `API/Controllers/PaymentReceiptController.cs` |
+| `Confirm(id, ct)` | POST /api/v1/payment-receipts/{id}/confirm â€” Finance confirms. Finance. | `API/Controllers/PaymentReceiptController.cs` |
+| `Cancel(id, request, ct)` | POST /api/v1/payment-receipts/{id}/cancel â€” Cancels receipt. Finance/Admin. | `API/Controllers/PaymentReceiptController.cs` |
+| `GetFeeStatus(studentId, ct)` | GET /api/v1/payment-receipts/fee-status/{id} â€” Outstanding fee flag. | `API/Controllers/PaymentReceiptController.cs` |
 
-### API — RegistrationImportController
+### API â€” RegistrationImportController
 | Function | Description | File |
 |---|---|---|
-| `ImportCsv(file, ct)` | POST /api/v1/registration-import/csv — Imports CSV of registration numbers. Admin. | `API/Controllers/RegistrationImportController.cs` |
-| `AddSingle(request, ct)` | POST /api/v1/registration-import/single — Adds one registration number. Admin. | `API/Controllers/RegistrationImportController.cs` |
+| `ImportCsv(file, ct)` | POST /api/v1/registration-import/csv â€” Imports CSV of registration numbers. Admin. | `API/Controllers/RegistrationImportController.cs` |
+| `AddSingle(request, ct)` | POST /api/v1/registration-import/single â€” Adds one registration number. Admin. | `API/Controllers/RegistrationImportController.cs` |
 
-### API — AccountSecurityController
+### API â€” AccountSecurityController
 | Function | Description | File |
 |---|---|---|
-| `GetLocked(ct)` | GET /api/v1/account-security/locked — Returns all locked accounts. Admin+. | `API/Controllers/AccountSecurityController.cs` |
-| `GetLockoutStatus(userId, ct)` | GET /api/v1/account-security/{userId}/lockout-status — Status for user. Admin+. | `API/Controllers/AccountSecurityController.cs` |
-| `Unlock(userId, ct)` | POST /api/v1/account-security/{userId}/unlock — Unlocks an account. Admin/SuperAdmin; role rules enforced. | `API/Controllers/AccountSecurityController.cs` |
-| `ResetPassword(userId, request, ct)` | POST /api/v1/account-security/{userId}/reset-password — Admin resets password. Admin+. | `API/Controllers/AccountSecurityController.cs` |
+| `GetLocked(ct)` | GET /api/v1/account-security/locked â€” Returns all locked accounts. Admin+. | `API/Controllers/AccountSecurityController.cs` |
+| `GetLockoutStatus(userId, ct)` | GET /api/v1/account-security/{userId}/lockout-status â€” Status for user. Admin+. | `API/Controllers/AccountSecurityController.cs` |
+| `Unlock(userId, ct)` | POST /api/v1/account-security/{userId}/unlock â€” Unlocks an account. Admin/SuperAdmin; role rules enforced. | `API/Controllers/AccountSecurityController.cs` |
+| `ResetPassword(userId, request, ct)` | POST /api/v1/account-security/{userId}/reset-password â€” Admin resets password. Admin+. | `API/Controllers/AccountSecurityController.cs` |
 
 ---
 
-## Phase 9: Dashboard, Navigation & System Settings (Sprints 17–18)
+## Phase 9: Dashboard, Navigation & System Settings (Sprints 17â€“18)
 
-### Domain — Timetable aggregate
+### Domain â€” Timetable aggregate
 | Function | Description | File |
 |---|---|---|
 | `Timetable(departmentId, semesterId, name)` | Constructor; creates a draft timetable for a dept/semester. | `Domain/Entities/Timetable.cs` |
@@ -1483,7 +1483,7 @@
 | `Unpublish()` | Reverts `IsPublished = false`; hides from students/faculty. | `Domain/Entities/Timetable.cs` |
 | `TimetableEntry(timetableId, courseOfferingId, roomId, dayOfWeek, startTime, endTime)` | Constructor; adds a single slot to a timetable. | `Domain/Entities/TimetableEntry.cs` |
 
-### Domain — Settings entities
+### Domain â€” Settings entities
 | Function | Description | File |
 |---|---|---|
 | `ReportDefinition(key, name, purpose)` | Constructor; creates a report definition record. | `Domain/Entities/ReportDefinition.cs` |
@@ -1495,7 +1495,7 @@
 | `SidebarMenuRoleAccess(sidebarMenuItemId, roleName, isAllowed)` | Constructor; per-role access record for a menu item. | `Domain/Entities/SidebarMenuRoleAccess.cs` |
 | `SetAllowed(isAllowed)` | Updates the `IsAllowed` flag for this role-access record. | `Domain/Entities/SidebarMenuRoleAccess.cs` |
 
-### Infrastructure — TimetableRepository
+### Infrastructure â€” TimetableRepository
 | Function | Description | File |
 |---|---|---|
 | `GetByIdAsync(id, ct)` | Returns a timetable with entries. | `Infrastructure/Repositories/TimetableRepository.cs` |
@@ -1511,7 +1511,7 @@
 | `ExportToExcelAsync(id, ct)` | Returns Excel byte array for a timetable (ClosedXML). | `Infrastructure/Repositories/TimetableRepository.cs` |
 | `ExportToPdfAsync(id, ct)` | Returns PDF byte array for a timetable (QuestPDF). | `Infrastructure/Repositories/TimetableRepository.cs` |
 
-### Infrastructure — BuildingRoomRepository
+### Infrastructure â€” BuildingRoomRepository
 | Function | Description | File |
 |---|---|---|
 | `GetAllAsync(ct)` | Returns all buildings with rooms. | `Infrastructure/Repositories/BuildingRoomRepository.cs` |
@@ -1523,7 +1523,7 @@
 | `UpdateRoomAsync(room, ct)` | Updates room details (name, capacity). | `Infrastructure/Repositories/BuildingRoomRepository.cs` |
 | `DeleteRoomAsync(id, ct)` | Deletes a room. | `Infrastructure/Repositories/BuildingRoomRepository.cs` |
 
-### Infrastructure — SettingsRepository (sidebar & settings methods)
+### Infrastructure â€” SettingsRepository (sidebar & settings methods)
 | Function | Description | File |
 |---|---|---|
 | `GetSidebarMenusAsync(ct)` | Returns all top-level sidebar items with their `SidebarMenuRoleAccess` collection. | `Infrastructure/Repositories/SettingsRepository.cs` |
@@ -1537,18 +1537,18 @@
 | `GetModuleRolesAsync(moduleKey, ct)` | Returns role assignments for a module. | `Infrastructure/Repositories/SettingsRepository.cs` |
 | `SetModuleRolesAsync(moduleKey, roleAssignments, ct)` | Replaces role assignments for a module. | `Infrastructure/Repositories/SettingsRepository.cs` |
 
-### Infrastructure — TimetableExcelExporter / TimetablePdfExporter
+### Infrastructure â€” TimetableExcelExporter / TimetablePdfExporter
 | Function | Description | File |
 |---|---|---|
 | `ExportAsync(timetable, ct)` | Generates a ClosedXML Excel workbook for a timetable; returns byte array. | `Infrastructure/Exporters/TimetableExcelExporter.cs` |
 | `ExportAsync(timetable, ct)` | Generates a QuestPDF landscape A4 PDF for a timetable; returns byte array. | `Infrastructure/Exporters/TimetablePdfExporter.cs` |
 
-### Infrastructure — DatabaseSeeder (extended)
+### Infrastructure â€” DatabaseSeeder (extended)
 | Function | Description | File |
 |---|---|---|
 | `SeedSidebarMenusAsync(context, ct)` | Seeds default 11 sidebar menu items and their per-role `SidebarMenuRoleAccess` rows on first run. | `Infrastructure/Seeding/DatabaseSeeder.cs` |
 
-### Application — TimetableService
+### Application â€” TimetableService
 | Function | Description | File |
 |---|---|---|
 | `GetTimetablesAsync(deptId, semesterId, ct)` | Returns timetables for a dept/semester. | `Application/Timetable/TimetableService.cs` |
@@ -1564,7 +1564,7 @@
 | `ExportExcelAsync(id, ct)` | Returns Excel export for a timetable. | `Application/Timetable/TimetableService.cs` |
 | `ExportPdfAsync(id, ct)` | Returns PDF export for a timetable. | `Application/Timetable/TimetableService.cs` |
 
-### Application — BuildingRoomService
+### Application â€” BuildingRoomService
 | Function | Description | File |
 |---|---|---|
 | `GetAllAsync(ct)` | Returns all buildings with rooms. | `Application/BuildingRoom/BuildingRoomService.cs` |
@@ -1576,7 +1576,7 @@
 | `UpdateRoomAsync(roomId, request, ct)` | Updates room details. | `Application/BuildingRoom/BuildingRoomService.cs` |
 | `DeleteRoomAsync(roomId, ct)` | Deletes a room. | `Application/BuildingRoom/BuildingRoomService.cs` |
 
-### Application — ReportSettingsService
+### Application â€” ReportSettingsService
 | Function | Description | File |
 |---|---|---|
 | `GetAllReportsAsync(ct)` | Returns all report definitions with role assignments. | `Application/Settings/ReportSettingsService.cs` |
@@ -1587,19 +1587,19 @@
 | `GetActiveReportKeysForRoleAsync(roleName, ct)` | Returns report keys available for a given role. | `Application/Settings/ReportSettingsService.cs` |
 | `MapToReportDto(report)` | Maps ReportDefinition to DTO. | `Application/Settings/ReportSettingsService.cs` |
 
-### Application — ModuleRolesService
+### Application â€” ModuleRolesService
 | Function | Description | File |
 |---|---|---|
 | `GetModuleRolesAsync(moduleKey, ct)` | Returns role assignments for a module. | `Application/Settings/ModuleRolesService.cs` |
 | `SetModuleRolesAsync(moduleKey, roleAssignments, ct)` | Updates role access for a module. SuperAdmin only. | `Application/Settings/ModuleRolesService.cs` |
 
-### Application — ThemeService
+### Application â€” ThemeService
 | Function | Description | File |
 |---|---|---|
 | `GetThemeAsync(userId, ct)` | Returns the user's current theme key. | `Application/Theme/ThemeService.cs` |
 | `SetThemeAsync(userId, themeKey, ct)` | Persists the user's theme selection. | `Application/Theme/ThemeService.cs` |
 
-### Application — SidebarMenuService
+### Application â€” SidebarMenuService
 | Function | Description | File |
 |---|---|---|
 | `GetTopLevelMenusAsync(ct)` | Returns all top-level sidebar menu items with role access data. | `Application/Sidebar/SidebarMenuService.cs` |
@@ -1609,83 +1609,84 @@
 | `SetRolesAsync(menuId, roleAssignments, ct)` | Replaces role assignments for a menu item; validates not locked system menu. | `Application/Sidebar/SidebarMenuService.cs` |
 | `SetStatusAsync(menuId, isActive, ct)` | Toggles menu item status; returns 409 Conflict if `IsSystemMenu=true`. | `Application/Sidebar/SidebarMenuService.cs` |
 
-### API — TimetableController
+### API â€” TimetableController
 | Function | Description | File |
 |---|---|---|
-| `GetAll(deptId, semesterId, ct)` | GET /api/v1/timetables — Lists timetables. | `API/Controllers/TimetableController.cs` |
-| `GetById(id, ct)` | GET /api/v1/timetables/{id} — Returns full timetable detail. | `API/Controllers/TimetableController.cs` |
-| `Create(request, ct)` | POST /api/v1/timetables — Creates a draft timetable. Admin. | `API/Controllers/TimetableController.cs` |
-| `Update(id, request, ct)` | PUT /api/v1/timetables/{id} — Updates timetable metadata. Admin. | `API/Controllers/TimetableController.cs` |
-| `Delete(id, ct)` | DELETE /api/v1/timetables/{id} — Deletes timetable. Admin. | `API/Controllers/TimetableController.cs` |
-| `Publish(id, ct)` | POST /api/v1/timetables/{id}/publish — Publishes. Admin. | `API/Controllers/TimetableController.cs` |
-| `Unpublish(id, ct)` | POST /api/v1/timetables/{id}/unpublish — Unpublishes. Admin. | `API/Controllers/TimetableController.cs` |
-| `AddEntry(id, request, ct)` | POST /api/v1/timetables/{id}/entries — Adds a slot. Admin. | `API/Controllers/TimetableController.cs` |
-| `UpdateEntry(entryId, request, ct)` | PUT /api/v1/timetables/entries/{entryId} — Updates a slot. Admin. | `API/Controllers/TimetableController.cs` |
-| `DeleteEntry(entryId, ct)` | DELETE /api/v1/timetables/entries/{entryId} — Removes a slot. Admin. | `API/Controllers/TimetableController.cs` |
-| `ExportExcel(id, ct)` | GET /api/v1/timetables/{id}/export/excel — Excel export. | `API/Controllers/TimetableController.cs` |
-| `ExportPdf(id, ct)` | GET /api/v1/timetables/{id}/export/pdf — PDF export. | `API/Controllers/TimetableController.cs` |
+| `GetAll(deptId, semesterId, ct)` | GET /api/v1/timetables â€” Lists timetables. | `API/Controllers/TimetableController.cs` |
+| `GetById(id, ct)` | GET /api/v1/timetables/{id} â€” Returns full timetable detail. | `API/Controllers/TimetableController.cs` |
+| `Create(request, ct)` | POST /api/v1/timetables â€” Creates a draft timetable. Admin. | `API/Controllers/TimetableController.cs` |
+| `Update(id, request, ct)` | PUT /api/v1/timetables/{id} â€” Updates timetable metadata. Admin. | `API/Controllers/TimetableController.cs` |
+| `Delete(id, ct)` | DELETE /api/v1/timetables/{id} â€” Deletes timetable. Admin. | `API/Controllers/TimetableController.cs` |
+| `Publish(id, ct)` | POST /api/v1/timetables/{id}/publish â€” Publishes. Admin. | `API/Controllers/TimetableController.cs` |
+| `Unpublish(id, ct)` | POST /api/v1/timetables/{id}/unpublish â€” Unpublishes. Admin. | `API/Controllers/TimetableController.cs` |
+| `AddEntry(id, request, ct)` | POST /api/v1/timetables/{id}/entries â€” Adds a slot. Admin. | `API/Controllers/TimetableController.cs` |
+| `UpdateEntry(entryId, request, ct)` | PUT /api/v1/timetables/entries/{entryId} â€” Updates a slot. Admin. | `API/Controllers/TimetableController.cs` |
+| `DeleteEntry(entryId, ct)` | DELETE /api/v1/timetables/entries/{entryId} â€” Removes a slot. Admin. | `API/Controllers/TimetableController.cs` |
+| `ExportExcel(id, ct)` | GET /api/v1/timetables/{id}/export/excel â€” Excel export. | `API/Controllers/TimetableController.cs` |
+| `ExportPdf(id, ct)` | GET /api/v1/timetables/{id}/export/pdf â€” PDF export. | `API/Controllers/TimetableController.cs` |
 
-### API — BuildingRoomController
+### API â€” BuildingRoomController
 | Function | Description | File |
 |---|---|---|
-| `GetAll(ct)` | GET /api/v1/buildings — Returns all buildings with rooms. | `API/Controllers/BuildingRoomController.cs` |
-| `GetBuilding(id, ct)` | GET /api/v1/buildings/{id} — Single building. | `API/Controllers/BuildingRoomController.cs` |
-| `CreateBuilding(request, ct)` | POST /api/v1/buildings — Admin. | `API/Controllers/BuildingRoomController.cs` |
-| `UpdateBuilding(id, request, ct)` | PUT /api/v1/buildings/{id} — Admin. | `API/Controllers/BuildingRoomController.cs` |
-| `DeleteBuilding(id, ct)` | DELETE /api/v1/buildings/{id} — Admin. | `API/Controllers/BuildingRoomController.cs` |
-| `CreateRoom(buildingId, request, ct)` | POST /api/v1/buildings/{id}/rooms — Admin. | `API/Controllers/BuildingRoomController.cs` |
-| `UpdateRoom(roomId, request, ct)` | PUT /api/v1/buildings/rooms/{roomId} — Admin. | `API/Controllers/BuildingRoomController.cs` |
-| `DeleteRoom(roomId, ct)` | DELETE /api/v1/buildings/rooms/{roomId} — Admin. | `API/Controllers/BuildingRoomController.cs` |
+| `GetAll(ct)` | GET /api/v1/buildings â€” Returns all buildings with rooms. | `API/Controllers/BuildingRoomController.cs` |
+| `GetBuilding(id, ct)` | GET /api/v1/buildings/{id} â€” Single building. | `API/Controllers/BuildingRoomController.cs` |
+| `CreateBuilding(request, ct)` | POST /api/v1/buildings â€” Admin. | `API/Controllers/BuildingRoomController.cs` |
+| `UpdateBuilding(id, request, ct)` | PUT /api/v1/buildings/{id} â€” Admin. | `API/Controllers/BuildingRoomController.cs` |
+| `DeleteBuilding(id, ct)` | DELETE /api/v1/buildings/{id} â€” Admin. | `API/Controllers/BuildingRoomController.cs` |
+| `CreateRoom(buildingId, request, ct)` | POST /api/v1/buildings/{id}/rooms â€” Admin. | `API/Controllers/BuildingRoomController.cs` |
+| `UpdateRoom(roomId, request, ct)` | PUT /api/v1/buildings/rooms/{roomId} â€” Admin. | `API/Controllers/BuildingRoomController.cs` |
+| `DeleteRoom(roomId, ct)` | DELETE /api/v1/buildings/rooms/{roomId} â€” Admin. | `API/Controllers/BuildingRoomController.cs` |
 
-### API — ReportSettingsController
+### API â€” ReportSettingsController
 | Function | Description | File |
 |---|---|---|
-| `GetAll(ct)` | GET /api/v1/settings/reports — Lists all report definitions. SuperAdmin. | `API/Controllers/ReportSettingsController.cs` |
-| `GetReport(key, ct)` | GET /api/v1/settings/reports/{key} — Single report. SuperAdmin. | `API/Controllers/ReportSettingsController.cs` |
-| `SetRoles(key, request, ct)` | PUT /api/v1/settings/reports/{key}/roles — Updates role access. SuperAdmin. | `API/Controllers/ReportSettingsController.cs` |
-| `ExportExcel(ct)` | GET /api/v1/settings/reports/export/excel — Excel export. SuperAdmin. | `API/Controllers/ReportSettingsController.cs` |
-| `ExportPdf(ct)` | GET /api/v1/settings/reports/export/pdf — PDF export. SuperAdmin. | `API/Controllers/ReportSettingsController.cs` |
-| `GetForRole(role, ct)` | GET /api/v1/settings/reports/for-role/{role} — Active reports for a role. | `API/Controllers/ReportSettingsController.cs` |
+| `GetAll(ct)` | GET /api/v1/settings/reports â€” Lists all report definitions. SuperAdmin. | `API/Controllers/ReportSettingsController.cs` |
+| `GetReport(key, ct)` | GET /api/v1/settings/reports/{key} â€” Single report. SuperAdmin. | `API/Controllers/ReportSettingsController.cs` |
+| `SetRoles(key, request, ct)` | PUT /api/v1/settings/reports/{key}/roles â€” Updates role access. SuperAdmin. | `API/Controllers/ReportSettingsController.cs` |
+| `ExportExcel(ct)` | GET /api/v1/settings/reports/export/excel â€” Excel export. SuperAdmin. | `API/Controllers/ReportSettingsController.cs` |
+| `ExportPdf(ct)` | GET /api/v1/settings/reports/export/pdf â€” PDF export. SuperAdmin. | `API/Controllers/ReportSettingsController.cs` |
+| `GetForRole(role, ct)` | GET /api/v1/settings/reports/for-role/{role} â€” Active reports for a role. | `API/Controllers/ReportSettingsController.cs` |
 | `GetCurrentUserId()` | Extracts user ID from JWT. | `API/Controllers/ReportSettingsController.cs` |
 
-### API — ModuleController (extended)
+### API â€” ModuleController (extended)
 | Function | Description | File |
 |---|---|---|
-| `GetModuleRoles(key, ct)` | GET /api/v1/modules/{key}/roles — Returns role assignments for a module. SuperAdmin. | `API/Controllers/ModuleController.cs` |
-| `SetModuleRoles(key, request, ct)` | PUT /api/v1/modules/{key}/roles — Updates role access for a module. SuperAdmin. | `API/Controllers/ModuleController.cs` |
+| `GetModuleRoles(key, ct)` | GET /api/v1/modules/{key}/roles â€” Returns role assignments for a module. SuperAdmin. | `API/Controllers/ModuleController.cs` |
+| `SetModuleRoles(key, request, ct)` | PUT /api/v1/modules/{key}/roles â€” Updates role access for a module. SuperAdmin. | `API/Controllers/ModuleController.cs` |
 
-### API — ThemeController
+### API â€” ThemeController
 | Function | Description | File |
 |---|---|---|
-| `GetTheme(ct)` | GET /api/v1/theme — Returns current user's theme key. Authenticated. | `API/Controllers/ThemeController.cs` |
-| `SetTheme(request, ct)` | PUT /api/v1/theme — Persists user's theme selection. Authenticated. | `API/Controllers/ThemeController.cs` |
+| `GetTheme(ct)` | GET /api/v1/theme â€” Returns current user's theme key. Authenticated. | `API/Controllers/ThemeController.cs` |
+| `SetTheme(request, ct)` | PUT /api/v1/theme â€” Persists user's theme selection. Authenticated. | `API/Controllers/ThemeController.cs` |
 | `GetCurrentUserId()` | Extracts user ID from JWT. | `API/Controllers/ThemeController.cs` |
 
-### API — SidebarMenuController
+### API â€” SidebarMenuController
 | Function | Description | File |
 |---|---|---|
-| `GetMyVisible(ct)` | GET /api/v1/sidebar-menu/my-visible — Returns visible menus for the calling user's role. Authenticated. | `API/Controllers/SidebarMenuController.cs` |
-| `GetAll(ct)` | GET /api/v1/sidebar-menu — Returns all top-level sidebar items with role access. SuperAdmin. | `API/Controllers/SidebarMenuController.cs` |
-| `GetById(id, ct)` | GET /api/v1/sidebar-menu/{id} — Single menu item. SuperAdmin. | `API/Controllers/SidebarMenuController.cs` |
-| `GetSubMenus(id, ct)` | GET /api/v1/sidebar-menu/{id}/sub-menus — Sub-menus for parent. SuperAdmin. | `API/Controllers/SidebarMenuController.cs` |
-| `SetRoles(id, request, ct)` | PUT /api/v1/sidebar-menu/{id}/roles — Updates role visibility. SuperAdmin. | `API/Controllers/SidebarMenuController.cs` |
-| `SetStatus(id, request, ct)` | PUT /api/v1/sidebar-menu/{id}/status — Toggles active/inactive; 409 if system menu. SuperAdmin. | `API/Controllers/SidebarMenuController.cs` |
+| `GetMyVisible(ct)` | GET /api/v1/sidebar-menu/my-visible â€” Returns visible menus for the calling user's role. Authenticated. | `API/Controllers/SidebarMenuController.cs` |
+| `GetAll(ct)` | GET /api/v1/sidebar-menu â€” Returns all top-level sidebar items with role access. SuperAdmin. | `API/Controllers/SidebarMenuController.cs` |
+| `GetById(id, ct)` | GET /api/v1/sidebar-menu/{id} â€” Single menu item. SuperAdmin. | `API/Controllers/SidebarMenuController.cs` |
+| `GetSubMenus(id, ct)` | GET /api/v1/sidebar-menu/{id}/sub-menus â€” Sub-menus for parent. SuperAdmin. | `API/Controllers/SidebarMenuController.cs` |
+| `SetRoles(id, request, ct)` | PUT /api/v1/sidebar-menu/{id}/roles â€” Updates role visibility. SuperAdmin. | `API/Controllers/SidebarMenuController.cs` |
+| `SetStatus(id, request, ct)` | PUT /api/v1/sidebar-menu/{id}/status â€” Toggles active/inactive; 409 if system menu. SuperAdmin. | `API/Controllers/SidebarMenuController.cs` |
 
-### Web — EduApiClient (sidebar methods)
+### Web â€” EduApiClient (sidebar methods)
 | Function | Description | File |
 |---|---|---|
-| `GetSidebarMenusAsync(ct)` | GET /api/v1/sidebar-menu — Fetches all top-level menus for the settings table. | `Web/Services/EduApiClient.cs` |
-| `GetVisibleSidebarMenusForCurrentUserAsync(ct)` | GET /api/v1/sidebar-menu/my-visible — Fetches visible menus for layout rendering. | `Web/Services/EduApiClient.cs` |
-| `GetSidebarSubMenusAsync(parentId, ct)` | GET /api/v1/sidebar-menu/{id}/sub-menus — Fetches sub-menus for a parent. | `Web/Services/EduApiClient.cs` |
-| `SetSidebarMenuRolesAsync(menuId, request, ct)` | PUT /api/v1/sidebar-menu/{id}/roles — Updates role visibility settings. | `Web/Services/EduApiClient.cs` |
-| `SetSidebarMenuStatusAsync(menuId, request, ct)` | PUT /api/v1/sidebar-menu/{id}/status — Toggles menu item active/inactive. | `Web/Services/EduApiClient.cs` |
+| `GetSidebarMenusAsync(ct)` | GET /api/v1/sidebar-menu â€” Fetches all top-level menus for the settings table. | `Web/Services/EduApiClient.cs` |
+| `GetVisibleSidebarMenusForCurrentUserAsync(ct)` | GET /api/v1/sidebar-menu/my-visible â€” Fetches visible menus for layout rendering. | `Web/Services/EduApiClient.cs` |
+| `GetSidebarSubMenusAsync(parentId, ct)` | GET /api/v1/sidebar-menu/{id}/sub-menus â€” Fetches sub-menus for a parent. | `Web/Services/EduApiClient.cs` |
+| `SetSidebarMenuRolesAsync(menuId, request, ct)` | PUT /api/v1/sidebar-menu/{id}/roles â€” Updates role visibility settings. | `Web/Services/EduApiClient.cs` |
+| `SetSidebarMenuStatusAsync(menuId, request, ct)` | PUT /api/v1/sidebar-menu/{id}/status â€” Toggles menu item active/inactive. | `Web/Services/EduApiClient.cs` |
 
-### Web — PortalController (sidebar settings actions)
+### Web â€” PortalController (sidebar settings actions)
 | Function | Description | File |
 |---|---|---|
-| `SidebarSettings(ct)` | GET /portal/settings/sidebar — Loads sidebar settings view with top-level menu table. SuperAdmin. | `Web/Controllers/PortalController.cs` |
-| `UpdateSidebarMenuRoles(id, request, ct)` | POST /portal/settings/sidebar/{id}/roles — Updates role access from form; CSRF-protected. SuperAdmin. | `Web/Controllers/PortalController.cs` |
-| `UpdateSidebarMenuStatus(id, request, ct)` | POST /portal/settings/sidebar/{id}/status — Toggles menu item status from form; CSRF-protected. SuperAdmin. | `Web/Controllers/PortalController.cs` |
+| `SidebarSettings(ct)` | GET /portal/settings/sidebar â€” Loads sidebar settings view with top-level menu table. SuperAdmin. | `Web/Controllers/PortalController.cs` |
+| `UpdateSidebarMenuRoles(id, request, ct)` | POST /portal/settings/sidebar/{id}/roles â€” Updates role access from form; CSRF-protected. SuperAdmin. | `Web/Controllers/PortalController.cs` |
+| `UpdateSidebarMenuStatus(id, request, ct)` | POST /portal/settings/sidebar/{id}/status â€” Toggles menu item status from form; CSRF-protected. SuperAdmin. | `Web/Controllers/PortalController.cs` |
+
 
 ---
 
@@ -1707,341 +1708,102 @@
 ### SidebarMenuIntegrationTests (SidebarMenuIntegrationTests.cs)
 | Test | Assertion | File |
 |---|---|---|
-| `GetVisible_SuperAdmin_ReturnsAllMenus` | SuperAdmin receives all 11 seeded menu keys via `GET my-visible`. | `tests/.../SidebarMenuIntegrationTests.cs` |
-| `GetVisible_Admin_ReturnsAdminMenusOnly` | Admin receives exactly 5 allowed menu keys. | `tests/.../SidebarMenuIntegrationTests.cs` |
-| `GetVisible_Faculty_ReturnsFacultyMenusOnly` | Faculty receives exactly 2 allowed menu keys. | `tests/.../SidebarMenuIntegrationTests.cs` |
-| `GetVisible_Student_ReturnsStudentMenusOnly` | Student receives exactly 2 allowed menu keys. | `tests/.../SidebarMenuIntegrationTests.cs` |
+| `GetVisible_SuperAdmin_ReturnsAllMenus` | SuperAdmin receives all 13 seeded menu keys via `GET my-visible`. | `tests/.../SidebarMenuIntegrationTests.cs` |
+| `GetVisible_Admin_ReturnsAdminMenusOnly` | Admin receives exactly 7 keys (dashboard, timetable_admin, lookups, buildings, rooms, system_settings, theme_settings). | `tests/.../SidebarMenuIntegrationTests.cs` |
+| `GetVisible_Faculty_ReturnsFacultyMenusOnly` | Faculty receives exactly 4 keys (dashboard, timetable_teacher, system_settings, theme_settings). | `tests/.../SidebarMenuIntegrationTests.cs` |
+| `GetVisible_Student_ReturnsStudentMenusOnly` | Student receives exactly 4 keys (dashboard, timetable_student, system_settings, theme_settings). | `tests/.../SidebarMenuIntegrationTests.cs` |
 | `SetStatus_DisableTimetableTeacher_RemovesFromFaculty_ThenRestore` | Deactivating a menu item removes it from Faculty visible; re-activating restores it. | `tests/.../SidebarMenuIntegrationTests.cs` |
 | `SetRoles_DenyStudent_RemovesFromStudentVisible_ThenRestore` | Revoking Student role access removes menu from student visible; restore re-adds it. | `tests/.../SidebarMenuIntegrationTests.cs` |
 | `SetStatus_SystemMenu_DeactivateAttempt_Returns409Conflict` | Attempting to deactivate a system menu returns `409 Conflict`. | `tests/.../SidebarMenuIntegrationTests.cs` |
 | `GetVisible_NoToken_Returns401` | Unauthenticated request to `my-visible` returns `401 Unauthorized`. | `tests/.../SidebarMenuIntegrationTests.cs` |
-| `SetStatus(id, request, ct)` | PUT /api/v1/sidebar-menu/{id}/status — Toggles active/inactive; 409 if system menu. SuperAdmin. | `API/Controllers/SidebarMenuController.cs` |
-
-### Web — EduApiClient (sidebar methods)
-| Function | Description | File |
-|---|---|---|
-| `GetSidebarMenusAsync(ct)` | GET /api/v1/sidebar-menu — Fetches all top-level menus for settings table. | `Web/Services/EduApiClient.cs` |
-| `GetVisibleSidebarMenusForCurrentUserAsync(ct)` | GET /api/v1/sidebar-menu/my-visible — Fetches visible menus for layout rendering. | `Web/Services/EduApiClient.cs` |
-| `GetSidebarSubMenusAsync(parentId, ct)` | GET /api/v1/sidebar-menu/{id}/sub-menus — Fetches sub-menus for a parent. | `Web/Services/EduApiClient.cs` |
-| `SetSidebarMenuRolesAsync(menuId, request, ct)` | PUT /api/v1/sidebar-menu/{id}/roles — Updates role visibility settings. | `Web/Services/EduApiClient.cs` |
-| `SetSidebarMenuStatusAsync(menuId, request, ct)` | PUT /api/v1/sidebar-menu/{id}/status — Toggles menu item status. | `Web/Services/EduApiClient.cs` |
-
-### Web — PortalController (sidebar settings actions)
-| Function | Description | File |
-|---|---|---|
-| `SidebarSettings(ct)` | GET /portal/settings/sidebar — Loads sidebar settings view with menu table. | `Web/Controllers/PortalController.cs` |
-| `UpdateSidebarMenuRoles(id, request, ct)` | POST /portal/settings/sidebar/{id}/roles — Updates role access from form; CSRF protected. | `Web/Controllers/PortalController.cs` |
-| `UpdateSidebarMenuStatus(id, request, ct)` | POST /portal/settings/sidebar/{id}/status — Toggles menu item status from form; CSRF protected. | `Web/Controllers/PortalController.cs` |
 
 ---
 
-## Integration Tests (tests/Tabsan.EduSphere.IntegrationTests)
+## Phase 9 Web UI — Web Layer (Completed 30 April 2026)
 
-### EduSphereWebFactory (Infrastructure/EduSphereWebFactory.cs)
+### API — LicenseController (Phase 9 additions)
 | Function | Description | File |
 |---|---|---|
-| `InitializeAsync()` | `IAsyncLifetime` — drops `TabsanEduSphere_IntegrationTests` DB via standalone context before factory builds; ensures clean state. | `tests/.../Infrastructure/EduSphereWebFactory.cs` |
-| `DisposeAsync()` | Drops test DB after all tests complete; cleans up. | `tests/.../Infrastructure/EduSphereWebFactory.cs` |
-| `BuildStandaloneContext()` | Creates a standalone `ApplicationDbContext` using test connection string; used for DB drop/recreate outside factory lifecycle. | `tests/.../Infrastructure/EduSphereWebFactory.cs` |
-| `ConfigureWebHost(builder)` | Overrides connection string to test DB; removes `IHostedService` background jobs to prevent interference. | `tests/.../Infrastructure/EduSphereWebFactory.cs` |
+| `Details(ct)` | GET /api/v1/license/details — Returns full license detail (status, licenseType, activatedAt, expiresAt, updatedAt, remainingDays). Roles: SuperAdmin, Admin. | `API/Controllers/LicenseController.cs` |
+| `Upload(file, ct)` | POST /api/v1/license/upload — Accepts `.tablic` file upload and activates. Role: SuperAdmin only. | `API/Controllers/LicenseController.cs` |
 
-### JwtTestHelper (Infrastructure/JwtTestHelper.cs)
+### API — ModuleController (Phase 9 all-settings endpoint)
 | Function | Description | File |
 |---|---|---|
-| `GenerateToken(role, userId, email)` | Generates a signed JWT for any system role using same secret/issuer/audience as API; used to authenticate test HTTP clients. | `tests/.../Infrastructure/JwtTestHelper.cs` |
+| `AllSettings(ct)` | GET /api/v1/modules/all-settings — Returns `List<ModuleSettingsDto>` with activation state + role assignments for all modules. Role: SuperAdmin. | `API/Controllers/ModuleController.cs` |
 
-### SidebarMenuIntegrationTests (SidebarMenuIntegrationTests.cs)
-| Test | Assertion | File |
+### Application — ModuleSettingsDto
+| Type | Description | File |
 |---|---|---|
-| `GetVisible_SuperAdmin_ReturnsAllMenus` | SuperAdmin sees all 11 seeded menu keys. | `tests/.../SidebarMenuIntegrationTests.cs` |
-| `GetVisible_Admin_ReturnsAdminMenusOnly` | Admin sees exactly 5 menu keys. | `tests/.../SidebarMenuIntegrationTests.cs` |
-| `GetVisible_Faculty_ReturnsFacultyMenusOnly` | Faculty sees exactly 2 menu keys. | `tests/.../SidebarMenuIntegrationTests.cs` |
-| `GetVisible_Student_ReturnsStudentMenusOnly` | Student sees exactly 2 menu keys. | `tests/.../SidebarMenuIntegrationTests.cs` |
-| `SetStatus_DisableTimetableTeacher_RemovesFromFaculty_ThenRestore` | Disabling timetable-teacher menu removes it from Faculty visible; re-enable restores it. | `tests/.../SidebarMenuIntegrationTests.cs` |
-| `SetRoles_DenyStudent_RemovesFromStudentVisible_ThenRestore` | Revoking student role access removes menu from student visible; restore re-adds it. | `tests/.../SidebarMenuIntegrationTests.cs` |
-| `SetStatus_SystemMenu_DeactivateAttempt_Returns409Conflict` | Deactivating a system menu returns `409 Conflict`. | `tests/.../SidebarMenuIntegrationTests.cs` |
-| `GetVisible_NoToken_Returns401` | Unauthenticated request to my-visible returns `401 Unauthorized`. | `tests/.../SidebarMenuIntegrationTests.cs` |
-| `GenerateRawToken()` | Generates 32-byte cryptographically random base64url token. | `tools/Tabsan.Lic/Services/KeyService.cs` |
-| `HashToken(token)` | Returns lowercase hex SHA-256 hash of a raw token string. | `tools/Tabsan.Lic/Services/KeyService.cs` |
+| `ModuleSettingsDto` | Record: `(Id, Key, Name, IsMandatory, IsActive, AssignedRoles)` — used by the all-settings endpoint. | `Application/DTOs/SettingsDtos.cs` |
 
-### Tabsan.Lic � LicenseBuilder (tools/Tabsan.Lic/Services/LicenseBuilder.cs)
+### Infrastructure — LicenseValidationService (Phase 9 addition)
 | Function | Description | File |
 |---|---|---|
-| `BuildAsync(key, outputPath)` | Serialises payload JSON, AES-256 encrypts, RSA signs, writes .tablic binary file. | `tools/Tabsan.Lic/Services/LicenseBuilder.cs` |
+| `GetCurrentStateAsync(ct)` | Returns the raw `LicenseState?` from the license repository; used by the details endpoint. | `Infrastructure/Licensing/LicenseValidationService.cs` |
 
-### Tabsan.Lic � LicCrypto (tools/Tabsan.Lic/Crypto/LicCrypto.cs)
+### Infrastructure — DatabaseSeeder (Phase 9 idempotent update)
 | Function | Description | File |
 |---|---|---|
-| `EncryptAes(plaintext)` | AES-256-CBC encrypt with random IV; returns (ciphertext, iv). | `tools/Tabsan.Lic/Crypto/LicCrypto.cs` |
-| `SignRsa(data)` | RSA-2048 PKCS#1 v1.5 sign of SHA-256(data) using embedded private key. | `tools/Tabsan.Lic/Crypto/LicCrypto.cs` |
-| `BuildTablicFile(payloadJson)` | Assembles final .tablic bytes: magic + signature + IV + ciphertext. | `tools/Tabsan.Lic/Crypto/LicCrypto.cs` |
+| `SeedSidebarMenusAsync(db)` | Rewritten to upsert-by-key (fully idempotent). Adds `license_update` (SuperAdmin only) and `theme_settings` (all roles) entries. Now seeds 13 sidebar items total. | `Infrastructure/Persistence/DatabaseSeeder.cs` |
 
-### LicenseValidationService (Infrastructure/Licensing/LicenseValidationService.cs)
+### Web — EduApiClient (Phase 9 UI methods)
 | Function | Description | File |
 |---|---|---|
-| `ActivateFromFileAsync(licenseFilePath, ct)` | Reads .tablic binary, verifies RSA sig, decrypts AES payload, checks replay, applies LicenseState. | `Infrastructure/Licensing/LicenseValidationService.cs` |
-| `ValidateCurrentAsync(ct)` | Refreshes stored LicenseState status. Returns current LicenseStatus. | `Infrastructure/Licensing/LicenseValidationService.cs` |
-| `VerifyRsaSignature(data, signature)` | Verifies RSA-2048 PKCS#1 SHA-256 signature with embedded public key. | `Infrastructure/Licensing/LicenseValidationService.cs` |
-| `DecryptAes(ciphertext, iv)` | AES-256-CBC decrypt using embedded key and supplied IV. | `Infrastructure/Licensing/LicenseValidationService.cs` |
-| `ComputeFileHash(bytes)` | SHA-256 hex hash of raw file bytes for tamper detection. | `Infrastructure/Licensing/LicenseValidationService.cs` |
+| `GetLicenseDetailsAsync(ct)` | GET /api/v1/license/details — Returns license status, type, dates, remaining days. | `Web/Services/EduApiClient.cs` |
+| `UploadLicenseAsync(fileStream, fileName, ct)` | POST /api/v1/license/upload — Uploads a `.tablic` license file. | `Web/Services/EduApiClient.cs` |
+| `GetCurrentThemeAsync(ct)` | GET /api/v1/theme — Returns the current user's theme key. | `Web/Services/EduApiClient.cs` |
+| `SetThemeAsync(themeKey, ct)` | PUT /api/v1/theme — Persists the user's theme selection. | `Web/Services/EduApiClient.cs` |
+| `GetReportDefinitionsAsync(ct)` | GET /api/v1/settings/reports — Returns all report definitions with role assignments. | `Web/Services/EduApiClient.cs` |
+| `CreateReportDefinitionAsync(form, ct)` | POST /api/v1/settings/reports — Creates a new report definition. | `Web/Services/EduApiClient.cs` |
+| `SetReportActiveAsync(id, activate, ct)` | POST /api/v1/settings/reports/{id}/activate or /deactivate — Toggles report visibility. | `Web/Services/EduApiClient.cs` |
+| `SetReportRolesAsync(id, roles, ct)` | PUT /api/v1/settings/reports/{id}/roles — Updates role access for a report. | `Web/Services/EduApiClient.cs` |
+| `GetModuleSettingsAsync(ct)` | GET /api/v1/modules/all-settings — Returns all modules with activation + role data. | `Web/Services/EduApiClient.cs` |
+| `SetModuleActiveAsync(key, activate, ct)` | POST /api/v1/modules/{key}/activate or /deactivate — Toggles module activation. | `Web/Services/EduApiClient.cs` |
+| `SetModuleRolesAsync(key, roles, ct)` | PUT /api/v1/modules/{key}/roles — Updates role assignments for a module. | `Web/Services/EduApiClient.cs` |
 
-### LicenseRepository (Infrastructure/Repositories/LicenseRepository.cs)
+### Web — PortalViewModels (Phase 9 additions)
+| Type | Description | File |
+|---|---|---|
+| `LicenseUpdatePageModel` | ViewModel for LicenseUpdate view: status, licenseType, activatedAt, expiresAt, updatedAt, remainingDays. | `Web/Models/Portal/PortalViewModels.cs` |
+| `ThemeOption` | Value type: (Key, Label, PrimaryColor, SecondaryColor, AccentColor) for one theme swatch. | `Web/Models/Portal/PortalViewModels.cs` |
+| `ThemeSettingsPageModel` | ViewModel for ThemeSettings view: CurrentThemeKey + list of 15 ThemeOption entries. | `Web/Models/Portal/PortalViewModels.cs` |
+| `ReportDefinitionWebModel` | ViewModel for a single report row: Id, Key, Name, Purpose, IsActive, AdminAllowed, FacultyAllowed, StudentAllowed. | `Web/Models/Portal/PortalViewModels.cs` |
+| `ReportSettingsPageModel` | ViewModel for ReportSettings view: list of ReportDefinitionWebModel. | `Web/Models/Portal/PortalViewModels.cs` |
+| `CreateReportForm` | Form model: Name, Key, Purpose. | `Web/Models/Portal/PortalViewModels.cs` |
+| `ModuleSettingsWebModel` | ViewModel for a single module row: Id, Key, Name, IsMandatory, IsActive, AdminAllowed, FacultyAllowed, StudentAllowed. | `Web/Models/Portal/PortalViewModels.cs` |
+| `ModuleSettingsPageModel` | ViewModel for ModuleSettings view: list of ModuleSettingsWebModel. | `Web/Models/Portal/PortalViewModels.cs` |
+
+### Web — PortalController (Phase 9 UI actions)
 | Function | Description | File |
 |---|---|---|
-| `IsVerificationKeyConsumedAsync(keyHash, ct)` | Returns true if the given hash already exists in consumed_verification_keys. | `Infrastructure/Repositories/LicenseRepository.cs` |
-| `AddConsumedKeyAsync(key, ct)` | Queues a new ConsumedVerificationKey record for insertion. | `Infrastructure/Repositories/LicenseRepository.cs` |
+| `LicenseUpdate(ct)` | GET /portal/settings/license-update — Loads license status + upload form. Roles: SuperAdmin, Admin. | `Web/Controllers/PortalController.cs` |
+| `UploadLicense(licenseFile, ct)` | POST /portal/settings/license-upload — Uploads `.tablic` file; max 64 KB. Role: SuperAdmin. | `Web/Controllers/PortalController.cs` |
+| `ThemeSettings(ct)` | GET /portal/settings/theme — Loads theme picker page with current selection. Authenticated. | `Web/Controllers/PortalController.cs` |
+| `SetTheme(themeKey, ct)` | POST /portal/settings/set-theme — Persists theme selection via API. Authenticated. | `Web/Controllers/PortalController.cs` |
+| `ReportSettings(ct)` | GET /portal/settings/reports — Loads report definitions list with role controls. Role: SuperAdmin. | `Web/Controllers/PortalController.cs` |
+| `CreateReport(form, ct)` | POST /portal/settings/reports/create — Creates a new report definition. Role: SuperAdmin. | `Web/Controllers/PortalController.cs` |
+| `ToggleReport(id, activate, ct)` | POST /portal/settings/reports/{id}/toggle — Activates or deactivates a report. Role: SuperAdmin. | `Web/Controllers/PortalController.cs` |
+| `UpdateReportRoles(id, adminAllowed, facultyAllowed, studentAllowed, ct)` | POST /portal/settings/reports/{id}/roles — Updates role access for a report. Role: SuperAdmin. | `Web/Controllers/PortalController.cs` |
+| `ModuleSettings(ct)` | GET /portal/settings/modules — Loads module settings list with activation + role controls. Role: SuperAdmin. | `Web/Controllers/PortalController.cs` |
+| `ToggleModule(key, activate, ct)` | POST /portal/settings/modules/{key}/toggle — Activates or deactivates a module (non-mandatory only). Role: SuperAdmin. | `Web/Controllers/PortalController.cs` |
+| `UpdateModuleRoles(key, adminAllowed, facultyAllowed, studentAllowed, ct)` | POST /portal/settings/modules/{key}/roles — Updates role assignments for a module. Role: SuperAdmin. | `Web/Controllers/PortalController.cs` |
 
-### LicenseExpiryWarningJob (BackgroundJobs/LicenseExpiryWarningJob.cs)
-| Function | Description | File |
+### Web — _Layout.cshtml (Phase 9 sidebar routes)
+| Addition | Description | File |
 |---|---|---|
-| `ExecuteAsync(stoppingToken)` | Main loop: runs daily after 60s startup delay. | `BackgroundJobs/LicenseExpiryWarningJob.cs` |
-| `RunCheckAsync(ct)` | Checks LicenseState.ExpiresAt; sends System notification to Admin/SuperAdmin if within 5 days. | `BackgroundJobs/LicenseExpiryWarningJob.cs` |
+| `"license_update"` route | `ResolveRoute` switch case maps to `("Portal", "LicenseUpdate")`. | `Web/Views/Shared/_Layout.cshtml` |
+| `"theme_settings"` route | `ResolveRoute` switch case maps to `("Portal", "ThemeSettings")`. | `Web/Views/Shared/_Layout.cshtml` |
 
----
-
-## Phase 8: Student Lifecycle & Academic Operations
-
-### IStudentLifecycleRepository / StudentLifecycleRepository (Infrastructure/Repositories/StudentLifecycleRepository.cs)
-| Function | Description | File |
+### Web — Views (Phase 9 new views)
+| View | Description | File |
 |---|---|---|
-| `GetFinalSemesterStudentsByDepartmentAsync(departmentId, ct)` | Returns Active students in a department who are in their final semester (eligible for graduation). | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
-| `GetStudentsByStatusAsync(departmentId, status, ct)` | Returns students filtered by lifecycle status (Active / Inactive / Graduated) within a department. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
-| `GetActiveStudentsBySemesterAsync(departmentId, semesterNumber, ct)` | Returns Active students currently in the given semester number within a department. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
-| `GetByIdAsync(studentProfileId, ct)` | Returns a StudentProfile with Program and Department loaded. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
-| `UpdateAsync(student, ct)` | Persists changes to a StudentProfile and saves immediately. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
-| `GetPendingChangeRequestsAsync(ct)` | Returns all AdminChangeRequests in Pending status. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
-| `GetPendingChangeRequestsByUserAsync(userId, ct)` | Returns pending AdminChangeRequests for a specific requestor. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
-| `GetChangeRequestByIdAsync(requestId, ct)` | Returns an AdminChangeRequest with related users loaded. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
-| `GetAllChangeRequestsByUserAsync(userId, ct)` | Returns all change requests (all statuses) for a user. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
-| `AddChangeRequestAsync(request, ct)` | Creates a new AdminChangeRequest. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
-| `UpdateChangeRequestAsync(request, ct)` | Persists state changes on an AdminChangeRequest. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
-| `GetPendingModificationRequestsAsync(ct)` | Returns all TeacherModificationRequests in Pending status. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
-| `GetPendingModificationRequestsByTeacherAsync(teacherUserId, ct)` | Returns pending modification requests for a specific teacher. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
-| `GetModificationRequestByIdAsync(requestId, ct)` | Returns a TeacherModificationRequest with related users loaded. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
-| `GetAllModificationRequestsByTeacherAsync(teacherUserId, ct)` | Returns all modification requests (all statuses) for a teacher. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
-| `AddModificationRequestAsync(request, ct)` | Creates a new TeacherModificationRequest. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
-| `UpdateModificationRequestAsync(request, ct)` | Persists state changes on a TeacherModificationRequest. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
-| `GetActiveReceiptsByStudentAsync(studentProfileId, ct)` | Returns non-cancelled PaymentReceipts for a student. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
-| `GetAllReceiptsByStudentAsync(studentProfileId, ct)` | Returns all PaymentReceipts (including cancelled) for a student. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
-| `GetReceiptByIdAsync(receiptId, ct)` | Returns a PaymentReceipt with navigation data loaded. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
-| `GetUnpaidReceiptsByStudentAsync(studentProfileId, ct)` | Returns Pending or Submitted receipts for a student. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
-| `GetAllUnpaidReceiptsAsync(ct)` | Returns all unpaid receipts across all students (Finance admin view). | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
-| `AddReceiptAsync(receipt, ct)` | Creates a new PaymentReceipt. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
-| `UpdateReceiptAsync(receipt, ct)` | Persists state changes on a PaymentReceipt. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
-| `SaveChangesAsync(ct)` | Commits pending EF changes within the unit of work. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `LicenseUpdate.cshtml` | Displays license status table (Status badge, LicenseType, ActivatedAt, ExpiresAt + remaining days, UpdatedAt) and upload form (`.tablic` only, 64 KB max). SuperAdmin can upload; Admin sees read-only view. | `Web/Views/Portal/LicenseUpdate.cshtml` |
+| `ThemeSettings.cshtml` | Color swatch grid (90×70 px buttons, one per theme). JS `previewTheme()` applies `data-theme` on click for live preview. Hidden form input saves selection on submit. | `Web/Views/Portal/ThemeSettings.cshtml` |
+| `ReportSettings.cshtml` | Collapsible create-report form + accordion list of all report definitions. Each row has activate/deactivate toggle and role checkbox form (Admin / Faculty / Student). | `Web/Views/Portal/ReportSettings.cshtml` |
+| `ModuleSettings.cshtml` | Accordion list of all modules. Each row shows Mandatory badge, activate/deactivate button (disabled for mandatory modules), and role checkbox form. | `Web/Views/Portal/ModuleSettings.cshtml` |
 
-### IStudentLifecycleService / StudentLifecycleService (Application/Services/StudentLifecycleService.cs)
-| Function | Description | File |
+### CSS — site.css (Phase 9 themes)
+| Addition | Description | File |
 |---|---|---|
-| `GetGraduationCandidatesByDepartmentAsync(departmentId, ct)` | Returns GraduationSummaryDto list for all final-semester Active students in a department. | `Application/Services/StudentLifecycleService.cs` |
-| `GraduateStudentAsync(studentProfileId, ct)` | Sets student status to Graduated, sets GraduatedDate to UTC now. | `Application/Services/StudentLifecycleService.cs` |
-| `GraduateStudentsBatchAsync(studentProfileIds, ct)` | Graduates a list of students in sequence. | `Application/Services/StudentLifecycleService.cs` |
-| `GetStudentsBySemesterAsync(departmentId, semesterNumber, ct)` | Returns SemesterPromotionSummaryDto list for Active students in a specific semester. | `Application/Services/StudentLifecycleService.cs` |
-| `PromoteStudentAsync(studentProfileId, ct)` | Advances a single Active student to the next semester (increments CurrentSemesterNumber). | `Application/Services/StudentLifecycleService.cs` |
-| `PromoteStudentsBatchAsync(studentProfileIds, ct)` | Promotes multiple students; returns PromotionBatchResultDto with promoted count and errors. | `Application/Services/StudentLifecycleService.cs` |
-| `DeactivateStudentAsync(studentProfileId, ct)` | Sets student status to Inactive (dropout / leave). | `Application/Services/StudentLifecycleService.cs` |
-| `ReactivateStudentAsync(studentProfileId, ct)` | Restores an Inactive student to Active status. | `Application/Services/StudentLifecycleService.cs` |
-| `CreateChangeRequestAsync(requestorUserId, cmd, ct)` | Creates an AdminChangeRequest from a student or faculty member. | `Application/Services/StudentLifecycleService.cs` |
-| `GetPendingChangeRequestsAsync(ct)` | Returns all pending AdminChangeRequests for admin review. | `Application/Services/StudentLifecycleService.cs` |
-| `GetChangeRequestsByUserAsync(userId, ct)` | Returns all change requests (all statuses) for a user. | `Application/Services/StudentLifecycleService.cs` |
-| `GetChangeRequestByIdAsync(requestId, ct)` | Returns a single AdminChangeRequestDto by ID. | `Application/Services/StudentLifecycleService.cs` |
-| `ApproveChangeRequestAsync(requestId, adminUserId, notes, ct)` | Admin approves an AdminChangeRequest; records reviewer and timestamp. | `Application/Services/StudentLifecycleService.cs` |
-| `RejectChangeRequestAsync(requestId, adminUserId, notes, ct)` | Admin rejects an AdminChangeRequest. | `Application/Services/StudentLifecycleService.cs` |
-| `CreateModificationRequestAsync(teacherUserId, cmd, ct)` | Teacher creates a TeacherModificationRequest for an attendance or result record. | `Application/Services/StudentLifecycleService.cs` |
-| `GetPendingModificationRequestsAsync(ct)` | Returns all pending TeacherModificationRequests for admin review. | `Application/Services/StudentLifecycleService.cs` |
-| `GetModificationRequestsByTeacherAsync(teacherUserId, ct)` | Returns all modification requests for a specific teacher. | `Application/Services/StudentLifecycleService.cs` |
-| `GetModificationRequestByIdAsync(requestId, ct)` | Returns a single TeacherModificationRequestDto by ID. | `Application/Services/StudentLifecycleService.cs` |
-| `ApproveModificationRequestAsync(requestId, adminUserId, notes, ct)` | Admin approves a TeacherModificationRequest. | `Application/Services/StudentLifecycleService.cs` |
-| `RejectModificationRequestAsync(requestId, adminUserId, notes, ct)` | Admin rejects a TeacherModificationRequest. | `Application/Services/StudentLifecycleService.cs` |
-| `CreatePaymentReceiptAsync(financeUserId, cmd, ct)` | Finance creates a PaymentReceipt for a student with amount and due date. | `Application/Services/StudentLifecycleService.cs` |
-| `GetActiveReceiptsByStudentAsync(studentProfileId, ct)` | Returns active (non-cancelled) receipts for a student. | `Application/Services/StudentLifecycleService.cs` |
-| `GetStudentFeeStatusAsync(studentProfileId, ct)` | Returns StudentFeeStatusDto with paid/unpaid summary totals. | `Application/Services/StudentLifecycleService.cs` |
-| `GetPaymentReceiptByIdAsync(receiptId, ct)` | Returns a single PaymentReceiptDto by ID. | `Application/Services/StudentLifecycleService.cs` |
-| `SubmitPaymentProofAsync(receiptId, proofPath, ct)` | Records proof of payment file path; moves receipt to Submitted status. | `Application/Services/StudentLifecycleService.cs` |
-| `ConfirmPaymentAsync(receiptId, financeUserId, notes, ct)` | Finance confirms payment; moves receipt to Paid (final state). | `Application/Services/StudentLifecycleService.cs` |
-| `CancelReceiptAsync(receiptId, financeUserId, reason, ct)` | Finance cancels a receipt. Record is permanently preserved for audit. | `Application/Services/StudentLifecycleService.cs` |
-
-### IAccountSecurityService / AccountSecurityService (Application/Services/AccountSecurityService.cs)
-| Function | Description | File |
-|---|---|---|
-| `GetLockoutStatusAsync(userId, ct)` | Returns AccountLockoutStatusDto for a user (username, failed attempts, lockout state). | `Application/Services/AccountSecurityService.cs` |
-| `UnlockAccountAsync(targetUserId, adminUserId, ct)` | Admin unlocks a non-admin account and resets failed login counter. | `Application/Services/AccountSecurityService.cs` |
-| `ResetPasswordAsync(request, adminUserId, ct)` | Admin resets password for a non-admin account; also unlocks if locked. | `Application/Services/AccountSecurityService.cs` |
-| `GetLockedAccountsAsync(ct)` | Returns all currently locked-out non-admin accounts. | `Application/Services/AccountSecurityService.cs` |
-
-### ICsvRegistrationImportService / CsvRegistrationImportService (Application/Services/CsvRegistrationImportService.cs)
-| Function | Description | File |
-|---|---|---|
-| `ImportFromCsvAsync(csvStream, ct)` | Parses CSV (header: RegistrationNumber,DepartmentId,ProgramId), validates rows, detects duplicates, batch-inserts valid entries into whitelist. Returns CsvImportResult. | `Application/Services/CsvRegistrationImportService.cs` |
-| `AddSingleAsync(registrationNumber, departmentId, programId, ct)` | Adds a single registration number to the whitelist. Returns false if already exists. | `Application/Services/CsvRegistrationImportService.cs` |
-
-### StudentLifecycleController (API/Controllers/StudentLifecycleController.cs)
-| Endpoint | Method | Description |
-|---|---|---|
-| `GET /api/v1/student-lifecycle/graduation-candidates/{departmentId}` | GetGraduationCandidates | Returns final-semester Active students eligible for graduation. |
-| `POST /api/v1/student-lifecycle/graduate` | GraduateStudent | Marks a single student as Graduated. |
-| `POST /api/v1/student-lifecycle/graduate/batch` | GraduateStudentsBatch | Graduates multiple students in one request. |
-| `POST /api/v1/student-lifecycle/{id}/deactivate` | Deactivate | Marks a student Inactive (dropout/leave). |
-| `POST /api/v1/student-lifecycle/{id}/reactivate` | Reactivate | Re-activates an Inactive student account. |
-| `GET /api/v1/student-lifecycle/semester-students/{departmentId}/{semesterNumber}` | GetStudentsBySemester | Returns Active students in a given semester. |
-| `POST /api/v1/student-lifecycle/{id}/promote` | PromoteStudent | Advances a student to the next semester. |
-| `POST /api/v1/student-lifecycle/promote/batch` | PromoteStudentsBatch | Promotes multiple students; returns result with errors. |
-
-### AdminChangeRequestController (API/Controllers/AdminChangeRequestController.cs)
-| Endpoint | Method | Description |
-|---|---|---|
-| `POST /api/v1/change-requests` | Create | Student or Faculty submits a change request. |
-| `GET /api/v1/change-requests/pending` | GetPending | Admin views all pending change requests. |
-| `GET /api/v1/change-requests/my` | GetMine | Authenticated user views their own requests. |
-| `GET /api/v1/change-requests/{id}` | GetById | Returns a specific change request by ID. |
-| `POST /api/v1/change-requests/{id}/approve` | Approve | Admin approves a change request. |
-| `POST /api/v1/change-requests/{id}/reject` | Reject | Admin rejects a change request. |
-
-### TeacherModificationController (API/Controllers/TeacherModificationController.cs)
-| Endpoint | Method | Description |
-|---|---|---|
-| `POST /api/v1/modification-requests` | Create | Faculty creates a modification request for attendance or result. |
-| `GET /api/v1/modification-requests/pending` | GetPending | Admin views all pending modification requests. |
-| `GET /api/v1/modification-requests/my` | GetMine | Teacher views their own requests. |
-| `GET /api/v1/modification-requests/{id}` | GetById | Returns a specific modification request. |
-| `POST /api/v1/modification-requests/{id}/approve` | Approve | Admin approves a modification request. |
-| `POST /api/v1/modification-requests/{id}/reject` | Reject | Admin rejects a modification request. |
-
-### PaymentReceiptController (API/Controllers/PaymentReceiptController.cs)
-| Endpoint | Method | Description |
-|---|---|---|
-| `POST /api/v1/payments` | Create | Finance creates a payment receipt for a student. |
-| `GET /api/v1/payments/student/{studentProfileId}` | GetByStudent | Finance views all active receipts for a student. |
-| `GET /api/v1/payments/my/{studentProfileId}` | GetMine | Student views their own active receipts. |
-| `GET /api/v1/payments/student/{studentProfileId}/fee-status` | GetFeeStatus | Returns full fee status (paid + unpaid totals). |
-| `GET /api/v1/payments/{id}` | GetById | Returns a specific receipt by ID. |
-| `POST /api/v1/payments/{id}/submit-proof` | SubmitProof | Student uploads payment proof (PDF/JPG/PNG). |
-| `POST /api/v1/payments/{id}/confirm` | ConfirmPayment | Finance confirms payment received. |
-| `POST /api/v1/payments/{id}/cancel` | Cancel | Finance cancels a receipt. |
-
-### RegistrationImportController (API/Controllers/RegistrationImportController.cs)
-| Endpoint | Method | Description |
-|---|---|---|
-| `POST /api/v1/registration-import/csv` | ImportCsv | Admin uploads CSV file to bulk-import registration numbers into whitelist. |
-| `POST /api/v1/registration-import/single` | AddSingle | Admin adds a single registration number to the whitelist. |
-
-### AccountSecurityController (API/Controllers/AccountSecurityController.cs)
-| Endpoint | Method | Description |
-|---|---|---|
-| `GET /api/v1/account-security/locked` | GetLockedAccounts | Admin lists all currently locked-out accounts. |
-| `GET /api/v1/account-security/{userId}/status` | GetStatus | Admin views lockout status for a specific user. |
-| `POST /api/v1/account-security/{userId}/unlock` | Unlock | Admin unlocks a locked-out account and resets failed attempt counter. |
-| `POST /api/v1/account-security/{userId}/reset-password` | ResetPassword | Admin resets a non-admin account password; also unlocks if locked. |
-
-### UserRepository — Phase 8 additions (Infrastructure/Repositories/UserRepository.cs)
-| Function | Description | File |
-|---|---|---|
-| `GetLockedAccountsAsync(ct)` | Returns all non-admin user accounts that are currently locked out. | `Infrastructure/Repositories/UserRepository.cs` |
-
-### AuthService — Phase 8 update (Application/Auth/AuthService.cs)
-| Function | Description | File |
-|---|---|---|
-| `LoginAsync(request, ipAddress, ct)` | Updated: checks `IsCurrentlyLockedOut()` before password verify; calls `RecordFailedLoginAttempt()` on bad password. | `Application/Auth/AuthService.cs` |
-
----
-
-## Phase 9: Dashboard, Reports, Timetable, Theme
-
-### Domain Entities
-
-#### `Timetable` — `Domain/Academic/Timetable.cs`
-| Name | Purpose |
-|------|---------|
-| `Publish()` | Publishes the timetable; sets `IsPublished = true` and `PublishedAt = UtcNow`. Throws if already published. |
-| `Unpublish()` | Returns the timetable to draft mode; clears `IsPublished` and `PublishedAt`. |
-| `UpdateTitle(title)` | Updates the timetable display title. |
-
-#### `TimetableEntry` — `Domain/Academic/TimetableEntry.cs`
-| Name | Purpose |
-|------|---------|
-| `Update(...)` | Updates all mutable fields: day, start/end time, subject, room, faculty, courseOfferingId. |
-
-#### `ReportDefinition` — `Domain/Settings/ReportDefinition.cs`
-| Name | Purpose |
-|------|---------|
-| `Activate()` | Makes the report visible to assigned roles. |
-| `Deactivate()` | Hides the report from all role dashboards (Super Admin still sees it). |
-| `Update(name, purpose)` | Updates display name and purpose text. |
-
-#### `User` — Phase 9 update
-| Name | Purpose |
-|------|---------|
-| `SetTheme(themeKey)` | Sets or clears the user's preferred UI theme key (stored as lowercase, max 50 chars). |
-
-### Repository Interfaces
-| Interface | File |
-|-----------|------|
-| `ITimetableRepository` | `Domain/Interfaces/ITimetableRepository.cs` |
-| `ISettingsRepository` | `Domain/Interfaces/ISettingsRepository.cs` |
-
-### Repository Implementations (Infrastructure/Repositories/)
-| Class | Interface | Methods |
-|-------|-----------|---------|
-| `TimetableRepository` | `ITimetableRepository` | GetByDepartmentAsync, GetPublishedByDepartmentAsync, GetByIdWithEntriesAsync, GetByIdAsync, AddAsync, AddEntryAsync, Update, UpdateEntry, RemoveEntry, GetEntryByIdAsync, SaveChangesAsync |
-| `SettingsRepository` | `ISettingsRepository` | GetAllReportsAsync, GetReportByKeyAsync, GetReportByIdAsync, AddReportAsync, UpdateReport, AddReportRoleAsync, RemoveReportRole, GetReportRoleAsync, GetModuleRolesAsync, GetAllModuleRolesAsync, AddModuleRoleAsync, RemoveModuleRole, GetModuleRoleAsync, SaveChangesAsync |
-
-### Services (Application/Services/SettingsServices.cs + TimetableService.cs)
-| Class | Interface | Description |
-|-------|-----------|-------------|
-| `TimetableService` | `ITimetableService` | CRUD, publish/unpublish, soft-delete, Excel + PDF export delegation |
-| `ReportSettingsService` | `IReportSettingsService` | Create/update/activate/deactivate reports; replace role assignments |
-| `ModuleRolesService` | `IModuleRolesService` | Get/set role assignments per module (who can access it) |
-| `ThemeService` | `IThemeService` | Get/set per-user UI theme preference |
-
-### Export Services (Infrastructure/Timetable/)
-| Class | Interface | Description |
-|-------|-----------|-------------|
-| `TimetableExcelExporter` | `ITimetableExcelExporter` | Generates `.xlsx` weekly grid using ClosedXML; colour-coded header + alternate row shading |
-| `TimetablePdfExporter` | `ITimetablePdfExporter` | Generates `.pdf` landscape A4 using QuestPDF; active-days-only grid layout |
-
-### API Controllers (API/Controllers/)
-
-#### TimetableController — `api/v1/timetable`
-| Endpoint | Method | Roles | Description |
-|---|---|---|---|
-| `GET /department/{departmentId}` | GetByDepartment | Authenticated | Lists timetables (admins see drafts; others see published only) |
-| `GET /{id}` | GetById | Authenticated | Full timetable with all entries |
-| `POST /` | Create | Admin, SuperAdmin | Creates a new draft timetable |
-| `PUT /{id}` | Update | Admin, SuperAdmin | Updates timetable title |
-| `POST /{id}/entries` | AddEntry | Admin, SuperAdmin | Adds a scheduled slot |
-| `PUT /{id}/entries/{entryId}` | UpdateEntry | Admin, SuperAdmin | Updates a scheduled slot |
-| `DELETE /{id}/entries/{entryId}` | DeleteEntry | Admin, SuperAdmin | Removes a slot |
-| `POST /{id}/publish` | Publish | Admin, SuperAdmin | Makes timetable visible to department |
-| `POST /{id}/unpublish` | Unpublish | Admin, SuperAdmin | Returns to draft mode |
-| `DELETE /{id}` | Delete | Admin, SuperAdmin | Soft-deletes the timetable |
-| `GET /{id}/export/excel` | ExportExcel | Authenticated | Downloads .xlsx timetable |
-| `GET /{id}/export/pdf` | ExportPdf | Authenticated | Downloads .pdf timetable |
-
-#### ReportSettingsController — `api/v1/report-settings`
-| Endpoint | Method | Roles | Description |
-|---|---|---|---|
-| `GET /` | GetAll | SuperAdmin | All report definitions with role assignments |
-| `GET /{key}` | GetByKey | SuperAdmin | Single report by stable key |
-| `POST /` | Create | SuperAdmin | Creates a new report definition |
-| `PUT /{id}` | Update | SuperAdmin | Updates name and purpose |
-| `POST /{id}/activate` | Activate | SuperAdmin | Makes report visible on dashboards |
-| `POST /{id}/deactivate` | Deactivate | SuperAdmin | Hides report from dashboards |
-| `PUT /{id}/roles` | SetRoles | SuperAdmin | Replaces role assignments |
-
-#### ThemeController — `api/v1/theme`
-| Endpoint | Method | Roles | Description |
-|---|---|---|---|
-| `GET /` | GetTheme | Authenticated | Returns the user's current theme key |
-| `PUT /` | SetTheme | Authenticated | Sets or clears the user's theme preference |
-
-#### ModuleController — Phase 9 additions (`api/v1/modules`)
-| Endpoint | Method | Roles | Description |
-|---|---|---|---|
-| `GET /{key}/roles` | GetRoles | SuperAdmin | Returns roles assigned to a module |
-| `PUT /{key}/roles` | SetRoles | SuperAdmin | Replaces all role assignments for a module |
-
-### EF Migration
-| Migration | Tables Added / Modified |
-|-----------|------------------------|
-| `Phase9DashboardSettings` | `timetables`, `timetable_entries`, `report_definitions`, `report_role_assignments`, `module_role_assignments`; `users.theme_key` column added |
-
+| 15 CSS theme definitions | Themes: `ocean_blue`, `emerald_forest`, `sunset_orange`, `royal_purple`, `midnight_dark`, `rose_gold`, `arctic_teal`, `sand_dune`, `slate_grey`, `crimson`, `ivory_classic`, `cobalt_night`, `olive_grove`, `cosmic_violet`, plus default. Each uses `[data-theme="key"]` with 15 CSS custom property overrides. | `Web/wwwroot/css/site.css` |
