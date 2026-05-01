@@ -60,7 +60,9 @@ Auth/
  Argon2idPasswordHasher.cs
  PasswordHasher.cs
  TokenService.cs
-Email/MailKitEmailSender.cs
+Email/
+ EmailTemplateRenderer.cs
+ MailKitEmailSender.cs
 Licensing/
  EmbeddedKeys.cs
  LicenseValidationService.cs
@@ -124,6 +126,12 @@ Persistence/
   20260430000234_Phase9SidebarSettings.Designer.cs
   20260430045628_Phase10PerformanceIndexes.cs
   20260430045628_Phase10PerformanceIndexes.Designer.cs
+  20260430141918_Phase10SecurityTables.cs
+  20260430141918_Phase10SecurityTables.Designer.cs
+  20260430142338_Phase10StoredProcedures.cs
+  20260430142338_Phase10StoredProcedures.Designer.cs
+  20260430143000_Phase10SqlViews.cs
+  20260430143000_Phase10SqlViews.Designer.cs
 Repositories/
  AcademicRepositories.cs
  AcademicSupportRepositories.cs
@@ -397,7 +405,7 @@ Timetable/
  Microsoft.Interop.SourceGeneration.dll
  System.Text.Json.SourceGeneration.dll
  System.Text.RegularExpressions.Generator.dll
-<DOTNET>/sdk/10.0.203/Sdks/Microsoft.NET.Sdk/analyzers/
+<DOTNET>/sdk/10.0.202/Sdks/Microsoft.NET.Sdk/analyzers/
  Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll
  Microsoft.CodeAnalysis.NetAnalyzers.dll
 <NUGET>/microsoft.codeanalysis.analyzers/3.3.3/analyzers/dotnet/cs/
@@ -409,5 +417,5 @@ Timetable/
  microsoft.extensions.options/8.0.2/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Options.SourceGeneration.dll
 
 [analyzerConfigFiles]
-<DOTNET>/sdk/10.0.203/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_8_default.globalconfig
+<DOTNET>/sdk/10.0.202/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_8_default.globalconfig
 obj/Debug/net8.0/Tabsan.EduSphere.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig

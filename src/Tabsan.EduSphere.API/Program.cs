@@ -21,7 +21,6 @@ using Tabsan.EduSphere.API.Middleware;
 using Tabsan.EduSphere.Infrastructure.AiChat;
 using Tabsan.EduSphere.Infrastructure.Analytics;
 using Tabsan.EduSphere.BackgroundJobs;
-using Tabsan.EduSphere.Domain.Interfaces;
 using Tabsan.EduSphere.Infrastructure.Auditing;
 using Tabsan.EduSphere.Infrastructure.Auth;
 using Tabsan.EduSphere.Infrastructure.Licensing;
@@ -183,6 +182,7 @@ builder.Services.AddHostedService<AttendanceAlertJob>();
 
 // ── Email ─────────────────────────────────────────────────────────────────────────
 builder.Services.AddScoped<IEmailSender, Tabsan.EduSphere.Infrastructure.Email.MailKitEmailSender>();
+builder.Services.AddSingleton<IEmailTemplateRenderer, Tabsan.EduSphere.Infrastructure.Email.EmailTemplateRenderer>();
 
 // ── FluentValidation ───────────────────────────────────────────────────────────
 builder.Services.AddValidatorsFromAssemblyContaining<Tabsan.EduSphere.Application.Validators.LoginRequestValidator>();

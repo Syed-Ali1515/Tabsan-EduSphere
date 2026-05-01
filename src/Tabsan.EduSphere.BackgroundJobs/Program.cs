@@ -3,6 +3,7 @@ using Tabsan.EduSphere.Application.Interfaces;
 using Tabsan.EduSphere.Application.Notifications;
 using Tabsan.EduSphere.BackgroundJobs;
 using Tabsan.EduSphere.Domain.Interfaces;
+using Tabsan.EduSphere.Infrastructure.Email;
 using Tabsan.EduSphere.Infrastructure.Persistence;
 using Tabsan.EduSphere.Infrastructure.Repositories;
 
@@ -16,6 +17,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(o => o.UseSqlServer(connecti
 // ── Repository + notification services ───────────────────────────────────────
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IEmailSender, MailKitEmailSender>();
+builder.Services.AddSingleton<IEmailTemplateRenderer, EmailTemplateRenderer>();
 
 // ── Background jobs ───────────────────────────────────────────────────────────
 builder.Services.AddHostedService<Worker>();

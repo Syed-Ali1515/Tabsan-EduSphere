@@ -1856,3 +1856,94 @@
 | Touch targets | `.btn, button, [type=submit/reset/button] { min-height: 44px; min-width: 44px; }` — WCAG 2.5.5. | `Web/wwwroot/css/site.css` |
 | Table scroll | `.app-content table { overflow-x: auto; }` for responsive tables on small viewports. | `Web/wwwroot/css/site.css` |
 | Focus ring | `:focus-visible { outline: 3px solid #0d6efd; }` for keyboard navigation visibility. | `Web/wwwroot/css/site.css` |
+
+### Infrastructure — Phase10SecurityTables (EF Migration)
+| Table | Description | File |
+|---|---|---|
+| `password_history` | Stores per-user password hash history for last-N reuse enforcement. Columns: `Id`, `UserId`, `PasswordHash`, `CreatedAt`. Index: `IX_password_history_user_created`. | `Infrastructure/Persistence/Migrations/20260430141918_Phase10SecurityTables.cs` |
+| `outbound_email_logs` | Audit log of all email send attempts (success + failure). Columns: `Id`, `ToAddress`, `Subject`, `Status`, `ErrorMessage`, `AttemptedAt`. Index: `IX_outbound_email_logs_status_attempted`. | `Infrastructure/Persistence/Migrations/20260430141918_Phase10SecurityTables.cs` |
+
+### Infrastructure — Phase10SqlViews (EF Migration)
+| View | Description | File |
+|---|---|---|
+| `vw_student_attendance_summary` | Per-student per-offering aggregate: TotalSessions, AttendedSessions, AttendancePercentage. | `Infrastructure/Persistence/Migrations/20260430143000_Phase10SqlViews.cs` |
+| `vw_student_results_summary` | Per-student published results with MarksObtained, MaxMarks, Percentage, CourseCode, CourseTitle, SemesterId. | `Infrastructure/Persistence/Migrations/20260430143000_Phase10SqlViews.cs` |
+| `vw_course_enrollment_summary` | Per-offering enrollment counts: EnrolledCount, MaxEnrollment, AvailableSeats (open offerings only). | `Infrastructure/Persistence/Migrations/20260430143000_Phase10SqlViews.cs` |
+
+### Infrastructure — Phase10StoredProcedures (EF Migration)
+| Procedure | Description | File |
+|---|---|---|
+| `sp_get_attendance_below_threshold` | Returns student-offering pairs with attendance below `@ThresholdPercent` (default 75%). Optionally scoped to `@CourseOfferingId`. | `Infrastructure/Persistence/Migrations/20260430142338_Phase10StoredProcedures.cs` |
+| `sp_recalculate_student_cgpa` | Recomputes CGPA for `@StudentProfileId` from all published results (proportional 4.0 scale) and updates `student_profiles.Cgpa`. Returns new CGPA. | `Infrastructure/Persistence/Migrations/20260430142338_Phase10StoredProcedures.cs` |
+
+### Infrastructure — PasswordHistoryRepository
+| Function | Description | File |
+|---|---|---|
+| `GetRecentAsync(userId, count, ct)` | Returns the most recent `count` password history entries for the given user, ordered by `CreatedAt` descending. | `Infrastructure/Repositories/PasswordHistoryRepository.cs` |
+| `AddAsync(entry, ct)` | Queues a new `PasswordHistoryEntry` for insertion. | `Infrastructure/Repositories/PasswordHistoryRepository.cs` |
+| `SaveChangesAsync(ct)` | Commits pending changes. | `Infrastructure/Repositories/PasswordHistoryRepository.cs` |
+
+### Infrastructure — MailKitEmailSender (updated)
+| Function | Description | File |
+|---|---|---|
+| `SendAsync(to, subject, htmlBody, ct)` | Sends HTML email via MailKit SMTP. On success logs `OutboundEmailLog.Sent(...)` to DB; on failure logs `OutboundEmailLog.Failed(...)`. | `Infrastructure/Email/MailKitEmailSender.cs` |
+| `SendAsync(to, subject, htmlBody, cc, ct)` | Same as above with optional CC recipients. | `Infrastructure/Email/MailKitEmailSender.cs` |
+
+### Unit Tests — PasswordHistoryTests
+| Test | Assertion | File |
+|---|---|---|
+| `NewPassword_NotInHistory_IsAllowed` | Brand-new password not found in history is allowed (no reuse flag). | `tests/UnitTests/PasswordHistoryTests.cs` |
+| `NewPassword_MatchingRecentHistory_IsRejected` | Password matching any entry in the recent-5 window is flagged as reused. | `tests/UnitTests/PasswordHistoryTests.cs` |
+| `NewPassword_MatchingMostRecent_IsRejected` | Reusing the immediately preceding password is rejected. | `tests/UnitTests/PasswordHistoryTests.cs` |
+| `NewPassword_Beyond5History_IsAllowed` | Most-recent 5 entries are returned; password outside that window is not flagged. | `tests/UnitTests/PasswordHistoryTests.cs` |
+| `NoHistory_AnyPasswordIsAllowed` | Empty history returns no entries; no false-positive reuse detection. | `tests/UnitTests/PasswordHistoryTests.cs` |
+| `PasswordHistoryEntry_StoredHash_MatchesInput` | `PasswordHistoryEntry` constructor sets UserId, PasswordHash, and CreatedAt correctly. | `tests/UnitTests/PasswordHistoryTests.cs` |
+
+### Integration Tests — AccountSecurityIntegrationTests
+| Test | Assertion | File |
+|---|---|---|
+| `GetLocked_Unauthenticated_Returns401` | `GET /api/v1/account-security/locked` without token returns 401. | `tests/IntegrationTests/AccountSecurityIntegrationTests.cs` |
+| `GetLocked_StudentRole_Returns403` | Student cannot access locked-accounts list — 403. | `tests/IntegrationTests/AccountSecurityIntegrationTests.cs` |
+| `GetLocked_AdminRole_ReturnsOk` | Admin receives 200 from locked-accounts list. | `tests/IntegrationTests/AccountSecurityIntegrationTests.cs` |
+| `GetLocked_SuperAdminRole_ReturnsOk` | SuperAdmin receives 200 from locked-accounts list. | `tests/IntegrationTests/AccountSecurityIntegrationTests.cs` |
+| `GetLocked_FreshDatabase_ReturnsEmptyList` | Fresh seeded DB has no locked accounts — returns `[]`. | `tests/IntegrationTests/AccountSecurityIntegrationTests.cs` |
+| `GetStatus_Unauthenticated_Returns401` | `GET /api/v1/account-security/{userId}/status` without token returns 401. | `tests/IntegrationTests/AccountSecurityIntegrationTests.cs` |
+| `GetStatus_NonExistentUser_Returns404` | Status for random non-existent user GUID returns 404. | `tests/IntegrationTests/AccountSecurityIntegrationTests.cs` |
+| `Unlock_Unauthenticated_Returns401` | `POST /api/v1/account-security/{userId}/unlock` without token returns 401. | `tests/IntegrationTests/AccountSecurityIntegrationTests.cs` |
+| `Unlock_StudentRole_Returns403` | Student cannot unlock accounts — 403. | `tests/IntegrationTests/AccountSecurityIntegrationTests.cs` |
+| `ResetPassword_Unauthenticated_Returns401` | `POST reset-password` without token returns 401. | `tests/IntegrationTests/AccountSecurityIntegrationTests.cs` |
+| `ResetPassword_FacultyRole_Returns403` | Faculty cannot reset passwords via admin endpoint — 403. | `tests/IntegrationTests/AccountSecurityIntegrationTests.cs` |
+
+### Application — IEmailTemplateRenderer
+| Function | Description | File |
+|---|---|---|
+| `Render(templateName, tokens)` | Renders a named HTML email template with `{{TOKEN}}` substitution. Token values are HTML-encoded before substitution to prevent XSS. Falls back to a minimal inline string if the template file is not found. | `Application/Interfaces/IEmailTemplateRenderer.cs` |
+
+### Infrastructure — EmailTemplateRenderer
+| Function | Description | File |
+|---|---|---|
+| `Render(templateName, tokens)` | Loads `{templateName}.html` from `Email/Templates/` relative to `AppContext.BaseDirectory`. HTML-encodes all token values before `{{KEY}}` substitution. Logs a warning and returns a fallback body if the file is missing. | `Infrastructure/Email/EmailTemplateRenderer.cs` |
+
+### Infrastructure — Email Templates
+| Template | Tokens | File |
+|---|---|---|
+| `account-unlocked.html` | `{{USERNAME}}` | `Infrastructure/Email/Templates/account-unlocked.html` |
+| `password-reset.html` | `{{USERNAME}}` | `Infrastructure/Email/Templates/password-reset.html` |
+| `license-expiry-warning.html` | `{{EXPIRY_LABEL}}` | `Infrastructure/Email/Templates/license-expiry-warning.html` |
+
+### CI/CD — GitHub Actions (.github/workflows/dotnet-ci.yml)
+| Job / Step | Description |
+|---|---|
+| `build-test / Vulnerability scan` | Runs `dotnet list package --vulnerable --include-transitive` and emits a `::warning` annotation if any vulnerable packages are detected. Uploads `vuln-report.txt` as a CI artifact on every run. |
+| `load-test` | Runs on push to `main` after `build-test` passes. Starts the API, installs k6, runs `tests/load/k6-baseline.js` (smoke scenario), and uploads `load-test-results.json`. |
+| `lighthouse` | Runs on push to `main` after `build-test` passes. Starts the Web project, runs Lighthouse CI via `treosh/lighthouse-ci-action@v11` with `.lighthouserc.yml` thresholds (≥ 0.9 for Performance, Accessibility, Best Practices). |
+
+### Load Tests — k6 (tests/load/)
+| File | Description |
+|---|---|
+| `k6-baseline.js` | Three scenarios: **smoke** (1 VU, 30 s), **baseline** (20 VUs, 1 min), **spike** (0 → 50 VUs ramp). Thresholds: `p(95) < 200 ms` on tagged API requests; error rate < 1 %. Endpoints exercised: `/health`, `/modules`, `/sidebar-menu/my-visible`, `/notifications/inbox`, `/departments`, `/attendance`. |
+
+### Security — OWASP Penetration Test Checklist
+| Document | Description |
+|---|---|
+| `Docs/Security-Pentest-Checklist.md` | Full OWASP Top 10 (2021) checklist mapped to code evidence for every control. All 10 categories verified. Covers A01 Broken Access Control, A02 Cryptographic Failures, A03 Injection, A04 Insecure Design, A05 Misconfiguration, A06 Vulnerable Components, A07 Auth Failures, A08 Integrity Failures, A09 Logging, A10 SSRF. 5 pre-production action items documented for DevOps/Security Lead sign-off. Sign-off table included. |

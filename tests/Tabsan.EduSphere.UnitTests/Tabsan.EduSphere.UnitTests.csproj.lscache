@@ -58,6 +58,7 @@ obj/Debug/net8.0/
  .NETCoreApp,Version=v8.0.AssemblyAttributes.cs
  Tabsan.EduSphere.UnitTests.AssemblyInfo.cs
  Tabsan.EduSphere.UnitTests.GlobalUsings.g.cs
+PasswordHistoryTests.cs
 UnitTest1.cs
 
 [metadataReferences]
@@ -257,7 +258,7 @@ UnitTest1.cs
  Microsoft.Interop.SourceGeneration.dll
  System.Text.Json.SourceGeneration.dll
  System.Text.RegularExpressions.Generator.dll
-<DOTNET>/sdk/10.0.203/Sdks/Microsoft.NET.Sdk/analyzers/
+<DOTNET>/sdk/10.0.202/Sdks/Microsoft.NET.Sdk/analyzers/
  Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll
  Microsoft.CodeAnalysis.NetAnalyzers.dll
 <NUGET>/xunit.analyzers/1.4.0/analyzers/dotnet/cs/
@@ -265,5 +266,5 @@ UnitTest1.cs
  xunit.analyzers.fixes.dll
 
 [analyzerConfigFiles]
-<DOTNET>/sdk/10.0.203/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_8_default.globalconfig
+<DOTNET>/sdk/10.0.202/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_8_default.globalconfig
 obj/Debug/net8.0/Tabsan.EduSphere.UnitTests.GeneratedMSBuildEditorConfig.editorconfig

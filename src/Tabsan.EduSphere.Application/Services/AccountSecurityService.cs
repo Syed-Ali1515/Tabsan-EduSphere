@@ -17,17 +17,20 @@ public class AccountSecurityService : IAccountSecurityService
     private readonly IPasswordHasher _passwordHasher;
     private readonly IPasswordHistoryRepository _passwordHistory;
     private readonly IEmailSender _emailSender;
+    private readonly IEmailTemplateRenderer _templateRenderer;
 
     public AccountSecurityService(
         IUserRepository userRepo,
         IPasswordHasher passwordHasher,
         IPasswordHistoryRepository passwordHistory,
-        IEmailSender emailSender)
+        IEmailSender emailSender,
+        IEmailTemplateRenderer templateRenderer)
     {
-        _userRepo        = userRepo;
-        _passwordHasher  = passwordHasher;
-        _passwordHistory = passwordHistory;
-        _emailSender     = emailSender;
+        _userRepo          = userRepo;
+        _passwordHasher    = passwordHasher;
+        _passwordHistory   = passwordHistory;
+        _emailSender       = emailSender;
+        _templateRenderer  = templateRenderer;
     }
 
     public async Task<AccountLockoutStatusDto?> GetLockoutStatusAsync(Guid userId, CancellationToken ct = default)
@@ -62,11 +65,10 @@ public class AccountSecurityService : IAccountSecurityService
         // Notify user by email if address is on file.
         if (!string.IsNullOrWhiteSpace(target.Email))
         {
-            var body = $"""
-                <p>Dear {target.Username},</p>
-                <p>Your <strong>Tabsan EduSphere</strong> account has been <strong>unlocked</strong> by an administrator.</p>
-                <p>You can now log in normally. If you did not expect this, please contact the system administrator immediately.</p>
-                """;
+            var body = _templateRenderer.Render("account-unlocked", new Dictionary<string, string>
+            {
+                ["USERNAME"] = target.Username
+            });
             try { await _emailSender.SendAsync(target.Email, "Your account has been unlocked", body, ct); }
             catch { /* non-fatal — unlock succeeded regardless */ }
         }
@@ -104,12 +106,10 @@ public class AccountSecurityService : IAccountSecurityService
         // Notify user by email if address is on file.
         if (!string.IsNullOrWhiteSpace(target.Email))
         {
-            var body = $"""
-                <p>Dear {target.Username},</p>
-                <p>An administrator has <strong>reset your password</strong> on <strong>Tabsan EduSphere</strong>.</p>
-                <p>Please log in with the new temporary password provided to you and change it immediately.</p>
-                <p>If you did not request a password reset, contact the system administrator immediately.</p>
-                """;
+            var body = _templateRenderer.Render("password-reset", new Dictionary<string, string>
+            {
+                ["USERNAME"] = target.Username
+            });
             try { await _emailSender.SendAsync(target.Email, "Your password has been reset", body, ct); }
             catch { /* non-fatal — reset succeeded regardless */ }
         }

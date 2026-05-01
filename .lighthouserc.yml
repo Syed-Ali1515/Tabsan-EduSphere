@@ -1,0 +1,47 @@
+ci:
+  collect:
+    url:
+      - http://localhost:5001/
+      - http://localhost:5001/Portal/Dashboard
+    startServerCommand: ''        # server started separately in CI
+    numberOfRuns: 1
+    settings:
+      # Simulate a typical 4G connection (realistic for campus users)
+      throttlingMethod: simulate
+      screenEmulation:
+        mobile: false
+        width: 1280
+        height: 800
+        deviceScaleFactor: 1
+
+  assert:
+    preset: lighthouse:recommended
+    assertions:
+      # Core Lighthouse scoring targets (Phases 10.4)
+      categories:performance:
+        - minScore: 0.9
+          aggregationMethod: median-run
+      categories:accessibility:
+        - minScore: 0.9
+          aggregationMethod: median-run
+      categories:best-practices:
+        - minScore: 0.9
+          aggregationMethod: median-run
+      categories:seo:
+        - minScore: 0.8
+          aggregationMethod: median-run
+
+      # Individual audits — keep these passing
+      uses-https:           [warn, {minScore: 1}]
+      viewport:             [error, {minScore: 1}]
+      document-title:       [error, {minScore: 1}]
+      html-has-lang:        [error, {minScore: 1}]
+      meta-description:     [warn,  {minScore: 1}]
+      color-contrast:       [warn,  {minScore: 1}]
+      tap-targets:          [warn,  {minScore: 0.9}]
+      image-alt:            [warn,  {minScore: 1}]
+      link-name:            [warn,  {minScore: 1}]
+      button-name:          [warn,  {minScore: 1}]
+
+  upload:
+    target: temporary-public-storage

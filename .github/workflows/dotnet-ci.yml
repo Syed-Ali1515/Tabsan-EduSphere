@@ -29,3 +29,103 @@ jobs:
 
       - name: Test
         run: dotnet test Tabsan.EduSphere.sln --configuration Release --no-build --verbosity normal
+
+      - name: Vulnerability scan
+        run: |
+          dotnet list Tabsan.EduSphere.sln package --vulnerable --include-transitive 2>&1 | tee vuln-report.txt
+          if grep -q "has the following vulnerable packages" vuln-report.txt; then
+            echo "::warning::Vulnerable packages detected — review vuln-report.txt"
+          fi
+
+      - name: Upload vulnerability report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vulnerability-report
+          path: vuln-report.txt
+
+  load-test:
+    runs-on: ubuntu-latest
+    needs: build-test
+    # Only run load tests on pushes to main (not every PR to save minutes)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore & Build API
+        run: |
+          dotnet restore src/Tabsan.EduSphere.API/Tabsan.EduSphere.API.csproj
+          dotnet build src/Tabsan.EduSphere.API/Tabsan.EduSphere.API.csproj --configuration Release --no-restore
+
+      - name: Start API (background)
+        run: |
+          dotnet run --project src/Tabsan.EduSphere.API --configuration Release \
+            --urls "http://localhost:5000" &
+          echo "Waiting for API to be ready..."
+          timeout 60 bash -c 'until curl -sf http://localhost:5000/health; do sleep 2; done'
+        env:
+          ASPNETCORE_ENVIRONMENT: Development
+          ConnectionStrings__DefaultConnection: "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=TabsanEduSphere_CI;Integrated Security=True;"
+
+      - name: Install k6
+        run: |
+          curl -fsSL https://dl.k6.io/key.gpg | sudo gpg --dearmor -o /etc/apt/keyrings/k6-archive-keyring.gpg
+          echo "deb [signed-by=/etc/apt/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" \
+            | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update -qq && sudo apt-get install -y k6
+
+      - name: Run load test (smoke only in CI)
+        run: |
+          k6 run --env BASE_URL=http://localhost:5000 \
+            --env K6_SCENARIO=smoke \
+            --out json=load-test-results.json \
+            tests/load/k6-baseline.js || echo "::warning::Load test thresholds not met — review load-test-results.json"
+
+      - name: Upload load test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: load-test-results
+          path: load-test-results.json
+
+  lighthouse:
+    runs-on: ubuntu-latest
+    needs: build-test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore & Build Web
+        run: |
+          dotnet restore src/Tabsan.EduSphere.Web/Tabsan.EduSphere.Web.csproj
+          dotnet build src/Tabsan.EduSphere.Web/Tabsan.EduSphere.Web.csproj --configuration Release --no-restore
+
+      - name: Start Web (background)
+        run: |
+          dotnet run --project src/Tabsan.EduSphere.Web --configuration Release \
+            --urls "http://localhost:5001" &
+          echo "Waiting for Web to be ready..."
+          timeout 60 bash -c 'until curl -sf http://localhost:5001/; do sleep 2; done'
+        env:
+          ASPNETCORE_ENVIRONMENT: Development
+
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v11
+        with:
+          configPath: .lighthouserc.yml
+          uploadArtifacts: true
+          temporaryPublicStorage: true
