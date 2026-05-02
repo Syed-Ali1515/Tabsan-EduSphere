@@ -1,0 +1,98 @@
+@model Tabsan.EduSphere.Web.Models.Portal.AnalyticsPageModel
+@{ ViewData["Title"] = "Analytics"; }
+
+@if (!string.IsNullOrWhiteSpace(Model.Message))
+{
+    <div class="alert alert-info">@Model.Message</div>
+}
+
+@if (!Model.IsConnected)
+{
+    <div class="alert alert-warning">Not connected. <a asp-action="Dashboard">Configure API</a>.</div>
+}
+else
+{
+    @if (Model.Cards.Count > 0)
+    {
+        <div class="row g-3 mb-4">
+            @foreach (var card in Model.Cards)
+            {
+                <div class="col-sm-6 col-xl-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="text-muted small text-uppercase fw-semibold mb-1">@card.Label</div>
+                            <div class="display-6 fw-bold">@card.Value</div>
+                            @if (!string.IsNullOrWhiteSpace(card.SubText))
+                            {
+                                <div class="text-muted small mt-1">@card.SubText</div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <div class="accordion" id="analyticsAccordion">
+        @if (!string.IsNullOrWhiteSpace(Model.PerformanceJson))
+        {
+            <div class="accordion-item border-0 shadow-sm mb-2">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#collapsePerf">
+                        📊 Performance Analytics
+                    </button>
+                </h2>
+                <div id="collapsePerf" class="accordion-collapse collapse" data-bs-parent="#analyticsAccordion">
+                    <div class="accordion-body">
+                        <pre class="bg-light p-3 rounded small" style="max-height:300px;overflow:auto;"><code>@Model.PerformanceJson</code></pre>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Model.AttendanceJson))
+        {
+            <div class="accordion-item border-0 shadow-sm mb-2">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#collapseAtt">
+                        📋 Attendance Analytics
+                    </button>
+                </h2>
+                <div id="collapseAtt" class="accordion-collapse collapse" data-bs-parent="#analyticsAccordion">
+                    <div class="accordion-body">
+                        <pre class="bg-light p-3 rounded small" style="max-height:300px;overflow:auto;"><code>@Model.AttendanceJson</code></pre>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Model.AssignmentJson))
+        {
+            <div class="accordion-item border-0 shadow-sm mb-2">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#collapseAssign">
+                        📝 Assignment Analytics
+                    </button>
+                </h2>
+                <div id="collapseAssign" class="accordion-collapse collapse" data-bs-parent="#analyticsAccordion">
+                    <div class="accordion-body">
+                        <pre class="bg-light p-3 rounded small" style="max-height:300px;overflow:auto;"><code>@Model.AssignmentJson</code></pre>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (Model.Cards.Count == 0 && string.IsNullOrWhiteSpace(Model.PerformanceJson))
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center text-muted py-5">
+                <div class="fs-1 mb-2">📊</div>
+                <p>No analytics data available.</p>
+            </div>
+        </div>
+    }
+}

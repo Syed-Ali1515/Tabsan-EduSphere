@@ -68,6 +68,69 @@ public interface IEduApiClient
     Task<List<ModuleSettingsWebModel>> GetModuleSettingsAsync(CancellationToken ct);
     Task SetModuleActiveAsync(string key, bool activate, CancellationToken ct);
     Task SetModuleRolesAsync(string key, List<string> roles, CancellationToken ct);
+
+    // Notifications
+    Task<List<NotificationItem>> GetNotificationsAsync(CancellationToken ct);
+    Task<int> GetUnreadNotificationCountAsync(CancellationToken ct);
+    Task MarkNotificationReadAsync(Guid id, CancellationToken ct);
+    Task MarkAllNotificationsReadAsync(CancellationToken ct);
+
+    // Students
+    Task<List<StudentItem>> GetStudentsAsync(Guid? departmentId, CancellationToken ct);
+
+    // Departments
+    Task<List<DepartmentItem>> GetDepartmentDetailsAsync(CancellationToken ct);
+
+    // Courses / Offerings
+    Task<List<CourseItem>> GetCourseDetailsAsync(Guid? departmentId, CancellationToken ct);
+    Task<List<CourseOfferingItem>> GetCourseOfferingsAsync(Guid? departmentId, CancellationToken ct);
+    Task<List<LookupItem>> GetMyOfferingsAsync(CancellationToken ct);
+
+    // Assignments
+    Task<List<AssignmentItem>> GetMyAssignmentsAsync(CancellationToken ct);
+    Task<List<AssignmentItem>> GetAssignmentsByOfferingAsync(Guid offeringId, CancellationToken ct);
+    Task<List<SubmissionItem>> GetSubmissionsForAssignmentAsync(Guid assignmentId, CancellationToken ct);
+
+    // Attendance
+    Task<List<AttendanceSummaryItem>> GetMyAttendanceSummaryAsync(CancellationToken ct);
+    Task<List<AttendanceRecordItem>> GetAttendanceByOfferingAsync(Guid offeringId, CancellationToken ct);
+
+    // Results
+    Task<List<ResultItem>> GetMyResultsAsync(CancellationToken ct);
+    Task<List<ResultItem>> GetResultsByOfferingAsync(Guid offeringId, CancellationToken ct);
+
+    // Quizzes
+    Task<List<QuizItem>> GetQuizzesByOfferingAsync(Guid offeringId, CancellationToken ct);
+    Task<List<QuizAttemptItem>> GetMyAttemptsAsync(CancellationToken ct);
+
+    // FYP
+    Task<List<FypProjectItem>> GetMyFypProjectsAsync(CancellationToken ct);
+    Task<List<FypProjectItem>> GetFypByDepartmentAsync(Guid departmentId, CancellationToken ct);
+    Task<List<FypProjectItem>> GetMySupervisedProjectsAsync(CancellationToken ct);
+    Task<List<FypMeetingItem>> GetUpcomingMeetingsAsync(CancellationToken ct);
+
+    // Analytics
+    Task<string?> GetPerformanceAnalyticsJsonAsync(CancellationToken ct);
+    Task<string?> GetAttendanceAnalyticsJsonAsync(CancellationToken ct);
+    Task<string?> GetAssignmentAnalyticsJsonAsync(CancellationToken ct);
+
+    // AI Chat
+    Task<List<AiChatConversationItem>> GetChatConversationsAsync(CancellationToken ct);
+    Task<List<AiChatMessageItem>> GetChatMessagesAsync(Guid conversationId, CancellationToken ct);
+    Task<AiChatMessageItem?> SendChatMessageAsync(Guid? conversationId, string message, CancellationToken ct);
+
+    // Student Lifecycle
+    Task<List<GraduationCandidateItem>> GetGraduationCandidatesAsync(Guid departmentId, CancellationToken ct);
+    Task GraduateStudentAsync(Guid studentId, CancellationToken ct);
+    Task GraduateStudentsBatchAsync(List<Guid> studentIds, CancellationToken ct);
+    Task<List<StudentItem>> GetStudentsBySemesterAsync(Guid departmentId, int semesterNumber, CancellationToken ct);
+    Task PromoteStudentAsync(Guid studentId, CancellationToken ct);
+
+    // Payments
+    Task<List<PaymentReceiptItem>> GetPaymentsByStudentAsync(Guid studentId, CancellationToken ct);
+
+    // Enrollments
+    Task<List<EnrollmentRosterItem>> GetEnrollmentRosterAsync(Guid offeringId, CancellationToken ct);
 }
 
 public class EduApiClient : IEduApiClient
@@ -556,6 +619,635 @@ public class EduApiClient : IEduApiClient
         public bool         IsMandatory   { get; set; }
         public bool         IsActive      { get; set; }
         public List<string> AssignedRoles { get; set; } = new();
+    }
+
+    // ── Notifications ─────────────────────────────────────────────────────────
+
+    public async Task<List<NotificationItem>> GetNotificationsAsync(CancellationToken ct)
+    {
+        var raw = await GetAsync<List<NotificationApiDto>>("api/v1/notification/inbox", ct) ?? new();
+        return raw.Select(n => new NotificationItem
+        {
+            Id               = n.Id,
+            Title            = n.Title ?? "",
+            Body             = n.Body,
+            NotificationType = n.NotificationType ?? "",
+            IsRead           = n.IsRead,
+            CreatedAt        = n.CreatedAt
+        }).ToList();
+    }
+
+    public async Task<int> GetUnreadNotificationCountAsync(CancellationToken ct)
+    {
+        var dto = await GetAsync<BadgeDto>("api/v1/notification/badge", ct);
+        return dto?.UnreadCount ?? 0;
+    }
+
+    public Task MarkNotificationReadAsync(Guid id, CancellationToken ct)
+        => PostAsync<object, object>($"api/v1/notification/{id}/read", new { }, ct);
+
+    public Task MarkAllNotificationsReadAsync(CancellationToken ct)
+        => PostAsync<object, object>("api/v1/notification/read-all", new { }, ct);
+
+    private sealed class NotificationApiDto
+    {
+        public Guid     Id               { get; set; }
+        public string?  Title            { get; set; }
+        public string?  Body             { get; set; }
+        public string?  NotificationType { get; set; }
+        public bool     IsRead           { get; set; }
+        public DateTime CreatedAt        { get; set; }
+    }
+
+    private sealed class BadgeDto { public int UnreadCount { get; set; } }
+
+    // ── Students ──────────────────────────────────────────────────────────────
+
+    public async Task<List<StudentItem>> GetStudentsAsync(Guid? departmentId, CancellationToken ct)
+    {
+        var path = departmentId.HasValue
+            ? $"api/v1/student?departmentId={departmentId.Value}"
+            : "api/v1/student";
+        var raw = await GetAsync<List<StudentApiDto>>(path, ct) ?? new();
+        return raw.Select(MapStudent).ToList();
+    }
+
+    private static StudentItem MapStudent(StudentApiDto s) => new()
+    {
+        Id                 = s.Id,
+        RegistrationNumber = s.RegistrationNumber ?? "",
+        FullName           = s.FullName ?? s.UserName ?? "",
+        Email              = s.Email,
+        DepartmentName     = s.DepartmentName ?? "",
+        ProgramName        = s.ProgramName ?? "",
+        SemesterNumber     = s.SemesterNumber,
+        Status             = s.Status ?? "Active"
+    };
+
+    private sealed class StudentApiDto
+    {
+        public Guid    Id                 { get; set; }
+        public string? RegistrationNumber { get; set; }
+        public string? FullName           { get; set; }
+        public string? UserName           { get; set; }
+        public string? Email              { get; set; }
+        public string? DepartmentName     { get; set; }
+        public string? ProgramName        { get; set; }
+        public int     SemesterNumber     { get; set; }
+        public string? Status             { get; set; }
+    }
+
+    // ── Departments (detail) ──────────────────────────────────────────────────
+
+    public async Task<List<DepartmentItem>> GetDepartmentDetailsAsync(CancellationToken ct)
+    {
+        var raw = await GetAsync<List<DeptDetailDto>>("api/v1/department", ct) ?? new();
+        return raw.Select(d => new DepartmentItem
+        {
+            Id = d.Id, Name = d.Name ?? "", Code = d.Code ?? "", IsActive = d.IsActive
+        }).ToList();
+    }
+
+    private sealed class DeptDetailDto
+    {
+        public Guid    Id       { get; set; }
+        public string? Name     { get; set; }
+        public string? Code     { get; set; }
+        public bool    IsActive { get; set; }
+    }
+
+    // ── Courses ───────────────────────────────────────────────────────────────
+
+    public async Task<List<CourseItem>> GetCourseDetailsAsync(Guid? departmentId, CancellationToken ct)
+    {
+        var path = departmentId.HasValue
+            ? $"api/v1/course?departmentId={departmentId.Value}"
+            : "api/v1/course";
+        var raw = await GetAsync<List<CourseDetailDto>>(path, ct) ?? new();
+        return raw.Select(c => new CourseItem
+        {
+            Id             = c.Id,
+            Title          = c.Title ?? "",
+            Code           = c.Code ?? "",
+            DepartmentName = c.DepartmentName ?? "",
+            CreditHours    = c.CreditHours
+        }).ToList();
+    }
+
+    public async Task<List<CourseOfferingItem>> GetCourseOfferingsAsync(Guid? departmentId, CancellationToken ct)
+    {
+        var path = departmentId.HasValue
+            ? $"api/v1/course/offerings?departmentId={departmentId.Value}"
+            : "api/v1/course/offerings";
+        var raw = await GetAsync<List<OfferingApiDto>>(path, ct) ?? new();
+        return raw.Select(o => new CourseOfferingItem
+        {
+            Id           = o.Id,
+            CourseTitle  = o.CourseTitle ?? "",
+            CourseCode   = o.CourseCode ?? "",
+            FacultyName  = o.FacultyName ?? "",
+            SemesterName = o.SemesterName ?? "",
+            IsActive     = o.IsActive
+        }).ToList();
+    }
+
+    public async Task<List<LookupItem>> GetMyOfferingsAsync(CancellationToken ct)
+        => await GetAsync<List<LookupItem>>("api/v1/course/offerings/my", ct) ?? new();
+
+    private sealed class CourseDetailDto
+    {
+        public Guid    Id             { get; set; }
+        public string? Title          { get; set; }
+        public string? Code           { get; set; }
+        public string? DepartmentName { get; set; }
+        public int     CreditHours    { get; set; }
+    }
+
+    private sealed class OfferingApiDto
+    {
+        public Guid    Id           { get; set; }
+        public string? CourseTitle  { get; set; }
+        public string? CourseCode   { get; set; }
+        public string? FacultyName  { get; set; }
+        public string? SemesterName { get; set; }
+        public bool    IsActive     { get; set; }
+    }
+
+    // ── Assignments ───────────────────────────────────────────────────────────
+
+    public async Task<List<AssignmentItem>> GetMyAssignmentsAsync(CancellationToken ct)
+    {
+        // Student: returns assignments for enrolled courses
+        var raw = await GetAsync<List<AssignmentApiDto>>("api/v1/assignment/my-submissions", ct) ?? new();
+        return raw.Select(MapAssignment).ToList();
+    }
+
+    public async Task<List<AssignmentItem>> GetAssignmentsByOfferingAsync(Guid offeringId, CancellationToken ct)
+    {
+        var raw = await GetAsync<List<AssignmentApiDto>>($"api/v1/assignment/by-offering/{offeringId}", ct) ?? new();
+        return raw.Select(MapAssignment).ToList();
+    }
+
+    private static AssignmentItem MapAssignment(AssignmentApiDto a) => new()
+    {
+        Id                  = a.Id,
+        Title               = a.Title ?? "",
+        Description         = a.Description,
+        DueDate             = a.DueDate,
+        TotalMarks          = a.TotalMarks,
+        IsPublished         = a.IsPublished,
+        CourseOfferingTitle = a.CourseOfferingTitle ?? "",
+        SubmissionCount     = a.SubmissionCount,
+        IsSubmitted         = a.IsSubmitted,
+        MarksAwarded        = a.MarksAwarded
+    };
+
+    public async Task<List<SubmissionItem>> GetSubmissionsForAssignmentAsync(Guid assignmentId, CancellationToken ct)
+    {
+        var raw = await GetAsync<List<SubmissionApiDto>>($"api/v1/assignment/{assignmentId}/submissions", ct) ?? new();
+        return raw.Select(s => new SubmissionItem
+        {
+            Id                  = s.Id,
+            StudentName         = s.StudentName ?? "",
+            RegistrationNumber  = s.RegistrationNumber ?? "",
+            Comments            = s.Comments,
+            SubmittedAt         = s.SubmittedAt,
+            IsGraded            = s.IsGraded,
+            MarksAwarded        = s.MarksAwarded,
+            FeedbackFromFaculty = s.FeedbackFromFaculty
+        }).ToList();
+    }
+
+    private sealed class AssignmentApiDto
+    {
+        public Guid      Id                   { get; set; }
+        public string?   Title                { get; set; }
+        public string?   Description          { get; set; }
+        public DateTime? DueDate              { get; set; }
+        public int       TotalMarks           { get; set; }
+        public bool      IsPublished          { get; set; }
+        public string?   CourseOfferingTitle  { get; set; }
+        public int       SubmissionCount      { get; set; }
+        public bool      IsSubmitted          { get; set; }
+        public int?      MarksAwarded         { get; set; }
+    }
+
+    private sealed class SubmissionApiDto
+    {
+        public Guid     Id                   { get; set; }
+        public string?  StudentName          { get; set; }
+        public string?  RegistrationNumber   { get; set; }
+        public string?  Comments             { get; set; }
+        public DateTime SubmittedAt          { get; set; }
+        public bool     IsGraded             { get; set; }
+        public int?     MarksAwarded         { get; set; }
+        public string?  FeedbackFromFaculty  { get; set; }
+    }
+
+    // ── Attendance ────────────────────────────────────────────────────────────
+
+    public async Task<List<AttendanceSummaryItem>> GetMyAttendanceSummaryAsync(CancellationToken ct)
+    {
+        var raw = await GetAsync<List<AttendanceSummaryApiDto>>("api/v1/attendance/my-attendance", ct) ?? new();
+        return raw.Select(s => new AttendanceSummaryItem
+        {
+            StudentId            = s.StudentId,
+            StudentName          = s.StudentName ?? "",
+            RegistrationNumber   = s.RegistrationNumber ?? "",
+            CourseName           = s.CourseName ?? "",
+            TotalClasses         = s.TotalClasses,
+            PresentCount         = s.PresentCount,
+            AttendancePercentage = s.AttendancePercentage
+        }).ToList();
+    }
+
+    public async Task<List<AttendanceRecordItem>> GetAttendanceByOfferingAsync(Guid offeringId, CancellationToken ct)
+    {
+        var raw = await GetAsync<List<AttendanceRecordApiDto>>($"api/v1/attendance/by-offering/{offeringId}", ct) ?? new();
+        return raw.Select(r => new AttendanceRecordItem
+        {
+            Id                 = r.Id,
+            StudentName        = r.StudentName ?? "",
+            RegistrationNumber = r.RegistrationNumber ?? "",
+            Date               = r.Date,
+            Status             = r.Status ?? "",
+            IsCorrected        = r.IsCorrected
+        }).ToList();
+    }
+
+    private sealed class AttendanceSummaryApiDto
+    {
+        public Guid   StudentId            { get; set; }
+        public string? StudentName         { get; set; }
+        public string? RegistrationNumber  { get; set; }
+        public string? CourseName          { get; set; }
+        public int    TotalClasses         { get; set; }
+        public int    PresentCount         { get; set; }
+        public double AttendancePercentage { get; set; }
+    }
+
+    private sealed class AttendanceRecordApiDto
+    {
+        public Guid     Id                 { get; set; }
+        public string?  StudentName        { get; set; }
+        public string?  RegistrationNumber { get; set; }
+        public DateTime Date               { get; set; }
+        public string?  Status             { get; set; }
+        public bool     IsCorrected        { get; set; }
+    }
+
+    // ── Results ───────────────────────────────────────────────────────────────
+
+    public async Task<List<ResultItem>> GetMyResultsAsync(CancellationToken ct)
+    {
+        var raw = await GetAsync<List<ResultApiDto>>("api/v1/result/my-results", ct) ?? new();
+        return raw.Select(MapResult).ToList();
+    }
+
+    public async Task<List<ResultItem>> GetResultsByOfferingAsync(Guid offeringId, CancellationToken ct)
+    {
+        var raw = await GetAsync<List<ResultApiDto>>($"api/v1/result/by-offering/{offeringId}", ct) ?? new();
+        return raw.Select(MapResult).ToList();
+    }
+
+    private static ResultItem MapResult(ResultApiDto r) => new()
+    {
+        Id                 = r.Id,
+        CourseName         = r.CourseName ?? "",
+        CourseCode         = r.CourseCode ?? "",
+        MarksObtained      = r.MarksObtained,
+        TotalMarks         = r.TotalMarks,
+        LetterGrade        = r.LetterGrade,
+        IsPublished        = r.IsPublished,
+        SemesterName       = r.SemesterName ?? "",
+        StudentName        = r.StudentName ?? "",
+        RegistrationNumber = r.RegistrationNumber ?? ""
+    };
+
+    private sealed class ResultApiDto
+    {
+        public Guid    Id                 { get; set; }
+        public string? CourseName         { get; set; }
+        public string? CourseCode         { get; set; }
+        public int?    MarksObtained      { get; set; }
+        public int     TotalMarks         { get; set; }
+        public string? LetterGrade        { get; set; }
+        public bool    IsPublished        { get; set; }
+        public string? SemesterName       { get; set; }
+        public string? StudentName        { get; set; }
+        public string? RegistrationNumber { get; set; }
+    }
+
+    // ── Quizzes ───────────────────────────────────────────────────────────────
+
+    public async Task<List<QuizItem>> GetQuizzesByOfferingAsync(Guid offeringId, CancellationToken ct)
+    {
+        var raw = await GetAsync<List<QuizApiDto>>($"api/v1/quiz/by-offering/{offeringId}", ct) ?? new();
+        return raw.Select(q => new QuizItem
+        {
+            Id                  = q.Id,
+            Title               = q.Title ?? "",
+            Description         = q.Description,
+            IsPublished         = q.IsPublished,
+            IsActive            = q.IsActive,
+            AvailableFrom       = q.AvailableFrom,
+            AvailableTo         = q.AvailableTo,
+            MaxAttempts         = q.MaxAttempts,
+            TimeLimitMinutes    = q.TimeLimitMinutes,
+            QuestionCount       = q.QuestionCount,
+            CourseOfferingTitle = q.CourseOfferingTitle ?? ""
+        }).ToList();
+    }
+
+    public async Task<List<QuizAttemptItem>> GetMyAttemptsAsync(CancellationToken ct)
+    {
+        // Fetch attempts across all quizzes student has accessed
+        var raw = await GetAsync<List<QuizAttemptApiDto>>("api/v1/quiz/my-attempts", ct) ?? new();
+        return raw.Select(a => new QuizAttemptItem
+        {
+            Id          = a.Id,
+            QuizTitle   = a.QuizTitle ?? "",
+            StartedAt   = a.StartedAt,
+            SubmittedAt = a.SubmittedAt,
+            Status      = a.Status ?? "",
+            TotalScore  = a.TotalScore,
+            MaxScore    = a.MaxScore
+        }).ToList();
+    }
+
+    private sealed class QuizApiDto
+    {
+        public Guid      Id                  { get; set; }
+        public string?   Title               { get; set; }
+        public string?   Description         { get; set; }
+        public bool      IsPublished         { get; set; }
+        public bool      IsActive            { get; set; }
+        public DateTime? AvailableFrom       { get; set; }
+        public DateTime? AvailableTo         { get; set; }
+        public int       MaxAttempts         { get; set; }
+        public int?      TimeLimitMinutes    { get; set; }
+        public int       QuestionCount       { get; set; }
+        public string?   CourseOfferingTitle { get; set; }
+    }
+
+    private sealed class QuizAttemptApiDto
+    {
+        public Guid      Id          { get; set; }
+        public string?   QuizTitle   { get; set; }
+        public DateTime  StartedAt   { get; set; }
+        public DateTime? SubmittedAt { get; set; }
+        public string?   Status      { get; set; }
+        public int?      TotalScore  { get; set; }
+        public int       MaxScore    { get; set; }
+    }
+
+    // ── FYP ───────────────────────────────────────────────────────────────────
+
+    public async Task<List<FypProjectItem>> GetMyFypProjectsAsync(CancellationToken ct)
+    {
+        var raw = await GetAsync<List<FypApiDto>>("api/v1/fyp/my-projects", ct) ?? new();
+        return raw.Select(MapFyp).ToList();
+    }
+
+    public async Task<List<FypProjectItem>> GetFypByDepartmentAsync(Guid departmentId, CancellationToken ct)
+    {
+        var raw = await GetAsync<List<FypApiDto>>($"api/v1/fyp/by-department/{departmentId}", ct) ?? new();
+        return raw.Select(MapFyp).ToList();
+    }
+
+    public async Task<List<FypProjectItem>> GetMySupervisedProjectsAsync(CancellationToken ct)
+    {
+        var raw = await GetAsync<List<FypApiDto>>("api/v1/fyp/my-supervised", ct) ?? new();
+        return raw.Select(MapFyp).ToList();
+    }
+
+    public async Task<List<FypMeetingItem>> GetUpcomingMeetingsAsync(CancellationToken ct)
+    {
+        var raw = await GetAsync<List<FypMeetingApiDto>>("api/v1/fyp/meeting/upcoming", ct) ?? new();
+        return raw.Select(m => new FypMeetingItem
+        {
+            Id           = m.Id,
+            Title        = m.Title ?? "",
+            ScheduledAt  = m.ScheduledAt,
+            Status       = m.Status ?? "",
+            Location     = m.Location,
+            Notes        = m.Notes,
+            ProjectTitle = m.ProjectTitle ?? ""
+        }).ToList();
+    }
+
+    private static FypProjectItem MapFyp(FypApiDto f) => new()
+    {
+        Id             = f.Id,
+        Title          = f.Title ?? "",
+        Description    = f.Description,
+        Status         = f.Status ?? "",
+        StudentName    = f.StudentName ?? "",
+        SupervisorName = f.SupervisorName,
+        DepartmentName = f.DepartmentName ?? "",
+        MeetingCount   = f.MeetingCount
+    };
+
+    private sealed class FypApiDto
+    {
+        public Guid    Id             { get; set; }
+        public string? Title          { get; set; }
+        public string? Description    { get; set; }
+        public string? Status         { get; set; }
+        public string? StudentName    { get; set; }
+        public string? SupervisorName { get; set; }
+        public string? DepartmentName { get; set; }
+        public int     MeetingCount   { get; set; }
+    }
+
+    private sealed class FypMeetingApiDto
+    {
+        public Guid     Id           { get; set; }
+        public string?  Title        { get; set; }
+        public DateTime ScheduledAt  { get; set; }
+        public string?  Status       { get; set; }
+        public string?  Location     { get; set; }
+        public string?  Notes        { get; set; }
+        public string?  ProjectTitle { get; set; }
+    }
+
+    // ── Analytics ─────────────────────────────────────────────────────────────
+
+    public async Task<string?> GetPerformanceAnalyticsJsonAsync(CancellationToken ct)
+    {
+        using var req  = CreateRequest(HttpMethod.Get, "api/analytics/performance");
+        using var resp = await CreateClient().SendAsync(req, ct);
+        if (!resp.IsSuccessStatusCode) return null;
+        return await resp.Content.ReadAsStringAsync(ct);
+    }
+
+    public async Task<string?> GetAttendanceAnalyticsJsonAsync(CancellationToken ct)
+    {
+        using var req  = CreateRequest(HttpMethod.Get, "api/analytics/attendance");
+        using var resp = await CreateClient().SendAsync(req, ct);
+        if (!resp.IsSuccessStatusCode) return null;
+        return await resp.Content.ReadAsStringAsync(ct);
+    }
+
+    public async Task<string?> GetAssignmentAnalyticsJsonAsync(CancellationToken ct)
+    {
+        using var req  = CreateRequest(HttpMethod.Get, "api/analytics/assignments");
+        using var resp = await CreateClient().SendAsync(req, ct);
+        if (!resp.IsSuccessStatusCode) return null;
+        return await resp.Content.ReadAsStringAsync(ct);
+    }
+
+    // ── AI Chat ───────────────────────────────────────────────────────────────
+
+    public async Task<List<AiChatConversationItem>> GetChatConversationsAsync(CancellationToken ct)
+    {
+        var raw = await GetAsync<List<ConversationApiDto>>("api/ai/conversations", ct) ?? new();
+        return raw.Select(c => new AiChatConversationItem
+        {
+            Id            = c.Id,
+            Title         = c.Title ?? "Conversation",
+            CreatedAt     = c.CreatedAt,
+            LastMessageAt = c.LastMessageAt
+        }).ToList();
+    }
+
+    public async Task<List<AiChatMessageItem>> GetChatMessagesAsync(Guid conversationId, CancellationToken ct)
+    {
+        var raw = await GetAsync<List<MessageApiDto>>($"api/ai/conversations/{conversationId}", ct) ?? new();
+        return raw.Select(m => new AiChatMessageItem
+        {
+            Id        = m.Id,
+            Role      = m.Role ?? "user",
+            Content   = m.Content ?? "",
+            CreatedAt = m.CreatedAt
+        }).ToList();
+    }
+
+    public async Task<AiChatMessageItem?> SendChatMessageAsync(Guid? conversationId, string message, CancellationToken ct)
+    {
+        var payload = new { conversationId, message };
+        var raw = await PostAsync<object, MessageApiDto>("api/ai/message", payload, ct);
+        if (raw is null) return null;
+        return new AiChatMessageItem
+        {
+            Id        = raw.Id,
+            Role      = raw.Role ?? "assistant",
+            Content   = raw.Content ?? "",
+            CreatedAt = raw.CreatedAt
+        };
+    }
+
+    private sealed class ConversationApiDto
+    {
+        public Guid      Id            { get; set; }
+        public string?   Title         { get; set; }
+        public DateTime  CreatedAt     { get; set; }
+        public DateTime? LastMessageAt { get; set; }
+    }
+
+    private sealed class MessageApiDto
+    {
+        public Guid     Id        { get; set; }
+        public string?  Role      { get; set; }
+        public string?  Content   { get; set; }
+        public DateTime CreatedAt { get; set; }
+    }
+
+    // ── Student Lifecycle ─────────────────────────────────────────────────────
+
+    public async Task<List<GraduationCandidateItem>> GetGraduationCandidatesAsync(Guid departmentId, CancellationToken ct)
+    {
+        var raw = await GetAsync<List<GradCandidateApiDto>>($"api/v1/student-lifecycle/graduation-candidates/{departmentId}", ct) ?? new();
+        return raw.Select(g => new GraduationCandidateItem
+        {
+            Id                 = g.Id,
+            FullName           = g.FullName ?? "",
+            RegistrationNumber = g.RegistrationNumber ?? "",
+            ProgramName        = g.ProgramName ?? "",
+            SemesterNumber     = g.SemesterNumber,
+            Cgpa               = g.Cgpa
+        }).ToList();
+    }
+
+    public Task GraduateStudentAsync(Guid studentId, CancellationToken ct)
+        => PostAsync<object, object>("api/v1/student-lifecycle/graduate", new { studentProfileId = studentId }, ct);
+
+    public Task GraduateStudentsBatchAsync(List<Guid> studentIds, CancellationToken ct)
+        => PostAsync<object, object>("api/v1/student-lifecycle/graduate/batch", new { studentProfileIds = studentIds }, ct);
+
+    public async Task<List<StudentItem>> GetStudentsBySemesterAsync(Guid departmentId, int semesterNumber, CancellationToken ct)
+    {
+        var raw = await GetAsync<List<StudentApiDto>>($"api/v1/student-lifecycle/semester-students/{departmentId}/{semesterNumber}", ct) ?? new();
+        return raw.Select(MapStudent).ToList();
+    }
+
+    public Task PromoteStudentAsync(Guid studentId, CancellationToken ct)
+        => PostAsync<object, object>($"api/v1/student-lifecycle/{studentId}/promote", new { }, ct);
+
+    private sealed class GradCandidateApiDto
+    {
+        public Guid    Id                 { get; set; }
+        public string? FullName           { get; set; }
+        public string? RegistrationNumber { get; set; }
+        public string? ProgramName        { get; set; }
+        public int     SemesterNumber     { get; set; }
+        public double? Cgpa               { get; set; }
+    }
+
+    // ── Payments ──────────────────────────────────────────────────────────────
+
+    public async Task<List<PaymentReceiptItem>> GetPaymentsByStudentAsync(Guid studentId, CancellationToken ct)
+    {
+        var raw = await GetAsync<List<PaymentApiDto>>($"api/v1/payment-receipt/student/{studentId}", ct) ?? new();
+        return raw.Select(MapPayment).ToList();
+    }
+
+    private static PaymentReceiptItem MapPayment(PaymentApiDto p) => new()
+    {
+        Id                 = p.Id,
+        StudentName        = p.StudentName ?? "",
+        RegistrationNumber = p.RegistrationNumber ?? "",
+        Amount             = p.Amount,
+        FeeType            = p.FeeType ?? "",
+        Status             = p.Status ?? "",
+        DueDate            = p.DueDate,
+        PaidDate           = p.PaidDate
+    };
+
+    private sealed class PaymentApiDto
+    {
+        public Guid     Id                 { get; set; }
+        public string?  StudentName        { get; set; }
+        public string?  RegistrationNumber { get; set; }
+        public decimal  Amount             { get; set; }
+        public string?  FeeType            { get; set; }
+        public string?  Status             { get; set; }
+        public DateTime DueDate            { get; set; }
+        public DateTime? PaidDate          { get; set; }
+    }
+
+    // ── Enrollments ───────────────────────────────────────────────────────────
+
+    public async Task<List<EnrollmentRosterItem>> GetEnrollmentRosterAsync(Guid offeringId, CancellationToken ct)
+    {
+        var raw = await GetAsync<List<RosterApiDto>>($"api/v1/enrollment/roster/{offeringId}", ct) ?? new();
+        return raw.Select(r => new EnrollmentRosterItem
+        {
+            Id                 = r.Id,
+            StudentName        = r.StudentName ?? "",
+            RegistrationNumber = r.RegistrationNumber ?? "",
+            ProgramName        = r.ProgramName ?? "",
+            SemesterNumber     = r.SemesterNumber
+        }).ToList();
+    }
+
+    private sealed class RosterApiDto
+    {
+        public Guid    Id                 { get; set; }
+        public string? StudentName        { get; set; }
+        public string? RegistrationNumber { get; set; }
+        public string? ProgramName        { get; set; }
+        public int     SemesterNumber     { get; set; }
     }
 }
 

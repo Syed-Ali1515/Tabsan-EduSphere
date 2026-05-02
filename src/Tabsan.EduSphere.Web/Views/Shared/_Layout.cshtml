@@ -61,6 +61,20 @@
         "sidebar_settings"  => ("Portal", "SidebarSettings"),
         "license_update"    => ("Portal", "LicenseUpdate"),
         "theme_settings"    => ("Portal", "ThemeSettings"),
+        "notifications"     => ("Portal", "Notifications"),
+        "students"          => ("Portal", "Students"),
+        "departments"       => ("Portal", "Departments"),
+        "courses"           => ("Portal", "Courses"),
+        "assignments"       => ("Portal", "Assignments"),
+        "attendance"        => ("Portal", "Attendance"),
+        "results"           => ("Portal", "Results"),
+        "quizzes"           => ("Portal", "Quizzes"),
+        "fyp"               => ("Portal", "Fyp"),
+        "analytics"         => ("Portal", "Analytics"),
+        "ai_chat"           => ("Portal", "AiChat"),
+        "student_lifecycle" => ("Portal", "StudentLifecycle"),
+        "payments"          => ("Portal", "Payments"),
+        "enrollments"       => ("Portal", "Enrollments"),
         _                    => null
     };
 }
@@ -143,6 +157,42 @@
                         <a class="menu-link" asp-controller="Portal" asp-action="Buildings">Buildings</a>
                         <a class="menu-link" asp-controller="Portal" asp-action="Rooms">Rooms</a>
                     }
+
+                    <div class="menu-label">Notifications</div>
+                    <a class="menu-link" asp-controller="Portal" asp-action="Notifications">Inbox</a>
+
+                    @if (showAdminLinks || showFacultyLinks)
+                    {
+                        <div class="menu-label">Academic Management</div>
+                        @if (showAdminLinks)
+                        {
+                            <a class="menu-link" asp-controller="Portal" asp-action="Students">Students</a>
+                            <a class="menu-link" asp-controller="Portal" asp-action="Departments">Departments</a>
+                        }
+                        <a class="menu-link" asp-controller="Portal" asp-action="Courses">Courses</a>
+                        <a class="menu-link" asp-controller="Portal" asp-action="Enrollments">Enrollments</a>
+                    }
+
+                    <div class="menu-label">Learning</div>
+                    <a class="menu-link" asp-controller="Portal" asp-action="Assignments">Assignments</a>
+                    <a class="menu-link" asp-controller="Portal" asp-action="Attendance">Attendance</a>
+                    <a class="menu-link" asp-controller="Portal" asp-action="Results">Results</a>
+                    <a class="menu-link" asp-controller="Portal" asp-action="Quizzes">Quizzes</a>
+                    <a class="menu-link" asp-controller="Portal" asp-action="Fyp">FYP</a>
+
+                    @if (showAdminLinks || showFacultyLinks)
+                    {
+                        <div class="menu-label">Admin Tools</div>
+                        <a class="menu-link" asp-controller="Portal" asp-action="Analytics">Analytics</a>
+                        @if (showAdminLinks)
+                        {
+                            <a class="menu-link" asp-controller="Portal" asp-action="StudentLifecycle">Student Lifecycle</a>
+                            <a class="menu-link" asp-controller="Portal" asp-action="Payments">Payments</a>
+                        }
+                    }
+
+                    <div class="menu-label">AI Assistant</div>
+                    <a class="menu-link" asp-controller="Portal" asp-action="AiChat">AI Chat</a>
 
                     @if (showSuperAdminLinks)
                     {

@@ -1,0 +1,91 @@
+@model Tabsan.EduSphere.Web.Models.Portal.ResultsPageModel
+@{ ViewData["Title"] = "Results"; }
+
+@if (!string.IsNullOrWhiteSpace(Model.Message))
+{
+    <div class="alert alert-info">@Model.Message</div>
+}
+
+@if (!Model.IsConnected)
+{
+    <div class="alert alert-warning">Not connected. <a asp-action="Dashboard">Configure API</a>.</div>
+}
+else
+{
+    @if (Model.Offerings.Count > 0)
+    {
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body">
+                <form method="get" asp-action="Results" class="row g-2 align-items-end">
+                    <div class="col-md-5">
+                        <label class="form-label">Select Course Offering</label>
+                        <select name="offeringId" class="form-select" onchange="this.form.submit()">
+                            <option value="">My Results (all)</option>
+                            @foreach (var o in Model.Offerings)
+                            {
+                                <option value="@o.Id" selected="@(Model.SelectedOfferingId == o.Id ? "selected" : null)">@o.Name</option>
+                            }
+                        </select>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+
+    @if (Model.Cgpa.HasValue)
+    {
+        <div class="alert alert-primary">
+            <strong>Overall CGPA:</strong> @Model.Cgpa.Value.ToString("0.00")
+        </div>
+    }
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <h2 class="h5 mb-3">Results <span class="badge bg-secondary ms-1">@Model.Results.Count</span></h2>
+
+            @if (Model.Results.Count == 0)
+            {
+                <p class="text-muted">No published results found.</p>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Course</th>
+                                <th>Student</th>
+                                <th>Semester</th>
+                                <th>Marks</th>
+                                <th>Grade</th>
+                                <th>Published</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var r in Model.Results)
+                            {
+                                <tr>
+                                    <td>@r.CourseCode — @r.CourseName</td>
+                                    <td>@(string.IsNullOrWhiteSpace(r.StudentName) ? "—" : $"{r.StudentName} ({r.RegistrationNumber})")</td>
+                                    <td>@r.SemesterName</td>
+                                    <td>@(r.MarksObtained.HasValue ? $"{r.MarksObtained}/{r.TotalMarks}" : "–")</td>
+                                    <td>
+                                        @if (!string.IsNullOrWhiteSpace(r.LetterGrade))
+                                        {
+                                            <span class="badge bg-primary">@r.LetterGrade</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge @(r.IsPublished ? "bg-success" : "bg-secondary")">
+                                            @(r.IsPublished ? "Yes" : "Pending")
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+}

@@ -1,0 +1,120 @@
+@model Tabsan.EduSphere.Web.Models.Portal.QuizzesPageModel
+@{ ViewData["Title"] = "Quizzes"; }
+
+@if (!string.IsNullOrWhiteSpace(Model.Message))
+{
+    <div class="alert alert-info">@Model.Message</div>
+}
+
+@if (!Model.IsConnected)
+{
+    <div class="alert alert-warning">Not connected. <a asp-action="Dashboard">Configure API</a>.</div>
+}
+else
+{
+    @if (Model.CourseOfferings.Count > 0)
+    {
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body">
+                <form method="get" asp-action="Quizzes" class="row g-2 align-items-end">
+                    <div class="col-md-5">
+                        <label class="form-label">Select Course Offering</label>
+                        <select name="offeringId" class="form-select" onchange="this.form.submit()">
+                            <option value="">Select offering…</option>
+                            @foreach (var o in Model.CourseOfferings)
+                            {
+                                <option value="@o.Id" selected="@(Model.SelectedOfferingId == o.Id ? "selected" : null)">@o.Name</option>
+                            }
+                        </select>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+
+    @if (Model.Quizzes.Count > 0)
+    {
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Available Quizzes
+                    <span class="badge bg-secondary ms-1">@Model.Quizzes.Count</span>
+                </h2>
+                <div class="row g-3">
+                    @foreach (var q in Model.Quizzes)
+                    {
+                        <div class="col-md-6 col-xl-4">
+                            <div class="card border shadow-none h-100">
+                                <div class="card-body">
+                                    <h6 class="fw-semibold">@q.Title</h6>
+                                    @if (!string.IsNullOrWhiteSpace(q.Description))
+                                    {
+                                        <p class="small text-muted mb-2">@q.Description</p>
+                                    }
+                                    <div class="small">
+                                        <span class="me-2">❓ @q.QuestionCount questions</span>
+                                        @if (q.TimeLimitMinutes.HasValue)
+                                        {
+                                            <span class="me-2">⏱ @q.TimeLimitMinutes min</span>
+                                        }
+                                        @if (q.MaxAttempts > 0)
+                                        {
+                                            <span>🔁 @q.MaxAttempts attempts</span>
+                                        }
+                                    </div>
+                                    @if (q.AvailableTo.HasValue && q.AvailableTo < DateTime.Now)
+                                    {
+                                        <span class="badge bg-secondary mt-2">Closed</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge @(q.IsPublished ? "bg-success" : "bg-warning text-dark") mt-2">
+                                            @(q.IsPublished ? "Open" : "Draft")
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (Model.MyAttempts.Count > 0)
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h2 class="h5 mb-3">My Attempts</h2>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr><th>Quiz</th><th>Started</th><th>Submitted</th><th>Score</th><th>Status</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var a in Model.MyAttempts)
+                            {
+                                <tr>
+                                    <td>@a.QuizTitle</td>
+                                    <td>@a.StartedAt.ToString("dd MMM HH:mm")</td>
+                                    <td>@(a.SubmittedAt?.ToString("dd MMM HH:mm") ?? "–")</td>
+                                    <td>@(a.TotalScore.HasValue ? $"{a.TotalScore}/{a.MaxScore}" : "–")</td>
+                                    <td><span class="badge bg-secondary">@a.Status</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (Model.Quizzes.Count == 0 && Model.MyAttempts.Count == 0)
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center text-muted py-5">
+                <div class="fs-1 mb-2">📝</div>
+                <p>Select a course offering to view quizzes.</p>
+            </div>
+        </div>
+    }
+}

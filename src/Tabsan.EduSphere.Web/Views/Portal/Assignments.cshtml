@@ -1,0 +1,134 @@
+@model Tabsan.EduSphere.Web.Models.Portal.AssignmentsPageModel
+@{ ViewData["Title"] = "Assignments"; }
+
+@if (!string.IsNullOrWhiteSpace(Model.Message))
+{
+    <div class="alert alert-info">@Model.Message</div>
+}
+
+@if (!Model.IsConnected)
+{
+    <div class="alert alert-warning">Not connected. <a asp-action="Dashboard">Configure API</a>.</div>
+}
+else
+{
+    @if (Model.CourseOfferings.Count > 0)
+    {
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body">
+                <form method="get" asp-action="Assignments" class="row g-2 align-items-end">
+                    <div class="col-md-5">
+                        <label class="form-label">Select Course Offering</label>
+                        <select name="offeringId" class="form-select" onchange="this.form.submit()">
+                            <option value="">Choose an offering…</option>
+                            @foreach (var o in Model.CourseOfferings)
+                            {
+                                <option value="@o.Id" selected="@(Model.SelectedOfferingId == o.Id ? "selected" : null)">@o.Name</option>
+                            }
+                        </select>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+            <h2 class="h5 mb-3">Assignments <span class="badge bg-secondary ms-1">@Model.Assignments.Count</span></h2>
+
+            @if (Model.Assignments.Count == 0)
+            {
+                <p class="text-muted">No assignments found.</p>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Title</th>
+                                <th>Course</th>
+                                <th>Due Date</th>
+                                <th>Marks</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var a in Model.Assignments)
+                            {
+                                <tr class="@(Model.SelectedAssignmentId == a.Id ? "table-primary" : "")">
+                                    <td>
+                                        @if (Model.SelectedOfferingId.HasValue)
+                                        {
+                                            <a asp-action="Assignments"
+                                               asp-route-offeringId="@Model.SelectedOfferingId"
+                                               asp-route-selectedAssignmentId="@a.Id">@a.Title</a>
+                                        }
+                                        else { @a.Title }
+                                    </td>
+                                    <td>@a.CourseOfferingTitle</td>
+                                    <td>@(a.DueDate?.ToString("dd MMM yyyy") ?? "–")</td>
+                                    <td>
+                                        @(a.MarksAwarded.HasValue ? $"{a.MarksAwarded}/{a.TotalMarks}" : $"– / {a.TotalMarks}")
+                                    </td>
+                                    <td>
+                                        @if (a.IsSubmitted)
+                                        {
+                                            <span class="badge bg-success">Submitted</span>
+                                        }
+                                        else if (a.IsPublished)
+                                        {
+                                            <span class="badge bg-primary">Open</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Draft</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    @if (Model.Submissions.Count > 0)
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h3 class="h5 mb-3">Submissions
+                    <span class="badge bg-secondary ms-1">@Model.Submissions.Count</span>
+                </h3>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Student</th>
+                                <th>Reg. No.</th>
+                                <th>Submitted At</th>
+                                <th>Marks</th>
+                                <th>Feedback</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var s in Model.Submissions)
+                            {
+                                <tr>
+                                    <td>@s.StudentName</td>
+                                    <td><code>@s.RegistrationNumber</code></td>
+                                    <td>@s.SubmittedAt.ToString("dd MMM yyyy, HH:mm")</td>
+                                    <td>
+                                        @(s.MarksAwarded.HasValue ? s.MarksAwarded.ToString() : "–")
+                                    </td>
+                                    <td class="small text-muted">@s.FeedbackFromFaculty</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+}

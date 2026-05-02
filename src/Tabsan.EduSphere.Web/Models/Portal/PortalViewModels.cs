@@ -332,3 +332,383 @@ public class ModuleSettingsPageModel
     public List<ModuleSettingsWebModel> Modules { get; set; } = new();
 }
 
+// ── Notifications ─────────────────────────────────────────────────────────────
+
+public class NotificationItem
+{
+    public Guid     Id               { get; set; }
+    public string   Title            { get; set; } = "";
+    public string?  Body             { get; set; }
+    public string   NotificationType { get; set; } = "";
+    public bool     IsRead           { get; set; }
+    public DateTime CreatedAt        { get; set; }
+}
+
+public class NotificationsPageModel
+{
+    public bool   IsConnected  { get; set; }
+    public string? Message     { get; set; }
+    public List<NotificationItem> Notifications { get; set; } = new();
+    public int    UnreadCount  { get; set; }
+}
+
+// ── Students ──────────────────────────────────────────────────────────────────
+
+public class StudentItem
+{
+    public Guid   Id                 { get; set; }
+    public string RegistrationNumber { get; set; } = "";
+    public string FullName           { get; set; } = "";
+    public string? Email             { get; set; }
+    public string DepartmentName     { get; set; } = "";
+    public string ProgramName        { get; set; } = "";
+    public int    SemesterNumber     { get; set; }
+    public string Status             { get; set; } = "Active";
+}
+
+public class StudentsPageModel
+{
+    public bool   IsConnected          { get; set; }
+    public string? Message             { get; set; }
+    public List<StudentItem>  Students    { get; set; } = new();
+    public List<LookupItem>   Departments { get; set; } = new();
+    public Guid?  SelectedDepartmentId { get; set; }
+}
+
+// ── Departments ───────────────────────────────────────────────────────────────
+
+public class DepartmentItem
+{
+    public Guid   Id       { get; set; }
+    public string Name     { get; set; } = "";
+    public string Code     { get; set; } = "";
+    public bool   IsActive { get; set; }
+}
+
+public class DepartmentsPageModel
+{
+    public bool   IsConnected { get; set; }
+    public string? Message    { get; set; }
+    public List<DepartmentItem> Departments { get; set; } = new();
+}
+
+// ── Courses ───────────────────────────────────────────────────────────────────
+
+public class CourseItem
+{
+    public Guid   Id             { get; set; }
+    public string Title          { get; set; } = "";
+    public string Code           { get; set; } = "";
+    public string DepartmentName { get; set; } = "";
+    public int    CreditHours    { get; set; }
+}
+
+public class CourseOfferingItem
+{
+    public Guid   Id          { get; set; }
+    public string CourseTitle { get; set; } = "";
+    public string CourseCode  { get; set; } = "";
+    public string FacultyName { get; set; } = "";
+    public string SemesterName{ get; set; } = "";
+    public bool   IsActive    { get; set; }
+}
+
+public class CoursesPageModel
+{
+    public bool   IsConnected { get; set; }
+    public string? Message    { get; set; }
+    public List<CourseItem>        Courses   { get; set; } = new();
+    public List<CourseOfferingItem> Offerings { get; set; } = new();
+    public List<LookupItem>        Departments { get; set; } = new();
+    public Guid?  SelectedDepartmentId { get; set; }
+}
+
+// ── Assignments ───────────────────────────────────────────────────────────────
+
+public class AssignmentItem
+{
+    public Guid      Id                   { get; set; }
+    public string    Title                { get; set; } = "";
+    public string?   Description          { get; set; }
+    public DateTime? DueDate              { get; set; }
+    public int       TotalMarks           { get; set; }
+    public bool      IsPublished          { get; set; }
+    public string    CourseOfferingTitle  { get; set; } = "";
+    public int       SubmissionCount      { get; set; }
+    // For student view
+    public bool      IsSubmitted          { get; set; }
+    public int?      MarksAwarded         { get; set; }
+}
+
+public class SubmissionItem
+{
+    public Guid     Id                   { get; set; }
+    public string   StudentName          { get; set; } = "";
+    public string   RegistrationNumber   { get; set; } = "";
+    public string?  Comments             { get; set; }
+    public DateTime SubmittedAt          { get; set; }
+    public bool     IsGraded             { get; set; }
+    public int?     MarksAwarded         { get; set; }
+    public string?  FeedbackFromFaculty  { get; set; }
+}
+
+public class AssignmentsPageModel
+{
+    public bool   IsConnected          { get; set; }
+    public string? Message             { get; set; }
+    public List<AssignmentItem>  Assignments     { get; set; } = new();
+    public List<SubmissionItem>  Submissions     { get; set; } = new();
+    public List<LookupItem>      CourseOfferings { get; set; } = new();
+    public Guid?  SelectedAssignmentId  { get; set; }
+    public Guid?  SelectedOfferingId   { get; set; }
+}
+
+// ── Attendance ────────────────────────────────────────────────────────────────
+
+public class AttendanceRecordItem
+{
+    public Guid     Id            { get; set; }
+    public string   StudentName   { get; set; } = "";
+    public string   RegistrationNumber { get; set; } = "";
+    public DateTime Date          { get; set; }
+    public string   Status        { get; set; } = ""; // Present / Absent / Late / Excused
+    public bool     IsCorrected   { get; set; }
+}
+
+public class AttendanceSummaryItem
+{
+    public Guid   StudentId            { get; set; }
+    public string StudentName          { get; set; } = "";
+    public string RegistrationNumber   { get; set; } = "";
+    public string CourseName           { get; set; } = "";
+    public int    TotalClasses         { get; set; }
+    public int    PresentCount         { get; set; }
+    public double AttendancePercentage { get; set; }
+}
+
+public class AttendancePageModel
+{
+    public bool   IsConnected        { get; set; }
+    public string? Message           { get; set; }
+    public List<AttendanceRecordItem>  Records         { get; set; } = new();
+    public List<AttendanceSummaryItem> Summary         { get; set; } = new();
+    public List<LookupItem>            CourseOfferings { get; set; } = new();
+    public Guid?  SelectedOfferingId { get; set; }
+}
+
+// ── Results ───────────────────────────────────────────────────────────────────
+
+public class ResultItem
+{
+    public Guid   Id             { get; set; }
+    public string CourseName     { get; set; } = "";
+    public string CourseCode     { get; set; } = "";
+    public int?   MarksObtained  { get; set; }
+    public int    TotalMarks     { get; set; }
+    public string? LetterGrade   { get; set; }
+    public bool   IsPublished    { get; set; }
+    public string SemesterName   { get; set; } = "";
+    public string StudentName    { get; set; } = "";
+    public string RegistrationNumber { get; set; } = "";
+}
+
+public class ResultsPageModel
+{
+    public bool   IsConnected { get; set; }
+    public string? Message    { get; set; }
+    public List<ResultItem>   Results  { get; set; } = new();
+    public List<LookupItem>   Offerings { get; set; } = new();
+    public double? Cgpa       { get; set; }
+    public Guid?  SelectedOfferingId { get; set; }
+}
+
+// ── Quizzes ───────────────────────────────────────────────────────────────────
+
+public class QuizItem
+{
+    public Guid      Id                   { get; set; }
+    public string    Title                { get; set; } = "";
+    public string?   Description          { get; set; }
+    public bool      IsPublished          { get; set; }
+    public bool      IsActive             { get; set; }
+    public DateTime? AvailableFrom        { get; set; }
+    public DateTime? AvailableTo          { get; set; }
+    public int       MaxAttempts          { get; set; }
+    public int?      TimeLimitMinutes     { get; set; }
+    public int       QuestionCount        { get; set; }
+    public string    CourseOfferingTitle  { get; set; } = "";
+    // Student view extras
+    public int       MyAttemptCount       { get; set; }
+    public int?      BestScore            { get; set; }
+}
+
+public class QuizAttemptItem
+{
+    public Guid      Id           { get; set; }
+    public string    QuizTitle    { get; set; } = "";
+    public DateTime  StartedAt    { get; set; }
+    public DateTime? SubmittedAt  { get; set; }
+    public string    Status       { get; set; } = "";
+    public int?      TotalScore   { get; set; }
+    public int       MaxScore     { get; set; }
+}
+
+public class QuizzesPageModel
+{
+    public bool   IsConnected { get; set; }
+    public string? Message    { get; set; }
+    public List<QuizItem>        Quizzes        { get; set; } = new();
+    public List<QuizAttemptItem> MyAttempts     { get; set; } = new();
+    public List<LookupItem>      CourseOfferings { get; set; } = new();
+    public Guid?  SelectedOfferingId { get; set; }
+}
+
+// ── FYP ───────────────────────────────────────────────────────────────────────
+
+public class FypProjectItem
+{
+    public Guid   Id             { get; set; }
+    public string Title          { get; set; } = "";
+    public string? Description   { get; set; }
+    public string Status         { get; set; } = "";
+    public string StudentName    { get; set; } = "";
+    public string? SupervisorName{ get; set; }
+    public string DepartmentName { get; set; } = "";
+    public int    MeetingCount   { get; set; }
+}
+
+public class FypMeetingItem
+{
+    public Guid     Id          { get; set; }
+    public string   Title       { get; set; } = "";
+    public DateTime ScheduledAt { get; set; }
+    public string   Status      { get; set; } = "";
+    public string?  Location    { get; set; }
+    public string?  Notes       { get; set; }
+    public string   ProjectTitle { get; set; } = "";
+}
+
+public class FypPageModel
+{
+    public bool   IsConnected { get; set; }
+    public string? Message    { get; set; }
+    public List<FypProjectItem> Projects         { get; set; } = new();
+    public List<FypMeetingItem> UpcomingMeetings { get; set; } = new();
+    public List<LookupItem>     Departments      { get; set; } = new();
+    public Guid?  SelectedDepartmentId { get; set; }
+}
+
+// ── Analytics ─────────────────────────────────────────────────────────────────
+
+public class AnalyticsSummaryCard
+{
+    public string  Label      { get; set; } = "";
+    public string  Value      { get; set; } = "";
+    public string? SubText    { get; set; }
+    public string  ColorClass { get; set; } = "text-primary";
+    public string  Icon       { get; set; } = "📊";
+}
+
+public class AnalyticsPageModel
+{
+    public bool   IsConnected    { get; set; }
+    public string? Message       { get; set; }
+    public List<AnalyticsSummaryCard> Cards         { get; set; } = new();
+    public string? PerformanceJson { get; set; }
+    public string? AttendanceJson  { get; set; }
+    public string? AssignmentJson  { get; set; }
+}
+
+// ── AI Chat ───────────────────────────────────────────────────────────────────
+
+public class AiChatMessageItem
+{
+    public Guid     Id        { get; set; }
+    public string   Role      { get; set; } = "user"; // "user" | "assistant"
+    public string   Content   { get; set; } = "";
+    public DateTime CreatedAt { get; set; }
+}
+
+public class AiChatConversationItem
+{
+    public Guid      Id            { get; set; }
+    public string    Title         { get; set; } = "";
+    public DateTime  CreatedAt     { get; set; }
+    public DateTime? LastMessageAt { get; set; }
+}
+
+public class AiChatPageModel
+{
+    public bool   IsConnected          { get; set; }
+    public string? Message             { get; set; }
+    public List<AiChatConversationItem> Conversations     { get; set; } = new();
+    public List<AiChatMessageItem>      CurrentMessages   { get; set; } = new();
+    public Guid?  ActiveConversationId { get; set; }
+}
+
+// ── Student Lifecycle ─────────────────────────────────────────────────────────
+
+public class GraduationCandidateItem
+{
+    public Guid   Id                 { get; set; }
+    public string FullName           { get; set; } = "";
+    public string RegistrationNumber { get; set; } = "";
+    public string ProgramName        { get; set; } = "";
+    public int    SemesterNumber     { get; set; }
+    public double? Cgpa              { get; set; }
+}
+
+public class StudentLifecyclePageModel
+{
+    public bool   IsConnected          { get; set; }
+    public string? Message             { get; set; }
+    public List<GraduationCandidateItem> GraduationCandidates { get; set; } = new();
+    public List<StudentItem>             StudentsBySemester   { get; set; } = new();
+    public List<LookupItem>              Departments          { get; set; } = new();
+    public Guid?  SelectedDepartmentId  { get; set; }
+    public int    SelectedSemester      { get; set; } = 1;
+}
+
+// ── Payments ──────────────────────────────────────────────────────────────────
+
+public class PaymentReceiptItem
+{
+    public Guid     Id                 { get; set; }
+    public string   StudentName        { get; set; } = "";
+    public string   RegistrationNumber { get; set; } = "";
+    public decimal  Amount             { get; set; }
+    public string   FeeType            { get; set; } = "";
+    public string   Status             { get; set; } = "";
+    public DateTime DueDate            { get; set; }
+    public DateTime? PaidDate          { get; set; }
+}
+
+public class PaymentsPageModel
+{
+    public bool   IsConnected { get; set; }
+    public string? Message    { get; set; }
+    public List<PaymentReceiptItem> Payments    { get; set; } = new();
+    public List<LookupItem>         Departments { get; set; } = new();
+    public Guid?  SelectedStudentId { get; set; }
+}
+
+// ── Enrollments ───────────────────────────────────────────────────────────────
+
+public class EnrollmentRosterItem
+{
+    public Guid   Id                 { get; set; }
+    public string StudentName        { get; set; } = "";
+    public string RegistrationNumber { get; set; } = "";
+    public string ProgramName        { get; set; } = "";
+    public int    SemesterNumber     { get; set; }
+}
+
+public class EnrollmentsPageModel
+{
+    public bool   IsConnected       { get; set; }
+    public string? Message          { get; set; }
+    public List<EnrollmentRosterItem> Roster         { get; set; } = new();
+    public List<CourseOfferingItem>   Offerings      { get; set; } = new();
+    public Guid?  SelectedOfferingId { get; set; }
+}
+

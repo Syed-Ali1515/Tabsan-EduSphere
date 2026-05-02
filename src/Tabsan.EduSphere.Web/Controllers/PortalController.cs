@@ -659,4 +659,386 @@ public class PortalController : Controller
         ViewData["SectionDescription"] = description;
         return View("Section");
     }
+
+    // ── Notifications ──────────────────────────────────────────────────────
+
+    [HttpGet]
+    public async Task<IActionResult> Notifications(CancellationToken ct)
+    {
+        ViewData["Title"] = "Notifications";
+        var model = new NotificationsPageModel { IsConnected = _api.IsConnected() };
+        if (!model.IsConnected) return View(model);
+        try
+        {
+            model.Notifications = await _api.GetNotificationsAsync(ct);
+            model.UnreadCount   = await _api.GetUnreadNotificationCountAsync(ct);
+        }
+        catch (Exception ex) { model.Message = ex.Message; }
+        return View(model);
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> MarkAllRead(CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.MarkAllNotificationsReadAsync(ct); }
+            catch { /* swallow */ }
+        }
+        return RedirectToAction(nameof(Notifications));
+    }
+
+    // ── Students ──────────────────────────────────────────────────────────
+
+    [HttpGet]
+    public async Task<IActionResult> Students(Guid? departmentId, CancellationToken ct)
+    {
+        ViewData["Title"] = "Students";
+        var model = new StudentsPageModel { IsConnected = _api.IsConnected(), SelectedDepartmentId = departmentId };
+        if (!model.IsConnected) return View(model);
+        try
+        {
+            model.Departments = await _api.GetDepartmentsAsync(ct);
+            model.Students    = await _api.GetStudentsAsync(departmentId, ct);
+        }
+        catch (Exception ex) { model.Message = ex.Message; }
+        return View(model);
+    }
+
+    // ── Departments ────────────────────────────────────────────────────────
+
+    [HttpGet]
+    public async Task<IActionResult> Departments(CancellationToken ct)
+    {
+        ViewData["Title"] = "Departments";
+        var model = new DepartmentsPageModel { IsConnected = _api.IsConnected() };
+        if (!model.IsConnected) return View(model);
+        try { model.Departments = await _api.GetDepartmentDetailsAsync(ct); }
+        catch (Exception ex) { model.Message = ex.Message; }
+        return View(model);
+    }
+
+    // ── Courses ────────────────────────────────────────────────────────────
+
+    [HttpGet]
+    public async Task<IActionResult> Courses(Guid? departmentId, CancellationToken ct)
+    {
+        ViewData["Title"] = "Courses & Offerings";
+        var model = new CoursesPageModel { IsConnected = _api.IsConnected(), SelectedDepartmentId = departmentId };
+        if (!model.IsConnected) return View(model);
+        try
+        {
+            model.Departments = await _api.GetDepartmentsAsync(ct);
+            model.Courses     = await _api.GetCourseDetailsAsync(departmentId, ct);
+            model.Offerings   = await _api.GetCourseOfferingsAsync(departmentId, ct);
+        }
+        catch (Exception ex) { model.Message = ex.Message; }
+        return View(model);
+    }
+
+    // ── Assignments ────────────────────────────────────────────────────────
+
+    [HttpGet]
+    public async Task<IActionResult> Assignments(Guid? offeringId, Guid? selectedAssignmentId, CancellationToken ct)
+    {
+        ViewData["Title"] = "Assignments";
+        var model = new AssignmentsPageModel
+        {
+            IsConnected          = _api.IsConnected(),
+            SelectedOfferingId   = offeringId,
+            SelectedAssignmentId = selectedAssignmentId,
+            Message              = TempData["PortalMessage"]?.ToString()
+        };
+        if (!model.IsConnected) return View(model);
+        try
+        {
+            var sessionId = _api.GetSessionIdentity();
+            if (sessionId?.IsStudent == true)
+            {
+                model.Assignments = await _api.GetMyAssignmentsAsync(ct);
+            }
+            else if (offeringId.HasValue)
+            {
+                model.Assignments = await _api.GetAssignmentsByOfferingAsync(offeringId.Value, ct);
+                if (selectedAssignmentId.HasValue)
+                    model.Submissions = await _api.GetSubmissionsForAssignmentAsync(selectedAssignmentId.Value, ct);
+            }
+
+            model.CourseOfferings = await _api.GetMyOfferingsAsync(ct);
+        }
+        catch (Exception ex) { model.Message = ex.Message; }
+        return View(model);
+    }
+
+    // ── Attendance ─────────────────────────────────────────────────────────
+
+    [HttpGet]
+    public async Task<IActionResult> Attendance(Guid? offeringId, CancellationToken ct)
+    {
+        ViewData["Title"] = "Attendance";
+        var model = new AttendancePageModel
+        {
+            IsConnected      = _api.IsConnected(),
+            SelectedOfferingId = offeringId,
+            Message          = TempData["PortalMessage"]?.ToString()
+        };
+        if (!model.IsConnected) return View(model);
+        try
+        {
+            var sessionId = _api.GetSessionIdentity();
+            if (sessionId?.IsStudent == true)
+            {
+                model.Summary = await _api.GetMyAttendanceSummaryAsync(ct);
+            }
+            else if (offeringId.HasValue)
+            {
+                model.Records = await _api.GetAttendanceByOfferingAsync(offeringId.Value, ct);
+            }
+
+            model.CourseOfferings = await _api.GetMyOfferingsAsync(ct);
+        }
+        catch (Exception ex) { model.Message = ex.Message; }
+        return View(model);
+    }
+
+    // ── Results ────────────────────────────────────────────────────────────
+
+    [HttpGet]
+    public async Task<IActionResult> Results(Guid? offeringId, CancellationToken ct)
+    {
+        ViewData["Title"] = "Results";
+        var model = new ResultsPageModel
+        {
+            IsConnected      = _api.IsConnected(),
+            SelectedOfferingId = offeringId,
+            Message          = TempData["PortalMessage"]?.ToString()
+        };
+        if (!model.IsConnected) return View(model);
+        try
+        {
+            var sessionId = _api.GetSessionIdentity();
+            if (sessionId?.IsStudent == true)
+            {
+                model.Results = await _api.GetMyResultsAsync(ct);
+            }
+            else if (offeringId.HasValue)
+            {
+                model.Results   = await _api.GetResultsByOfferingAsync(offeringId.Value, ct);
+                model.Offerings = await _api.GetMyOfferingsAsync(ct);
+            }
+            else
+            {
+                model.Offerings = await _api.GetMyOfferingsAsync(ct);
+            }
+        }
+        catch (Exception ex) { model.Message = ex.Message; }
+        return View(model);
+    }
+
+    // ── Quizzes ────────────────────────────────────────────────────────────
+
+    [HttpGet]
+    public async Task<IActionResult> Quizzes(Guid? offeringId, CancellationToken ct)
+    {
+        ViewData["Title"] = "Quizzes";
+        var model = new QuizzesPageModel
+        {
+            IsConnected      = _api.IsConnected(),
+            SelectedOfferingId = offeringId,
+            Message          = TempData["PortalMessage"]?.ToString()
+        };
+        if (!model.IsConnected) return View(model);
+        try
+        {
+            var sessionId = _api.GetSessionIdentity();
+            model.CourseOfferings = await _api.GetMyOfferingsAsync(ct);
+
+            if (offeringId.HasValue)
+                model.Quizzes = await _api.GetQuizzesByOfferingAsync(offeringId.Value, ct);
+
+            if (sessionId?.IsStudent == true)
+                model.MyAttempts = await _api.GetMyAttemptsAsync(ct);
+        }
+        catch (Exception ex) { model.Message = ex.Message; }
+        return View(model);
+    }
+
+    // ── FYP ────────────────────────────────────────────────────────────────
+
+    [HttpGet]
+    public async Task<IActionResult> Fyp(Guid? departmentId, CancellationToken ct)
+    {
+        ViewData["Title"] = "FYP Management";
+        var model = new FypPageModel
+        {
+            IsConnected         = _api.IsConnected(),
+            SelectedDepartmentId = departmentId,
+            Message             = TempData["PortalMessage"]?.ToString()
+        };
+        if (!model.IsConnected) return View(model);
+        try
+        {
+            model.Departments       = await _api.GetDepartmentsAsync(ct);
+            model.UpcomingMeetings  = await _api.GetUpcomingMeetingsAsync(ct);
+
+            var sessionId = _api.GetSessionIdentity();
+            if (sessionId?.IsStudent == true)
+                model.Projects = await _api.GetMyFypProjectsAsync(ct);
+            else if (sessionId?.IsFaculty == true)
+                model.Projects = await _api.GetMySupervisedProjectsAsync(ct);
+            else if (departmentId.HasValue)
+                model.Projects = await _api.GetFypByDepartmentAsync(departmentId.Value, ct);
+        }
+        catch (Exception ex) { model.Message = ex.Message; }
+        return View(model);
+    }
+
+    // ── Analytics ──────────────────────────────────────────────────────────
+
+    [HttpGet]
+    public async Task<IActionResult> Analytics(CancellationToken ct)
+    {
+        ViewData["Title"] = "Analytics";
+        var model = new AnalyticsPageModel { IsConnected = _api.IsConnected() };
+        if (!model.IsConnected) return View(model);
+        try
+        {
+            model.PerformanceJson = await _api.GetPerformanceAnalyticsJsonAsync(ct);
+            model.AttendanceJson  = await _api.GetAttendanceAnalyticsJsonAsync(ct);
+            model.AssignmentJson  = await _api.GetAssignmentAnalyticsJsonAsync(ct);
+        }
+        catch (Exception ex) { model.Message = ex.Message; }
+        return View(model);
+    }
+
+    // ── AI Chat ────────────────────────────────────────────────────────────
+
+    [HttpGet]
+    public async Task<IActionResult> AiChat(Guid? conversationId, CancellationToken ct)
+    {
+        ViewData["Title"] = "AI Assistant";
+        var model = new AiChatPageModel
+        {
+            IsConnected          = _api.IsConnected(),
+            ActiveConversationId = conversationId
+        };
+        if (!model.IsConnected) return View(model);
+        try
+        {
+            model.Conversations = await _api.GetChatConversationsAsync(ct);
+            if (conversationId.HasValue)
+                model.CurrentMessages = await _api.GetChatMessagesAsync(conversationId.Value, ct);
+        }
+        catch (Exception ex) { model.Message = ex.Message; }
+        return View(model);
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> AiChatSend(Guid? conversationId, string message, CancellationToken ct)
+    {
+        if (!_api.IsConnected() || string.IsNullOrWhiteSpace(message))
+            return RedirectToAction(nameof(AiChat), new { conversationId });
+        try
+        {
+            var reply = await _api.SendChatMessageAsync(conversationId, message, ct);
+            // The API returns the assistant reply; reload the conversation
+        }
+        catch { /* errors handled gracefully — just reload */ }
+        return RedirectToAction(nameof(AiChat), new { conversationId });
+    }
+
+    // ── Student Lifecycle ──────────────────────────────────────────────────
+
+    [HttpGet]
+    public async Task<IActionResult> StudentLifecycle(Guid? departmentId, int semester = 1, CancellationToken ct = default)
+    {
+        ViewData["Title"] = "Student Lifecycle";
+        var model = new StudentLifecyclePageModel
+        {
+            IsConnected         = _api.IsConnected(),
+            SelectedDepartmentId = departmentId,
+            SelectedSemester    = semester,
+            Message             = TempData["PortalMessage"]?.ToString()
+        };
+        if (!model.IsConnected) return View(model);
+        try
+        {
+            model.Departments = await _api.GetDepartmentsAsync(ct);
+            if (departmentId.HasValue)
+            {
+                model.GraduationCandidates = await _api.GetGraduationCandidatesAsync(departmentId.Value, ct);
+                model.StudentsBySemester   = await _api.GetStudentsBySemesterAsync(departmentId.Value, semester, ct);
+            }
+        }
+        catch (Exception ex) { model.Message = ex.Message; }
+        return View(model);
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> GraduateStudent(Guid studentId, Guid? departmentId, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.GraduateStudentAsync(studentId, ct); TempData["PortalMessage"] = "Student graduated."; }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(StudentLifecycle), new { departmentId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> PromoteStudent(Guid studentId, Guid? departmentId, int semester, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.PromoteStudentAsync(studentId, ct); TempData["PortalMessage"] = "Student promoted."; }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(StudentLifecycle), new { departmentId, semester });
+    }
+
+    // ── Payments ───────────────────────────────────────────────────────────
+
+    [HttpGet]
+    public async Task<IActionResult> Payments(Guid? studentId, CancellationToken ct)
+    {
+        ViewData["Title"] = "Payments";
+        var model = new PaymentsPageModel
+        {
+            IsConnected    = _api.IsConnected(),
+            SelectedStudentId = studentId,
+            Message        = TempData["PortalMessage"]?.ToString()
+        };
+        if (!model.IsConnected) return View(model);
+        try
+        {
+            model.Departments = await _api.GetDepartmentsAsync(ct);
+            if (studentId.HasValue)
+                model.Payments = await _api.GetPaymentsByStudentAsync(studentId.Value, ct);
+        }
+        catch (Exception ex) { model.Message = ex.Message; }
+        return View(model);
+    }
+
+    // ── Enrollments ────────────────────────────────────────────────────────
+
+    [HttpGet]
+    public async Task<IActionResult> Enrollments(Guid? offeringId, CancellationToken ct)
+    {
+        ViewData["Title"] = "Enrollments";
+        var model = new EnrollmentsPageModel
+        {
+            IsConnected      = _api.IsConnected(),
+            SelectedOfferingId = offeringId,
+            Message          = TempData["PortalMessage"]?.ToString()
+        };
+        if (!model.IsConnected) return View(model);
+        try
+        {
+            model.Offerings = await _api.GetCourseOfferingsAsync(null, ct);
+            if (offeringId.HasValue)
+                model.Roster = await _api.GetEnrollmentRosterAsync(offeringId.Value, ct);
+        }
+        catch (Exception ex) { model.Message = ex.Message; }
+        return View(model);
+    }
 }

@@ -456,14 +456,28 @@ Views/Home/
 Views/
  Login/Index.cshtml
  Portal/
+  AiChat.cshtml
+  Analytics.cshtml
+  Assignments.cshtml
+  Attendance.cshtml
   Buildings.cshtml
+  Courses.cshtml
   Dashboard.cshtml
+  Departments.cshtml
+  Enrollments.cshtml
+  Fyp.cshtml
   LicenseUpdate.cshtml
   ModuleSettings.cshtml
+  Notifications.cshtml
+  Payments.cshtml
+  Quizzes.cshtml
   ReportSettings.cshtml
+  Results.cshtml
   Rooms.cshtml
   Section.cshtml
   SidebarSettings.cshtml
+  StudentLifecycle.cshtml
+  Students.cshtml
   ThemeSettings.cshtml
   TimetableAdmin.cshtml
   TimetableStudent.cshtml
@@ -482,14 +496,28 @@ Views/Home/
 Views/
  Login/Index.cshtml
  Portal/
+  AiChat.cshtml
+  Analytics.cshtml
+  Assignments.cshtml
+  Attendance.cshtml
   Buildings.cshtml
+  Courses.cshtml
   Dashboard.cshtml
+  Departments.cshtml
+  Enrollments.cshtml
+  Fyp.cshtml
   LicenseUpdate.cshtml
   ModuleSettings.cshtml
+  Notifications.cshtml
+  Payments.cshtml
+  Quizzes.cshtml
   ReportSettings.cshtml
+  Results.cshtml
   Rooms.cshtml
   Section.cshtml
   SidebarSettings.cshtml
+  StudentLifecycle.cshtml
+  Students.cshtml
   ThemeSettings.cshtml
   TimetableAdmin.cshtml
   TimetableStudent.cshtml
