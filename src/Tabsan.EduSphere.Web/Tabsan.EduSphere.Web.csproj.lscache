@@ -55,6 +55,7 @@ TemporaryDependencyNodeTargetIdentifier=net8.0
 [sourceFiles]
 Controllers/
  HomeController.cs
+ LoginController.cs
  PortalController.cs
 Models/
  ErrorViewModel.cs
@@ -452,24 +453,25 @@ obj/Debug/net8.0/Tabsan.EduSphere.Web.GeneratedMSBuildEditorConfig.editorconfig
 Views/Home/
  Index.cshtml
  Privacy.cshtml
-Views/Portal/
- Buildings.cshtml
- Dashboard.cshtml
- LicenseUpdate.cshtml
- ModuleSettings.cshtml
- ReportSettings.cshtml
- Rooms.cshtml
- Section.cshtml
- SidebarSettings.cshtml
- ThemeSettings.cshtml
- TimetableAdmin.cshtml
- TimetableStudent.cshtml
- TimetableTeacher.cshtml
-Views/Shared/
- Error.cshtml
- _Layout.cshtml
- _ValidationScriptsPartial.cshtml
 Views/
+ Login/Index.cshtml
+ Portal/
+  Buildings.cshtml
+  Dashboard.cshtml
+  LicenseUpdate.cshtml
+  ModuleSettings.cshtml
+  ReportSettings.cshtml
+  Rooms.cshtml
+  Section.cshtml
+  SidebarSettings.cshtml
+  ThemeSettings.cshtml
+  TimetableAdmin.cshtml
+  TimetableStudent.cshtml
+  TimetableTeacher.cshtml
+ Shared/
+  Error.cshtml
+  _Layout.cshtml
+  _ValidationScriptsPartial.cshtml
  _ViewImports.cshtml
  _ViewStart.cshtml
 
@@ -477,23 +479,24 @@ Views/
 Views/Home/
  Index.cshtml
  Privacy.cshtml
-Views/Portal/
- Buildings.cshtml
- Dashboard.cshtml
- LicenseUpdate.cshtml
- ModuleSettings.cshtml
- ReportSettings.cshtml
- Rooms.cshtml
- Section.cshtml
- SidebarSettings.cshtml
- ThemeSettings.cshtml
- TimetableAdmin.cshtml
- TimetableStudent.cshtml
- TimetableTeacher.cshtml
-Views/Shared/
- Error.cshtml
- _Layout.cshtml
- _ValidationScriptsPartial.cshtml
 Views/
+ Login/Index.cshtml
+ Portal/
+  Buildings.cshtml
+  Dashboard.cshtml
+  LicenseUpdate.cshtml
+  ModuleSettings.cshtml
+  ReportSettings.cshtml
+  Rooms.cshtml
+  Section.cshtml
+  SidebarSettings.cshtml
+  ThemeSettings.cshtml
+  TimetableAdmin.cshtml
+  TimetableStudent.cshtml
+  TimetableTeacher.cshtml
+ Shared/
+  Error.cshtml
+  _Layout.cshtml
+  _ValidationScriptsPartial.cshtml
  _ViewImports.cshtml
  _ViewStart.cshtml

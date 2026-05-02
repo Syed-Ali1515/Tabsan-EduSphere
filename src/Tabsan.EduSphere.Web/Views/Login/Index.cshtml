@@ -1,0 +1,68 @@
+@{
+    ViewData["Title"] = "Login";
+    Layout = null; // standalone page — no sidebar
+    var error      = ViewData["Error"] as string;
+    var returnUrl  = ViewData["ReturnUrl"] as string;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login — Tabsan EduSphere</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <style>
+        body { background: #f0f2f5; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        .login-card { width: 100%; max-width: 420px; }
+        .brand-header { text-align: center; margin-bottom: 2rem; }
+        .brand-mark { display: inline-flex; align-items: center; justify-content: center;
+                      width: 56px; height: 56px; border-radius: 14px; background: #0d6efd;
+                      color: #fff; font-size: 1.5rem; font-weight: 700; margin-bottom: .75rem; }
+    </style>
+</head>
+<body>
+    <div class="login-card px-3">
+        <div class="brand-header">
+            <div class="brand-mark">TE</div>
+            <h1 class="h4 fw-bold mb-0">Tabsan EduSphere</h1>
+            <p class="text-muted small">Campus Portal</p>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <h2 class="h5 mb-4">Sign in to your account</h2>
+
+                @if (!string.IsNullOrWhiteSpace(error))
+                {
+                    <div class="alert alert-danger py-2 small" role="alert">@error</div>
+                }
+
+                <form method="post" asp-action="Index" asp-controller="Login" asp-route-returnUrl="@returnUrl" autocomplete="on">
+                    @Html.AntiForgeryToken()
+
+                    <div class="mb-3">
+                        <label for="username" class="form-label fw-semibold">Username</label>
+                        <input id="username" name="username" type="text" class="form-control"
+                               placeholder="e.g. superadmin" autofocus autocomplete="username" required />
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="password" class="form-label fw-semibold">Password</label>
+                        <input id="password" name="password" type="password" class="form-control"
+                               placeholder="Your password" autocomplete="current-password" required />
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Sign In</button>
+                </form>
+            </div>
+        </div>
+
+        <p class="text-center text-muted small mt-3">
+            &copy; @DateTime.Now.Year Tabsan EduSphere
+        </p>
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

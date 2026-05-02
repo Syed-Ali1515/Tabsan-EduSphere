@@ -1,5 +1,16 @@
 ﻿@inject Tabsan.EduSphere.Web.Services.IEduApiClient EduApi
 @{
+    // Redirect to login if not connected (skip for Login and Home controllers)
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var skipAuthCheck = currentController.Equals("Login", StringComparison.OrdinalIgnoreCase)
+                     || currentController.Equals("Home", StringComparison.OrdinalIgnoreCase);
+    if (!skipAuthCheck && !EduApi.IsConnected())
+    {
+        var returnUrl = Uri.EscapeDataString(Context.Request.Path + Context.Request.QueryString);
+        Context.Response.Redirect($"/Login?returnUrl={returnUrl}");
+        return;
+    }
+
     var principal   = User;
     var aspNetAuth  = principal?.Identity?.IsAuthenticated ?? false;
 
@@ -152,15 +163,24 @@
         <section class="app-main">
             <header class="app-header" role="banner">
                 <h1 class="page-title">@ViewData["Title"]</h1>
-                <div class="auth-chip">
-                    @displayName
-                    @if (sessionId?.Roles.Count > 0)
-                    {
-                        <span class="badge bg-secondary ms-1">@string.Join(", ", sessionId.Roles)</span>
-                    }
+                <div class="auth-chip d-flex align-items-center gap-2">
+                    <span>
+                        @displayName
+                        @if (sessionId?.Roles.Count > 0)
+                        {
+                            <span class="badge bg-secondary ms-1">@string.Join(", ", sessionId.Roles)</span>
+                        }
+                    </span>
                     @if (isConnected)
                     {
-                        <a asp-controller="Portal" asp-action="Dashboard" class="ms-2 small text-muted" title="API connected">&#128279;</a>
+                        <form method="post" asp-controller="Login" asp-action="Logout" class="m-0">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-sm btn-outline-secondary">Sign Out</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <a asp-controller="Login" asp-action="Index" class="btn btn-sm btn-primary">Sign In</a>
                     }
                 </div>
             </header>

@@ -1,0 +1,25 @@
+# Tabsan EduSphere User Guides
+
+This folder contains role-based manuals for day-to-day use of the platform.
+
+## Documents
+
+- [Student-Guide.md](Student-Guide.md)
+- [Faculty-Guide.md](Faculty-Guide.md)
+- [Admin-Guide.md](Admin-Guide.md)
+- [SuperAdmin-Guide.md](SuperAdmin-Guide.md)
+- [License-KeyGen-Guide.md](License-KeyGen-Guide.md)
+
+## Who Should Read What
+
+- Students: start with Student Guide
+- Faculty members: start with Faculty Guide
+- Department admins: start with Admin Guide
+- Platform owners / IT administrators: start with SuperAdmin Guide
+- Teams responsible for issuing licenses: use License KeyGen Guide
+
+## Notes
+
+- Features shown in each guide depend on activated modules and current license state.
+- Some screens can look slightly different depending on theme and deployment settings.
+- Audit-sensitive actions such as publishing results and system-level changes are logged.

@@ -1,0 +1,160 @@
+# Student User Guide
+
+Version: 1.0  
+Date: 02 May 2026
+
+## 1. Purpose
+
+This guide helps students use Tabsan EduSphere for coursework, attendance, quizzes, results, transcript download, notifications, FYP updates, and AI chat support.
+
+## 2. Access and Login
+
+1. Open the institutional EduSphere URL in a supported browser.
+2. Enter your username and password.
+3. Click Login.
+4. If your institution allows student self-registration, use Sign Up with your registration number.
+
+If login fails multiple times, contact your department admin for account unlock support.
+
+## 3. Dashboard Overview
+
+The student dashboard usually shows:
+- Active semester snapshot
+- Upcoming deadlines
+- Recent notifications
+- Attendance warnings
+- Latest grades and FYP reminders
+
+Use this page daily to avoid missing deadlines.
+
+## 4. Academic Record and Semester History
+
+Path: Sidebar > My Academic Record
+
+You can:
+- View current and previous semester records
+- Review enrolled courses
+- Check GPA and CGPA
+- Track published marks per course
+
+Best practice: compare your course load and GPA trend at least once per week.
+
+## 5. Assignments
+
+Path: Sidebar > Assignments
+
+Typical flow:
+1. Open a course assignment.
+2. Read instructions and due date.
+3. Submit file or text response.
+4. Confirm submission.
+5. Reopen the assignment to verify timestamp and status.
+
+Important notes:
+- Treat submission confirmation as final unless your institution allows resubmission.
+- Late submissions may be blocked based on faculty settings.
+
+## 6. Quizzes
+
+Path: Sidebar > Quizzes
+
+Typical flow:
+1. Open active quiz.
+2. Review attempts allowed, timer, and availability window.
+3. Start attempt.
+4. Answer all required questions.
+5. Submit before time ends.
+
+Tips:
+- Stable internet is recommended.
+- Do not refresh during active timed attempts unless instructed.
+
+## 7. Attendance Tracking
+
+Path: Sidebar > Attendance
+
+You can:
+- Review attendance by course
+- Identify low-attendance courses
+- Monitor threshold warnings
+
+If you believe attendance is wrong, contact the course faculty with date, course code, and evidence.
+
+## 8. Results and Transcript
+
+Path: Sidebar > Results
+
+You can:
+- View published midterm/final marks
+- Track percentage per course
+- Download transcript in supported format
+
+Transcript export activity may be logged for audit.
+
+## 9. Notifications
+
+Path: Top bar bell icon or Sidebar > Notifications
+
+Notification types can include:
+- Assignment
+- Quiz
+- Result
+- Attendance alert
+- FYP meeting update
+- Admin announcements
+
+Action recommendation: open notifications daily and mark read after action.
+
+## 10. FYP Module
+
+Path: Sidebar > Final Year Project
+
+You can:
+- View project status
+- Check supervisor/panel details
+- Track meeting schedule and notes
+
+For schedule conflicts, contact supervisor first, then department admin if needed.
+
+## 11. AI Chat Assistant
+
+Path: Chat icon (if module enabled)
+
+Suggested usage:
+- Ask for deadline reminders
+- Clarify portal navigation
+- Request summaries of your upcoming tasks
+
+Do not share sensitive personal data in chat messages.
+
+## 12. Theme and Personalization
+
+Path: Profile menu > Settings > Appearance
+
+You can switch theme to improve readability and accessibility.
+
+## 13. Common Issues
+
+1. Cannot log in:
+- Check username format
+- Verify keyboard caps lock
+- Request password reset
+
+2. Assignment not visible:
+- Confirm correct semester/course
+- Confirm assignment is published
+
+3. Result not visible:
+- Results appear only after faculty publication
+
+4. Attendance looks incorrect:
+- Contact course faculty with exact lecture date
+
+## 14. Student Checklist
+
+Use this weekly:
+- Review dashboard
+- Check assignments and quizzes
+- Verify attendance in all enrolled courses
+- Review new notifications
+- Track result publication updates
