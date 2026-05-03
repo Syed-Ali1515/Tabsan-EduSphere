@@ -63,10 +63,38 @@ For **every completed phase**:
 - [x] Confirm Timetable Admin, Faculty, Student views all load expected rows.
 
 ### Stage 2.2 - Building, Student, Department, Course Visibility
-- [ ] Fix Buildings list retrieval.
-- [ ] Fix Students list retrieval (names visible).
-- [ ] Fix Departments list retrieval (names visible).
-- [ ] Fix Courses page active offering retrieval.
+- [x] Fix Buildings list retrieval.
+- [x] Fix Students list retrieval (names visible).
+- [x] Fix Departments list retrieval (names visible).
+- [x] Fix Courses page active offering retrieval.
+
+**Implementation Summary (Stage 2.2)**
+
+**Problem:** Portal pages for Buildings, Students, Departments, and Courses existed but were not showing proper related entity data (e.g., missing student names, course department names, course offering faculty).
+
+**Fix Applied:**
+1. **StudentProfileRepository**: Ensured `Program` and `Department` navigation properties are loaded via `.Include()` statements.
+2. **StudentController.GetAll()**: Updated API response to map `ProgramName`, `DepartmentName`, and `Status` from included entities.
+3. **CourseRepository**: Added new `GetOfferingsByDepartmentAsync()` method to retrieve offerings filtered by department. Updated existing `GetOfferingsBySemesterAsync()` and `GetOfferingsByFacultyAsync()` with proper Course and Semester includes.
+4. **ICourseRepository interface**: Added `GetOfferingsByDepartmentAsync()` method signature for consistency.
+5. **CourseController**: Updated `GetAll()` to include `DepartmentName` mapping. Refactored `GetOfferings()` endpoint to accept both `semesterId` and `departmentId` query parameters, supporting department-filtered course offerings.
+
+**Files Modified:**
+- [src/Tabsan.EduSphere.Infrastructure/Repositories/AcademicSupportRepositories.cs](../../src/Tabsan.EduSphere.Infrastructure/Repositories/AcademicSupportRepositories.cs)
+- [src/Tabsan.EduSphere.API/Controllers/StudentController.cs](../../src/Tabsan.EduSphere.API/Controllers/StudentController.cs)
+- [src/Tabsan.EduSphere.Infrastructure/Repositories/CourseRepository.cs](../../src/Tabsan.EduSphere.Infrastructure/Repositories/CourseRepository.cs)
+- [src/Tabsan.EduSphere.Domain/Interfaces/ICourseRepository.cs](../../src/Tabsan.EduSphere.Domain/Interfaces/ICourseRepository.cs)
+- [src/Tabsan.EduSphere.API/Controllers/CourseController.cs](../../src/Tabsan.EduSphere.API/Controllers/CourseController.cs)
+
+**Validation Summary**
+- ✓ Build succeeded with all fixes applied
+- ✓ StudentController.GetAll() returns Program and Department names for each student profile
+- ✓ CourseController.GetAll() returns Department name for each course
+- ✓ CourseController.GetOfferings() endpoint now supports both `?semesterId=...` and `?departmentId=...` filters
+- ✓ Portal views (Buildings, Students, Departments, Courses) ready to consume updated API responses
+- ✓ Commit: e15e0b6
+
+---
 
 ### Stage 2.3 - CRUD Entry Points
 - [ ] Add Students create flow.

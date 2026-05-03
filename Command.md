@@ -24,8 +24,8 @@ Also update this file with:
 ## Current Execution Pointer
 - Plan Source: Project startup Docs/Final-Touches.md
 - Active Phase: Phase 2 - Timetable and Core Lookup Data Visibility
-- Active Stage: Stage 2.2 - Building, Student, Department, Course Visibility
-- Status: Starting
+- Active Stage: Stage 2.3 - CRUD Entry Points
+- Status: Ready to Start
 - Last Updated: 2026-05-04
 
 ## Immediate Next Steps
@@ -152,4 +152,39 @@ When a phase is completed, update:
 - Test data exists: 1 published timetable with 2 entries for CS dept, faculty.test
 
 **Moved to:** Stage 2.2
+
+---
+
+### Entry 004 — 2026-05-04 — Phase 2 Stage 2.2 Complete (Lookup Data Visibility)
+**Completed:**
+- Fixed StudentProfileRepository.GetAllAsync() to include Program and Department navigation properties
+- Updated StudentController.GetAll() to return ProgramName, DepartmentName, and Status from included entities
+- Added new CourseRepository.GetOfferingsByDepartmentAsync() method for department-filtered course offerings
+- Updated ICourseRepository interface with GetOfferingsByDepartmentAsync() method signature
+- Updated CourseRepository.GetOfferingsBySemesterAsync() and GetOfferingsByFacultyAsync() with proper includes
+- Refactored CourseController.GetOfferings() endpoint to accept both ?semesterId and ?departmentId query parameters
+- Updated CourseController.GetAll() to include DepartmentName mapping for courses
+
+**Changes:**
+- [src/Tabsan.EduSphere.Infrastructure/Repositories/AcademicSupportRepositories.cs](src/Tabsan.EduSphere.Infrastructure/Repositories/AcademicSupportRepositories.cs): Removed incorrect User include, added Program/Department includes
+- [src/Tabsan.EduSphere.API/Controllers/StudentController.cs](src/Tabsan.EduSphere.API/Controllers/StudentController.cs): Enhanced GetAll() response with related entity names
+- [src/Tabsan.EduSphere.Infrastructure/Repositories/CourseRepository.cs](src/Tabsan.EduSphere.Infrastructure/Repositories/CourseRepository.cs): Added GetOfferingsByDepartmentAsync(), updated 2 existing offering methods
+- [src/Tabsan.EduSphere.Domain/Interfaces/ICourseRepository.cs](src/Tabsan.EduSphere.Domain/Interfaces/ICourseRepository.cs): Added GetOfferingsByDepartmentAsync() signature
+- [src/Tabsan.EduSphere.API/Controllers/CourseController.cs](src/Tabsan.EduSphere.API/Controllers/CourseController.cs): Refactored GetOfferings() endpoint for dual-parameter support
+
+**Validation:**
+- Build succeeded (0 errors, 2 MailKit warnings only)
+- StudentController.GetAll() returns Program and Department names for each student
+- CourseController.GetAll() returns DepartmentName for each course
+- CourseController.GetOfferings() endpoint accepts both ?semesterId and ?departmentId filters
+- Portal views ready to consume updated API responses with complete related entity data
+- Commit: e15e0b6
+
+**Phase 2 Stage 2 Status:** ✅ Complete
+
+**Moved to:** Stage 2.3 (CRUD Entry Points)
+
+**Docs Updated:**
+- Final-Touches.md: Marked Stage 2.2 complete, added Implementation/Validation summaries, adjusted Stage 2.3 section
+- Command.md: Updated Current Execution Pointer to Stage 2.3
 

@@ -1,14 +1,28 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.13 (Phase 1 Final-Touches complete)  
+**Version:** 1.14 (Phase 2 Stages 2.1–2.2 Data Binding Complete)  
 **Status:** Approved  
 **Prepared By:** Product Team  
-**Last Updated:** 3 May 2026  
+**Last Updated:** 4 May 2026  
 
 ---
 
 ## 0. Implementation Update Log
+
+### 2026-05-04 — Phase 2 Stages 2.1–2.2 Data Binding Complete
+- **Stage 2.1 (Timetable Data Binding):**
+  - Fixed TimetableRepository query methods to properly load Building, Department, AcademicProgram, and Semester navigation properties.
+  - Faculty and Student My Timetable endpoints now return complete data for calendar display without null reference errors.
+  - Test validation confirmed: 1 published timetable with 2 entries for CS dept, assigned to faculty.test.
+  
+- **Stage 2.2 (Lookup Data Visibility):**
+  - Fixed StudentProfileRepository to include Program and Department navigation properties for accurate student profile data.
+  - Updated StudentController.GetAll() to return student names, program names, and department names via related entity mapping.
+  - Added CourseRepository.GetOfferingsByDepartmentAsync() method for department-scoped offering retrieval.
+  - Refactored CourseController.GetOfferings() endpoint to accept both ?semesterId and ?departmentId query parameters for flexible filtering.
+  - Updated CourseController.GetAll() to include department names for course catalogue display.
+  - Build verified: 0 errors, all portal views ready to render with complete related entity data.
 
 ### 2026-05-03 — Final-Touches Phase 1 Complete
 - Stabilized sidebar rendering behavior for portal pages by introducing resilient dynamic-menu loading with session cache fallback in web layout.

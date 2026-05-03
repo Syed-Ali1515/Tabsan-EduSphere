@@ -396,6 +396,7 @@
 | `AddAsync(course, ct)` | Queues the course for insertion. | `Infrastructure/Repositories/CourseRepository.cs` |
 | `Update(course)` | Marks the course as modified. | `Infrastructure/Repositories/CourseRepository.cs` |
 | `GetOfferingsBySemesterAsync(semesterId, ct)` | Returns all offerings for a semester with Course and Semester loaded. | `Infrastructure/Repositories/CourseRepository.cs` |
+| `GetOfferingsByDepartmentAsync(departmentId, ct)` | Returns all offerings for a department (filtered by course.departmentId) with Course and Semester loaded. | `Infrastructure/Repositories/CourseRepository.cs` |
 | `GetOfferingsByFacultyAsync(facultyUserId, ct)` | Returns all offerings assigned to the faculty user. | `Infrastructure/Repositories/CourseRepository.cs` |
 | `GetOfferingByIdAsync(offeringId, ct)` | Returns an offering by ID with navigations loaded, or null. | `Infrastructure/Repositories/CourseRepository.cs` |
 | `GetEnrollmentCountAsync(offeringId, ct)` | Returns the count of active enrollments for the offering. | `Infrastructure/Repositories/CourseRepository.cs` |
