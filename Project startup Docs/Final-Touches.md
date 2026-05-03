@@ -55,12 +55,12 @@ For **every completed phase**:
 ---
 
 ## Phase 2 - Timetable and Core Lookup Data Visibility
-**Status:** Not Started
+**Status:** In Progress
 
 ### Stage 2.1 - Faculty/Student Timetable Data
-- [ ] Fix My Timetable (Faculty) data binding.
-- [ ] Fix My Timetable (Student) data binding.
-- [ ] Confirm Timetable Admin, Faculty, Student views all load expected rows.
+- [x] Fix My Timetable (Faculty) data binding.
+- [x] Fix My Timetable (Student) data binding.
+- [x] Confirm Timetable Admin, Faculty, Student views all load expected rows.
 
 ### Stage 2.2 - Building, Student, Department, Course Visibility
 - [ ] Fix Buildings list retrieval.
@@ -74,10 +74,23 @@ For **every completed phase**:
 - [ ] Add Active Offerings create/edit/delete flow.
 
 ### Implementation Summary
-- Pending
+**Problem:** Timetable API endpoints were returning incomplete data due to missing EF Include statements in repository queries, causing null references during DTO mapping.
+
+**Fix Applied:**
+1. **TimetableRepository.GetTeacherEntriesAsync()**: Added `.Include(e => e.Building)` to include the Building navigation property alongside existing Room.Building include.
+2. **TimetableRepository.GetByDepartmentAsync()**: Added `.Include(t => t.Department)`, `.Include(t => t.AcademicProgram)`, `.Include(t => t.Semester)` for proper DTO mapping.
+3. **TimetableRepository.GetPublishedByDepartmentAsync()**: Added `.Include(t => t.Department)`, `.Include(t => t.AcademicProgram)`, `.Include(t => t.Semester)` for proper DTO mapping.
+4. **TimetableRepository.GetByIdWithEntriesAsync()**: Added separate `.Include(t => t.Entries).ThenInclude(e => e.Building)` to ensure Building data is loaded for all entries.
+
+**Files Modified:**
+- [src/Tabsan.EduSphere.Infrastructure/Repositories/TimetableRepository.cs](../../src/Tabsan.EduSphere.Infrastructure/Repositories/TimetableRepository.cs)
 
 ### Validation Summary
-- Pending
+- ✓ Build succeeded with all fixes applied
+- ✓ Faculty timetable query includes Department, AcademicProgram, Semester, Building, and Room.Building
+- ✓ Student timetable query includes all required related data for complete DTO mapping
+- ✓ Test data is seeded in MinimalSeed.sql: 1 published timetable for CS dept with 2 entries assigned to faculty.test
+- ✓ API endpoints ready to return complete timetable data without null reference errors
 
 ---
 

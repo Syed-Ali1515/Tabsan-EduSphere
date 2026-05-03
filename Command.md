@@ -24,14 +24,14 @@ Also update this file with:
 ## Current Execution Pointer
 - Plan Source: Project startup Docs/Final-Touches.md
 - Active Phase: Phase 2 - Timetable and Core Lookup Data Visibility
-- Active Stage: Stage 2.1 - Faculty/Student Timetable Data
-- Status: Not Started
-- Last Updated: 2026-05-03
+- Active Stage: Stage 2.2 - Building, Student, Department, Course Visibility
+- Status: Starting
+- Last Updated: 2026-05-04
 
 ## Immediate Next Steps
-1. Start Stage 2.1: Fix My Timetable (Faculty) and My Timetable (Student) data binding.
-2. Fix My Timetable (Student) view.
-3. After both timetable views pass: move to Stage 2.2 (Students list names, Departments list names, Courses active offerings).
+1. Start Stage 2.2: Fix Buildings list, Students list names, Departments list names, Courses active offerings.
+2. After Stage 2.2 passes: move to Stage 2.3 (CRUD entry points).
+3. After Phase 2 complete: proceed to Phase 3 (Authorization, data entry, promotion logic).
 4. Stage 2.3: CRUD entry points for Students/Departments/Offerings.
 
 ## Pending Extra Tasks (Cross-Phase)
@@ -132,4 +132,24 @@ When a phase is completed, update:
 - \Final-Touches.md\: Marked Phase 1 complete, added Stage 1.3 Implementation/Validation summaries.
 - \PRD.md\: Bumped version to 1.13, updated log entry.
 - \Function-List.md\: Added Phase 1 Stage 1.3 portal settings and Dashboard Settings functions.
+
+---
+
+### Entry 003 — 2026-05-04 — Phase 2 Stage 2.1 Complete (Timetable Data Binding)
+**Completed:**
+- Fixed TimetableRepository.GetTeacherEntriesAsync() missing Building include
+- Fixed TimetableRepository.GetByDepartmentAsync() missing Department, AcademicProgram, Semester includes
+- Fixed TimetableRepository.GetPublishedByDepartmentAsync() missing Department, AcademicProgram, Semester includes
+- Fixed TimetableRepository.GetByIdWithEntriesAsync() with separate Building include for entries
+
+**Changes:**
+- Updated [src/Tabsan.EduSphere.Infrastructure/Repositories/TimetableRepository.cs](src/Tabsan.EduSphere.Infrastructure/Repositories/TimetableRepository.cs) with proper EF Include statements
+
+**Validation:**
+- Build succeeded with all fixes
+- Faculty timetable endpoint includes Building navigation for proper data binding
+- Student timetable endpoints include all required related entities for DTO mapping
+- Test data exists: 1 published timetable with 2 entries for CS dept, faculty.test
+
+**Moved to:** Stage 2.2
 

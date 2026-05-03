@@ -19,6 +19,9 @@ public class TimetableRepository : ITimetableRepository
     public Task<IList<Timetable>> GetByDepartmentAsync(Guid departmentId, CancellationToken ct = default)
         => _db.Timetables
               .Where(t => t.DepartmentId == departmentId)
+              .Include(t => t.Department)
+              .Include(t => t.AcademicProgram)
+              .Include(t => t.Semester)
               .OrderByDescending(t => t.CreatedAt)
               .ToListAsync(ct)
               .ContinueWith<IList<Timetable>>(r => r.Result, ct);
@@ -27,6 +30,9 @@ public class TimetableRepository : ITimetableRepository
         => _db.Timetables
               .Where(t => t.DepartmentId == departmentId && t.IsPublished)
               .Include(t => t.Entries)
+              .Include(t => t.Department)
+              .Include(t => t.AcademicProgram)
+              .Include(t => t.Semester)
               .OrderByDescending(t => t.PublishedAt)
               .ToListAsync(ct)
               .ContinueWith<IList<Timetable>>(r => r.Result, ct);
@@ -34,11 +40,13 @@ public class TimetableRepository : ITimetableRepository
     public Task<Timetable?> GetByIdWithEntriesAsync(Guid timetableId, CancellationToken ct = default)
         => _db.Timetables
               .Include(t => t.Department)
-              .Include(t => t.Semester)
               .Include(t => t.AcademicProgram)
+              .Include(t => t.Semester)
               .Include(t => t.Entries.OrderBy(e => e.DayOfWeek).ThenBy(e => e.StartTime))
                   .ThenInclude(e => e.Room)
                       .ThenInclude(r => r!.Building)
+              .Include(t => t.Entries)
+                  .ThenInclude(e => e.Building)
               .FirstOrDefaultAsync(t => t.Id == timetableId, ct);
 
     public Task<Timetable?> GetByIdAsync(Guid timetableId, CancellationToken ct = default)
@@ -68,6 +76,7 @@ public class TimetableRepository : ITimetableRepository
                   .ThenInclude(t => t.AcademicProgram)
               .Include(e => e.Timetable)
                   .ThenInclude(t => t.Semester)
+              .Include(e => e.Building)
               .Include(e => e.Room)
                   .ThenInclude(r => r!.Building)
               .Where(e => e.FacultyUserId == facultyUserId && e.Timetable.IsPublished)
