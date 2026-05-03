@@ -12,7 +12,7 @@ namespace Tabsan.EduSphere.API.Controllers;
 /// Admins: read-only access to all assignments and submissions.
 /// </summary>
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/v1/[controller]")]
 [Authorize]
 public class AssignmentController : ControllerBase
 {

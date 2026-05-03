@@ -248,6 +248,13 @@ public sealed class QuizService : IQuizService
         return attempts.Select(ToAttemptResponse).ToList();
     }
 
+    /// <summary>Returns all attempts across all quizzes for a student.</summary>
+    public async Task<IReadOnlyList<AttemptResponse>> GetAllMyAttemptsAsync(Guid studentProfileId, CancellationToken ct = default)
+    {
+        var attempts = await _repo.GetAllAttemptsForStudentAsync(studentProfileId, ct);
+        return attempts.Select(ToAttemptResponse).ToList();
+    }
+
     /// <summary>Returns full attempt detail including answers, or null if not found.</summary>
     public async Task<AttemptDetailResponse?> GetAttemptDetailAsync(Guid attemptId, CancellationToken ct = default)
     {

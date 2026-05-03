@@ -165,14 +165,46 @@ For **every completed phase**:
 ---
 
 ## Phase 3 - Assignment, Attendance, Results, Quizzes, FYP Access and Workflows
-**Status:** Not Started
+**Status:** In Progress
 
 ### Stage 3.1 - 403 Authorization Fixes
-- [ ] Resolve 403 in Assignments.
-- [ ] Resolve 403 in Attendance.
-- [ ] Resolve 403 in Results.
-- [ ] Resolve 403 in Quizzes.
-- [ ] Resolve 403 in FYP.
+- [x] Resolve 403 in Assignments.
+- [x] Resolve 403 in Attendance.
+- [x] Resolve 403 in Results.
+- [x] Resolve 403 in Quizzes.
+- [x] Resolve 403 in FYP.
+
+**Implementation Summary (Stage 3.1)**
+
+**Root Cause:** Five module controllers used `[Route("api/[controller]")]` (no `v1` prefix) while `EduApiClient.cs` in the Web project consistently calls `api/v1/` prefixed paths. This caused 404 (not 403) at the HTTP level — ASP.NET then returns 400/404 which the portal surfaces as access errors.
+
+**Additionally:** `EduApiClient.GetMyAttemptsAsync()` calls `api/v1/quiz/my-attempts` (flat path) but `QuizController` only had `{id:guid}/my-attempts` — no flat endpoint existed.
+
+**Fix Applied:**
+1. **AssignmentController**: Changed `[Route("api/[controller]")]` → `[Route("api/v1/[controller]")]`
+2. **AttendanceController**: Changed `[Route("api/[controller]")]` → `[Route("api/v1/[controller]")]`
+3. **ResultController**: Changed `[Route("api/[controller]")]` → `[Route("api/v1/[controller]")]`
+4. **QuizController**: Changed `[Route("api/quiz")]` → `[Route("api/v1/quiz")]`; added `GET my-attempts` flat endpoint calling `IQuizService.GetAllMyAttemptsAsync()`
+5. **FypController**: Changed `[Route("api/fyp")]` → `[Route("api/v1/fyp")]`
+6. **IQuizRepository + QuizRepository**: Added `GetAllAttemptsForStudentAsync(Guid studentProfileId)` returning all attempts across all quizzes
+7. **IQuizService + QuizService**: Added `GetAllMyAttemptsAsync(Guid studentProfileId)` service method
+
+**Files Modified:**
+- [src/Tabsan.EduSphere.API/Controllers/AssignmentController.cs](../../src/Tabsan.EduSphere.API/Controllers/AssignmentController.cs)
+- [src/Tabsan.EduSphere.API/Controllers/AttendanceController.cs](../../src/Tabsan.EduSphere.API/Controllers/AttendanceController.cs)
+- [src/Tabsan.EduSphere.API/Controllers/ResultController.cs](../../src/Tabsan.EduSphere.API/Controllers/ResultController.cs)
+- [src/Tabsan.EduSphere.API/Controllers/QuizController.cs](../../src/Tabsan.EduSphere.API/Controllers/QuizController.cs)
+- [src/Tabsan.EduSphere.API/Controllers/FypController.cs](../../src/Tabsan.EduSphere.API/Controllers/FypController.cs)
+- [src/Tabsan.EduSphere.Domain/Interfaces/IQuizRepository.cs](../../src/Tabsan.EduSphere.Domain/Interfaces/IQuizRepository.cs)
+- [src/Tabsan.EduSphere.Infrastructure/Repositories/QuizFypRepositories.cs](../../src/Tabsan.EduSphere.Infrastructure/Repositories/QuizFypRepositories.cs)
+- [src/Tabsan.EduSphere.Application/Interfaces/IQuizService.cs](../../src/Tabsan.EduSphere.Application/Interfaces/IQuizService.cs)
+- [src/Tabsan.EduSphere.Application/Quizzes/QuizService.cs](../../src/Tabsan.EduSphere.Application/Quizzes/QuizService.cs)
+
+**Validation Summary (Stage 3.1)**
+- ✓ Build succeeded (0 errors, 2 pre-existing MailKit warnings)
+- ✓ All 5 module controllers now at `api/v1/` prefix matching EduApiClient call paths
+- ✓ Authorization policies (Faculty/Admin/Student) are valid in Program.cs — no policy changes needed
+- ✓ `GET api/v1/quiz/my-attempts` endpoint added for student portal summary view
 
 ### Stage 3.2 - Data Entry Workflows
 - [ ] Add Assignments create/edit/delete and assign-to-students workflows.

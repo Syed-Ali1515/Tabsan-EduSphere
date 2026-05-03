@@ -24,9 +24,17 @@ Also update this file with:
 ## Current Execution Pointer
 - Plan Source: Project startup Docs/Final-Touches.md
 - Active Phase: Phase 3 - Assignment, Attendance, Results, Quizzes, FYP Access and Workflows
-- Active Stage: Stage 3.1 - 403 Authorization Fixes
+- Active Stage: Stage 3.2 - Data Entry Workflows
 - Status: Ready to Start
 - Last Updated: 2026-05-04
+
+## Completed Work
+- Phase 1: Navigation, Session Stability, Sidebar Structure (all stages done)
+- Phase 2: Timetable and Core Lookup Data Visibility (all stages done)
+- Phase 3 Stage 3.1: Route prefix fix on AssignmentController, AttendanceController, ResultController, QuizController, FypController (api/ → api/v1/); added GET api/v1/quiz/my-attempts endpoint + GetAllMyAttemptsAsync service chain
+
+## Next Steps
+- Phase 3 Stage 3.2: Data entry workflows for Assignments, Attendance, Results, Quizzes, FYP (create/edit/delete on portal)
 
 ## Immediate Next Steps
 1. Start Stage 2.2: Fix Buildings list, Students list names, Departments list names, Courses active offerings.

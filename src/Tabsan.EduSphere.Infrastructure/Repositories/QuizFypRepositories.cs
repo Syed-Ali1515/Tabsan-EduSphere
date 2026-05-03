@@ -90,6 +90,14 @@ public sealed class QuizRepository : IQuizRepository
               .ToListAsync(ct)
               .ContinueWith<IReadOnlyList<QuizAttempt>>(t => t.Result, ct);
 
+    /// <summary>Returns all attempts across all quizzes for a student.</summary>
+    public Task<IReadOnlyList<QuizAttempt>> GetAllAttemptsForStudentAsync(Guid studentProfileId, CancellationToken ct = default)
+        => _db.QuizAttempts
+              .Where(a => a.StudentProfileId == studentProfileId)
+              .OrderByDescending(a => a.StartedAt)
+              .ToListAsync(ct)
+              .ContinueWith<IReadOnlyList<QuizAttempt>>(t => t.Result, ct);
+
     /// <summary>Returns the number of attempts the student has made on the quiz.</summary>
     public Task<int> GetAttemptCountAsync(Guid quizId, Guid studentProfileId, CancellationToken ct = default)
         => _db.QuizAttempts

@@ -881,6 +881,7 @@
 | RemoveOptions(options) | Removes a collection of options from the context. | Infrastructure/Repositories/QuizFypRepositories.cs |
 | GetAttemptByIdAsync(attemptId, ct) | Fetches an attempt with its answers included. | Infrastructure/Repositories/QuizFypRepositories.cs |
 | GetAttemptsAsync(quizId, studentProfileId, ct) | Returns all attempts for a student on a quiz. | Infrastructure/Repositories/QuizFypRepositories.cs |
+| GetAllAttemptsForStudentAsync(studentProfileId, ct) | Returns all attempts across all quizzes for a student (portal summary). | Infrastructure/Repositories/QuizFypRepositories.cs |
 | GetAttemptCountAsync(quizId, studentProfileId, ct) | Returns the count of completed or timed-out attempts for cap checking. | Infrastructure/Repositories/QuizFypRepositories.cs |
 | GetInProgressAttemptAsync(quizId, studentProfileId, ct) | Returns any in-progress attempt for a student on a quiz. | Infrastructure/Repositories/QuizFypRepositories.cs |
 | AddAttemptAsync(attempt, ct) | Persists a new quiz attempt. | Infrastructure/Repositories/QuizFypRepositories.cs |
@@ -929,6 +930,7 @@
 | StartAttemptAsync(quizId, studentProfileId, ct) | Validates availability, attempt cap, and in-progress check, then creates a new attempt. | Application/Quizzes/QuizService.cs |
 | SubmitAttemptAsync(request, studentProfileId, ct) | Records answers, auto-grades MCQ/TrueFalse, computes score, submits attempt. | Application/Quizzes/QuizService.cs |
 | GetStudentAttemptsAsync(quizId, studentProfileId, ct) | Returns all attempts for a student on a quiz. | Application/Quizzes/QuizService.cs |
+| GetAllMyAttemptsAsync(studentProfileId, ct) | Returns all attempts across all quizzes for a student. | Application/Quizzes/QuizService.cs |
 | GetAttemptDetailAsync(attemptId, ct) | Returns detailed attempt data including answer responses. | Application/Quizzes/QuizService.cs |
 | GradeAnswerAsync(request, ct) | Awards marks to a short-answer response and updates attempt total score. | Application/Quizzes/QuizService.cs |
 | ToSummary(quiz) | Private ï¿½ maps Quiz to QuizSummaryResponse. | Application/Quizzes/QuizService.cs |

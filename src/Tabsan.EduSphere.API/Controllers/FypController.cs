@@ -10,7 +10,7 @@ namespace Tabsan.EduSphere.API.Controllers;
 /// Manages FYP project proposals, panel assignments, and meeting scheduling.
 /// </summary>
 [ApiController]
-[Route("api/fyp")]
+[Route("api/v1/fyp")]
 [Authorize]
 public sealed class FypController : ControllerBase
 {

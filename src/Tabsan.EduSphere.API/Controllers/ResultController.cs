@@ -12,7 +12,7 @@ namespace Tabsan.EduSphere.API.Controllers;
 /// Students: view own published results and request transcript exports.
 /// </summary>
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/v1/[controller]")]
 [Authorize]
 public class ResultController : ControllerBase
 {

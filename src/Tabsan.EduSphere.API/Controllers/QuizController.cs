@@ -10,7 +10,7 @@ namespace Tabsan.EduSphere.API.Controllers;
 /// Manages quiz authoring, publishing, attempt lifecycle, and grading.
 /// </summary>
 [ApiController]
-[Route("api/quiz")]
+[Route("api/v1/quiz")]
 [Authorize]
 public sealed class QuizController : ControllerBase
 {
@@ -166,6 +166,18 @@ public sealed class QuizController : ControllerBase
     {
         var result = await _quizService.SubmitAttemptAsync(request, ct);
         return result is null ? NotFound() : Ok(result);
+    }
+
+    /// <summary>
+    /// Returns all attempts the current student has made across all quizzes (portal summary).
+    /// </summary>
+    [HttpGet("my-attempts")]
+    [Authorize(Policy = "Student")]
+    public async Task<IActionResult> GetAllMyAttempts(CancellationToken ct)
+    {
+        var studentProfileId = GetStudentProfileId();
+        if (studentProfileId == Guid.Empty) return Forbid();
+        return Ok(await _quizService.GetAllMyAttemptsAsync(studentProfileId, ct));
     }
 
     /// <summary>

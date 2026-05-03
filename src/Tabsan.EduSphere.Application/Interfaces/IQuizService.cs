@@ -59,6 +59,9 @@ public interface IQuizService
     /// <summary>Returns all attempts a student has made on a quiz.</summary>
     Task<IReadOnlyList<AttemptResponse>> GetStudentAttemptsAsync(Guid quizId, Guid studentProfileId, CancellationToken ct = default);
 
+    /// <summary>Returns all attempts across all quizzes for a student (portal summary).</summary>
+    Task<IReadOnlyList<AttemptResponse>> GetAllMyAttemptsAsync(Guid studentProfileId, CancellationToken ct = default);
+
     /// <summary>Returns full attempt detail including answers. Returns null if not found.</summary>
     Task<AttemptDetailResponse?> GetAttemptDetailAsync(Guid attemptId, CancellationToken ct = default);
 

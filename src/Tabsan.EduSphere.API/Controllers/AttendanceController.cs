@@ -12,7 +12,7 @@ namespace Tabsan.EduSphere.API.Controllers;
 /// Students: view their own attendance records and percentages.
 /// </summary>
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/v1/[controller]")]
 [Authorize]
 public class AttendanceController : ControllerBase
 {
