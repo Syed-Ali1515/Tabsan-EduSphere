@@ -78,7 +78,10 @@ public class StudentProfileRepository : IStudentProfileRepository
     /// <summary>Returns all student profiles, optionally scoped to a department.</summary>
     public async Task<IReadOnlyList<StudentProfile>> GetAllAsync(Guid? departmentId = null, CancellationToken ct = default)
     {
-        var query = _db.StudentProfiles.Include(sp => sp.Program).AsQueryable();
+        var query = _db.StudentProfiles
+            .Include(sp => sp.Program)
+            .Include(sp => sp.Department)
+            .AsQueryable();
         if (departmentId.HasValue)
             query = query.Where(sp => sp.DepartmentId == departmentId.Value);
         return await query.OrderBy(sp => sp.RegistrationNumber).ToListAsync(ct);

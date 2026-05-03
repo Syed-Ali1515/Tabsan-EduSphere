@@ -35,7 +35,8 @@ public class CourseController : ControllerBase
         var courses = await _repo.GetAllAsync(departmentId, ct);
         return Ok(courses.Select(c => new
         {
-            c.Id, c.Title, c.Code, c.CreditHours, c.DepartmentId, c.IsActive
+            c.Id, c.Title, c.Code, c.CreditHours, c.DepartmentId,
+            DepartmentName = c.Department?.Name ?? "", c.IsActive
         }));
     }
 
@@ -100,17 +101,26 @@ public class CourseController : ControllerBase
 
     // ────────────────────── OFFERINGS ──────────────────────────────────────────
 
-    // ── GET /api/v1/course/offerings?semesterId={id} ───────────────────────────
+    // ── GET /api/v1/course/offerings?semesterId={id} or ?departmentId={id} ──────
 
-    /// <summary>Returns all offerings for the given semester.</summary>
+    /// <summary>Returns all offerings for the given semester or department.</summary>
     [HttpGet("offerings")]
-    public async Task<IActionResult> GetOfferings([FromQuery] Guid semesterId, CancellationToken ct)
+    public async Task<IActionResult> GetOfferings([FromQuery] Guid? semesterId, [FromQuery] Guid? departmentId, CancellationToken ct)
     {
-        var offerings = await _repo.GetOfferingsBySemesterAsync(semesterId, ct);
+        IReadOnlyList<CourseOffering> offerings;
+        
+        if (departmentId.HasValue)
+            offerings = await _repo.GetOfferingsByDepartmentAsync(departmentId.Value, ct);
+        else if (semesterId.HasValue)
+            offerings = await _repo.GetOfferingsBySemesterAsync(semesterId.Value, ct);
+        else
+            offerings = new List<CourseOffering>();
+
         return Ok(offerings.Select(o => new
         {
-            o.Id, o.CourseId, CourseName = o.Course.Title, o.SemesterId,
-            SemesterName = o.Semester.Name, o.FacultyUserId, o.MaxEnrollment, o.IsOpen
+            o.Id, o.CourseId, CourseCode = o.Course.Code, CourseName = o.Course.Title, 
+            o.SemesterId, SemesterName = o.Semester.Name, o.FacultyUserId,
+            o.MaxEnrollment, o.IsOpen
         }));
     }
 

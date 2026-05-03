@@ -14,7 +14,7 @@ public class CourseRepository : ICourseRepository
     /// <summary>Returns all courses, optionally filtered by department, ordered by code.</summary>
     public async Task<IReadOnlyList<Course>> GetAllAsync(Guid? departmentId = null, CancellationToken ct = default)
     {
-        var query = _db.Courses.AsQueryable();
+        var query = _db.Courses.Include(c => c.Department).AsQueryable();
         if (departmentId.HasValue)
             query = query.Where(c => c.DepartmentId == departmentId.Value);
         return await query.OrderBy(c => c.Code).ToListAsync(ct);
@@ -35,12 +35,20 @@ public class CourseRepository : ICourseRepository
     /// <summary>Marks the course as modified.</summary>
     public void Update(Course course) => _db.Courses.Update(course);
 
-    /// <summary>Returns all offerings for a semester with Course and Semester navigation loaded.</summary>
+    /// <summary>Returns all offerings for a semester with Course, Semester navigation loaded.</summary>
     public async Task<IReadOnlyList<CourseOffering>> GetOfferingsBySemesterAsync(Guid semesterId, CancellationToken ct = default)
         => await _db.CourseOfferings
                     .Include(o => o.Course)
                     .Include(o => o.Semester)
                     .Where(o => o.SemesterId == semesterId)
+                    .ToListAsync(ct);
+
+    /// <summary>Returns all offerings for a department (filtered by course.departmentId) with related entities loaded.</summary>
+    public async Task<IReadOnlyList<CourseOffering>> GetOfferingsByDepartmentAsync(Guid departmentId, CancellationToken ct = default)
+        => await _db.CourseOfferings
+                    .Include(o => o.Course)
+                    .Include(o => o.Semester)
+                    .Where(o => o.Course.DepartmentId == departmentId)
                     .ToListAsync(ct);
 
     /// <summary>Returns all offerings assigned to the given faculty user.</summary>

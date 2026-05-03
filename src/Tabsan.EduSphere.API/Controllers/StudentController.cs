@@ -78,7 +78,9 @@ public class StudentController : ControllerBase
         {
             sp.Id, sp.UserId, sp.RegistrationNumber, sp.ProgramId,
             ProgramName = sp.Program?.Name,
-            sp.DepartmentId, sp.Cgpa, sp.CurrentSemesterNumber, sp.AdmissionDate
+            sp.DepartmentId, DepartmentName = sp.Department?.Name ?? "",
+            sp.Cgpa, sp.CurrentSemesterNumber, sp.AdmissionDate,
+            Status = sp.Status.ToString()
         }));
     }
 

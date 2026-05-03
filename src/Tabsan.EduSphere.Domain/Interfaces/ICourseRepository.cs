@@ -25,6 +25,9 @@ public interface ICourseRepository
     /// <summary>Returns all offerings for the given semester, with Course and Semester loaded.</summary>
     Task<IReadOnlyList<CourseOffering>> GetOfferingsBySemesterAsync(Guid semesterId, CancellationToken ct = default);
 
+    /// <summary>Returns all offerings for the given department (filtered by course.departmentId).</summary>
+    Task<IReadOnlyList<CourseOffering>> GetOfferingsByDepartmentAsync(Guid departmentId, CancellationToken ct = default);
+
     /// <summary>Returns all offerings assigned to the given faculty user.</summary>
     Task<IReadOnlyList<CourseOffering>> GetOfferingsByFacultyAsync(Guid facultyUserId, CancellationToken ct = default);
 
