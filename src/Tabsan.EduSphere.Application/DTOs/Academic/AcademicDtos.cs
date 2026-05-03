@@ -27,6 +27,9 @@ public sealed record CreateOfferingRequest(Guid CourseId, Guid SemesterId, int M
 /// <summary>Request body for assigning faculty to an existing offering.</summary>
 public sealed record AssignFacultyRequest(Guid FacultyUserId);
 
+/// <summary>Request body for updating max enrollment for a course offering.</summary>
+public sealed record UpdateMaxEnrollmentRequest(int NewMaxEnrollment);
+
 // ── Enrollment DTOs ───────────────────────────────────────────────────────────
 
 /// <summary>Request body for enrolling a student into a course offering.</summary>

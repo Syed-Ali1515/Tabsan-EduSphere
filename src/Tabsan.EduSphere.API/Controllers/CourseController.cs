@@ -178,6 +178,77 @@ public class CourseController : ControllerBase
         return NoContent();
     }
 
+    // ── PUT /api/v1/course/offerings/{id}/maxenrollment ────────────────────────
+
+    /// <summary>Updates the maximum enrollment for a course offering. Admin and SuperAdmin only.</summary>
+    [HttpPut("offerings/{id:guid}/maxenrollment")]
+    [Authorize(Roles = "SuperAdmin,Admin")]
+    public async Task<IActionResult> UpdateMaxEnrollment(Guid id, [FromBody] UpdateMaxEnrollmentRequest request, CancellationToken ct)
+    {
+        var offering = await _repo.GetOfferingByIdAsync(id, ct);
+        if (offering is null) return NotFound();
+
+        try
+        {
+            offering.UpdateMaxEnrollment(request.NewMaxEnrollment);
+            _repo.UpdateOffering(offering);
+            await _repo.SaveChangesAsync(ct);
+            return NoContent();
+        }
+        catch (ArgumentOutOfRangeException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    // ── PUT /api/v1/course/offerings/{id}/close ────────────────────────────────
+
+    /// <summary>Closes enrollment for a course offering. Admin and SuperAdmin only.</summary>
+    [HttpPut("offerings/{id:guid}/close")]
+    [Authorize(Roles = "SuperAdmin,Admin")]
+    public async Task<IActionResult> CloseOffering(Guid id, CancellationToken ct)
+    {
+        var offering = await _repo.GetOfferingByIdAsync(id, ct);
+        if (offering is null) return NotFound();
+
+        offering.Close();
+        _repo.UpdateOffering(offering);
+        await _repo.SaveChangesAsync(ct);
+        return NoContent();
+    }
+
+    // ── PUT /api/v1/course/offerings/{id}/reopen ───────────────────────────────
+
+    /// <summary>Re-opens enrollment for a course offering. Admin and SuperAdmin only.</summary>
+    [HttpPut("offerings/{id:guid}/reopen")]
+    [Authorize(Roles = "SuperAdmin,Admin")]
+    public async Task<IActionResult> ReopenOffering(Guid id, CancellationToken ct)
+    {
+        var offering = await _repo.GetOfferingByIdAsync(id, ct);
+        if (offering is null) return NotFound();
+
+        offering.Reopen();
+        _repo.UpdateOffering(offering);
+        await _repo.SaveChangesAsync(ct);
+        return NoContent();
+    }
+
+    // ── DELETE /api/v1/course/offerings/{id} ───────────────────────────────────
+
+    /// <summary>Soft-deletes a course offering. SuperAdmin only.</summary>
+    [HttpDelete("offerings/{id:guid}")]
+    [Authorize(Roles = "SuperAdmin")]
+    public async Task<IActionResult> DeleteOffering(Guid id, CancellationToken ct)
+    {
+        var offering = await _repo.GetOfferingByIdAsync(id, ct);
+        if (offering is null) return NotFound();
+
+        offering.SoftDelete();
+        _repo.UpdateOffering(offering);
+        await _repo.SaveChangesAsync(ct);
+        return NoContent();
+    }
+
     // ── Helper ─────────────────────────────────────────────────────────────────
     private Guid GetUserId()
     {

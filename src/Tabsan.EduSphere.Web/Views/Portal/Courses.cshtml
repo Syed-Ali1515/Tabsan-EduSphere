@@ -33,7 +33,14 @@ else
         <div class="col-12 col-xl-6">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
-                    <h2 class="h5 mb-3">Courses <span class="badge bg-secondary ms-1">@Model.Courses.Count</span></h2>
+                    <h2 class="h5 mb-3">Courses <span class="badge bg-secondary ms-1">@Model.Courses.Count</span>
+                        @if (User.IsInRole("SuperAdmin") || User.IsInRole("Admin"))
+                        {
+                            <button type="button" class="btn btn-sm btn-primary float-end" data-bs-toggle="modal" data-bs-target="#createCourseModal">
+                                <i class="fas fa-plus"></i> Add Course
+                            </button>
+                        }
+                    </h2>
                     @if (Model.Courses.Count == 0)
                     {
                         <p class="text-muted">No courses found.</p>
@@ -65,7 +72,14 @@ else
         <div class="col-12 col-xl-6">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
-                    <h2 class="h5 mb-3">Active Offerings <span class="badge bg-secondary ms-1">@Model.Offerings.Count</span></h2>
+                    <h2 class="h5 mb-3">Active Offerings <span class="badge bg-secondary ms-1">@Model.Offerings.Count</span>
+                        @if (User.IsInRole("SuperAdmin") || User.IsInRole("Admin"))
+                        {
+                            <button type="button" class="btn btn-sm btn-primary float-end" data-bs-toggle="modal" data-bs-target="#createOfferingModal">
+                                <i class="fas fa-plus"></i> Add Offering
+                            </button>
+                        }
+                    </h2>
                     @if (Model.Offerings.Count == 0)
                     {
                         <p class="text-muted">No offerings found.</p>
@@ -100,3 +114,83 @@ else
         </div>
     </div>
 }
+
+<!-- Create Course Modal -->
+<div class="modal fade" id="createCourseModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Course</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="createCourseForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Course Code</label>
+                        <input type="text" name="code" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Course Title</label>
+                        <input type="text" name="title" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Credit Hours</label>
+                        <input type="number" name="creditHours" class="form-control" min="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Department</label>
+                        <select name="departmentId" class="form-select" required>
+                            <option value="">Select a department</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Course</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Create Offering Modal -->
+<div class="modal fade" id="createOfferingModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Course Offering</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="createOfferingForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Course</label>
+                        <select name="courseId" class="form-select" required>
+                            <option value="">Select a course</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Semester</label>
+                        <select name="semesterId" class="form-select" required>
+                            <option value="">Select a semester</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Faculty</label>
+                        <select name="facultyUserId" class="form-select">
+                            <option value="">Select a faculty (optional)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Max Enrollment</label>
+                        <input type="number" name="maxEnrollment" class="form-control" min="1" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Offering</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

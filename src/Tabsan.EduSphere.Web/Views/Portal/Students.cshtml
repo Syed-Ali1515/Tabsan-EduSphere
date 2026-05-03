@@ -33,6 +33,12 @@ else
         <div class="card-body">
             <h2 class="h5 mb-3">Student List
                 <span class="badge bg-secondary ms-2">@Model.Students.Count</span>
+                @if (User.IsInRole("SuperAdmin") || User.IsInRole("Admin"))
+                {
+                    <button type="button" class="btn btn-sm btn-primary float-end" data-bs-toggle="modal" data-bs-target="#createStudentModal">
+                        <i class="fas fa-plus"></i> Add Student
+                    </button>
+                }
             </h2>
 
             @if (Model.Students.Count == 0)
@@ -76,3 +82,43 @@ else
         </div>
     </div>
 }
+
+<!-- Create Student Modal -->
+<div class="modal fade" id="createStudentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Student</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="createStudentForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Registration Number</label>
+                        <input type="text" name="registrationNumber" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Program</label>
+                        <select name="programId" class="form-select" required>
+                            <option value="">Select a program</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Department</label>
+                        <select name="departmentId" class="form-select" required>
+                            <option value="">Select a department</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Admission Date</label>
+                        <input type="date" name="admissionDate" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Student</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
