@@ -528,15 +528,16 @@ public class AttendancePageModel
 
 public class ResultItem
 {
-    public Guid   Id             { get; set; }
-    public string CourseName     { get; set; } = "";
-    public string CourseCode     { get; set; } = "";
-    public int?   MarksObtained  { get; set; }
-    public int    TotalMarks     { get; set; }
-    public string? LetterGrade   { get; set; }
-    public bool   IsPublished    { get; set; }
-    public string SemesterName   { get; set; } = "";
-    public string StudentName    { get; set; } = "";
+    public Guid   Id                 { get; set; }
+    public Guid   StudentProfileId   { get; set; }
+    public string CourseName         { get; set; } = "";
+    public string CourseCode         { get; set; } = "";
+    public int?   MarksObtained      { get; set; }
+    public int    TotalMarks         { get; set; }
+    public string? LetterGrade       { get; set; }
+    public bool   IsPublished        { get; set; }
+    public string SemesterName       { get; set; } = "";
+    public string StudentName        { get; set; } = "";
     public string RegistrationNumber { get; set; } = "";
 }
 

@@ -232,15 +232,23 @@ For **every completed phase**:
 - CSRF protection (`[ValidateAntiForgeryToken]` + `@Html.AntiForgeryToken()`) applied to all write forms.
 
 ### Stage 3.3 - Result-Driven Promotion Logic
-- [ ] Add Promote column in result entry with Yes/No option for failed students.
-- [ ] Implement automatic promotion to next semester based on entered result decision.
-- [ ] Remove/replace manual promotion dependency where required.
+**Status:** ✅ Complete
+
+- [x] Add Promote column in result entry with Yes/No option for failed students.
+- [x] Implement automatic promotion to next semester based on entered result decision.
+- [x] Remove/replace manual promotion dependency where required.
 
 ### Implementation Summary
-- Pending
+- **ResultItem / ResultApiDto** — Added `StudentProfileId` field so the Results view can identify each student per row.
+- **MapResult** — Updated to pass `StudentProfileId` from API response to web model.
+- **PortalController.CreateResult** — Added `bool promote` parameter; when checked, automatically calls `PromoteStudentAsync(studentProfileId)` after result creation.
+- **PortalController.PromoteStudentFromResult** — New `[HttpPost]` standalone action for per-row Promote button; calls existing `EduApiClient.PromoteStudentAsync`; redirects to Results page with success message.
+- **Results.cshtml** — Added "Promote" column (Faculty/Admin only) with a per-student inline POST form; added "Promote to next semester" checkbox in the Enter Result modal (only visible when ResultType = "Final"); JavaScript toggles checkbox visibility on type change.
 
 ### Validation Summary
-- Pending
+- Solution builds with 0 errors.
+- Razor view compiles successfully.
+- Promotion uses existing `POST api/v1/student-lifecycle/{id}/promote` endpoint — no new API routes needed.
 
 ---
 

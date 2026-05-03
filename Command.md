@@ -23,8 +23,8 @@ Also update this file with:
 
 ## Current Execution Pointer
 - Plan Source: Project startup Docs/Final-Touches.md
-- Active Phase: Phase 3 - Assignment, Attendance, Results, Quizzes, FYP Access and Workflows
-- Active Stage: Stage 3.3 - Result-Driven Promotion Logic
+- Active Phase: Phase 4 - Reporting and Export Completion
+- Active Stage: Stage 4.1 - Report Center Functional Completeness
 - Status: Ready to Start
 - Last Updated: 2026-05-04
 
@@ -33,9 +33,10 @@ Also update this file with:
 - Phase 2: Timetable and Core Lookup Data Visibility (all stages done)
 - Phase 3 Stage 3.1: Route prefix fix on AssignmentController, AttendanceController, ResultController, QuizController, FypController (api/ → api/v1/); added GET api/v1/quiz/my-attempts endpoint + GetAllMyAttemptsAsync service chain
 - Phase 3 Stage 3.2: Data entry workflows for Assignments, Attendance, Results, Quizzes, FYP (create/publish/delete, grade submissions, bulk mark attendance, propose/approve/reject FYP)
+- Phase 3 Stage 3.3: Result-driven promotion — Promote column in Results table, "Promote to next semester" checkbox in Enter Result modal (Final type), standalone PromoteStudentFromResult action
 
 ## Next Steps
-- Phase 3 Stage 3.3: Result-driven promotion logic (Promote column in result entry, auto-promotion to next semester)
+- Phase 4 Stage 4.1: Report Center fixes — ensure sidebar visibility, fix Department/Result/Semester summary reports, validate filters
 
 ## Pending Extra Tasks (Cross-Phase)
 - Keep Report Center menu visible by role and working links.

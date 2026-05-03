@@ -2246,7 +2246,8 @@
 | `DeleteAssignment(id, offeringId, ct)` | POST — deletes an assignment. Admin. | Web/Controllers/PortalController.cs |
 | `GradeSubmission(assignmentId, studentProfileId, offeringId, marksAwarded, feedback, ct)` | POST — grades a submission, redirects with selectedAssignmentId. Faculty/Admin. | Web/Controllers/PortalController.cs |
 | `BulkMarkAttendance(offeringId, date, studentIds[], statuses[], ct)` | POST — zips arrays and submits bulk attendance. Faculty/Admin. | Web/Controllers/PortalController.cs |
-| `CreateResult(studentProfileId, offeringId, resultType, marksObtained, maxMarks, ct)` | POST — enters one result record. Faculty/Admin. | Web/Controllers/PortalController.cs |
+| `CreateResult(studentProfileId, offeringId, resultType, marksObtained, maxMarks, promote, ct)` | POST — enters one result record; if `promote=true` (Final type only), automatically promotes the student to the next semester. Faculty/Admin. | Web/Controllers/PortalController.cs |
+| `PromoteStudentFromResult(studentProfileId, offeringId, ct)` | POST — standalone promote action triggered from the Results table row; calls `PromoteStudentAsync` on the selected student. Faculty/Admin. | Web/Controllers/PortalController.cs |
 | `PublishAllResults(offeringId, ct)` | POST — publishes all draft results. Faculty/Admin. | Web/Controllers/PortalController.cs |
 | `CreateQuiz(offeringId, title, instructions, timeLimitMinutes, maxAttempts, ct)` | POST — creates a draft quiz. Faculty/Admin. | Web/Controllers/PortalController.cs |
 | `PublishQuiz(id, offeringId, ct)` | POST — publishes a draft quiz. Faculty/Admin. | Web/Controllers/PortalController.cs |

@@ -1035,11 +1035,28 @@ public class PortalController : Controller
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> CreateResult(
         Guid studentProfileId, Guid offeringId,
-        string resultType, decimal marksObtained, decimal maxMarks, CancellationToken ct)
+        string resultType, decimal marksObtained, decimal maxMarks,
+        bool promote, CancellationToken ct)
     {
         if (_api.IsConnected())
         {
-            try { await _api.CreateResultAsync(studentProfileId, offeringId, resultType, marksObtained, maxMarks, ct); }
+            try
+            {
+                await _api.CreateResultAsync(studentProfileId, offeringId, resultType, marksObtained, maxMarks, ct);
+                if (promote)
+                    await _api.PromoteStudentAsync(studentProfileId, ct);
+            }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(Results), new { offeringId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> PromoteStudentFromResult(Guid studentProfileId, Guid? offeringId, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.PromoteStudentAsync(studentProfileId, ct); TempData["PortalMessage"] = "Student promoted to next semester."; }
             catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
         }
         return RedirectToAction(nameof(Results), new { offeringId });

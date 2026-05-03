@@ -1061,6 +1061,7 @@ public class EduApiClient : IEduApiClient
     private static ResultItem MapResult(ResultApiDto r) => new()
     {
         Id                 = r.Id,
+        StudentProfileId   = r.StudentProfileId,
         CourseName         = r.CourseName ?? "",
         CourseCode         = r.CourseCode ?? "",
         MarksObtained      = r.MarksObtained,
@@ -1075,6 +1076,7 @@ public class EduApiClient : IEduApiClient
     private sealed class ResultApiDto
     {
         public Guid    Id                 { get; set; }
+        public Guid    StudentProfileId   { get; set; }
         public string? CourseName         { get; set; }
         public string? CourseCode         { get; set; }
         public int?    MarksObtained      { get; set; }
