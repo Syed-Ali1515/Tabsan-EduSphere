@@ -883,3 +883,20 @@ public class ReportEnrollmentPageModel
     public EnrollmentSummaryWebModel? Report      { get; set; }
 }
 
+
+// ── Dashboard Settings ────────────────────────────────────────────────────────
+
+public class PortalBrandingWebModel
+{
+    public string UniversityName  { get; set; } = "Tabsan EduSphere";
+    public string BrandInitials   { get; set; } = "TE";
+    public string PortalSubtitle  { get; set; } = "Campus Portal";
+    public string FooterText      { get; set; } = "© 2026 Tabsan EduSphere";
+}
+
+public class DashboardSettingsPageModel
+{
+    public bool   IsConnected      { get; set; }
+    public string? Message         { get; set; }
+    public PortalBrandingWebModel  Branding { get; set; } = new();
+}

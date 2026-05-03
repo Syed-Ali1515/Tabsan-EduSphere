@@ -70,6 +70,7 @@ Controllers/
  ModuleController.cs
  NotificationController.cs
  PaymentReceiptController.cs
+ PortalSettingsController.cs
  ProgramController.cs
  QuizController.cs
  RegistrationImportController.cs

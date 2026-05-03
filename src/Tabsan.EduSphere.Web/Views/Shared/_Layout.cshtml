@@ -1,15 +1,12 @@
 ﻿@inject Tabsan.EduSphere.Web.Services.IEduApiClient EduApi
 @{
-    // Redirect to login if not connected (skip for Login and Home controllers)
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
     var skipAuthCheck = currentController.Equals("Login", StringComparison.OrdinalIgnoreCase)
                      || currentController.Equals("Home", StringComparison.OrdinalIgnoreCase);
-    if (!skipAuthCheck && !EduApi.IsConnected())
-    {
-        var returnUrl = Uri.EscapeDataString(Context.Request.Path + Context.Request.QueryString);
-        Context.Response.Redirect($"/Login?returnUrl={returnUrl}");
-        return;
-    }
+
+    // Avoid redirect-return from layout (it can break Razor rendering with "RenderBody has not been called").
+    var requiresLoginRedirect = !skipAuthCheck && !EduApi.IsConnected();
+    var loginReturnUrl = Uri.EscapeDataString(Context.Request.Path + Context.Request.QueryString);
 
     var principal   = User;
     var aspNetAuth  = principal?.Identity?.IsAuthenticated ?? false;
@@ -32,6 +29,8 @@
     // Display name for header
     var displayName = sessionId?.UserName ?? (aspNetAuth ? principal!.Identity!.Name : null) ?? "Guest";
 
+    const string SidebarCacheKey = "VisibleSidebarMenusCache";
+
     // Resolve visible sidebar menu structure from API (role + status aware).
     var visibleMenus = new List<Tabsan.EduSphere.Web.Models.Portal.SidebarMenuItemWebModel>();
     if (isConnected)
@@ -39,14 +38,55 @@
         try
         {
             visibleMenus = await EduApi.GetVisibleSidebarMenusForCurrentUserAsync(CancellationToken.None);
+            if (visibleMenus.Count > 0)
+            {
+                Context.Session.SetString(SidebarCacheKey, System.Text.Json.JsonSerializer.Serialize(visibleMenus));
+            }
+            else
+            {
+                var cached = Context.Session.GetString(SidebarCacheKey);
+                if (!string.IsNullOrWhiteSpace(cached))
+                {
+                    visibleMenus = System.Text.Json.JsonSerializer.Deserialize<List<Tabsan.EduSphere.Web.Models.Portal.SidebarMenuItemWebModel>>(cached) ?? new();
+                }
+            }
         }
         catch
         {
-            // Fallback to legacy hardcoded menu if API fetch fails.
+            var cached = Context.Session.GetString(SidebarCacheKey);
+            if (!string.IsNullOrWhiteSpace(cached))
+            {
+                visibleMenus = System.Text.Json.JsonSerializer.Deserialize<List<Tabsan.EduSphere.Web.Models.Portal.SidebarMenuItemWebModel>>(cached) ?? new();
+            }
         }
     }
 
     var useDynamicMenus = visibleMenus.Count > 0;
+
+    // Load portal branding (university name, initials, subtitle, footer)
+    const string BrandingCacheKey = "PortalBrandingCache";
+    var branding = new Tabsan.EduSphere.Web.Models.Portal.PortalBrandingWebModel();
+    if (isConnected)
+    {
+        try
+        {
+            var freshBranding = await EduApi.GetPortalBrandingAsync(CancellationToken.None);
+            branding = freshBranding;
+            Context.Session.SetString(BrandingCacheKey, System.Text.Json.JsonSerializer.Serialize(branding));
+        }
+        catch
+        {
+            var cachedBranding = Context.Session.GetString(BrandingCacheKey);
+            if (!string.IsNullOrWhiteSpace(cachedBranding))
+                branding = System.Text.Json.JsonSerializer.Deserialize<Tabsan.EduSphere.Web.Models.Portal.PortalBrandingWebModel>(cachedBranding) ?? branding;
+        }
+    }
+    else
+    {
+        var cachedBranding = Context.Session.GetString(BrandingCacheKey);
+        if (!string.IsNullOrWhiteSpace(cachedBranding))
+            branding = System.Text.Json.JsonSerializer.Deserialize<Tabsan.EduSphere.Web.Models.Portal.PortalBrandingWebModel>(cachedBranding) ?? branding;
+    }
 
     static (string Controller, string Action)? ResolveRoute(string key) => key switch
     {
@@ -77,7 +117,46 @@
         "payments"          => ("Portal", "Payments"),
         "enrollments"       => ("Portal", "Enrollments"),
         "report_center"     => ("Portal", "ReportCenter"),
+        "dashboard_settings" => ("Portal", "DashboardSettings"),
         _                    => null
+    };
+
+    static (string Group, int SortOrder) ResolveGroup(string key) => key switch
+    {
+        "dashboard" => ("Overview", 1),
+
+        "timetable_admin" => ("Faculty Related", 2),
+        "timetable_teacher" => ("Faculty Related", 2),
+        "buildings" => ("Faculty Related", 2),
+        "rooms" => ("Faculty Related", 2),
+        "departments" => ("Faculty Related", 2),
+        "courses" => ("Faculty Related", 2),
+        "assignments" => ("Faculty Related", 2),
+        "analytics" => ("Faculty Related", 2),
+        "report_center" => ("Faculty Related", 2),
+        "enrollments" => ("Faculty Related", 2),
+
+        "timetable_student" => ("Student Related", 3),
+        "students" => ("Student Related", 3),
+        "attendance" => ("Student Related", 3),
+        "results" => ("Student Related", 3),
+        "quizzes" => ("Student Related", 3),
+        "fyp" => ("Student Related", 3),
+        "ai_chat" => ("Student Related", 3),
+        "student_lifecycle" => ("Student Related", 3),
+
+        "payments" => ("Finance Related", 4),
+
+        "report_settings" => ("Settings", 5),
+        "module_settings" => ("Settings", 5),
+        "sidebar_settings" => ("Settings", 5),
+        "theme_settings" => ("Settings", 5),
+        "license_update" => ("Settings", 5),
+        "result_calculation" => ("Settings", 5),
+        "notifications"       => ("Settings", 5),
+        "dashboard_settings"  => ("Settings", 5),
+
+        _ => ("General", 9)
     };
 }
 
@@ -96,39 +175,62 @@
     <link rel="stylesheet" href="~/Tabsan.EduSphere.Web.styles.css" asp-append-version="true" />
 </head>
 <body>
+    @if (requiresLoginRedirect)
+    {
+        <script>window.location.replace('/Login?returnUrl=@loginReturnUrl');</script>
+        <noscript>
+            <meta http-equiv="refresh" content="0;url=/Login?returnUrl=@loginReturnUrl" />
+        </noscript>
+    }
+
     <a href="#main-content" class="skip-to-main visually-hidden-focusable">Skip to main content</a>
     <div class="app-shell">
         <aside class="app-sidebar" role="complementary" aria-label="Application sidebar">
-            <a class="brand-link" asp-controller="Home" asp-action="Index" aria-label="Tabsan EduSphere — go to home">
-                <span class="brand-mark">TE</span>
+            <a class="brand-link" asp-controller="Home" asp-action="Index" aria-label="@branding.UniversityName — go to home">
+                <span class="brand-mark">@branding.BrandInitials</span>
                 <div>
-                    <div class="brand-name">Tabsan EduSphere</div>
-                    <div class="brand-subtitle">Campus Portal</div>
+                    <div class="brand-name">@branding.UniversityName</div>
+                    <div class="brand-subtitle">@branding.PortalSubtitle</div>
                 </div>
             </a>
 
             <nav class="sidebar-nav" role="navigation" aria-label="Main navigation">
                 @if (useDynamicMenus)
                 {
+                    var groupedLinks = new List<(string Group, int GroupSort, int ItemSort, string Name, string Controller, string Action)>();
+
                     foreach (var top in visibleMenus.OrderBy(m => m.DisplayOrder))
                     {
-                        var topRoute = ResolveRoute(top.Key);
                         var subMenus = top.SubMenus.OrderBy(s => s.DisplayOrder).ToList();
 
                         if (subMenus.Count > 0)
                         {
-                            <div class="menu-label">@top.Name</div>
                             foreach (var sub in subMenus)
                             {
                                 var subRoute = ResolveRoute(sub.Key);
                                 if (subRoute is null) { continue; }
-
-                                <a class="menu-link" asp-controller="@subRoute.Value.Controller" asp-action="@subRoute.Value.Action">@sub.Name</a>
+                                var subGroup = ResolveGroup(sub.Key);
+                                groupedLinks.Add((subGroup.Group, subGroup.SortOrder, (top.DisplayOrder * 100) + sub.DisplayOrder, sub.Name, subRoute.Value.Controller, subRoute.Value.Action));
                             }
                         }
-                        else if (topRoute is not null)
+                        else
                         {
-                            <a class="menu-link" asp-controller="@topRoute.Value.Controller" asp-action="@topRoute.Value.Action">@top.Name</a>
+                            var topRoute = ResolveRoute(top.Key);
+                            if (topRoute is null) { continue; }
+                            var topGroup = ResolveGroup(top.Key);
+                            groupedLinks.Add((topGroup.Group, topGroup.SortOrder, top.DisplayOrder * 100, top.Name, topRoute.Value.Controller, topRoute.Value.Action));
+                        }
+                    }
+
+                    foreach (var group in groupedLinks
+                        .OrderBy(l => l.GroupSort)
+                        .ThenBy(l => l.ItemSort)
+                        .GroupBy(l => l.Group))
+                    {
+                        <div class="menu-label">@group.Key</div>
+                        foreach (var link in group)
+                        {
+                            <a class="menu-link" asp-controller="@link.Controller" asp-action="@link.Action">@link.Name</a>
                         }
                     }
                 }
@@ -243,8 +345,7 @@
             </main>
 
             <footer class="app-footer">
-                <span>Tabsan EduSphere</span>
-                <span>2026</span>
+                <span>@branding.FooterText</span>
             </footer>
         </section>
     </div>

@@ -1,0 +1,141 @@
+@model Tabsan.EduSphere.Web.Models.Portal.DashboardSettingsPageModel
+@{
+    ViewData["Title"] = "Dashboard Settings";
+    var tempMsg = TempData["Message"] as string ?? Model.Message;
+}
+
+<div class="d-flex align-items-center mb-3 gap-2">
+    <h4 class="mb-0"><i class="bi bi-sliders me-2"></i>Dashboard Settings</h4>
+</div>
+
+@if (!Model.IsConnected)
+{
+    <div class="alert alert-warning d-flex align-items-center gap-2">
+        <i class="bi bi-plug-fill"></i>
+        Not connected to the API. Configure the connection on the Dashboard.
+    </div>
+}
+else
+{
+    @if (!string.IsNullOrWhiteSpace(tempMsg))
+    {
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            @tempMsg
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row g-4">
+
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex align-items-center gap-2">
+                    <i class="bi bi-building text-primary"></i>
+                    <strong>Portal Branding</strong>
+                    <span class="ms-auto text-muted small">Controls the name, initials and footer text shown across the portal.</span>
+                </div>
+                <div class="card-body">
+                    <form asp-action="DashboardSettings" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">University / Institution Name</label>
+                                <input type="text"
+                                       name="Branding.UniversityName"
+                                       class="form-control"
+                                       value="@Model.Branding.UniversityName"
+                                       maxlength="200"
+                                       required
+                                       placeholder="e.g. Tabsan EduSphere" />
+                                <div class="form-text">Displayed in the sidebar brand area and page titles.</div>
+                            </div>
+
+                            <div class="col-md-2">
+                                <label class="form-label fw-semibold">Brand Initials</label>
+                                <input type="text"
+                                       name="Branding.BrandInitials"
+                                       class="form-control"
+                                       value="@Model.Branding.BrandInitials"
+                                       maxlength="4"
+                                       required
+                                       placeholder="e.g. TE" />
+                                <div class="form-text">2–4 letters shown in the brand icon circle.</div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Portal Subtitle</label>
+                                <input type="text"
+                                       name="Branding.PortalSubtitle"
+                                       class="form-control"
+                                       value="@Model.Branding.PortalSubtitle"
+                                       maxlength="100"
+                                       placeholder="e.g. Campus Portal" />
+                                <div class="form-text">Sub-line shown below the brand name in the sidebar.</div>
+                            </div>
+
+                            <div class="col-md-8">
+                                <label class="form-label fw-semibold">Footer Text</label>
+                                <input type="text"
+                                       name="Branding.FooterText"
+                                       class="form-control"
+                                       value="@Model.Branding.FooterText"
+                                       maxlength="200"
+                                       placeholder="e.g. © 2026 Tabsan EduSphere" />
+                                <div class="form-text">Shown in the page footer. Tip: include the © symbol and year.</div>
+                            </div>
+
+                            <div class="col-12 pt-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-floppy me-1"></i> Save Branding
+                                </button>
+                                <a asp-action="Dashboard" class="btn btn-outline-secondary ms-2">
+                                    <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="card border-0 bg-light">
+                <div class="card-body">
+                    <p class="mb-1 fw-semibold"><i class="bi bi-eye me-1"></i> Live Preview</p>
+                    <div class="d-flex align-items-center gap-3 p-2 border rounded bg-white">
+                        <div class="brand-icon-preview d-flex align-items-center justify-content-center rounded fw-bold text-white"
+                             id="prevIcon"
+                             style="width:48px;height:48px;background:var(--bs-primary);font-size:1rem;">TE</div>
+                        <div>
+                            <div class="fw-bold" id="prevName">Tabsan EduSphere</div>
+                            <div class="text-muted small" id="prevSub">Campus Portal</div>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-muted small" id="prevFooter">© 2026 Tabsan EduSphere</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+}
+
+@section Scripts {
+<script>
+    (function () {
+        function bind(inputName, previewId, fallback) {
+            var input = document.querySelector('[name="' + inputName + '"]');
+            var preview = document.getElementById(previewId);
+            if (!input || !preview) return;
+            preview.textContent = input.value || fallback;
+            input.addEventListener('input', function () {
+                preview.textContent = this.value || fallback;
+            });
+        }
+        bind('Branding.BrandInitials',   'prevIcon', 'TE');
+        bind('Branding.UniversityName',  'prevName', 'Tabsan EduSphere');
+        bind('Branding.PortalSubtitle',  'prevSub',  'Campus Portal');
+        bind('Branding.FooterText',      'prevFooter', '© 2026 Tabsan EduSphere');
+    })();
+</script>
+}

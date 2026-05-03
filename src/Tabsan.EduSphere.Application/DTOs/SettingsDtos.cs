@@ -94,3 +94,23 @@ public record SidebarRoleAccessEntry(string RoleName, bool IsAllowed);
 
 /// <summary>Payload to toggle the active status of a sidebar menu item.</summary>
 public record SetSidebarMenuStatusCommand(bool IsActive);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Portal / Dashboard Settings DTOs
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// <summary>The full set of branding values for the portal dashboard.</summary>
+public record PortalBrandingDto(
+    string UniversityName,
+    string BrandInitials,
+    string PortalSubtitle,
+    string FooterText
+);
+
+/// <summary>Payload to update the portal branding settings.</summary>
+public record SavePortalBrandingCommand(
+    string UniversityName,
+    string BrandInitials,
+    string PortalSubtitle,
+    string FooterText
+);

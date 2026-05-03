@@ -23,16 +23,16 @@ Also update this file with:
 
 ## Current Execution Pointer
 - Plan Source: Project startup Docs/Final-Touches.md
-- Active Phase: Phase 1 - Navigation, Session Stability, Sidebar Structure
-- Active Stage: Stage 1.1 - Fix Session/Sidebar Reset Bug
+- Active Phase: Phase 2 - Timetable and Core Lookup Data Visibility
+- Active Stage: Stage 2.1 - Faculty/Student Timetable Data
 - Status: Not Started
 - Last Updated: 2026-05-03
 
 ## Immediate Next Steps
-1. Reproduce Buildings page issue where sidebar resets to legacy menu and session appears broken.
-2. Fix dynamic sidebar/session persistence so navigation does not fall back to legacy layout.
-3. Validate SuperAdmin sees complete sidebar after navigation and refresh.
-4. Start Stage 1.2 grouping strategy (Student/Faculty/Finance/Settings).
+1. Start Stage 2.1: Fix My Timetable (Faculty) and My Timetable (Student) data binding.
+2. Fix My Timetable (Student) view.
+3. After both timetable views pass: move to Stage 2.2 (Students list names, Departments list names, Courses active offerings).
+4. Stage 2.3: CRUD entry points for Students/Departments/Offerings.
 
 ## Pending Extra Tasks (Cross-Phase)
 - Keep Report Center menu visible by role and working links.
@@ -70,3 +70,66 @@ When a phase is completed, update:
   - Paths and phase names align with Final-Touches.md.
 - Next:
   - Begin implementation of Phase 1 Stage 1.1.
+
+### Entry 002
+- Date: 2026-05-03
+- Action: Started Phase 1 implementation (Stage 1.1 completed, Stage 1.2 partially completed).
+- Changes:
+  - Updated [src/Tabsan.EduSphere.Web/Views/Shared/_Layout.cshtml](src/Tabsan.EduSphere.Web/Views/Shared/_Layout.cshtml) to cache dynamic sidebar menus in session and reuse cache when menu API fails/returns empty.
+  - Reworked dynamic sidebar rendering into grouped sections: Overview, Faculty Related, Student Related, Finance Related, Settings.
+  - Removed layout redirect-return behavior to prevent render instability and session flow breakage.
+- Validation:
+  - SuperAdmin login shows full grouped sidebar.
+  - Buildings page shows existing records and sidebar remains intact.
+  - No forced re-login during Buildings navigation in validation run.
+- Next:
+  - Complete remaining Stage 1.2 assignment visibility in Sidebar Settings.
+  - Start Stage 1.3 Dashboard Settings implementation.
+
+## Work Log
+
+### Entry 001 — 2026-05-03 — Phase 1 Stages 1.1–1.2 Complete
+**Completed:**
+- Stabilized sidebar rendering by caching dynamic menu in session (VisibleSidebarMenusCache).
+- Removed layout-level redirect-return behavior.
+- Implemented grouped sidebar with 5 groups (Overview, Faculty Related, Student Related, Finance Related, Settings).
+- Seeded 29 sidebar menu items with role-based visibility.
+- Verified SuperAdmin login, Buildings navigation, Sidebar Settings page (29 items, all assignable).
+
+**Validation:**
+- SuperAdmin login: grouped sidebar, full menu set visible.
+- Buildings page: renders existing rows, sidebar remains stable.
+- Sidebar Settings: 29 items listed, role assignment working.
+
+**Moved to:** Stage 1.3
+
+---
+
+### Entry 002 — 2026-05-03 — Phase 1 Stage 1.3 Complete (Dashboard Branding)
+**Completed:**
+- Added \portal_settings\ domain entity (Key–Value table).
+- Added EF migration \Phase1DashboardBranding\ (table created, applied to DB).
+- Added \PortalBrandingService\ with \GetAsync()\ and \SaveAsync()\ methods.
+- Added \PortalSettingsController\ API with \GET\ (all users) and \POST\ (SuperAdmin).
+- Added \EduApiClient\ methods \GetPortalBrandingAsync()\ and \SavePortalBrandingAsync()\.
+- Added \PortalController.DashboardSettings()\ GET/POST actions.
+- Created \DashboardSettings.cshtml\ Razor view with form + live preview.
+- Updated \_Layout.cshtml\ to load branding from DB with session cache fallback.
+- Seeded \dashboard_settings\ sidebar menu item (SuperAdmin only).
+- Updated \DatabaseSeeder.cs\ with all 4 portal_settings keys (university_name, brand_initials, portal_subtitle, footer_text).
+
+**Validation:**
+- Dashboard Settings page renders with form and live preview.
+- Default branding values pre-filled: Tabsan EduSphere, TE, Campus Portal, © 2026 Tabsan EduSphere.
+- Sidebar shows "Dashboard Settings" under Settings group.
+- Footer text in _Layout driven by DB branding.
+
+**Phase 1 Status:** ✅ Complete
+
+**Moved to:** Phase 2 Stage 2.1
+
+**Docs Updated:**
+- \Final-Touches.md\: Marked Phase 1 complete, added Stage 1.3 Implementation/Validation summaries.
+- \PRD.md\: Bumped version to 1.13, updated log entry.
+- \Function-List.md\: Added Phase 1 Stage 1.3 portal settings and Dashboard Settings functions.
+

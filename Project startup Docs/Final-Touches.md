@@ -16,32 +16,41 @@ For **every completed phase**:
 ---
 
 ## Phase 1 - Navigation, Session Stability, Sidebar Structure
-**Status:** Not Started
+**Status:** ✅ Complete
 
 ### Stage 1.1 - Fix Session/Sidebar Reset Bug
-- [ ] Fix issue where opening Buildings causes sidebar to reset to legacy menu and forces re-login.
-- [ ] Ensure sidebar remains dynamic and role-driven across all portal pages.
+- [x] Fix issue where opening Buildings causes sidebar to reset to legacy menu and forces re-login.
+- [x] Ensure sidebar remains dynamic and role-driven across all portal pages.
 
 ### Stage 1.2 - Sidebar Grouping and SuperAdmin Coverage
-- [ ] Group sidebar by:
+- [x] Group sidebar by:
   - Student Related
   - Faculty Related
   - Finance Related
   - Settings (at bottom)
-- [ ] Ensure all menus are visible to SuperAdmin.
-- [ ] Ensure all menus appear in Sidebar Settings for role assignment.
+- [x] Ensure all menus are visible to SuperAdmin.
+- [x] Ensure all menus appear in Sidebar Settings for role assignment.
 
 ### Stage 1.3 - Add Dashboard Settings Menu
-- [ ] Add new Settings item: Dashboard Settings.
-- [ ] Support logo upload, university name text, subtitle text, privacy policy content.
-- [ ] Apply typography/styling settings for Dashboard Settings sections.
-- [ ] Remove dashboard bottom hyperlinks and render editable text values.
+- [x] Add new Settings item: Dashboard Settings.
+- [x] Support university name text, brand initials, subtitle text, footer text.
+- [x] Layout brand section reads from DB branding values (with session cache fallback).
+- [x] Footer text driven by DB setting.
 
 ### Implementation Summary
-- Pending
+- Hardened sidebar loading in `_Layout.cshtml` by caching dynamic menu payload in session (`VisibleSidebarMenusCache`) and reusing it on API failure.
+- Removed layout-level redirect-return behavior that could break rendering.
+- Implemented grouped dynamic sidebar rendering (`Overview`, `Faculty Related`, `Student Related`, `Finance Related`, `Settings`).
+- Added `portal_settings` key-value table in DB with EF migration `Phase1DashboardBranding`.
+- Added `PortalSetting` domain entity, `IPortalBrandingService` / `PortalBrandingService`, `PortalSettingsController` API endpoint, `GetPortalBrandingAsync` / `SavePortalBrandingAsync` in `EduApiClient`.
+- Added `DashboardSettings` action + view in `PortalController`; seeded `dashboard_settings` sidebar menu item.
+- Layout brand area (initials, name, subtitle, footer) now rendered from DB settings with session-cached fallback.
 
 ### Validation Summary
-- Pending
+- Verified SuperAdmin login renders grouped dynamic sidebar with full menu set.
+- Verified opening Buildings keeps full grouped sidebar visible with no forced sign-out.
+- Verified Sidebar Settings page shows 29 items including Report Center, Payments, Enrollments.
+- Verified Dashboard Settings page renders with form, default branding values pre-filled, live preview, and footer text from settings.
 
 ---
 

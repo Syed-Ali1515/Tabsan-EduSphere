@@ -79,3 +79,16 @@ public interface ISidebarMenuService
     /// <summary>Activates or deactivates a menu item. System menus cannot be deactivated.</summary>
     Task SetStatusAsync(Guid id, SetSidebarMenuStatusCommand cmd, CancellationToken ct = default);
 }
+
+/// <summary>
+/// Service for reading and writing institution-wide portal branding settings.
+/// Only SuperAdmin can save; any authenticated user can read.
+/// </summary>
+public interface IPortalBrandingService
+{
+    /// <summary>Returns the current branding values (defaults when not yet configured).</summary>
+    Task<PortalBrandingDto> GetAsync(CancellationToken ct = default);
+
+    /// <summary>Saves (upserts) all branding fields.</summary>
+    Task SaveAsync(SavePortalBrandingCommand cmd, CancellationToken ct = default);
+}

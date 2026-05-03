@@ -183,6 +183,9 @@ public class ApplicationDbContext : DbContext
     /// <summary>Per-role visibility assignments for each sidebar menu item.</summary>
     public DbSet<SidebarMenuRoleAccess> SidebarMenuRoleAccesses => Set<SidebarMenuRoleAccess>();
 
+    /// <summary>Key-value pairs for institution-wide portal branding (university name, brand initials, etc.).</summary>
+    public DbSet<PortalSetting> PortalSettings => Set<PortalSetting>();
+
     // ── Phase 10: Security & Email Infrastructure ──────────────────────────────
     /// <summary>Append-only log of previous password hashes for reuse-prevention policy.</summary>
     public DbSet<PasswordHistoryEntry> PasswordHistory => Set<PasswordHistoryEntry>();

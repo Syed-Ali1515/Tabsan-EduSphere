@@ -142,6 +142,10 @@ public interface IEduApiClient
 
     // Enrollments
     Task<List<EnrollmentRosterItem>> GetEnrollmentRosterAsync(Guid offeringId, CancellationToken ct);
+
+    // Portal / Dashboard Settings
+    Task<PortalBrandingWebModel> GetPortalBrandingAsync(CancellationToken ct);
+    Task SavePortalBrandingAsync(PortalBrandingWebModel model, CancellationToken ct);
 }
 
 public class EduApiClient : IEduApiClient
@@ -1539,6 +1543,40 @@ public class EduApiClient : IEduApiClient
         public int     MaxEnrollment  { get; set; }
         public int     EnrolledCount  { get; set; }
         public int     AvailableSeats { get; set; }
+    }
+
+    // ── Portal / Dashboard Settings ───────────────────────────────────────────
+
+    public async Task<PortalBrandingWebModel> GetPortalBrandingAsync(CancellationToken ct)
+    {
+        var raw = await GetAsync<PortalBrandingApiDto>("api/v1/portal-settings", ct);
+        return new PortalBrandingWebModel
+        {
+            UniversityName = raw?.UniversityName ?? "Tabsan EduSphere",
+            BrandInitials  = raw?.BrandInitials  ?? "TE",
+            PortalSubtitle = raw?.PortalSubtitle ?? "Campus Portal",
+            FooterText     = raw?.FooterText     ?? "© 2026 Tabsan EduSphere"
+        };
+    }
+
+    public async Task SavePortalBrandingAsync(PortalBrandingWebModel model, CancellationToken ct)
+    {
+        var payload = new
+        {
+            universityName = model.UniversityName,
+            brandInitials  = model.BrandInitials,
+            portalSubtitle = model.PortalSubtitle,
+            footerText     = model.FooterText
+        };
+        await PostAsync<object, object>("api/v1/portal-settings", payload, ct);
+    }
+
+    private sealed class PortalBrandingApiDto
+    {
+        public string? UniversityName { get; set; }
+        public string? BrandInitials  { get; set; }
+        public string? PortalSubtitle { get; set; }
+        public string? FooterText     { get; set; }
     }
 }
 

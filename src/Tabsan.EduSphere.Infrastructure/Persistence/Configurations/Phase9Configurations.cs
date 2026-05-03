@@ -384,3 +384,25 @@ public class SidebarMenuRoleAccessConfiguration : IEntityTypeConfiguration<Sideb
                .HasDatabaseName("IX_sidebar_menu_role_accesses_item_role");
     }
 }
+
+/// <summary>EF Core configuration for PortalSetting (institution-wide branding key-value store).</summary>
+public class PortalSettingConfiguration : IEntityTypeConfiguration<PortalSetting>
+{
+    public void Configure(EntityTypeBuilder<PortalSetting> builder)
+    {
+        builder.ToTable("portal_settings");
+        builder.HasKey(p => p.Id);
+
+        builder.Property(p => p.Key)
+               .IsRequired()
+               .HasMaxLength(100);
+
+        builder.Property(p => p.Value)
+               .IsRequired()
+               .HasMaxLength(1000);
+
+        builder.HasIndex(p => p.Key)
+               .IsUnique()
+               .HasDatabaseName("IX_portal_settings_key");
+    }
+}

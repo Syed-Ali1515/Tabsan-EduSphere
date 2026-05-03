@@ -136,4 +136,33 @@ public class SettingsRepository : ISettingsRepository
         => _db.SidebarMenuRoleAccesses
               .FirstOrDefaultAsync(a => a.SidebarMenuItemId == menuItemId
                                      && a.RoleName == roleName, ct);
+
+    // ── Portal Settings ────────────────────────────────────────────────────────
+
+    public async Task<Dictionary<string, string>> GetAllPortalSettingsAsync(CancellationToken ct = default)
+    {
+        var rows = await _db.PortalSettings.ToListAsync(ct);
+        return rows.ToDictionary(r => r.Key, r => r.Value, StringComparer.OrdinalIgnoreCase);
+    }
+
+    public async Task<string?> GetPortalSettingAsync(string key, CancellationToken ct = default)
+    {
+        var row = await _db.PortalSettings.FirstOrDefaultAsync(p => p.Key == key.ToLowerInvariant(), ct);
+        return row?.Value;
+    }
+
+    public async Task UpsertPortalSettingAsync(string key, string value, CancellationToken ct = default)
+    {
+        var normalizedKey = key.Trim().ToLowerInvariant();
+        var existing = await _db.PortalSettings.FirstOrDefaultAsync(p => p.Key == normalizedKey, ct);
+        if (existing is null)
+        {
+            await _db.PortalSettings.AddAsync(new PortalSetting(normalizedKey, value), ct);
+        }
+        else
+        {
+            existing.SetValue(value);
+            _db.PortalSettings.Update(existing);
+        }
+    }
 }

@@ -82,4 +82,14 @@ public interface ISettingsRepository
 
     /// <summary>Returns an existing role access record, or null.</summary>
     Task<SidebarMenuRoleAccess?> GetMenuRoleAccessAsync(Guid menuItemId, string roleName, CancellationToken ct = default);
+
+    // ── Portal Settings ───────────────────────────────────────────────────
+    /// <summary>Returns all portal branding settings as a dictionary (key → value).</summary>
+    Task<Dictionary<string, string>> GetAllPortalSettingsAsync(CancellationToken ct = default);
+
+    /// <summary>Returns a single portal setting value by key, or null if not set.</summary>
+    Task<string?> GetPortalSettingAsync(string key, CancellationToken ct = default);
+
+    /// <summary>Upserts a portal setting (creates if absent, updates value if present).</summary>
+    Task UpsertPortalSettingAsync(string key, string value, CancellationToken ct = default);
 }

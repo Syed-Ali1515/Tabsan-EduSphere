@@ -136,6 +136,7 @@ Quizzes/
  QuizAttempt.cs
 Settings/
  ModuleRoleAssignment.cs
+ PortalSetting.cs
  ReportDefinition.cs
  ReportKeys.cs
  ReportRoleAssignment.cs

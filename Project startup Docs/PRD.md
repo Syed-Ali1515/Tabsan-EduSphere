@@ -1,10 +1,22 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.11 (Phase 11 Planned — Result Calculation and GPA Automation)  
+**Version:** 1.13 (Phase 1 Final-Touches complete)  
 **Status:** Approved  
 **Prepared By:** Product Team  
-**Last Updated:** 2 May 2026  
+**Last Updated:** 3 May 2026  
+
+---
+
+## 0. Implementation Update Log
+
+### 2026-05-03 — Final-Touches Phase 1 Complete
+- Stabilized sidebar rendering behavior for portal pages by introducing resilient dynamic-menu loading with session cache fallback in web layout.
+- Implemented grouped sidebar presentation for role-based navigation: Overview, Faculty Related, Student Related, Finance Related, Settings.
+- Added `portal_settings` key-value table and `PortalBrandingService` to support configurable branding (university name, brand initials, portal subtitle, footer text).
+- Added `DashboardSettings` page allowing SuperAdmin to set and save all branding values.
+- Layout brand section (sidebar mark, name, subtitle, footer) now reads from DB settings with session cache fallback.
+- Phase 1 validation passed: grouped sidebar, stable navigation, Dashboard Settings form, default values, live preview, and footer text all confirmed.
 
 ---
 

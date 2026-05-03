@@ -2184,3 +2184,31 @@
 | `ExportAttendanceSummaryAsync(query, ct)` | Calls export endpoint; returns `byte[]`. | `Web/Services/EduApiClient.cs` |
 | `ExportResultSummaryAsync(query, ct)` | Calls export endpoint; returns `byte[]`. | `Web/Services/EduApiClient.cs` |
 | `ExportGpaReportAsync(query, ct)` | Calls export endpoint; returns `byte[]`. | `Web/Services/EduApiClient.cs` |
+
+### Web - Shared Layout (Phase 1 Final-Touches)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `ResolveGroup(key)` | Classifies sidebar menu keys into grouped navigation sections (`Overview`, `Faculty Related`, `Student Related`, `Finance Related`, `Settings`). | `Web/Views/Shared/_Layout.cshtml` |
+| Dynamic menu cache load/save block | Persists last successful `my-visible` sidebar payload in session and reuses it when menu API fails/returns empty to avoid fallback regression. | `Web/Views/Shared/_Layout.cshtml` |
+
+### API - Portal Settings (Phase 1 Final-Touches Stage 1.3)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| GET /api/v1/portal-settings | Returns current portal branding DTO (university name, initials, subtitle, footer). | API/Controllers/PortalSettingsController.cs |
+| POST /api/v1/portal-settings | Saves (upserts) all portal branding fields. SuperAdmin only. | API/Controllers/PortalSettingsController.cs |
+| PortalBrandingService.GetAsync() | Reads all portal_settings rows and maps to PortalBrandingDto with hardcoded defaults. | Application/Services/SettingsServices.cs |
+| PortalBrandingService.SaveAsync() | Upserts university_name, brand_initials, portal_subtitle, footer_text keys via ISettingsRepository. | Application/Services/SettingsServices.cs |
+| ISettingsRepository.GetAllPortalSettingsAsync() | Returns all portal_settings rows as a dictionary. | Domain/Interfaces/ISettingsRepository.cs |
+| ISettingsRepository.UpsertPortalSettingAsync() | Creates or updates a single portal_settings row by key. | Domain/Interfaces/ISettingsRepository.cs |
+
+### Web - Dashboard Settings (Phase 1 Final-Touches Stage 1.3)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| EduApiClient.GetPortalBrandingAsync() | Calls GET /api/v1/portal-settings and maps response to PortalBrandingWebModel. | Web/Services/EduApiClient.cs |
+| EduApiClient.SavePortalBrandingAsync() | POSTs portal branding form values to /api/v1/portal-settings. | Web/Services/EduApiClient.cs |
+| PortalController.DashboardSettings() [GET] | Loads DashboardSettingsPageModel with current branding for display. | Web/Controllers/PortalController.cs |
+| PortalController.DashboardSettings() [POST] | Accepts branding form and calls SavePortalBrandingAsync; redirects with TempData message. | Web/Controllers/PortalController.cs |
+| Branding cache block in _Layout | Loads portal branding from API; caches in session (PortalBrandingCache); uses cache on API failure. | Web/Views/Shared/_Layout.cshtml |

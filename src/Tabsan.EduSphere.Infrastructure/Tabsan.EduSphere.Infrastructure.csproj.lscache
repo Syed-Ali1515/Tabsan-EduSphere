@@ -135,6 +135,8 @@ Persistence/
   20260430143000_Phase10SqlViews.Designer.cs
   20260502134611_Phase11ResultCalculation.cs
   20260502134611_Phase11ResultCalculation.Designer.cs
+  20260503210356_Phase1DashboardBranding.cs
+  20260503210356_Phase1DashboardBranding.Designer.cs
 Reporting/
  ReportRepository.cs
  ReportService.cs

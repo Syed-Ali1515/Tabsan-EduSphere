@@ -319,3 +319,42 @@ public class SidebarMenuService : ISidebarMenuService
         new List<SidebarMenuItemDto>()
     );
 }
+
+// -----------------------------------------------------------------------------
+// PortalBrandingService
+// -----------------------------------------------------------------------------
+
+/// <summary>
+/// Reads and writes institution branding values from the portal_settings key-value store.
+/// </summary>
+public class PortalBrandingService : IPortalBrandingService
+{
+    private const string KeyUniversityName  = "university_name";
+    private const string KeyBrandInitials   = "brand_initials";
+    private const string KeyPortalSubtitle  = "portal_subtitle";
+    private const string KeyFooterText      = "footer_text";
+
+    private readonly ISettingsRepository _repo;
+
+    public PortalBrandingService(ISettingsRepository repo) => _repo = repo;
+
+    public async Task<PortalBrandingDto> GetAsync(CancellationToken ct = default)
+    {
+        var all = await _repo.GetAllPortalSettingsAsync(ct);
+        return new PortalBrandingDto(
+            all.GetValueOrDefault(KeyUniversityName, "Tabsan EduSphere"),
+            all.GetValueOrDefault(KeyBrandInitials,  "TE"),
+            all.GetValueOrDefault(KeyPortalSubtitle, "Campus Portal"),
+            all.GetValueOrDefault(KeyFooterText,     "© 2026 Tabsan EduSphere")
+        );
+    }
+
+    public async Task SaveAsync(SavePortalBrandingCommand cmd, CancellationToken ct = default)
+    {
+        await _repo.UpsertPortalSettingAsync(KeyUniversityName, cmd.UniversityName ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(KeyBrandInitials,  cmd.BrandInitials  ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(KeyPortalSubtitle, cmd.PortalSubtitle ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(KeyFooterText,     cmd.FooterText     ?? string.Empty, ct);
+        await _repo.SaveChangesAsync(ct);
+    }
+}

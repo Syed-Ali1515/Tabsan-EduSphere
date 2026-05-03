@@ -1210,4 +1210,39 @@ public class PortalController : Controller
         catch (Exception ex) { model.Message = ex.Message; }
         return View(model);
     }
+
+    // ── Dashboard Settings ────────────────────────────────────────────────────
+
+    [HttpGet]
+    public async Task<IActionResult> DashboardSettings(CancellationToken ct)
+    {
+        var model = new DashboardSettingsPageModel { IsConnected = _api.IsConnected() };
+        if (model.IsConnected)
+        {
+            try { model.Branding = await _api.GetPortalBrandingAsync(ct); }
+            catch (Exception ex) { model.Message = ex.Message; }
+        }
+        return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DashboardSettings(DashboardSettingsPageModel model, CancellationToken ct)
+    {
+        if (!_api.IsConnected())
+        {
+            TempData["Message"] = "Not connected to API.";
+            return RedirectToAction(nameof(DashboardSettings));
+        }
+        try
+        {
+            await _api.SavePortalBrandingAsync(model.Branding, ct);
+            TempData["Message"] = "Portal branding saved successfully.";
+        }
+        catch (Exception ex)
+        {
+            TempData["Message"] = "Error: " + ex.Message;
+        }
+        return RedirectToAction(nameof(DashboardSettings));
+    }
 }

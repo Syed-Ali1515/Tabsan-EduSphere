@@ -153,6 +153,7 @@ builder.Services.AddScoped<IReportSettingsService, ReportSettingsService>();
 builder.Services.AddScoped<IModuleRolesService, ModuleRolesService>();
 builder.Services.AddScoped<IThemeService, ThemeService>();
 builder.Services.AddScoped<ISidebarMenuService, SidebarMenuService>();
+builder.Services.AddScoped<IPortalBrandingService, PortalBrandingService>();
 
 // ── Phase 10: Password history ────────────────────────────────────────────
 builder.Services.AddScoped<IPasswordHistoryRepository, Tabsan.EduSphere.Infrastructure.Repositories.PasswordHistoryRepository>();
