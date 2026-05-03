@@ -2213,5 +2213,46 @@
 | EduApiClient.GetPortalBrandingAsync() | Calls GET /api/v1/portal-settings and maps response to PortalBrandingWebModel. | Web/Services/EduApiClient.cs |
 | EduApiClient.SavePortalBrandingAsync() | POSTs portal branding form values to /api/v1/portal-settings. | Web/Services/EduApiClient.cs |
 | PortalController.DashboardSettings() [GET] | Loads DashboardSettingsPageModel with current branding for display. | Web/Controllers/PortalController.cs |
+
+---
+
+## Phase 3 Stage 3.2 — Data Entry Workflows (Assignments / Attendance / Results / Quizzes / FYP)
+
+### Web — EduApiClient write methods (Stage 3.2)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `CreateAssignmentAsync(courseOfferingId, title, description, dueDate, maxMarks, ct)` | POST api/v1/assignment — creates a draft assignment. Returns new assignment Guid. | Web/Services/EduApiClient.cs |
+| `PublishAssignmentAsync(id, ct)` | POST api/v1/assignment/{id}/publish — publishes a draft assignment. | Web/Services/EduApiClient.cs |
+| `DeleteAssignmentAsync(id, ct)` | DELETE api/v1/assignment/{id} — soft-deletes an assignment. | Web/Services/EduApiClient.cs |
+| `GradeSubmissionAsync(assignmentId, studentProfileId, marksAwarded, feedback, ct)` | PUT api/v1/assignment/submissions/grade — grades a student submission. | Web/Services/EduApiClient.cs |
+| `BulkMarkAttendanceAsync(offeringId, date, entries, ct)` | POST api/v1/attendance/bulk — marks attendance for all enrolled students in one request. | Web/Services/EduApiClient.cs |
+| `CreateResultAsync(studentProfileId, courseOfferingId, resultType, marksObtained, maxMarks, ct)` | POST api/v1/result — enters a single result record. | Web/Services/EduApiClient.cs |
+| `PublishAllResultsAsync(courseOfferingId, ct)` | POST api/v1/result/publish-all?courseOfferingId={id} — publishes all draft results for an offering. | Web/Services/EduApiClient.cs |
+| `CreateQuizAsync(courseOfferingId, title, instructions, timeLimitMinutes, maxAttempts, ct)` | POST api/v1/quiz — creates a draft quiz. Returns new quiz Guid. | Web/Services/EduApiClient.cs |
+| `PublishQuizAsync(id, ct)` | POST api/v1/quiz/{id}/publish — publishes a draft quiz. | Web/Services/EduApiClient.cs |
+| `DeleteQuizAsync(id, ct)` | DELETE api/v1/quiz/{id} — soft-deletes a quiz. | Web/Services/EduApiClient.cs |
+| `ProposeFypProjectAsync(departmentId, title, description, ct)` | POST api/v1/fyp — submits a new FYP project proposal. Returns new project Guid. | Web/Services/EduApiClient.cs |
+| `ApproveFypProjectAsync(id, remarks, ct)` | POST api/v1/fyp/{id}/approve — approves a proposed FYP project. | Web/Services/EduApiClient.cs |
+| `RejectFypProjectAsync(id, remarks, ct)` | POST api/v1/fyp/{id}/reject — rejects a proposed FYP project with mandatory remarks. | Web/Services/EduApiClient.cs |
+| `DeleteAsync(path, ct)` [private] | HTTP DELETE helper used by DeleteAssignmentAsync and DeleteQuizAsync. | Web/Services/EduApiClient.cs |
+
+### Web — PortalController write actions (Stage 3.2)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `CreateAssignment(offeringId, title, description, dueDate, maxMarks, ct)` | POST — creates assignment, redirects to Assignments view. Faculty/Admin. | Web/Controllers/PortalController.cs |
+| `PublishAssignment(id, offeringId, ct)` | POST — publishes a draft assignment. Faculty/Admin. | Web/Controllers/PortalController.cs |
+| `DeleteAssignment(id, offeringId, ct)` | POST — deletes an assignment. Admin. | Web/Controllers/PortalController.cs |
+| `GradeSubmission(assignmentId, studentProfileId, offeringId, marksAwarded, feedback, ct)` | POST — grades a submission, redirects with selectedAssignmentId. Faculty/Admin. | Web/Controllers/PortalController.cs |
+| `BulkMarkAttendance(offeringId, date, studentIds[], statuses[], ct)` | POST — zips arrays and submits bulk attendance. Faculty/Admin. | Web/Controllers/PortalController.cs |
+| `CreateResult(studentProfileId, offeringId, resultType, marksObtained, maxMarks, ct)` | POST — enters one result record. Faculty/Admin. | Web/Controllers/PortalController.cs |
+| `PublishAllResults(offeringId, ct)` | POST — publishes all draft results. Faculty/Admin. | Web/Controllers/PortalController.cs |
+| `CreateQuiz(offeringId, title, instructions, timeLimitMinutes, maxAttempts, ct)` | POST — creates a draft quiz. Faculty/Admin. | Web/Controllers/PortalController.cs |
+| `PublishQuiz(id, offeringId, ct)` | POST — publishes a draft quiz. Faculty/Admin. | Web/Controllers/PortalController.cs |
+| `DeleteQuiz(id, offeringId, ct)` | POST — deletes a quiz. Admin. | Web/Controllers/PortalController.cs |
+| `ProposeFypProject(departmentId, title, description, ct)` | POST — submits FYP proposal. Student. | Web/Controllers/PortalController.cs |
+| `ApproveFypProject(id, remarks, departmentId, ct)` | POST — approves FYP project. Admin. | Web/Controllers/PortalController.cs |
+| `RejectFypProject(id, remarks, departmentId, ct)` | POST — rejects FYP project with remarks. Admin. | Web/Controllers/PortalController.cs |
 | PortalController.DashboardSettings() [POST] | Accepts branding form and calls SavePortalBrandingAsync; redirects with TempData message. | Web/Controllers/PortalController.cs |
 | Branding cache block in _Layout | Loads portal branding from API; caches in session (PortalBrandingCache); uses cache on API failure. | Web/Views/Shared/_Layout.cshtml |

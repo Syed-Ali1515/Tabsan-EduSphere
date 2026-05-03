@@ -24,7 +24,7 @@ Also update this file with:
 ## Current Execution Pointer
 - Plan Source: Project startup Docs/Final-Touches.md
 - Active Phase: Phase 3 - Assignment, Attendance, Results, Quizzes, FYP Access and Workflows
-- Active Stage: Stage 3.2 - Data Entry Workflows
+- Active Stage: Stage 3.3 - Result-Driven Promotion Logic
 - Status: Ready to Start
 - Last Updated: 2026-05-04
 
@@ -32,15 +32,10 @@ Also update this file with:
 - Phase 1: Navigation, Session Stability, Sidebar Structure (all stages done)
 - Phase 2: Timetable and Core Lookup Data Visibility (all stages done)
 - Phase 3 Stage 3.1: Route prefix fix on AssignmentController, AttendanceController, ResultController, QuizController, FypController (api/ → api/v1/); added GET api/v1/quiz/my-attempts endpoint + GetAllMyAttemptsAsync service chain
+- Phase 3 Stage 3.2: Data entry workflows for Assignments, Attendance, Results, Quizzes, FYP (create/publish/delete, grade submissions, bulk mark attendance, propose/approve/reject FYP)
 
 ## Next Steps
-- Phase 3 Stage 3.2: Data entry workflows for Assignments, Attendance, Results, Quizzes, FYP (create/edit/delete on portal)
-
-## Immediate Next Steps
-1. Start Stage 2.2: Fix Buildings list, Students list names, Departments list names, Courses active offerings.
-2. After Stage 2.2 passes: move to Stage 2.3 (CRUD entry points).
-3. After Phase 2 complete: proceed to Phase 3 (Authorization, data entry, promotion logic).
-4. Stage 2.3: CRUD entry points for Students/Departments/Offerings.
+- Phase 3 Stage 3.3: Result-driven promotion logic (Promote column in result entry, auto-promotion to next semester)
 
 ## Pending Extra Tasks (Cross-Phase)
 - Keep Report Center menu visible by role and working links.

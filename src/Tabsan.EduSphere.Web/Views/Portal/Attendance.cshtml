@@ -117,4 +117,51 @@ else
             </div>
         </div>
     }
+
+    @* ── Mark Attendance Form (Faculty/Admin, when offering selected and roster available) *@
+    @if (Model.SelectedOfferingId.HasValue && Model.Roster.Count > 0)
+    {
+        <div class="card border-0 shadow-sm mt-3">
+            <div class="card-header bg-light">
+                <strong>Mark Attendance</strong>
+            </div>
+            <div class="card-body">
+                <form asp-action="BulkMarkAttendance" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="offeringId" value="@Model.SelectedOfferingId" />
+                    <div class="mb-3">
+                        <label class="form-label">Date <span class="text-danger">*</span></label>
+                        <input name="date" type="date" class="form-control" style="max-width:200px"
+                               value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-3">
+                            <thead class="table-light">
+                                <tr><th>Student</th><th>Reg. No.</th><th>Status</th></tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var s in Model.Roster)
+                                {
+                                    <tr>
+                                        <td>@s.StudentName</td>
+                                        <td><code>@s.RegistrationNumber</code></td>
+                                        <td>
+                                            <input type="hidden" name="studentIds" value="@s.Id" />
+                                            <select name="statuses" class="form-select form-select-sm" style="width:120px">
+                                                <option value="Present" selected>Present</option>
+                                                <option value="Absent">Absent</option>
+                                                <option value="Late">Late</option>
+                                                <option value="Excused">Excused</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save Attendance</button>
+                </form>
+            </div>
+        </div>
+    }
 }

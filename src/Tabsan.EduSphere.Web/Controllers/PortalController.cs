@@ -854,6 +854,7 @@ public class PortalController : Controller
             else if (offeringId.HasValue)
             {
                 model.Records = await _api.GetAttendanceByOfferingAsync(offeringId.Value, ct);
+                model.Roster  = await _api.GetEnrollmentRosterAsync(offeringId.Value, ct);
             }
 
             model.CourseOfferings = await _api.GetMyOfferingsAsync(ct);
@@ -885,6 +886,7 @@ public class PortalController : Controller
             else if (offeringId.HasValue)
             {
                 model.Results   = await _api.GetResultsByOfferingAsync(offeringId.Value, ct);
+                model.Roster    = await _api.GetEnrollmentRosterAsync(offeringId.Value, ct);
                 model.Offerings = await _api.GetMyOfferingsAsync(ct);
             }
             else
@@ -955,6 +957,177 @@ public class PortalController : Controller
     }
 
     // ── Analytics ──────────────────────────────────────────────────────────
+
+    // ── Assignment write actions ────────────────────────────────────────────
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateAssignment(
+        Guid offeringId, string title, string? description,
+        DateTime dueDate, decimal maxMarks, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.CreateAssignmentAsync(offeringId, title, description, dueDate, maxMarks, ct); }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(Assignments), new { offeringId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> PublishAssignment(Guid id, Guid? offeringId, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.PublishAssignmentAsync(id, ct); }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(Assignments), new { offeringId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteAssignment(Guid id, Guid? offeringId, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.DeleteAssignmentAsync(id, ct); }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(Assignments), new { offeringId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> GradeSubmission(
+        Guid assignmentId, Guid studentProfileId, Guid? offeringId,
+        decimal marksAwarded, string? feedback, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.GradeSubmissionAsync(assignmentId, studentProfileId, marksAwarded, feedback, ct); }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(Assignments), new { offeringId, selectedAssignmentId = assignmentId });
+    }
+
+    // ── Attendance write actions ────────────────────────────────────────────
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> BulkMarkAttendance(
+        Guid offeringId, DateTime date,
+        [FromForm] Guid[] studentIds, [FromForm] string[] statuses,
+        CancellationToken ct)
+    {
+        if (_api.IsConnected() && studentIds.Length > 0)
+        {
+            try
+            {
+                var entries = studentIds
+                    .Zip(statuses, (sid, s) => (StudentProfileId: sid, Status: s));
+                await _api.BulkMarkAttendanceAsync(offeringId, date, entries, ct);
+                TempData["PortalMessage"] = "Attendance marked.";
+            }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(Attendance), new { offeringId });
+    }
+
+    // ── Result write actions ────────────────────────────────────────────────
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateResult(
+        Guid studentProfileId, Guid offeringId,
+        string resultType, decimal marksObtained, decimal maxMarks, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.CreateResultAsync(studentProfileId, offeringId, resultType, marksObtained, maxMarks, ct); }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(Results), new { offeringId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> PublishAllResults(Guid offeringId, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.PublishAllResultsAsync(offeringId, ct); TempData["PortalMessage"] = "All results published."; }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(Results), new { offeringId });
+    }
+
+    // ── Quiz write actions ──────────────────────────────────────────────────
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateQuiz(
+        Guid offeringId, string title, string? instructions,
+        int? timeLimitMinutes, int maxAttempts, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.CreateQuizAsync(offeringId, title, instructions, timeLimitMinutes, maxAttempts, ct); }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(Quizzes), new { offeringId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> PublishQuiz(Guid id, Guid? offeringId, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.PublishQuizAsync(id, ct); }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(Quizzes), new { offeringId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteQuiz(Guid id, Guid? offeringId, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.DeleteQuizAsync(id, ct); }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(Quizzes), new { offeringId });
+    }
+
+    // ── FYP write actions ───────────────────────────────────────────────────
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> ProposeFypProject(
+        Guid departmentId, string title, string description, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.ProposeFypProjectAsync(departmentId, title, description, ct); }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(Fyp));
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> ApproveFypProject(Guid id, string? remarks, Guid? departmentId, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.ApproveFypProjectAsync(id, remarks, ct); TempData["PortalMessage"] = "Project approved."; }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(Fyp), new { departmentId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> RejectFypProject(Guid id, string remarks, Guid? departmentId, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.RejectFypProjectAsync(id, remarks, ct); TempData["PortalMessage"] = "Project rejected."; }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(Fyp), new { departmentId });
+    }
 
     [HttpGet]
     public async Task<IActionResult> Analytics(CancellationToken ct)

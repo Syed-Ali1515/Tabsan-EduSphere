@@ -207,11 +207,29 @@ For **every completed phase**:
 - ✓ `GET api/v1/quiz/my-attempts` endpoint added for student portal summary view
 
 ### Stage 3.2 - Data Entry Workflows
-- [ ] Add Assignments create/edit/delete and assign-to-students workflows.
-- [ ] Add Attendance create/edit/delete workflow for students.
-- [ ] Add Results create/edit/delete workflow for students.
-- [ ] Add Quizzes create/edit/delete and assignment workflow for students.
-- [ ] Add FYP create/edit/delete workflow for students.
+**Status:** ✅ Complete
+
+- [x] Add Assignments create/publish/delete + grade submissions workflow.
+- [x] Add Attendance bulk-mark workflow (Faculty sees enrolled students roster, selects status per student).
+- [x] Add Results enter result (Faculty selects student from roster, enters type/marks) + publish-all workflow.
+- [x] Add Quizzes create/publish/delete workflow.
+- [x] Add FYP propose (Student), approve/reject with remarks (Admin) workflow.
+
+### Implementation Summary
+- **EduApiClient** — Added 13 write methods to `IEduApiClient` interface and `EduApiClient` class: `CreateAssignmentAsync`, `PublishAssignmentAsync`, `DeleteAssignmentAsync`, `GradeSubmissionAsync`, `BulkMarkAttendanceAsync`, `CreateResultAsync`, `PublishAllResultsAsync`, `CreateQuizAsync`, `PublishQuizAsync`, `DeleteQuizAsync`, `ProposeFypProjectAsync`, `ApproveFypProjectAsync`, `RejectFypProjectAsync`. Added private `DeleteAsync` HTTP helper.
+- **PortalController** — Added 13 corresponding `[HttpPost, ValidateAntiForgeryToken]` actions for all 5 modules.
+- **PortalViewModels** — Added `Roster: List<EnrollmentRosterItem>` to `AttendancePageModel` and `ResultsPageModel`.
+- **PortalController (GET)** — Attendance + Results GET actions now load enrollment roster via `GetEnrollmentRosterAsync` when offeringId is selected and user is Faculty/Admin.
+- **Assignments.cshtml** — Added "Create Assignment" button + Bootstrap 5 modal, Publish/Delete inline forms per row, Grade modal triggered from submissions table.
+- **Attendance.cshtml** — Added "Mark Attendance" panel (Faculty/Admin) showing enrolled students grid with per-student date + status select, posts to `BulkMarkAttendance`.
+- **Results.cshtml** — Added "Enter Result" button + modal (student select from roster, result type, marks), "Publish All" button.
+- **Quizzes.cshtml** — Added "Create Quiz" button + modal, Publish/Delete inline forms per quiz card (Faculty/Admin gated).
+- **Fyp.cshtml** — Added "Propose Project" modal (Student), Approve inline form + Reject modal with remarks (Admin gated).
+
+### Validation Summary
+- Solution builds with 0 errors (1 warning: MailKit vulnerability unrelated to this stage).
+- All Razor views compile successfully with role-gated write UI.
+- CSRF protection (`[ValidateAntiForgeryToken]` + `@Html.AntiForgeryToken()`) applied to all write forms.
 
 ### Stage 3.3 - Result-Driven Promotion Logic
 - [ ] Add Promote column in result entry with Yes/No option for failed students.

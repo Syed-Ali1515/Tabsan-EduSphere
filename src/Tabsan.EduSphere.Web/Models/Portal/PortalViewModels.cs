@@ -520,6 +520,7 @@ public class AttendancePageModel
     public List<AttendanceRecordItem>  Records         { get; set; } = new();
     public List<AttendanceSummaryItem> Summary         { get; set; } = new();
     public List<LookupItem>            CourseOfferings { get; set; } = new();
+    public List<EnrollmentRosterItem>  Roster          { get; set; } = new();
     public Guid?  SelectedOfferingId { get; set; }
 }
 
@@ -543,8 +544,9 @@ public class ResultsPageModel
 {
     public bool   IsConnected { get; set; }
     public string? Message    { get; set; }
-    public List<ResultItem>   Results  { get; set; } = new();
-    public List<LookupItem>   Offerings { get; set; } = new();
+    public List<ResultItem>              Results  { get; set; } = new();
+    public List<LookupItem>              Offerings { get; set; } = new();
+    public List<EnrollmentRosterItem>    Roster    { get; set; } = new();
     public double? Cgpa       { get; set; }
     public Guid?  SelectedOfferingId { get; set; }
 }

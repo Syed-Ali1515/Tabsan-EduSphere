@@ -101,24 +101,37 @@ public interface IEduApiClient
     Task<List<AssignmentItem>> GetMyAssignmentsAsync(CancellationToken ct);
     Task<List<AssignmentItem>> GetAssignmentsByOfferingAsync(Guid offeringId, CancellationToken ct);
     Task<List<SubmissionItem>> GetSubmissionsForAssignmentAsync(Guid assignmentId, CancellationToken ct);
+    Task<Guid> CreateAssignmentAsync(Guid courseOfferingId, string title, string? description, DateTime dueDate, decimal maxMarks, CancellationToken ct);
+    Task PublishAssignmentAsync(Guid id, CancellationToken ct);
+    Task DeleteAssignmentAsync(Guid id, CancellationToken ct);
+    Task GradeSubmissionAsync(Guid assignmentId, Guid studentProfileId, decimal marksAwarded, string? feedback, CancellationToken ct);
 
     // Attendance
     Task<List<AttendanceSummaryItem>> GetMyAttendanceSummaryAsync(CancellationToken ct);
     Task<List<AttendanceRecordItem>> GetAttendanceByOfferingAsync(Guid offeringId, CancellationToken ct);
+    Task BulkMarkAttendanceAsync(Guid offeringId, DateTime date, IEnumerable<(Guid StudentProfileId, string Status)> entries, CancellationToken ct);
 
     // Results
     Task<List<ResultItem>> GetMyResultsAsync(CancellationToken ct);
     Task<List<ResultItem>> GetResultsByOfferingAsync(Guid offeringId, CancellationToken ct);
+    Task CreateResultAsync(Guid studentProfileId, Guid courseOfferingId, string resultType, decimal marksObtained, decimal maxMarks, CancellationToken ct);
+    Task PublishAllResultsAsync(Guid courseOfferingId, CancellationToken ct);
 
     // Quizzes
     Task<List<QuizItem>> GetQuizzesByOfferingAsync(Guid offeringId, CancellationToken ct);
     Task<List<QuizAttemptItem>> GetMyAttemptsAsync(CancellationToken ct);
+    Task<Guid> CreateQuizAsync(Guid courseOfferingId, string title, string? instructions, int? timeLimitMinutes, int maxAttempts, CancellationToken ct);
+    Task PublishQuizAsync(Guid id, CancellationToken ct);
+    Task DeleteQuizAsync(Guid id, CancellationToken ct);
 
     // FYP
     Task<List<FypProjectItem>> GetMyFypProjectsAsync(CancellationToken ct);
     Task<List<FypProjectItem>> GetFypByDepartmentAsync(Guid departmentId, CancellationToken ct);
     Task<List<FypProjectItem>> GetMySupervisedProjectsAsync(CancellationToken ct);
     Task<List<FypMeetingItem>> GetUpcomingMeetingsAsync(CancellationToken ct);
+    Task<Guid> ProposeFypProjectAsync(Guid departmentId, string title, string description, CancellationToken ct);
+    Task ApproveFypProjectAsync(Guid id, string? remarks, CancellationToken ct);
+    Task RejectFypProjectAsync(Guid id, string remarks, CancellationToken ct);
 
     // Analytics
     Task<string?> GetPerformanceAnalyticsJsonAsync(CancellationToken ct);
@@ -364,6 +377,14 @@ public class EduApiClient : IEduApiClient
         var body = await response.Content.ReadAsStringAsync(ct);
         if (!response.IsSuccessStatusCode) throw BuildException(response.StatusCode, body);
         return string.IsNullOrWhiteSpace(body) ? default : JsonSerializer.Deserialize<TResponse>(body, _jsonOptions);
+    }
+
+    private async Task DeleteAsync(string path, CancellationToken ct)
+    {
+        using var request  = CreateRequest(HttpMethod.Delete, path);
+        using var response = await CreateClient().SendAsync(request, ct);
+        var body = await response.Content.ReadAsStringAsync(ct);
+        if (!response.IsSuccessStatusCode) throw BuildException(response.StatusCode, body);
     }
 
     private HttpClient CreateClient() => _httpClientFactory.CreateClient("EduApi");
@@ -890,6 +911,31 @@ public class EduApiClient : IEduApiClient
         MarksAwarded        = a.MarksAwarded
     };
 
+    // ── Assignment write methods ──────────────────────────────────────────────
+
+    public Task<Guid> CreateAssignmentAsync(Guid courseOfferingId, string title, string? description,
+        DateTime dueDate, decimal maxMarks, CancellationToken ct)
+    {
+        var payload = new { courseOfferingId, title, description, dueDate, maxMarks };
+        return PostAsync<object, AssignmentCreateResponse>("api/v1/assignment", payload, ct)
+            .ContinueWith(t => t.Result?.Id ?? Guid.Empty, ct);
+    }
+
+    public Task PublishAssignmentAsync(Guid id, CancellationToken ct)
+        => PostAsync<object, object>($"api/v1/assignment/{id}/publish", new { }, ct);
+
+    public Task DeleteAssignmentAsync(Guid id, CancellationToken ct)
+        => DeleteAsync($"api/v1/assignment/{id}", ct);
+
+    public Task GradeSubmissionAsync(Guid assignmentId, Guid studentProfileId, decimal marksAwarded,
+        string? feedback, CancellationToken ct)
+    {
+        var payload = new { assignmentId, studentProfileId, marksAwarded, feedback };
+        return PutAsync<object, object>("api/v1/assignment/submissions/grade", payload, ct);
+    }
+
+    private sealed class AssignmentCreateResponse { public Guid Id { get; set; } }
+
     public async Task<List<SubmissionItem>> GetSubmissionsForAssignmentAsync(Guid assignmentId, CancellationToken ct)
     {
         var raw = await GetAsync<List<SubmissionApiDto>>($"api/v1/assignment/{assignmentId}/submissions", ct) ?? new();
@@ -984,6 +1030,20 @@ public class EduApiClient : IEduApiClient
         public bool     IsCorrected        { get; set; }
     }
 
+    // ── Attendance write methods ──────────────────────────────────────────────
+
+    public Task BulkMarkAttendanceAsync(Guid offeringId, DateTime date,
+        IEnumerable<(Guid StudentProfileId, string Status)> entries, CancellationToken ct)
+    {
+        var payload = new
+        {
+            courseOfferingId = offeringId,
+            date,
+            entries = entries.Select(e => new { studentProfileId = e.StudentProfileId, status = e.Status }).ToList()
+        };
+        return PostAsync<object, object>("api/v1/attendance/bulk", payload, ct);
+    }
+
     // ── Results ───────────────────────────────────────────────────────────────
 
     public async Task<List<ResultItem>> GetMyResultsAsync(CancellationToken ct)
@@ -1025,6 +1085,18 @@ public class EduApiClient : IEduApiClient
         public string? StudentName        { get; set; }
         public string? RegistrationNumber { get; set; }
     }
+
+    // ── Result write methods ──────────────────────────────────────────────────
+
+    public Task CreateResultAsync(Guid studentProfileId, Guid courseOfferingId,
+        string resultType, decimal marksObtained, decimal maxMarks, CancellationToken ct)
+    {
+        var payload = new { studentProfileId, courseOfferingId, resultType, marksObtained, maxMarks };
+        return PostAsync<object, object>("api/v1/result", payload, ct);
+    }
+
+    public Task PublishAllResultsAsync(Guid courseOfferingId, CancellationToken ct)
+        => PostAsync<object, object>($"api/v1/result/publish-all?courseOfferingId={courseOfferingId}", new { }, ct);
 
     // ── Quizzes ───────────────────────────────────────────────────────────────
 
@@ -1089,6 +1161,24 @@ public class EduApiClient : IEduApiClient
         public int       MaxScore    { get; set; }
     }
 
+    // ── Quiz write methods ────────────────────────────────────────────────────
+
+    public Task<Guid> CreateQuizAsync(Guid courseOfferingId, string title, string? instructions,
+        int? timeLimitMinutes, int maxAttempts, CancellationToken ct)
+    {
+        var payload = new { courseOfferingId, title, instructions, timeLimitMinutes, maxAttempts };
+        return PostAsync<object, QuizCreateResponse>("api/v1/quiz", payload, ct)
+            .ContinueWith(t => t.Result?.QuizId ?? Guid.Empty, ct);
+    }
+
+    public Task PublishQuizAsync(Guid id, CancellationToken ct)
+        => PostAsync<object, object>($"api/v1/quiz/{id}/publish", new { }, ct);
+
+    public Task DeleteQuizAsync(Guid id, CancellationToken ct)
+        => DeleteAsync($"api/v1/quiz/{id}", ct);
+
+    private sealed class QuizCreateResponse { public Guid QuizId { get; set; } }
+
     // ── FYP ───────────────────────────────────────────────────────────────────
 
     public async Task<List<FypProjectItem>> GetMyFypProjectsAsync(CancellationToken ct)
@@ -1123,6 +1213,23 @@ public class EduApiClient : IEduApiClient
             ProjectTitle = m.ProjectTitle ?? ""
         }).ToList();
     }
+
+    // ── FYP write methods ─────────────────────────────────────────────────────
+
+    public Task<Guid> ProposeFypProjectAsync(Guid departmentId, string title, string description, CancellationToken ct)
+    {
+        var payload = new { departmentId, title, description };
+        return PostAsync<object, FypCreateResponse>("api/v1/fyp", payload, ct)
+            .ContinueWith(t => t.Result?.ProjectId ?? Guid.Empty, ct);
+    }
+
+    public Task ApproveFypProjectAsync(Guid id, string? remarks, CancellationToken ct)
+        => PostAsync<object, object>($"api/v1/fyp/{id}/approve", new { remarks }, ct);
+
+    public Task RejectFypProjectAsync(Guid id, string remarks, CancellationToken ct)
+        => PostAsync<object, object>($"api/v1/fyp/{id}/reject", new { remarks }, ct);
+
+    private sealed class FypCreateResponse { public Guid ProjectId { get; set; } }
 
     private static FypProjectItem MapFyp(FypApiDto f) => new()
     {
