@@ -23,8 +23,8 @@ Also update this file with:
 
 ## Current Execution Pointer
 - Plan Source: Project startup Docs/Final-Touches.md
-- Active Phase: Phase 2 - Timetable and Core Lookup Data Visibility
-- Active Stage: Stage 2.3 - CRUD Entry Points
+- Active Phase: Phase 3 - Assignment, Attendance, Results, Quizzes, FYP Access and Workflows
+- Active Stage: Stage 3.1 - 403 Authorization Fixes
 - Status: Ready to Start
 - Last Updated: 2026-05-04
 
@@ -187,4 +187,40 @@ When a phase is completed, update:
 **Docs Updated:**
 - Final-Touches.md: Marked Stage 2.2 complete, added Implementation/Validation summaries, adjusted Stage 2.3 section
 - Command.md: Updated Current Execution Pointer to Stage 2.3
+
+---
+
+### Entry 005 — 2026-05-04 — Phase 2 Stage 2.3 Complete (CRUD Entry Points)
+**Completed:**
+- Added CourseRepository.GetOfferingsByDepartmentAsync() method for department-filtered offerings
+- Added 4 new CourseOffering management endpoints to CourseController:
+  - PUT /offerings/{id}/maxenrollment - Update max enrollment with validation
+  - PUT /offerings/{id}/close - Close enrollment
+  - PUT /offerings/{id}/reopen - Re-open enrollment
+  - DELETE /offerings/{id} - Soft-delete offering using AuditableEntity.SoftDelete()
+- Added Students.cshtml create button and modal (Registration Number, Program, Department, Admission Date)
+- Added Departments.cshtml create button and modal (Code, Name)
+- Added Courses.cshtml create buttons and modals for Courses and Offerings with all required fields
+
+**Changes:**
+- [src/Tabsan.EduSphere.API/Controllers/CourseController.cs](src/Tabsan.EduSphere.API/Controllers/CourseController.cs): Added 4 offering lifecycle endpoints
+- [src/Tabsan.EduSphere.Application/DTOs/Academic/AcademicDtos.cs](src/Tabsan.EduSphere.Application/DTOs/Academic/AcademicDtos.cs): Added UpdateMaxEnrollmentRequest
+- [src/Tabsan.EduSphere.Web/Views/Portal/Students.cshtml](src/Tabsan.EduSphere.Web/Views/Portal/Students.cshtml): Added create button and form modal
+- [src/Tabsan.EduSphere.Web/Views/Portal/Departments.cshtml](src/Tabsan.EduSphere.Web/Views/Portal/Departments.cshtml): Added create button and form modal
+- [src/Tabsan.EduSphere.Web/Views/Portal/Courses.cshtml](src/Tabsan.EduSphere.Web/Views/Portal/Courses.cshtml): Added create buttons and form modals for courses and offerings
+
+**Validation:**
+- Build succeeded (0 errors, 2 MailKit warnings only)
+- All portal views render correctly with new create buttons and modals
+- CourseOffering endpoints support full lifecycle: create, assign faculty, update enrollment, close/reopen, soft-delete
+- Modal forms include role-based visibility (Admin/SuperAdmin only)
+- All existing CRUD endpoints utilized: StudentController.Create, DepartmentController.Create/Update/Delete, CourseController.Create/Update/Delete, CourseController.CreateOffering
+
+**Phase 2 Status:** ✅ Complete (All stages 2.1, 2.2, 2.3 finished)
+
+**Moved to:** Phase 3 Stage 3.1 (403 Authorization Fixes)
+
+**Docs Updated:**
+- Final-Touches.md: Marked Phase 2 complete, marked Stage 2.3 complete with impl/validation summaries, adjusted Phase 3 section
+- Command.md: Updated Current Execution Pointer to Phase 3 Stage 3.1
 

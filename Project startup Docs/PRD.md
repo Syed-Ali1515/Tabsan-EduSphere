@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.14 (Phase 2 Stages 2.1–2.2 Data Binding Complete)  
+**Version:** 1.15 (Phase 2 Complete - All Stages 2.1–2.3 Lookup Data & CRUD Complete)  
 **Status:** Approved  
 **Prepared By:** Product Team  
 **Last Updated:** 4 May 2026  
@@ -9,6 +9,31 @@
 ---
 
 ## 0. Implementation Update Log
+
+### 2026-05-04 — Phase 2 Stages 2.1–2.3 Complete (Data Visibility & CRUD Entry Points)
+- **Stage 2.1 (Timetable Data Binding - COMPLETE)**
+  - Fixed TimetableRepository query methods with proper EF Include statements for Building, Department, AcademicProgram, Semester
+  - Faculty and Student My Timetable endpoints now render complete calendar data
+  
+- **Stage 2.2 (Lookup Data Visibility - COMPLETE)**
+  - Fixed StudentProfileRepository to include Program and Department for accurate student profile display
+  - Updated StudentController.GetAll() to return student names, program names, department names via related entities
+  - Added CourseRepository.GetOfferingsByDepartmentAsync() for department-scoped offering retrieval
+  - Refactored CourseController.GetOfferings() to support both ?semesterId and ?departmentId query parameters
+  - Updated CourseController.GetAll() to include DepartmentName for course catalogue
+  
+- **Stage 2.3 (CRUD Entry Points - COMPLETE)**
+  - Added 4 new CourseOffering lifecycle endpoints: maxenrollment update, close/reopen enrollment, soft-delete
+  - Enhanced portal pages with create entry points and Bootstrap modals:
+    - Students page: Add Student modal with Registration Number, Program, Department, Admission Date
+    - Departments page: Add Department modal with Code, Name
+    - Courses page: Add Course and Add Offering modals with all required fields
+  - All modal forms include role-based visibility (Admin/SuperAdmin only)
+  - Leveraged existing StudentController.Create, DepartmentController.Create/Update/Delete, CourseController.Create/Update/Delete endpoints
+  
+- **Build Status:** Verified (0 errors, all 3 stages successfully compiled)
+- **Portal Enhancement:** Users can now create Students, Departments, Courses, and CourseOfferings directly from portal pages
+- **API Completeness:** CourseOffering now supports full lifecycle management
 
 ### 2026-05-04 — Phase 2 Stages 2.1–2.2 Data Binding Complete
 - **Stage 2.1 (Timetable Data Binding):**

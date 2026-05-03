@@ -97,9 +97,9 @@ For **every completed phase**:
 ---
 
 ### Stage 2.3 - CRUD Entry Points
-- [ ] Add Students create flow.
-- [ ] Add Departments create flow.
-- [ ] Add Active Offerings create/edit/delete flow.
+- [x] Add Students create flow.
+- [x] Add Departments create flow.
+- [x] Add Active Offerings create/edit/delete flow.
 
 ### Implementation Summary
 **Problem:** Timetable API endpoints were returning incomplete data due to missing EF Include statements in repository queries, causing null references during DTO mapping.
@@ -119,6 +119,48 @@ For **every completed phase**:
 - ✓ Student timetable query includes all required related data for complete DTO mapping
 - ✓ Test data is seeded in MinimalSeed.sql: 1 published timetable for CS dept with 2 entries assigned to faculty.test
 - ✓ API endpoints ready to return complete timetable data without null reference errors
+
+---
+
+### Stage 2.3 - CRUD Entry Points
+- [x] Add Students create flow.
+- [x] Add Departments create flow.
+- [x] Add Active Offerings create/edit/delete flow.
+
+**Implementation Summary (Stage 2.3)**
+
+**New CourseOffering API Endpoints:**
+1. **PUT /api/v1/course/offerings/{id}/maxenrollment** - Update max enrollment with validation
+2. **PUT /api/v1/course/offerings/{id}/close** - Close enrollment for an offering
+3. **PUT /api/v1/course/offerings/{id}/reopen** - Re-open enrollment for an offering
+4. **DELETE /api/v1/course/offerings/{id}** - Soft-delete offering (AuditableEntity)
+
+**Portal Page Enhancements:**
+1. **Students.cshtml** - Added "Add Student" button (Admin/SuperAdmin only), modal form with fields:
+   - Registration Number, Program, Department, Admission Date
+2. **Departments.cshtml** - Added "Add Department" button, modal form with fields:
+   - Department Code, Department Name
+3. **Courses.cshtml** - Added "Add Course" and "Add Offering" buttons on respective panels:
+   - Course modal: Code, Title, Credit Hours, Department
+   - Offering modal: Course, Semester, Faculty (optional), Max Enrollment
+
+**Supporting Changes:**
+- Added `UpdateMaxEnrollmentRequest` DTO to `AcademicDtos.cs`
+- All CRUD endpoints leveraged: StudentController.Create, DepartmentController.Create/Update/Delete, CourseController.Create/Update/Delete, CourseController.CreateOffering
+
+**Files Modified:**
+- [src/Tabsan.EduSphere.API/Controllers/CourseController.cs](../../src/Tabsan.EduSphere.API/Controllers/CourseController.cs): 4 new offering endpoints
+- [src/Tabsan.EduSphere.Application/DTOs/Academic/AcademicDtos.cs](../../src/Tabsan.EduSphere.Application/DTOs/Academic/AcademicDtos.cs): UpdateMaxEnrollmentRequest
+- [src/Tabsan.EduSphere.Web/Views/Portal/Students.cshtml](../../src/Tabsan.EduSphere.Web/Views/Portal/Students.cshtml): Create button and modal
+- [src/Tabsan.EduSphere.Web/Views/Portal/Departments.cshtml](../../src/Tabsan.EduSphere.Web/Views/Portal/Departments.cshtml): Create button and modal
+- [src/Tabsan.EduSphere.Web/Views/Portal/Courses.cshtml](../../src/Tabsan.EduSphere.Web/Views/Portal/Courses.cshtml): Create buttons and modals
+
+**Validation Summary**
+- ✓ Build succeeded (0 errors, 2 MailKit warnings)
+- ✓ CourseOffering endpoints support full lifecycle: create, assign faculty, update enrollment, close/reopen, soft-delete
+- ✓ Portal pages show create buttons/modals for Students, Departments, Courses, Offerings (role-gated)
+- ✓ Modal forms include proper field labels and validation
+- ✓ Commit: 7f3330b
 
 ---
 
