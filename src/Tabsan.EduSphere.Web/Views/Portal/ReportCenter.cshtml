@@ -31,11 +31,13 @@
             {
                 var (icon, href) = report.Key switch
                 {
-                    "attendance_summary"  => ("bi-calendar-check",   Url.Action("ReportAttendance", "Portal")),
-                    "result_summary"      => ("bi-clipboard-data",    Url.Action("ReportResults",    "Portal")),
-                    "gpa_report"          => ("bi-graph-up",          Url.Action("ReportGpa",        "Portal")),
-                    "enrollment_summary"  => ("bi-people",            Url.Action("ReportEnrollment", "Portal")),
-                    _                     => ("bi-file-earmark-text", "#")
+                    "attendance_summary" or "attendance-report" => ("bi-calendar-check",   Url.Action("ReportAttendance",       "Portal")),
+                    "result_summary"     or "results-report"    => ("bi-clipboard-data",   Url.Action("ReportResults",          "Portal")),
+                    "gpa_report"                                => ("bi-graph-up",          Url.Action("ReportGpa",              "Portal")),
+                    "enrollment_summary"                        => ("bi-people",            Url.Action("ReportEnrollment",       "Portal")),
+                    "dept-summary"       or "department_summary"=> ("bi-building",          Url.Action("ReportEnrollment",       "Portal")),
+                    "semester-results"   or "semester_results"  => ("bi-calendar3",         Url.Action("ReportSemesterResults",  "Portal")),
+                    _                                           => ("bi-file-earmark-text", "#")
                 };
                 <div class="col-md-6 col-xl-4">
                     <a href="@href" class="text-decoration-none">

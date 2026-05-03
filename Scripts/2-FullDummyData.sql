@@ -748,6 +748,7 @@ WHERE NOT EXISTS (SELECT 1 FROM module_role_assignments x WHERE x.ModuleId=m.Id 
 -- ═══════════════════════════════════════════════════════════
 DECLARE @RptAtt UNIQUEIDENTIFIER = NEWID(); DECLARE @RptRes UNIQUEIDENTIFIER = NEWID();
 DECLARE @RptDep UNIQUEIDENTIFIER = NEWID(); DECLARE @RptTrn UNIQUEIDENTIFIER = NEWID();
+DECLARE @RptSemRes UNIQUEIDENTIFIER = NEWID();
 
 IF NOT EXISTS (SELECT 1 FROM report_definitions WHERE [Key]=N'attendance-report')
     INSERT INTO report_definitions (Id,[Key],Name,Purpose,IsActive,CreatedAt,IsDeleted)
@@ -769,12 +770,18 @@ IF NOT EXISTS (SELECT 1 FROM report_definitions WHERE [Key]=N'transcript')
     VALUES (@RptTrn,N'transcript',N'Student Transcript',N'Official academic transcript',1,@Now,0);
 ELSE SELECT @RptTrn = Id FROM report_definitions WHERE [Key]=N'transcript';
 
+IF NOT EXISTS (SELECT 1 FROM report_definitions WHERE [Key]=N'semester-results')
+    INSERT INTO report_definitions (Id,[Key],Name,Purpose,IsActive,CreatedAt,IsDeleted)
+    VALUES (@RptSemRes,N'semester-results',N'Semester Results',N'All published results for a specific semester',1,@Now,0);
+ELSE SELECT @RptSemRes = Id FROM report_definitions WHERE [Key]=N'semester-results';
+
 DECLARE @RRAd TABLE (RId UNIQUEIDENTIFIER, Role NVARCHAR(50));
 INSERT INTO @RRAd VALUES
     (@RptAtt,N'Admin'),(@RptAtt,N'Faculty'),(@RptAtt,N'Student'),
     (@RptRes,N'Admin'),(@RptRes,N'Faculty'),(@RptRes,N'Student'),
     (@RptDep,N'Admin'),(@RptDep,N'SuperAdmin'),
-    (@RptTrn,N'Admin'),(@RptTrn,N'Student');
+    (@RptTrn,N'Admin'),(@RptTrn,N'Student'),
+    (@RptSemRes,N'Admin'),(@RptSemRes,N'Faculty');
 
 INSERT INTO report_role_assignments (Id,ReportDefinitionId,RoleName,CreatedAt)
 SELECT NEWID(),r.RId,r.Role,@Now FROM @RRAd r

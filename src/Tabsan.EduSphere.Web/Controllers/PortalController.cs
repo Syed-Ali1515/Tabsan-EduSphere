@@ -1401,6 +1401,69 @@ public class PortalController : Controller
         return View(model);
     }
 
+    [HttpGet]
+    public async Task<IActionResult> ReportSemesterResults(Guid? semesterId, Guid? departmentId, CancellationToken ct)
+    {
+        ViewData["Title"] = "Semester Results Report";
+        var model = new ReportSemesterResultsPageModel
+        {
+            IsConnected  = _api.IsConnected(),
+            SemesterId   = semesterId,
+            DepartmentId = departmentId
+        };
+        if (!model.IsConnected) return View(model);
+        try
+        {
+            model.Semesters   = await _api.GetSemestersAsync(ct);
+            model.Departments = await _api.GetDepartmentsAsync(ct);
+            if (semesterId.HasValue)
+                model.Report = await _api.GetSemesterResultsReportAsync(semesterId.Value, departmentId, ct);
+        }
+        catch (Exception ex) { model.Message = ex.Message; }
+        return View(model);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ExportAttendanceSummary(
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(ReportAttendance));
+        try
+        {
+            var bytes = await _api.ExportAttendanceSummaryAsync(semesterId, departmentId, offeringId, studentId, ct);
+            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "attendance-summary.xlsx");
+        }
+        catch (Exception ex) { TempData["PortalMessage"] = $"Export failed: {ex.Message}"; }
+        return RedirectToAction(nameof(ReportAttendance), new { semesterId, departmentId, offeringId, studentId });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ExportResultSummary(
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(ReportResults));
+        try
+        {
+            var bytes = await _api.ExportResultSummaryAsync(semesterId, departmentId, offeringId, studentId, ct);
+            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "result-summary.xlsx");
+        }
+        catch (Exception ex) { TempData["PortalMessage"] = $"Export failed: {ex.Message}"; }
+        return RedirectToAction(nameof(ReportResults), new { semesterId, departmentId, offeringId, studentId });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ExportGpaReport(Guid? departmentId, Guid? programId, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(ReportGpa));
+        try
+        {
+            var bytes = await _api.ExportGpaReportAsync(departmentId, programId, ct);
+            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "gpa-report.xlsx");
+        }
+        catch (Exception ex) { TempData["PortalMessage"] = $"Export failed: {ex.Message}"; }
+        return RedirectToAction(nameof(ReportGpa), new { departmentId, programId });
+    }
+
     // ── Dashboard Settings ────────────────────────────────────────────────────
 
     [HttpGet]

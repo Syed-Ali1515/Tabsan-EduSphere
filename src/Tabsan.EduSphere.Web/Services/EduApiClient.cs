@@ -79,6 +79,10 @@ public interface IEduApiClient
     Task<ResultSummaryWebModel?> GetResultSummaryReportAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
     Task<GpaReportWebModel?> GetGpaReportAsync(Guid? departmentId, Guid? programId, CancellationToken ct);
     Task<EnrollmentSummaryWebModel?> GetEnrollmentSummaryReportAsync(Guid? semesterId, Guid? departmentId, CancellationToken ct);
+    Task<SemesterResultsWebModel?> GetSemesterResultsReportAsync(Guid semesterId, Guid? departmentId, CancellationToken ct);
+    Task<byte[]> ExportAttendanceSummaryAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
+    Task<byte[]> ExportResultSummaryAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
+    Task<byte[]> ExportGpaReportAsync(Guid? departmentId, Guid? programId, CancellationToken ct);
 
     // Notifications
     Task<List<NotificationItem>> GetNotificationsAsync(CancellationToken ct);
@@ -385,6 +389,18 @@ public class EduApiClient : IEduApiClient
         using var response = await CreateClient().SendAsync(request, ct);
         var body = await response.Content.ReadAsStringAsync(ct);
         if (!response.IsSuccessStatusCode) throw BuildException(response.StatusCode, body);
+    }
+
+    private async Task<byte[]> GetBytesAsync(string path, CancellationToken ct)
+    {
+        using var request  = CreateRequest(HttpMethod.Get, path);
+        using var response = await CreateClient().SendAsync(request, ct);
+        if (!response.IsSuccessStatusCode)
+        {
+            var body = await response.Content.ReadAsStringAsync(ct);
+            throw BuildException(response.StatusCode, body);
+        }
+        return await response.Content.ReadAsByteArrayAsync(ct);
     }
 
     private HttpClient CreateClient() => _httpClientFactory.CreateClient("EduApi");
@@ -1573,6 +1589,54 @@ public class EduApiClient : IEduApiClient
         return parts.Any() ? "?" + string.Join("&", parts) : "";
     }
 
+    public async Task<SemesterResultsWebModel?> GetSemesterResultsReportAsync(
+        Guid semesterId, Guid? departmentId, CancellationToken ct)
+    {
+        var parts = new List<string> { $"semesterId={semesterId}" };
+        if (departmentId.HasValue) parts.Add($"departmentId={departmentId.Value}");
+        var raw = await GetAsync<SemesterResultsApiDto>($"api/v1/reports/semester-results?{string.Join("&", parts)}", ct);
+        if (raw is null) return null;
+        return new SemesterResultsWebModel
+        {
+            TotalStudents = raw.TotalStudents,
+            GeneratedAt   = raw.GeneratedAt,
+            Rows = raw.Rows?.Select(r => new SemesterResultsRowItem
+            {
+                RegistrationNumber = r.RegistrationNumber ?? "",
+                StudentName        = r.StudentName ?? "",
+                CourseCode         = r.CourseCode ?? "",
+                CourseTitle        = r.CourseTitle ?? "",
+                ResultType         = r.ResultType ?? "",
+                MarksObtained      = r.MarksObtained,
+                MaxMarks           = r.MaxMarks,
+                Percentage         = r.Percentage
+            }).ToList() ?? new()
+        };
+    }
+
+    public Task<byte[]> ExportAttendanceSummaryAsync(
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+    {
+        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId);
+        return GetBytesAsync($"api/v1/reports/attendance-summary/export{qs}", ct);
+    }
+
+    public Task<byte[]> ExportResultSummaryAsync(
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+    {
+        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId);
+        return GetBytesAsync($"api/v1/reports/result-summary/export{qs}", ct);
+    }
+
+    public Task<byte[]> ExportGpaReportAsync(Guid? departmentId, Guid? programId, CancellationToken ct)
+    {
+        var parts = new List<string>();
+        if (departmentId.HasValue) parts.Add($"departmentId={departmentId.Value}");
+        if (programId.HasValue)    parts.Add($"programId={programId.Value}");
+        var qs = parts.Any() ? "?" + string.Join("&", parts) : "";
+        return GetBytesAsync($"api/v1/reports/gpa-report/export{qs}", ct);
+    }
+
     // Private API DTOs for Phase 12
     private sealed class ReportCatalogApiDto
     {
@@ -1652,6 +1716,23 @@ public class EduApiClient : IEduApiClient
         public int     MaxEnrollment  { get; set; }
         public int     EnrolledCount  { get; set; }
         public int     AvailableSeats { get; set; }
+    }
+    private sealed class SemesterResultsApiDto
+    {
+        public int      TotalStudents { get; set; }
+        public DateTime GeneratedAt   { get; set; }
+        public List<SemesterResultsRowApiDto>? Rows { get; set; }
+    }
+    private sealed class SemesterResultsRowApiDto
+    {
+        public string? RegistrationNumber { get; set; }
+        public string? StudentName        { get; set; }
+        public string? CourseCode         { get; set; }
+        public string? CourseTitle        { get; set; }
+        public string? ResultType         { get; set; }
+        public decimal MarksObtained      { get; set; }
+        public decimal MaxMarks           { get; set; }
+        public decimal Percentage         { get; set; }
     }
 
     // ── Portal / Dashboard Settings ───────────────────────────────────────────

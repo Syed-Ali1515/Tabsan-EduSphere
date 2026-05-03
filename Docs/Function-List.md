@@ -2174,6 +2174,10 @@
 | `ReportResults(semesterId?, departmentId?, offeringId?, studentId?, ct)` | `GET /Portal/ReportResults` — fetches result summary for filters. | `Web/Controllers/PortalController.cs` |
 | `ReportGpa(departmentId?, programId?, ct)` | `GET /Portal/ReportGpa` — fetches GPA report. | `Web/Controllers/PortalController.cs` |
 | `ReportEnrollment(semesterId?, departmentId?, ct)` | `GET /Portal/ReportEnrollment` — fetches enrollment summary. | `Web/Controllers/PortalController.cs` |
+| `ReportSemesterResults(semesterId?, departmentId?, ct)` | `GET /Portal/ReportSemesterResults` — fetches all published results for a selected semester. SemesterId required. Admin/Faculty. | `Web/Controllers/PortalController.cs` |
+| `ExportAttendanceSummary(semesterId?, departmentId?, offeringId?, studentId?, ct)` | `GET /Portal/ExportAttendanceSummary` — proxies API export and streams `.xlsx` file. Admin/Faculty. | `Web/Controllers/PortalController.cs` |
+| `ExportResultSummary(semesterId?, departmentId?, offeringId?, studentId?, ct)` | `GET /Portal/ExportResultSummary` — proxies API export and streams `.xlsx` file. Admin/Faculty. | `Web/Controllers/PortalController.cs` |
+| `ExportGpaReport(departmentId?, programId?, ct)` | `GET /Portal/ExportGpaReport` — proxies API export and streams `.xlsx` file. Admin/Faculty. | `Web/Controllers/PortalController.cs` |
 
 ### Web — EduApiClient (Phase 12 additions)
 
@@ -2184,9 +2188,11 @@
 | `GetResultSummaryReportAsync(query, ct)` | Calls `GET /api/v1/reports/result-summary`. | `Web/Services/EduApiClient.cs` |
 | `GetGpaReportAsync(query, ct)` | Calls `GET /api/v1/reports/gpa-report`. | `Web/Services/EduApiClient.cs` |
 | `GetEnrollmentSummaryReportAsync(query, ct)` | Calls `GET /api/v1/reports/enrollment-summary`. | `Web/Services/EduApiClient.cs` |
+| `GetSemesterResultsReportAsync(semesterId, departmentId?, ct)` | Calls `GET /api/v1/reports/semester-results`; returns `SemesterResultsWebModel`. | `Web/Services/EduApiClient.cs` |
 | `ExportAttendanceSummaryAsync(query, ct)` | Calls export endpoint; returns `byte[]`. | `Web/Services/EduApiClient.cs` |
 | `ExportResultSummaryAsync(query, ct)` | Calls export endpoint; returns `byte[]`. | `Web/Services/EduApiClient.cs` |
 | `ExportGpaReportAsync(query, ct)` | Calls export endpoint; returns `byte[]`. | `Web/Services/EduApiClient.cs` |
+| `GetBytesAsync(path, ct)` | Private helper — sends GET, reads response as `byte[]`; used by all export methods. | `Web/Services/EduApiClient.cs` |
 
 ### Web - Shared Layout (Phase 1 Final-Touches)
 

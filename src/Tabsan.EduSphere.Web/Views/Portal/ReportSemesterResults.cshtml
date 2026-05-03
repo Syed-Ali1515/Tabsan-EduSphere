@@ -1,0 +1,107 @@
+@model Tabsan.EduSphere.Web.Models.Portal.ReportSemesterResultsPageModel
+@{
+    ViewData["Title"] = "Semester Results Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex align-items-center mb-4">
+        <a asp-action="ReportCenter" asp-controller="Portal" class="btn btn-sm btn-outline-secondary me-3"><i class="bi bi-arrow-left"></i></a>
+        <div>
+            <h2 class="mb-0"><i class="bi bi-calendar3 me-2"></i>Semester Results</h2>
+            <small class="text-muted">Published results for all students in a given semester</small>
+        </div>
+    </div>
+
+    @if (!Model.IsConnected)
+    {
+        <div class="alert alert-warning"><i class="bi bi-wifi-off me-2"></i>Not connected to API.</div>
+    }
+    else
+    {
+        if (!string.IsNullOrEmpty(Model.Message))
+        {
+            <div class="alert alert-danger">@Model.Message</div>
+        }
+
+        <form method="get" class="card shadow-sm border-0 mb-4">
+            <div class="card-body p-3">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label small mb-1">Semester <span class="text-danger">*</span></label>
+                        <select name="semesterId" class="form-select form-select-sm" required>
+                            <option value="">Select semester…</option>
+                            @foreach (var s in Model.Semesters)
+                            {
+                                <option value="@s.Id" selected="@(Model.SemesterId == s.Id)">@s.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small mb-1">Department</label>
+                        <select name="departmentId" class="form-select form-select-sm">
+                            <option value="">All Departments</option>
+                            @foreach (var d in Model.Departments)
+                            {
+                                <option value="@d.Id" selected="@(Model.DepartmentId == d.Id)">@d.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary btn-sm w-100"><i class="bi bi-funnel me-1"></i>Filter</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        @if (Model.Report is not null)
+        {
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="text-muted small">@Model.Report.TotalStudents student(s) found &mdash; generated @Model.Report.GeneratedAt.ToString("dd MMM yyyy, HH:mm")</span>
+            </div>
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Reg. No.</th>
+                                    <th>Student</th>
+                                    <th>Course</th>
+                                    <th>Title</th>
+                                    <th>Type</th>
+                                    <th class="text-center">Marks</th>
+                                    <th class="text-center">Max</th>
+                                    <th class="text-center">%</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var r in Model.Report.Rows)
+                                {
+                                    <tr>
+                                        <td>@r.RegistrationNumber</td>
+                                        <td>@r.StudentName</td>
+                                        <td>@r.CourseCode</td>
+                                        <td>@r.CourseTitle</td>
+                                        <td><span class="badge bg-secondary bg-opacity-10 text-secondary">@r.ResultType</span></td>
+                                        <td class="text-center">@r.MarksObtained.ToString("F1")</td>
+                                        <td class="text-center">@r.MaxMarks.ToString("F1")</td>
+                                        <td class="text-center">@r.Percentage.ToString("F1")%</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+        else if (Model.SemesterId.HasValue)
+        {
+            <div class="alert alert-info"><i class="bi bi-info-circle me-2"></i>No results found for the selected semester.</div>
+        }
+        else
+        {
+            <div class="alert alert-secondary"><i class="bi bi-info-circle me-2"></i>Select a semester above and click Filter to generate the report.</div>
+        }
+    }
+</div>

@@ -887,6 +887,38 @@ public class ReportEnrollmentPageModel
 }
 
 
+// ── Semester Results Report ──────────────────────────────────────────────────
+
+public class SemesterResultsRowItem
+{
+    public string  RegistrationNumber { get; set; } = "";
+    public string  StudentName        { get; set; } = "";
+    public string  CourseCode         { get; set; } = "";
+    public string  CourseTitle        { get; set; } = "";
+    public string  ResultType         { get; set; } = "";
+    public decimal MarksObtained      { get; set; }
+    public decimal MaxMarks           { get; set; }
+    public decimal Percentage         { get; set; }
+}
+
+public class SemesterResultsWebModel
+{
+    public int                           TotalStudents { get; set; }
+    public DateTime                      GeneratedAt   { get; set; }
+    public List<SemesterResultsRowItem>  Rows          { get; set; } = new();
+}
+
+public class ReportSemesterResultsPageModel
+{
+    public bool   IsConnected  { get; set; }
+    public string? Message     { get; set; }
+    public Guid?  SemesterId   { get; set; }
+    public Guid?  DepartmentId { get; set; }
+    public List<LookupItem> Semesters   { get; set; } = new();
+    public List<LookupItem> Departments { get; set; } = new();
+    public SemesterResultsWebModel? Report { get; set; }
+}
+
 // ── Dashboard Settings ────────────────────────────────────────────────────────
 
 public class PortalBrandingWebModel

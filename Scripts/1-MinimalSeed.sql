@@ -586,6 +586,7 @@ WHERE NOT EXISTS (
 DECLARE @RptAttend  UNIQUEIDENTIFIER = NEWID();
 DECLARE @RptResults UNIQUEIDENTIFIER = NEWID();
 DECLARE @RptDept    UNIQUEIDENTIFIER = NEWID();
+DECLARE @RptSemRes  UNIQUEIDENTIFIER = NEWID();
 
 IF NOT EXISTS (SELECT 1 FROM report_definitions WHERE [Key] = N'attendance-report')
     INSERT INTO report_definitions
@@ -608,11 +609,19 @@ IF NOT EXISTS (SELECT 1 FROM report_definitions WHERE [Key] = N'dept-summary')
             N'High-level student and course counts by department',1,@Now,0);
 ELSE SELECT @RptDept = Id FROM report_definitions WHERE [Key] = N'dept-summary';
 
+IF NOT EXISTS (SELECT 1 FROM report_definitions WHERE [Key] = N'semester-results')
+    INSERT INTO report_definitions
+        (Id,[Key],Name,Purpose,IsActive,CreatedAt,IsDeleted)
+    VALUES (@RptSemRes,N'semester-results',N'Semester Results',
+            N'All published results for students in a specific semester',1,@Now,0);
+ELSE SELECT @RptSemRes = Id FROM report_definitions WHERE [Key] = N'semester-results';
+
 DECLARE @RRAData TABLE (RptId UNIQUEIDENTIFIER, RoleName NVARCHAR(50));
 INSERT INTO @RRAData VALUES
     (@RptAttend,  N'Admin'),   (@RptAttend,  N'Faculty'),  (@RptAttend,  N'Student'),
     (@RptResults, N'Admin'),   (@RptResults, N'Faculty'),  (@RptResults, N'Student'),
-    (@RptDept,    N'Admin'),   (@RptDept,    N'SuperAdmin');
+    (@RptDept,    N'Admin'),   (@RptDept,    N'SuperAdmin'),
+    (@RptSemRes,  N'Admin'),   (@RptSemRes,  N'Faculty');
 
 INSERT INTO report_role_assignments (Id, ReportDefinitionId, RoleName, CreatedAt)
 SELECT NEWID(), r.RptId, r.RoleName, @Now

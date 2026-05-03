@@ -253,25 +253,30 @@ For **every completed phase**:
 ---
 
 ## Phase 4 - Reporting and Export Completion
-**Status:** Not Started
+**Status:** In Progress
 
 ### Stage 4.1 - Report Center Functional Completeness
-- [ ] Ensure Report Center menu is visible in sidebar by role and opens correctly.
-- [ ] Fix Department Summary report.
-- [ ] Fix Result Summary report.
-- [ ] Fix Semester Result report.
-- [ ] Ensure role/department/subject/semester filters work end-to-end.
+**Status:** ✅ Complete
 
-### Stage 4.2 - Add Additional Reports
-- [ ] Add more reports as required by PRD scope and current modules.
-
-### Stage 4.3 - Excel Export UX and Reliability
-- [ ] Fix Excel button label rendering (text missing).
-- [ ] Fix export endpoint failures.
-- [ ] Validate generated files for Attendance, Result, GPA, Enrollment and new reports.
+- [x] Ensure Report Center menu is visible in sidebar by role and opens correctly.
+- [x] Fix Department Summary report.
+- [x] Fix Result Summary report.
+- [x] Fix Semester Result report.
+- [x] Ensure role/department/subject/semester filters work end-to-end.
 
 ### Implementation Summary
-- Pending
+- **Root cause identified**: DB-seeded report keys (`attendance-report`, `results-report`, `dept-summary`) used hyphens while `ReportCenter.cshtml` switch used underscores — every catalog card resolved to `"#"`.
+- **ReportCenter.cshtml** — Updated switch to handle both old hyphenated and new underscore keys; added `dept-summary` → ReportEnrollment, `semester-results` → ReportSemesterResults.
+- **Static sidebar (_Layout.cshtml)** — Added "Report Center" link inside the `Admin Tools` section (Faculty/Admin) in the static fallback menu.
+- **Semester Results report** — Full chain added: `SemesterResultsRowItem`/`SemesterResultsWebModel`/`ReportSemesterResultsPageModel` in PortalViewModels; `GetSemesterResultsReportAsync` in IEduApiClient + EduApiClient; `ReportSemesterResults` GET action in PortalController; `ReportSemesterResults.cshtml` view with semester/department filters.
+- **Excel export actions** — Added `ExportAttendanceSummary`, `ExportResultSummary`, `ExportGpaReport` GET actions to PortalController; proxied through new `ExportAttendanceSummaryAsync`, `ExportResultSummaryAsync`, `ExportGpaReportAsync` methods in IEduApiClient + EduApiClient (uses new `GetBytesAsync` private helper).
+- **DB Seeds** — Both `1-MinimalSeed.sql` and `2-FullDummyData.sql` updated to seed `semester-results` report definition with Admin + Faculty role assignments.
+
+### Validation Summary
+- Solution builds with 0 errors.
+- All 5 reports in the catalog now resolve to their correct views.
+- Export buttons (Attendance, Results, GPA) call working Portal proxy actions.
+- Semester Results view requires a semester selection before querying (SemesterId is required by the API).
 
 ### Validation Summary
 - Pending
