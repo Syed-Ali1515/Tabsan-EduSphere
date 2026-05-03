@@ -332,6 +332,33 @@ public class ModuleSettingsPageModel
     public List<ModuleSettingsWebModel> Modules { get; set; } = new();
 }
 
+// ── Result Calculation ───────────────────────────────────────────────────────
+
+public class ResultCalculationGpaRuleItem
+{
+    public Guid? Id { get; set; }
+    public decimal GradePoint { get; set; }
+    public decimal MinimumScore { get; set; }
+    public int DisplayOrder { get; set; }
+}
+
+public class ResultCalculationComponentRuleItem
+{
+    public Guid? Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public decimal Weightage { get; set; }
+    public int DisplayOrder { get; set; }
+    public bool IsActive { get; set; } = true;
+}
+
+public class ResultCalculationSettingsPageModel
+{
+    public bool IsConnected { get; set; }
+    public string? Message { get; set; }
+    public List<ResultCalculationGpaRuleItem> GpaRules { get; set; } = new();
+    public List<ResultCalculationComponentRuleItem> ComponentRules { get; set; } = new();
+}
+
 // ── Notifications ─────────────────────────────────────────────────────────────
 
 public class NotificationItem
@@ -710,5 +737,149 @@ public class EnrollmentsPageModel
     public List<EnrollmentRosterItem> Roster         { get; set; } = new();
     public List<CourseOfferingItem>   Offerings      { get; set; } = new();
     public Guid?  SelectedOfferingId { get; set; }
+}
+
+// ── Phase 12: Reports ─────────────────────────────────────────────────────────
+
+public class ReportCatalogItem
+{
+    public Guid         Id           { get; set; }
+    public string       Key          { get; set; } = "";
+    public string       Name         { get; set; } = "";
+    public string       Purpose      { get; set; } = "";
+    public bool         IsActive     { get; set; }
+    public List<string> AllowedRoles { get; set; } = new();
+}
+
+public class ReportCenterPageModel
+{
+    public bool   IsConnected { get; set; }
+    public string? Message    { get; set; }
+    public List<ReportCatalogItem> Reports { get; set; } = new();
+}
+
+// Row types returned by EduApiClient for each report
+public class AttendanceSummaryRowItem
+{
+    public string  RegistrationNumber   { get; set; } = "";
+    public string  StudentName          { get; set; } = "";
+    public string  CourseCode           { get; set; } = "";
+    public string  CourseTitle          { get; set; } = "";
+    public int     TotalSessions        { get; set; }
+    public int     AttendedSessions     { get; set; }
+    public decimal AttendancePercentage { get; set; }
+}
+
+public class AttendanceSummaryWebModel
+{
+    public int                          TotalStudents { get; set; }
+    public DateTime                     GeneratedAt   { get; set; }
+    public List<AttendanceSummaryRowItem> Rows         { get; set; } = new();
+}
+
+public class ReportAttendancePageModel
+{
+    public bool   IsConnected  { get; set; }
+    public string? Message     { get; set; }
+    public Guid?  SemesterId   { get; set; }
+    public Guid?  DepartmentId { get; set; }
+    public Guid?  OfferingId   { get; set; }
+    public Guid?  StudentId    { get; set; }
+    public List<LookupItem>          Semesters   { get; set; } = new();
+    public List<LookupItem>          Departments { get; set; } = new();
+    public List<CourseOfferingItem>  Offerings   { get; set; } = new();
+    public AttendanceSummaryWebModel? Report      { get; set; }
+}
+
+public class ResultSummaryRowItem
+{
+    public string   RegistrationNumber { get; set; } = "";
+    public string   StudentName        { get; set; } = "";
+    public string   CourseCode         { get; set; } = "";
+    public string   CourseTitle        { get; set; } = "";
+    public string   ResultType         { get; set; } = "";
+    public decimal  MarksObtained      { get; set; }
+    public decimal  MaxMarks           { get; set; }
+    public decimal  Percentage         { get; set; }
+    public DateTime? PublishedAt       { get; set; }
+}
+
+public class ResultSummaryWebModel
+{
+    public int                        TotalRecords { get; set; }
+    public DateTime                   GeneratedAt  { get; set; }
+    public List<ResultSummaryRowItem> Rows         { get; set; } = new();
+}
+
+public class ReportResultsPageModel
+{
+    public bool   IsConnected  { get; set; }
+    public string? Message     { get; set; }
+    public Guid?  SemesterId   { get; set; }
+    public Guid?  DepartmentId { get; set; }
+    public Guid?  OfferingId   { get; set; }
+    public Guid?  StudentId    { get; set; }
+    public List<LookupItem>         Semesters   { get; set; } = new();
+    public List<LookupItem>         Departments { get; set; } = new();
+    public List<CourseOfferingItem> Offerings   { get; set; } = new();
+    public ResultSummaryWebModel?   Report      { get; set; }
+}
+
+public class GpaReportRowItem
+{
+    public string  RegistrationNumber { get; set; } = "";
+    public string  StudentName        { get; set; } = "";
+    public string  ProgramName        { get; set; } = "";
+    public string  DepartmentName     { get; set; } = "";
+    public int     CurrentSemester    { get; set; }
+    public decimal Cgpa               { get; set; }
+    public decimal CurrentSemesterGpa { get; set; }
+}
+
+public class GpaReportWebModel
+{
+    public decimal               AverageCgpa   { get; set; }
+    public int                   TotalStudents { get; set; }
+    public DateTime              GeneratedAt   { get; set; }
+    public List<GpaReportRowItem> Rows         { get; set; } = new();
+}
+
+public class ReportGpaPageModel
+{
+    public bool   IsConnected  { get; set; }
+    public string? Message     { get; set; }
+    public Guid?  DepartmentId { get; set; }
+    public Guid?  ProgramId    { get; set; }
+    public List<LookupItem>   Departments { get; set; } = new();
+    public List<LookupItem>   Programs    { get; set; } = new();
+    public GpaReportWebModel? Report      { get; set; }
+}
+
+public class EnrollmentSummaryRowItem
+{
+    public string CourseCode     { get; set; } = "";
+    public string CourseTitle    { get; set; } = "";
+    public string SemesterName   { get; set; } = "";
+    public int    MaxEnrollment  { get; set; }
+    public int    EnrolledCount  { get; set; }
+    public int    AvailableSeats { get; set; }
+}
+
+public class EnrollmentSummaryWebModel
+{
+    public int                            TotalOfferings { get; set; }
+    public DateTime                       GeneratedAt    { get; set; }
+    public List<EnrollmentSummaryRowItem> Rows           { get; set; } = new();
+}
+
+public class ReportEnrollmentPageModel
+{
+    public bool   IsConnected  { get; set; }
+    public string? Message     { get; set; }
+    public Guid?  SemesterId   { get; set; }
+    public Guid?  DepartmentId { get; set; }
+    public List<LookupItem>          Semesters   { get; set; } = new();
+    public List<LookupItem>          Departments { get; set; } = new();
+    public EnrollmentSummaryWebModel? Report      { get; set; }
 }
 

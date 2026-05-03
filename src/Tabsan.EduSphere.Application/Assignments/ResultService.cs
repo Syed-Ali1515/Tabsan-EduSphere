@@ -33,16 +33,20 @@ public class ResultService : IResultService
     /// </summary>
     public async Task<ResultResponse> CreateAsync(CreateResultRequest request, CancellationToken ct = default)
     {
-        if (!Enum.TryParse<ResultType>(request.ResultType, ignoreCase: true, out var resultType))
-            throw new ArgumentException($"Invalid result type '{request.ResultType}'.");
+        var resultType = await ValidateComponentResultTypeAsync(request.ResultType, ct);
 
         if (await _repo.ExistsAsync(request.StudentProfileId, request.CourseOfferingId, resultType, ct))
             throw new InvalidOperationException("A result entry already exists for this student / offering / type.");
 
         var result = new Result(request.StudentProfileId, request.CourseOfferingId, resultType,
                                 request.MarksObtained, request.MaxMarks);
+        result.SetGradePoint(ResolveGradePoint(request.MarksObtained, request.MaxMarks,
+            await _repo.GetGpaScaleRulesAsync(ct)));
+
         await _repo.AddAsync(result, ct);
         await _repo.SaveChangesAsync(ct);
+
+        await RecalculateOfferingStandingAsync(request.StudentProfileId, request.CourseOfferingId, ct);
         return ToResponse(result);
     }
 
@@ -54,22 +58,37 @@ public class ResultService : IResultService
     public async Task<int> BulkCreateAsync(BulkCreateResultsRequest request, CancellationToken ct = default)
     {
         var toInsert = new List<Result>();
+        var gpaRules = await _repo.GetGpaScaleRulesAsync(ct);
+        var validTypes = (await _repo.GetActiveComponentRulesAsync(ct))
+            .Select(r => r.Name)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var affectedPairs = new HashSet<(Guid StudentProfileId, Guid CourseOfferingId)>();
+
         foreach (var r in request.Results)
         {
-            if (!Enum.TryParse<ResultType>(r.ResultType, ignoreCase: true, out var resultType))
+            var resultType = NormalizeResultType(r.ResultType);
+            if (!validTypes.Contains(resultType))
                 continue;
 
             // Skip existing — do not overwrite.
             if (await _repo.ExistsAsync(r.StudentProfileId, r.CourseOfferingId, resultType, ct))
                 continue;
 
-            toInsert.Add(new Result(r.StudentProfileId, r.CourseOfferingId, resultType, r.MarksObtained, r.MaxMarks));
+            var result = new Result(r.StudentProfileId, r.CourseOfferingId, resultType, r.MarksObtained, r.MaxMarks);
+            result.SetGradePoint(ResolveGradePoint(r.MarksObtained, r.MaxMarks, gpaRules));
+            toInsert.Add(result);
+            affectedPairs.Add((r.StudentProfileId, r.CourseOfferingId));
         }
 
         if (toInsert.Count == 0) return 0;
 
         await _repo.AddRangeAsync(toInsert, ct);
         await _repo.SaveChangesAsync(ct);
+
+        foreach (var pair in affectedPairs)
+            await RecalculateOfferingStandingAsync(pair.StudentProfileId, pair.CourseOfferingId, ct);
+
         return toInsert.Count;
     }
 
@@ -79,10 +98,10 @@ public class ResultService : IResultService
     /// Publishes a single result, making it visible to the student.
     /// Returns false when the result does not exist or is already published.
     /// </summary>
-    public async Task<bool> PublishAsync(Guid studentProfileId, Guid courseOfferingId, ResultType resultType,
+    public async Task<bool> PublishAsync(Guid studentProfileId, Guid courseOfferingId, string resultType,
                                          Guid publishedByUserId, CancellationToken ct = default)
     {
-        var result = await _repo.GetAsync(studentProfileId, courseOfferingId, resultType, ct);
+        var result = await _repo.GetAsync(studentProfileId, courseOfferingId, NormalizeResultType(resultType), ct);
         if (result is null) return false;
 
         try { result.Publish(publishedByUserId); }
@@ -131,17 +150,25 @@ public class ResultService : IResultService
     /// Captures the old values in the audit log before overwriting.
     /// Returns false when the result does not exist.
     /// </summary>
-    public async Task<bool> CorrectAsync(Guid studentProfileId, Guid courseOfferingId, ResultType resultType,
+    public async Task<bool> CorrectAsync(Guid studentProfileId, Guid courseOfferingId, string resultType,
                                           CorrectResultRequest request, Guid correctedByUserId, CancellationToken ct = default)
     {
-        var result = await _repo.GetAsync(studentProfileId, courseOfferingId, resultType, ct);
+        var normalizedType = NormalizeResultType(resultType);
+        if (IsAggregateType(normalizedType))
+            throw new InvalidOperationException("The Total row is system-calculated and cannot be corrected directly.");
+
+        var result = await _repo.GetAsync(studentProfileId, courseOfferingId, normalizedType, ct);
         if (result is null) return false;
 
         var oldJson = $"{{\"marks\":{result.MarksObtained},\"max\":{result.MaxMarks}}}";
 
         result.CorrectMarks(request.NewMarksObtained, request.NewMaxMarks);
+        result.SetGradePoint(ResolveGradePoint(request.NewMarksObtained, request.NewMaxMarks,
+            await _repo.GetGpaScaleRulesAsync(ct)));
         _repo.Update(result);
         await _repo.SaveChangesAsync(ct);
+
+        await RecalculateOfferingStandingAsync(studentProfileId, courseOfferingId, ct);
 
         await _audit.LogAsync(new AuditLog("CorrectResult", "Result", result.Id.ToString(),
             actorUserId: correctedByUserId,
@@ -208,8 +235,159 @@ public class ResultService : IResultService
     /// <summary>Maps a domain Result to a ResultResponse DTO.</summary>
     private static ResultResponse ToResponse(Result r) =>
         new(r.Id, r.StudentProfileId, r.CourseOfferingId,
-            r.ResultType.ToString(),
+            r.ResultType,
             r.MarksObtained, r.MaxMarks,
             r.MaxMarks > 0 ? Math.Round(r.MarksObtained / r.MaxMarks * 100, 2) : 0,
+            r.GradePoint,
             r.IsPublished, r.PublishedAt);
+
+    private async Task<string> ValidateComponentResultTypeAsync(string rawResultType, CancellationToken ct)
+    {
+        var resultType = NormalizeResultType(rawResultType);
+        if (IsAggregateType(resultType))
+            throw new ArgumentException("Total is system-calculated and cannot be entered manually.");
+
+        var allowedTypes = await _repo.GetActiveComponentRulesAsync(ct);
+        if (!allowedTypes.Any(x => string.Equals(x.Name, resultType, StringComparison.OrdinalIgnoreCase)))
+            throw new ArgumentException($"Invalid result type '{rawResultType}'. Configure the component in Result Calculation first.");
+
+        return resultType;
+    }
+
+    private async Task RecalculateOfferingStandingAsync(Guid studentProfileId, Guid courseOfferingId, CancellationToken ct)
+    {
+        var componentRules = (await _repo.GetActiveComponentRulesAsync(ct))
+            .OrderBy(x => x.DisplayOrder)
+            .ToList();
+        if (componentRules.Count == 0)
+            return;
+
+        var gpaRules = await _repo.GetGpaScaleRulesAsync(ct);
+        var results = (await _repo.GetByStudentAndOfferingAsync(studentProfileId, courseOfferingId, ct)).ToList();
+
+        foreach (var componentResult in results.Where(r => !IsAggregateType(r.ResultType)))
+        {
+            componentResult.SetGradePoint(ResolveGradePoint(componentResult.MarksObtained, componentResult.MaxMarks, gpaRules));
+            _repo.Update(componentResult);
+        }
+
+        var configuredByName = componentRules.ToDictionary(x => x.Name, StringComparer.OrdinalIgnoreCase);
+        var enteredComponents = results
+            .Where(r => !IsAggregateType(r.ResultType) && configuredByName.ContainsKey(r.ResultType))
+            .ToList();
+
+        if (enteredComponents.Count == 0)
+        {
+            await _repo.SaveChangesAsync(ct);
+            return;
+        }
+
+        decimal currentMarks = 0;
+        decimal currentMax = 0;
+
+        foreach (var component in enteredComponents)
+        {
+            var rule = configuredByName[component.ResultType];
+            if (component.MaxMarks <= 0) continue;
+
+            currentMarks += Math.Round((component.MarksObtained / component.MaxMarks) * rule.Weightage, 2);
+            currentMax += rule.Weightage;
+        }
+
+        var totalGradePoint = ResolveGradePoint(currentMarks, currentMax, gpaRules);
+        var totalRow = results.FirstOrDefault(r => IsAggregateType(r.ResultType));
+        if (totalRow is null)
+        {
+            totalRow = new Result(studentProfileId, courseOfferingId, TotalResultType, currentMarks, currentMax);
+            totalRow.SetGradePoint(totalGradePoint);
+            await _repo.AddAsync(totalRow, ct);
+        }
+        else
+        {
+            totalRow.CorrectMarks(currentMarks, currentMax);
+            totalRow.SetGradePoint(totalGradePoint);
+            _repo.Update(totalRow);
+        }
+
+        await _repo.SaveChangesAsync(ct);
+
+        var semesterId = await _repo.GetSemesterIdForOfferingAsync(courseOfferingId, ct);
+        if (!semesterId.HasValue)
+            return;
+
+        var student = await _repo.GetStudentProfileAsync(studentProfileId, ct);
+        if (student is null)
+            return;
+
+        var configuredTotalWeight = componentRules.Sum(x => x.Weightage);
+        var semesterEnrollments = await _repo.GetActiveEnrollmentsForSemesterAsync(studentProfileId, semesterId.Value, ct);
+        var semesterResults = await _repo.GetByStudentAndSemesterAsync(studentProfileId, semesterId.Value, ct);
+        var completeSemesterTotals = semesterResults
+            .Where(r => IsAggregateType(r.ResultType)
+                     && r.MaxMarks == configuredTotalWeight
+                     && r.GradePoint.HasValue)
+            .ToDictionary(r => r.CourseOfferingId, r => r, EqualityComparer<Guid>.Default);
+
+        var semesterIsComplete = semesterEnrollments.Count > 0
+            && semesterEnrollments.All(e => completeSemesterTotals.ContainsKey(e.CourseOfferingId));
+
+        var semesterGpa = student.CurrentSemesterGpa;
+        if (semesterIsComplete)
+        {
+            semesterGpa = CalculateWeightedGpa(
+                semesterEnrollments
+                    .Select(e => (e.CourseOfferingId, CreditHours: e.CourseOffering.Course.CreditHours))
+                    .Where(x => completeSemesterTotals.ContainsKey(x.CourseOfferingId))
+                    .Select(x => (x.CreditHours, completeSemesterTotals[x.CourseOfferingId].GradePoint!.Value)));
+        }
+
+        var allEnrollments = await _repo.GetActiveEnrollmentsForStudentAsync(studentProfileId, ct);
+        var allResults = await _repo.GetByStudentAsync(studentProfileId, ct);
+        var completeTotals = allResults
+            .Where(r => IsAggregateType(r.ResultType)
+                     && r.MaxMarks == configuredTotalWeight
+                     && r.GradePoint.HasValue)
+            .ToDictionary(r => r.CourseOfferingId, r => r, EqualityComparer<Guid>.Default);
+
+        var cgpa = completeTotals.Count == 0
+            ? 0m
+            : CalculateWeightedGpa(
+                allEnrollments
+                    .Where(e => completeTotals.ContainsKey(e.CourseOfferingId))
+                    .Select(e => (e.CourseOffering.Course.CreditHours, completeTotals[e.CourseOfferingId].GradePoint!.Value)));
+
+        student.UpdateAcademicStanding(semesterGpa, cgpa);
+        _repo.UpdateStudentProfile(student);
+        await _repo.SaveChangesAsync(ct);
+    }
+
+    private static decimal? ResolveGradePoint(decimal marksObtained, decimal maxMarks, IReadOnlyList<GpaScaleRule> gpaRules)
+    {
+        if (maxMarks <= 0 || gpaRules.Count == 0)
+            return null;
+
+        var percentage = (marksObtained / maxMarks) * 100m;
+        return gpaRules
+            .OrderByDescending(r => r.MinimumScore)
+            .FirstOrDefault(r => percentage >= r.MinimumScore)
+            ?.GradePoint;
+    }
+
+    private static decimal CalculateWeightedGpa(IEnumerable<(int CreditHours, decimal GradePoint)> rows)
+    {
+        var materialized = rows.Where(x => x.CreditHours > 0).ToList();
+        var totalCredits = materialized.Sum(x => x.CreditHours);
+        if (totalCredits <= 0) return 0m;
+
+        var weighted = materialized.Sum(x => x.CreditHours * x.GradePoint);
+        return Math.Round(weighted / totalCredits, 2, MidpointRounding.AwayFromZero);
+    }
+
+    private static string NormalizeResultType(string value)
+        => string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim();
+
+    private static bool IsAggregateType(string value)
+        => string.Equals(value, TotalResultType, StringComparison.OrdinalIgnoreCase);
+
+    private const string TotalResultType = "Total";
 }

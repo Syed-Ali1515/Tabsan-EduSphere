@@ -1,8 +1,8 @@
 # Tabsan EduSphere Development Plan (ASP.NET)
 
-**Version:** 1.1  
-**Date:** 29 April 2026  
-**Based On:** PRD v1.8, Modules v1.3, Database Schema v1.1
+**Version:** 1.2  
+**Date:** 2 May 2026  
+**Based On:** PRD v1.11, Modules v1.3, Database Schema v1.1
 
 ---
 
@@ -10,12 +10,13 @@
 
 - Delivery model: Phased, test-first, modular monolith
 - Sprint length: 2 weeks
-- Initial roadmap horizon: **38 weeks (19 sprints)**
+- Initial roadmap horizon: **42 weeks (21 sprints)**
 - Release train:
   - v1.0 core operations (Sprints 1–5)
   - v1.1 academic expansion (Sprints 6–12)
   - v1.2 lifecycle, licensing tool, dashboard, finance (Sprints 13–18)
   - v1.3 security, performance, email, mobile (Sprint 19)
+  - v1.4 result calculation and GPA automation (Sprints 20–21)
 
 ---
 
@@ -289,6 +290,33 @@
 
 ---
 
+## Phase 11: Result Calculation & GPA Automation (Sprints 20-21)
+
+### Objectives
+- Add a new sidebar menu named `Result Calculation` for admins
+- Allow admins to configure GPA-to-score thresholds and subject component weightages
+- Automatically calculate subject GPA, semester GPA, and cumulative CGPA from entered marks
+
+### Deliverables
+- Result Calculation screen with two sections:
+  - Section 1: repeatable `GPA` and `Score` rows with `Add Row` and `Save`
+  - Section 2: repeatable assessment component rows for items such as Quizzes, Midterms, Finals and their score weights
+- Database tables and APIs for GPA mappings and result component configuration
+- Validation rule that component score weights must total `100`
+- Result-entry workflow updates so faculty mark entry triggers automatic subject total calculation
+- Semester completion logic that automatically computes SGPA when all subject marks are present
+- CGPA aggregation logic that automatically updates cumulative GPA after every semester completion or approved result modification
+- Audit trail for recalculation operations and admin configuration changes
+
+### Exit Criteria
+- Admin can add, edit, and save multiple GPA/Score rows without data loss
+- Admin can configure component weightages and cannot save an active rule set unless the total is `100`
+- Entering quiz, midterm, or final marks automatically updates subject totals and subject GPA
+- When all subjects for a semester are marked, the student’s SGPA and CGPA are recalculated and stored automatically
+- Integration tests cover initial calculation, recalculation after mark edits, and incomplete-mark scenarios
+
+---
+
 ## 4. Cross-Cutting Workstreams
 
 ## 4.1 Data and Migration Workstream
@@ -372,5 +400,39 @@ A feature is complete only when:
 - Implement `ApplicationDbContext` and first EF Core migration
 - Implement role seed and Super Admin bootstrap flow
 - Add first policy-based authorization matrix tests
+
+---
+
+## Phase 12: Reporting & Document Generation (Sprints 22-23)
+
+### Objectives
+- Build a role-gated Report Center portal backed by `ReportDefinition` / `ReportRoleAssignment` records from Phase 9
+- Provide five standard reports accessible via web portal and REST API
+- Support Excel (`.xlsx`) export on attendance, result, and GPA reports
+- Enforce role-based access to each report using the existing report role assignment system
+
+### Deliverables
+- **Report Catalog endpoint** — `GET /api/v1/reports` returns the subset of active reports the caller's role is permitted to view
+- **Attendance Summary Report** — per-student per-offering session counts and attendance percentage, filterable by semester / department / offering / student; Excel export
+- **Result Summary Report** — all published results with marks and percentage, filterable by semester / department / offering / student; Excel export
+- **GPA & CGPA Report** — per-student academic standing (Current Semester GPA + CGPA) filterable by department / program; Excel export; average CGPA summary row
+- **Enrollment Summary Report** — per course-offering seat utilisation (enrolled vs max capacity); filterable by semester / department
+- **Semester Results Report** — full published result set for a selected semester with optional department filter
+- **Report Center web page** — landing page listing all reports available to the user's role as cards with filter and view buttons
+- **Four report detail pages** — `ReportAttendance`, `ReportResults`, `ReportGpa`, `ReportEnrollment` — each with filter form, sortable data table, and Export button
+- **Sidebar menu item** — `reports` entry visible to Admin, Faculty, and Student roles
+- **Seed data** — five `ReportDefinition` rows seeded at startup with default role assignments
+
+### Technical Highlights
+- `ReportKeys` constants class prevents magic string duplication across backend and seeder
+- `ReportRepository` uses EF Core 8 queries with explicit joins (no raw SQL) for portability and testability
+- `ReportService` uses `ClosedXML` for in-memory Excel workbook generation — no temporary files on disk
+- No new EF migration required — `report_definitions` and `report_role_assignments` tables were created in Phase 9
+
+### Exit Criteria
+- All five report endpoints return 200 for authenticated admin user
+- All three export endpoints return `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`
+- Non-authorised role receives 403 on a report they are not assigned to
+- `Build succeeded. 0 Error(s)` on `dotnet build`
 
 ---

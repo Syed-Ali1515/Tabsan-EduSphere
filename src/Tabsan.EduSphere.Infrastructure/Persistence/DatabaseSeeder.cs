@@ -37,6 +37,7 @@ public static class DatabaseSeeder
         await SeedModulesAsync(db);
         await SeedSuperAdminAsync(db, hasher);
         await SeedSidebarMenusAsync(db);
+        await SeedReportDefinitionsAsync(db);
 
         await db.SaveChangesAsync();
     }
@@ -178,6 +179,22 @@ public static class DatabaseSeeder
         var timetableStudent = await Upsert("timetable_student", "Student Timetable",  "View own class timetable",                        4);
         var lookups          = await Upsert("lookups",           "Lookups",            "Reference data management (Admin/SuperAdmin)",    5, isSystemMenu: false);
         var systemSettings   = await Upsert("system_settings",   "System Settings",   "Platform configuration — SuperAdmin only",        6, isSystemMenu: true);
+        var resultCalculation= await Upsert("result_calculation", "Result Calculation", "Configure GPA scale and assessment weights",      7, isSystemMenu: false);
+        var notifications    = await Upsert("notifications",     "Notifications",      "View system and academic notifications",           8);
+        var students         = await Upsert("students",          "Students",           "Manage student profiles",                         9);
+        var departments      = await Upsert("departments",       "Departments",        "Manage academic departments",                    10);
+        var courses          = await Upsert("courses",           "Courses",            "Manage courses and offerings",                   11);
+        var assignments      = await Upsert("assignments",       "Assignments",        "Manage and submit assignments",                  12);
+        var attendance       = await Upsert("attendance",        "Attendance",         "Record and view attendance",                     13);
+        var results          = await Upsert("results",           "Results",            "View and publish academic results",              14);
+        var quizzes          = await Upsert("quizzes",           "Quizzes",            "Manage and attempt quizzes",                     15);
+        var fyp              = await Upsert("fyp",               "FYP",                "Final Year Projects management",                 16);
+        var analytics        = await Upsert("analytics",         "Analytics",          "Academic analytics and dashboards",              17);
+        var aiChat           = await Upsert("ai_chat",           "AI Chat",            "AI-powered academic assistant",                  18);
+        var studentLifecycle = await Upsert("student_lifecycle", "Student Lifecycle",  "Manage promotions, holds and withdrawals",       19);
+        var payments         = await Upsert("payments",          "Payments",           "Manage and view fee payment records",            20);
+        var enrollments      = await Upsert("enrollments",       "Enrollments",        "Manage course enrollments and rosters",          21);
+        var reportCenter     = await Upsert("report_center",     "Report Center",      "Generate and export academic reports",           22);
 
         await db.SaveChangesAsync(); // ensure IDs are set before use as parentId
 
@@ -222,8 +239,11 @@ public static class DatabaseSeeder
             EnsureRoleAccess(id, "Student", isAllowed: false);
         }
 
+        EnsureRoleAccess(resultCalculation.Id, "Admin",   isAllowed: true);
+        EnsureRoleAccess(resultCalculation.Id, "Faculty", isAllowed: false);
+        EnsureRoleAccess(resultCalculation.Id, "Student", isAllowed: false);
+
         // System Settings + sub-menus: SuperAdmin only; other roles explicitly false
-        // Theme Settings is also accessible to any authenticated user (personal preference)
         foreach (var id in new[] { systemSettings.Id, reportSettings.Id, moduleSettings.Id, sidebarSettings.Id, licenseUpdate.Id })
         {
             EnsureRoleAccess(id, "Admin",   isAllowed: false);
@@ -235,6 +255,112 @@ public static class DatabaseSeeder
         foreach (var role in new[] { "Admin", "Faculty", "Student" })
             EnsureRoleAccess(themeSettings.Id, role, isAllowed: true);
 
+        // Notifications: all roles
+        foreach (var role in new[] { "Admin", "Faculty", "Student" })
+            EnsureRoleAccess(notifications.Id, role, isAllowed: true);
+
+        // Students: Admin + Faculty (view); not Student
+        EnsureRoleAccess(students.Id, "Admin",   isAllowed: true);
+        EnsureRoleAccess(students.Id, "Faculty", isAllowed: true);
+        EnsureRoleAccess(students.Id, "Student", isAllowed: false);
+
+        // Departments: Admin only
+        EnsureRoleAccess(departments.Id, "Admin",   isAllowed: true);
+        EnsureRoleAccess(departments.Id, "Faculty", isAllowed: false);
+        EnsureRoleAccess(departments.Id, "Student", isAllowed: false);
+
+        // Courses: Admin + Faculty
+        EnsureRoleAccess(courses.Id, "Admin",   isAllowed: true);
+        EnsureRoleAccess(courses.Id, "Faculty", isAllowed: true);
+        EnsureRoleAccess(courses.Id, "Student", isAllowed: false);
+
+        // Assignments: Faculty + Student
+        EnsureRoleAccess(assignments.Id, "Admin",   isAllowed: false);
+        EnsureRoleAccess(assignments.Id, "Faculty", isAllowed: true);
+        EnsureRoleAccess(assignments.Id, "Student", isAllowed: true);
+
+        // Attendance: Faculty (record) + Student (view)
+        EnsureRoleAccess(attendance.Id, "Admin",   isAllowed: false);
+        EnsureRoleAccess(attendance.Id, "Faculty", isAllowed: true);
+        EnsureRoleAccess(attendance.Id, "Student", isAllowed: true);
+
+        // Results: Admin + Faculty + Student
+        foreach (var role in new[] { "Admin", "Faculty", "Student" })
+            EnsureRoleAccess(results.Id, role, isAllowed: true);
+
+        // Quizzes: Faculty + Student
+        EnsureRoleAccess(quizzes.Id, "Admin",   isAllowed: false);
+        EnsureRoleAccess(quizzes.Id, "Faculty", isAllowed: true);
+        EnsureRoleAccess(quizzes.Id, "Student", isAllowed: true);
+
+        // FYP: Faculty + Student
+        EnsureRoleAccess(fyp.Id, "Admin",   isAllowed: false);
+        EnsureRoleAccess(fyp.Id, "Faculty", isAllowed: true);
+        EnsureRoleAccess(fyp.Id, "Student", isAllowed: true);
+
+        // Analytics: Admin + Faculty
+        EnsureRoleAccess(analytics.Id, "Admin",   isAllowed: true);
+        EnsureRoleAccess(analytics.Id, "Faculty", isAllowed: true);
+        EnsureRoleAccess(analytics.Id, "Student", isAllowed: false);
+
+        // AI Chat: Faculty + Student
+        EnsureRoleAccess(aiChat.Id, "Admin",   isAllowed: false);
+        EnsureRoleAccess(aiChat.Id, "Faculty", isAllowed: true);
+        EnsureRoleAccess(aiChat.Id, "Student", isAllowed: true);
+
+        // Student Lifecycle: Admin only
+        EnsureRoleAccess(studentLifecycle.Id, "Admin",   isAllowed: true);
+        EnsureRoleAccess(studentLifecycle.Id, "Faculty", isAllowed: false);
+        EnsureRoleAccess(studentLifecycle.Id, "Student", isAllowed: false);
+
+        // Payments: Admin + Student
+        EnsureRoleAccess(payments.Id, "Admin",   isAllowed: true);
+        EnsureRoleAccess(payments.Id, "Faculty", isAllowed: false);
+        EnsureRoleAccess(payments.Id, "Student", isAllowed: true);
+
+        // Enrollments: Admin + Faculty
+        EnsureRoleAccess(enrollments.Id, "Admin",   isAllowed: true);
+        EnsureRoleAccess(enrollments.Id, "Faculty", isAllowed: true);
+        EnsureRoleAccess(enrollments.Id, "Student", isAllowed: false);
+
+        // Report Center: Admin + Faculty
+        EnsureRoleAccess(reportCenter.Id, "Admin",   isAllowed: true);
+        EnsureRoleAccess(reportCenter.Id, "Faculty", isAllowed: true);
+        EnsureRoleAccess(reportCenter.Id, "Student", isAllowed: false);
+
         await db.SaveChangesAsync();
+    }
+
+    // ── Report Definitions ─────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Seeds the five standard Phase 12 report definitions and their default role assignments.
+    /// Idempotent — guarded by key lookup.
+    /// </summary>
+    private static async Task SeedReportDefinitionsAsync(ApplicationDbContext db)
+    {
+        var existingKeys = await db.ReportDefinitions.Select(r => r.Key).ToListAsync();
+
+        var definitions = new[]
+        {
+            (ReportKeys.AttendanceSummary, "Attendance Summary",   "Per-student attendance percentage per course offering, filterable by semester and department."),
+            (ReportKeys.ResultSummary,     "Result Summary",       "All published result entries with marks and percentage, filterable by semester, offering, or student."),
+            (ReportKeys.GpaReport,         "GPA & CGPA Report",    "Per-student current semester GPA and cumulative CGPA, filterable by department and program."),
+            (ReportKeys.EnrollmentSummary, "Enrollment Summary",   "Course offering seat utilisation showing enrolled count versus maximum capacity."),
+            (ReportKeys.SemesterResults,   "Semester Results",     "Full published result set for a selected semester with optional department filter."),
+        };
+
+        foreach (var (key, name, purpose) in definitions)
+        {
+            if (existingKeys.Contains(key))
+                continue;
+
+            var report = new ReportDefinition(key, name, purpose);
+            db.ReportDefinitions.Add(report);
+            // Default role assignments: SuperAdmin, Admin and Faculty can view all reports
+            db.Set<ReportRoleAssignment>().Add(new ReportRoleAssignment(report.Id, "SuperAdmin"));
+            db.Set<ReportRoleAssignment>().Add(new ReportRoleAssignment(report.Id, "Admin"));
+            db.Set<ReportRoleAssignment>().Add(new ReportRoleAssignment(report.Id, "Faculty"));
+        }
     }
 }

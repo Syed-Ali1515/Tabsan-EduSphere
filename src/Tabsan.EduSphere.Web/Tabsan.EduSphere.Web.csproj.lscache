@@ -471,7 +471,13 @@ Views/
   Notifications.cshtml
   Payments.cshtml
   Quizzes.cshtml
+  ReportAttendance.cshtml
+  ReportCenter.cshtml
+  ReportEnrollment.cshtml
+  ReportGpa.cshtml
+  ReportResults.cshtml
   ReportSettings.cshtml
+  ResultCalculation.cshtml
   Results.cshtml
   Rooms.cshtml
   Section.cshtml
@@ -511,7 +517,13 @@ Views/
   Notifications.cshtml
   Payments.cshtml
   Quizzes.cshtml
+  ReportAttendance.cshtml
+  ReportCenter.cshtml
+  ReportEnrollment.cshtml
+  ReportGpa.cshtml
+  ReportResults.cshtml
   ReportSettings.cshtml
+  ResultCalculation.cshtml
   Results.cshtml
   Rooms.cshtml
   Section.cshtml

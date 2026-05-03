@@ -1,3 +1,4 @@
+using Tabsan.EduSphere.Domain.Academic;
 using Tabsan.EduSphere.Domain.Assignments;
 
 namespace Tabsan.EduSphere.Domain.Interfaces;
@@ -10,7 +11,7 @@ public interface IResultRepository
     /// <summary>
     /// Returns the result for the given student, offering, and type combination, or null.
     /// </summary>
-    Task<Result?> GetAsync(Guid studentProfileId, Guid courseOfferingId, ResultType resultType, CancellationToken ct = default);
+    Task<Result?> GetAsync(Guid studentProfileId, Guid courseOfferingId, string resultType, CancellationToken ct = default);
 
     /// <summary>Returns all results for the given student (published and draft).</summary>
     Task<IReadOnlyList<Result>> GetByStudentAsync(Guid studentProfileId, CancellationToken ct = default);
@@ -21,8 +22,14 @@ public interface IResultRepository
     /// <summary>Returns all results for a course offering (faculty/admin view, published and draft).</summary>
     Task<IReadOnlyList<Result>> GetByOfferingAsync(Guid courseOfferingId, CancellationToken ct = default);
 
+    /// <summary>Returns all results for a specific student and course offering.</summary>
+    Task<IReadOnlyList<Result>> GetByStudentAndOfferingAsync(Guid studentProfileId, Guid courseOfferingId, CancellationToken ct = default);
+
+    /// <summary>Returns all results for a student in a specific semester.</summary>
+    Task<IReadOnlyList<Result>> GetByStudentAndSemesterAsync(Guid studentProfileId, Guid semesterId, CancellationToken ct = default);
+
     /// <summary>Returns true when a result row already exists for the given combination.</summary>
-    Task<bool> ExistsAsync(Guid studentProfileId, Guid courseOfferingId, ResultType resultType, CancellationToken ct = default);
+    Task<bool> ExistsAsync(Guid studentProfileId, Guid courseOfferingId, string resultType, CancellationToken ct = default);
 
     /// <summary>Queues a new result for insertion.</summary>
     Task AddAsync(Result result, CancellationToken ct = default);
@@ -32,6 +39,36 @@ public interface IResultRepository
 
     /// <summary>Marks a result as modified (publish or correction).</summary>
     void Update(Result result);
+
+    /// <summary>Returns the currently active assessment component rules.</summary>
+    Task<IReadOnlyList<ResultComponentRule>> GetActiveComponentRulesAsync(CancellationToken ct = default);
+
+    /// <summary>Returns all result calculation component rules.</summary>
+    Task<IReadOnlyList<ResultComponentRule>> GetAllComponentRulesAsync(CancellationToken ct = default);
+
+    /// <summary>Returns the configured GPA scale rules.</summary>
+    Task<IReadOnlyList<GpaScaleRule>> GetGpaScaleRulesAsync(CancellationToken ct = default);
+
+    /// <summary>Replaces the result calculation configuration in one unit of work.</summary>
+    Task ReplaceCalculationRulesAsync(IEnumerable<GpaScaleRule> gpaScaleRules, IEnumerable<ResultComponentRule> componentRules, CancellationToken ct = default);
+
+    /// <summary>Returns the student profile for GPA updates, or null when not found.</summary>
+    Task<StudentProfile?> GetStudentProfileAsync(Guid studentProfileId, CancellationToken ct = default);
+
+    /// <summary>Returns active enrollments for the student in the given semester.</summary>
+    Task<IReadOnlyList<Enrollment>> GetActiveEnrollmentsForSemesterAsync(Guid studentProfileId, Guid semesterId, CancellationToken ct = default);
+
+    /// <summary>Returns active enrollments for the student across all semesters.</summary>
+    Task<IReadOnlyList<Enrollment>> GetActiveEnrollmentsForStudentAsync(Guid studentProfileId, CancellationToken ct = default);
+
+    /// <summary>Returns the semester ID for a course offering.</summary>
+    Task<Guid?> GetSemesterIdForOfferingAsync(Guid courseOfferingId, CancellationToken ct = default);
+
+    /// <summary>Returns the credit hours for a course offering.</summary>
+    Task<int?> GetCreditHoursForOfferingAsync(Guid courseOfferingId, CancellationToken ct = default);
+
+    /// <summary>Marks the student profile as modified for standing updates.</summary>
+    void UpdateStudentProfile(StudentProfile studentProfile);
 
     // ── Transcript export logs ────────────────────────────────────────────────
 

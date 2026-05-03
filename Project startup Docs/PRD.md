@@ -1,10 +1,10 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.10 (Phase 10 Complete — Security, Performance & Email Infrastructure)  
+**Version:** 1.11 (Phase 11 Planned — Result Calculation and GPA Automation)  
 **Status:** Approved  
 **Prepared By:** Product Team  
-**Last Updated:** 30 April 2026  
+**Last Updated:** 2 May 2026  
 
 ---
 
@@ -53,6 +53,7 @@ To deliver a scalable, long‑term university management system that preserves a
 - Admissions & enrollment
 - Student Information System (SIS)
 - Assignments & quizzes
+- Result calculation configuration and automated GPA / CGPA processing
 - Notifications & alerts (dashboard + email)
 - Final Year Project (FYP) management
 - AI chatbot
@@ -243,6 +244,7 @@ If license expires or becomes invalid:
 - Enter or import CSV sheet of newly registered students to whitelist
 - Create and manage payment receipts for students
 - Confirm payment received (status → Paid)
+- Configure Result Calculation rules: GPA-to-score mappings and assessment component weightages
 - Unlock and reset passwords for non-admin locked accounts
 - View license status (read-only)
 - No role or system configuration access
@@ -293,6 +295,38 @@ If license expires or becomes invalid:
   - Semester → Course → Assignment
 - Submit work
 - View feedback and grades
+
+### 10.1 Result Calculation & GPA Automation
+
+#### Section 1: GPA-to-Score Mapping
+- Admin configures a sidebar menu named **Result Calculation**
+- The first section contains repeatable rows with two text boxes:
+  - GPA
+  - Score threshold / minimum score
+- Example mappings:
+  - GPA `2.0` = Score `60`
+  - GPA `2.5` = Score `65`
+- Admin can use:
+  - **Add Row** to append another GPA/Score pair
+  - **Save** to persist all rows to the database
+
+#### Section 2: Assessment Component Weightage
+- The second section contains repeatable rows for subject result components and their score contributions
+- Admin defines how each subject total score is composed, for example:
+  - Quizzes = 20
+  - Midterms = 30
+  - Finals = 50
+- The configured weightages must total 100 before the configuration can be saved
+- The configuration is stored in the database and used by all result-entry workflows
+
+#### Automatic GPA, SGPA, and CGPA Processing
+- When faculty enter quiz, midterm, or final marks, the system automatically recalculates the subject total using the saved component weightages
+- The system automatically determines subject GPA using the saved GPA-to-score mapping
+- Once all subjects for a semester are fully marked for a student, the system automatically calculates and stores:
+  - Semester GPA (SGPA)
+  - Total cumulative GPA (CGPA)
+- Recalculation must also run whenever an existing mark is edited through an approved modification workflow
+- All recalculation events must be auditable
 
 ---
 
@@ -553,5 +587,20 @@ Accessible from the top navigation as a dedicated "Settings" menu:
 - In scope for v1: Authentication, Departments, SIS, Courses/Programs, Assignments, Results, Notifications, Licensing core
 - In scope for v1.1: Quizzes, Attendance, FYP, AI Chatbot baseline, extended themes
 - In scope for v1.2: Advanced analytics, advanced audit dashboards, multi-campus enhancements
+- In scope for v1.4: Result Calculation configuration, automated subject GPA, semester GPA, and cumulative CGPA processing
+
+### 20.10 Phase 11 Implementation Focus — Result Calculation and GPA Automation
+- **Stage 11.1 Configuration UI and Data Model**
+  - Add sidebar menu: `Result Calculation`
+  - Add database tables for GPA-to-score mappings and assessment component weightages
+  - Provide repeatable admin entry forms with Add Row and Save actions
+- **Stage 11.2 Result Calculation Engine**
+  - Compute subject totals from configured assessment weights
+  - Resolve subject GPA from configured GPA/score thresholds
+  - Validate total component weightage = 100 before activation
+- **Stage 11.3 Academic Aggregation Automation**
+  - Automatically compute semester GPA once all subject results are complete
+  - Automatically update cumulative CGPA after semester GPA changes
+  - Re-run calculations after approved mark modifications and retain audit logs
 
 ---

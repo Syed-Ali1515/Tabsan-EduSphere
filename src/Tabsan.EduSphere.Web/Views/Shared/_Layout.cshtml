@@ -58,6 +58,7 @@
         "rooms"             => ("Portal", "Rooms"),
         "report_settings"   => ("Portal", "ReportSettings"),
         "module_settings"   => ("Portal", "ModuleSettings"),
+        "result_calculation" => ("Portal", "ResultCalculation"),
         "sidebar_settings"  => ("Portal", "SidebarSettings"),
         "license_update"    => ("Portal", "LicenseUpdate"),
         "theme_settings"    => ("Portal", "ThemeSettings"),
@@ -75,6 +76,7 @@
         "student_lifecycle" => ("Portal", "StudentLifecycle"),
         "payments"          => ("Portal", "Payments"),
         "enrollments"       => ("Portal", "Enrollments"),
+        "report_center"     => ("Portal", "ReportCenter"),
         _                    => null
     };
 }
@@ -186,6 +188,7 @@
                         <a class="menu-link" asp-controller="Portal" asp-action="Analytics">Analytics</a>
                         @if (showAdminLinks)
                         {
+                            <a class="menu-link" asp-controller="Portal" asp-action="ResultCalculation">Result Calculation</a>
                             <a class="menu-link" asp-controller="Portal" asp-action="StudentLifecycle">Student Lifecycle</a>
                             <a class="menu-link" asp-controller="Portal" asp-action="Payments">Payments</a>
                         }

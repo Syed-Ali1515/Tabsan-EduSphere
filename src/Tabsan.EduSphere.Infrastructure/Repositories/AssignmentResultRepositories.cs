@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Tabsan.EduSphere.Domain.Academic;
 using Tabsan.EduSphere.Domain.Assignments;
 using Tabsan.EduSphere.Domain.Interfaces;
 using Tabsan.EduSphere.Infrastructure.Persistence;
@@ -85,7 +86,7 @@ public class ResultRepository : IResultRepository
     // ── Results ───────────────────────────────────────────────────────────────
 
     /// <summary>Returns the specific result row for student+offering+type, or null.</summary>
-    public Task<Result?> GetAsync(Guid studentProfileId, Guid courseOfferingId, ResultType resultType, CancellationToken ct = default)
+    public Task<Result?> GetAsync(Guid studentProfileId, Guid courseOfferingId, string resultType, CancellationToken ct = default)
         => _db.Results.FirstOrDefaultAsync(r =>
             r.StudentProfileId == studentProfileId &&
             r.CourseOfferingId == courseOfferingId &&
@@ -115,8 +116,22 @@ public class ResultRepository : IResultRepository
                     .ThenBy(r => r.ResultType)
                     .ToListAsync(ct);
 
+    public async Task<IReadOnlyList<Result>> GetByStudentAndOfferingAsync(Guid studentProfileId, Guid courseOfferingId, CancellationToken ct = default)
+        => await _db.Results
+                    .Where(r => r.StudentProfileId == studentProfileId && r.CourseOfferingId == courseOfferingId)
+                    .OrderBy(r => r.ResultType)
+                    .ToListAsync(ct);
+
+    public async Task<IReadOnlyList<Result>> GetByStudentAndSemesterAsync(Guid studentProfileId, Guid semesterId, CancellationToken ct = default)
+        => await _db.Results
+                    .Where(r => r.StudentProfileId == studentProfileId
+                             && _db.CourseOfferings.Any(o => o.Id == r.CourseOfferingId && o.SemesterId == semesterId))
+                    .OrderBy(r => r.CourseOfferingId)
+                    .ThenBy(r => r.ResultType)
+                    .ToListAsync(ct);
+
     /// <summary>Returns true when a result row already exists for the combination.</summary>
-    public Task<bool> ExistsAsync(Guid studentProfileId, Guid courseOfferingId, ResultType resultType, CancellationToken ct = default)
+    public Task<bool> ExistsAsync(Guid studentProfileId, Guid courseOfferingId, string resultType, CancellationToken ct = default)
         => _db.Results.AnyAsync(r =>
             r.StudentProfileId == studentProfileId &&
             r.CourseOfferingId == courseOfferingId &&
@@ -132,6 +147,68 @@ public class ResultRepository : IResultRepository
 
     /// <summary>Marks a result as modified (publish or Admin correction).</summary>
     public void Update(Result result) => _db.Results.Update(result);
+
+    public async Task<IReadOnlyList<ResultComponentRule>> GetActiveComponentRulesAsync(CancellationToken ct = default)
+        => await _db.ResultComponentRules
+                    .Where(r => r.IsActive)
+                    .OrderBy(r => r.DisplayOrder)
+                    .ToListAsync(ct);
+
+    public async Task<IReadOnlyList<ResultComponentRule>> GetAllComponentRulesAsync(CancellationToken ct = default)
+        => await _db.ResultComponentRules
+                    .OrderBy(r => r.DisplayOrder)
+                    .ToListAsync(ct);
+
+    public async Task<IReadOnlyList<GpaScaleRule>> GetGpaScaleRulesAsync(CancellationToken ct = default)
+        => await _db.GpaScaleRules
+                    .OrderBy(r => r.DisplayOrder)
+                    .ToListAsync(ct);
+
+    public async Task ReplaceCalculationRulesAsync(IEnumerable<GpaScaleRule> gpaScaleRules, IEnumerable<ResultComponentRule> componentRules, CancellationToken ct = default)
+    {
+        var existingGpaRules = await _db.GpaScaleRules.ToListAsync(ct);
+        var existingComponentRules = await _db.ResultComponentRules.ToListAsync(ct);
+
+        _db.GpaScaleRules.RemoveRange(existingGpaRules);
+        _db.ResultComponentRules.RemoveRange(existingComponentRules);
+
+        await _db.GpaScaleRules.AddRangeAsync(gpaScaleRules, ct);
+        await _db.ResultComponentRules.AddRangeAsync(componentRules, ct);
+    }
+
+    public Task<StudentProfile?> GetStudentProfileAsync(Guid studentProfileId, CancellationToken ct = default)
+        => _db.StudentProfiles.FirstOrDefaultAsync(s => s.Id == studentProfileId, ct);
+
+    public async Task<IReadOnlyList<Enrollment>> GetActiveEnrollmentsForSemesterAsync(Guid studentProfileId, Guid semesterId, CancellationToken ct = default)
+        => await _db.Enrollments
+                    .Include(e => e.CourseOffering)
+                        .ThenInclude(o => o.Course)
+                    .Where(e => e.StudentProfileId == studentProfileId
+                             && e.Status == EnrollmentStatus.Active
+                             && e.CourseOffering.SemesterId == semesterId)
+                    .ToListAsync(ct);
+
+    public async Task<IReadOnlyList<Enrollment>> GetActiveEnrollmentsForStudentAsync(Guid studentProfileId, CancellationToken ct = default)
+        => await _db.Enrollments
+                    .Include(e => e.CourseOffering)
+                        .ThenInclude(o => o.Course)
+                    .Where(e => e.StudentProfileId == studentProfileId
+                             && e.Status == EnrollmentStatus.Active)
+                    .ToListAsync(ct);
+
+    public Task<Guid?> GetSemesterIdForOfferingAsync(Guid courseOfferingId, CancellationToken ct = default)
+        => _db.CourseOfferings
+              .Where(o => o.Id == courseOfferingId)
+              .Select(o => (Guid?)o.SemesterId)
+              .FirstOrDefaultAsync(ct);
+
+    public Task<int?> GetCreditHoursForOfferingAsync(Guid courseOfferingId, CancellationToken ct = default)
+        => _db.CourseOfferings
+              .Where(o => o.Id == courseOfferingId)
+              .Select(o => (int?)o.Course.CreditHours)
+              .FirstOrDefaultAsync(ct);
+
+    public void UpdateStudentProfile(StudentProfile studentProfile) => _db.StudentProfiles.Update(studentProfile);
 
     // ── Transcript export logs ────────────────────────────────────────────────
 

@@ -392,6 +392,7 @@ DECLARE @SMModuleSet    UNIQUEIDENTIFIER = NEWID();
 DECLARE @SMSidebarSet   UNIQUEIDENTIFIER = NEWID();
 DECLARE @SMThemeSet     UNIQUEIDENTIFIER = NEWID();
 DECLARE @SMLicUpd       UNIQUEIDENTIFIER = NEWID();
+DECLARE @SMReportCenter UNIQUEIDENTIFIER = NEWID();
 
 -- Helper to upsert a menu item and return its ID
 -- Using IF NOT EXISTS pattern for each item
@@ -487,6 +488,13 @@ IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key] = N'license_update')
             N'Upload and activate a new license file',@SMSettings,5,1,1,@Now,0);
 ELSE SELECT @SMLicUpd = Id FROM sidebar_menu_items WHERE [Key] = N'license_update';
 
+IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key] = N'report_center')
+    INSERT INTO sidebar_menu_items
+        (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
+    VALUES (@SMReportCenter,N'report_center',N'Report Center',
+            N'Generate and export academic reports',NULL,20,1,0,@Now,0);
+ELSE SELECT @SMReportCenter = Id FROM sidebar_menu_items WHERE [Key] = N'report_center';
+
 -- Re-read IDs (needed after the ELSE branches above)
 SELECT @SMDashboard  = Id FROM sidebar_menu_items WHERE [Key] = N'dashboard';
 SELECT @SMTTAdmin    = Id FROM sidebar_menu_items WHERE [Key] = N'timetable_admin';
@@ -501,6 +509,7 @@ SELECT @SMModuleSet  = Id FROM sidebar_menu_items WHERE [Key] = N'module_setting
 SELECT @SMSidebarSet = Id FROM sidebar_menu_items WHERE [Key] = N'sidebar_settings';
 SELECT @SMThemeSet   = Id FROM sidebar_menu_items WHERE [Key] = N'theme_settings';
 SELECT @SMLicUpd     = Id FROM sidebar_menu_items WHERE [Key] = N'license_update';
+SELECT @SMReportCenter = Id FROM sidebar_menu_items WHERE [Key] = N'report_center';
 
 -- Sidebar role accesses (use MERGE to avoid unique-index violations)
 DECLARE @SidebarRoles TABLE (ItemId UNIQUEIDENTIFIER, RoleName NVARCHAR(100), IsAllowed BIT);
@@ -527,7 +536,10 @@ INSERT INTO @SidebarRoles VALUES
     (@SMThemeSet,   N'SuperAdmin', 1), (@SMThemeSet,   N'Admin',    1),
     (@SMThemeSet,   N'Faculty',    1), (@SMThemeSet,   N'Student',  1),
     -- License: SuperAdmin only
-    (@SMLicUpd,     N'SuperAdmin', 1);
+    (@SMLicUpd,     N'SuperAdmin', 1),
+    -- Report Center: SuperAdmin, Admin, Faculty
+    (@SMReportCenter, N'SuperAdmin', 1), (@SMReportCenter, N'Admin', 1),
+    (@SMReportCenter, N'Faculty',   1);
 
 INSERT INTO sidebar_menu_role_accesses
     (Id, SidebarMenuItemId, RoleName, IsAllowed, CreatedAt)

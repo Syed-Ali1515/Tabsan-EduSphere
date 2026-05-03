@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Tabsan.EduSphere.Application.DTOs.Assignments;
 using Tabsan.EduSphere.Application.Interfaces;
-using Tabsan.EduSphere.Domain.Assignments;
 
 namespace Tabsan.EduSphere.API.Controllers;
 
@@ -59,10 +58,7 @@ public class ResultController : ControllerBase
         var userId = GetCurrentUserId();
         if (userId == Guid.Empty) return Unauthorized();
 
-        if (!Enum.TryParse<ResultType>(resultType, ignoreCase: true, out var type))
-            return BadRequest($"Invalid result type '{resultType}'.");
-
-        var ok = await _service.PublishAsync(studentProfileId, courseOfferingId, type, userId, ct);
+        var ok = await _service.PublishAsync(studentProfileId, courseOfferingId, resultType, userId, ct);
         return ok ? NoContent() : BadRequest("Result not found or already published.");
     }
 
@@ -96,11 +92,15 @@ public class ResultController : ControllerBase
         var userId = GetCurrentUserId();
         if (userId == Guid.Empty) return Unauthorized();
 
-        if (!Enum.TryParse<ResultType>(resultType, ignoreCase: true, out var type))
-            return BadRequest($"Invalid result type '{resultType}'.");
-
-        var ok = await _service.CorrectAsync(studentProfileId, courseOfferingId, type, request, userId, ct);
-        return ok ? NoContent() : NotFound();
+        try
+        {
+            var ok = await _service.CorrectAsync(studentProfileId, courseOfferingId, resultType, request, userId, ct);
+            return ok ? NoContent() : NotFound();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(ex.Message);
+        }
     }
 
     // ── Queries ───────────────────────────────────────────────────────────────

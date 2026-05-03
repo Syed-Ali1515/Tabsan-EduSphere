@@ -1,0 +1,27 @@
+using Tabsan.EduSphere.Application.DTOs.Reports;
+
+namespace Tabsan.EduSphere.Application.Interfaces;
+
+/// <summary>
+/// Application service contract for Phase 12 report generation and Excel export.
+/// </summary>
+public interface IReportService
+{
+    /// <summary>Returns the list of reports the given role is permitted to view.</summary>
+    Task<ReportCatalogResponse> GetCatalogAsync(string roleName, CancellationToken ct = default);
+
+    Task<AttendanceSummaryReportResponse> GetAttendanceSummaryAsync(AttendanceSummaryRequest request, CancellationToken ct = default);
+    Task<ResultSummaryReportResponse>     GetResultSummaryAsync(ResultSummaryRequest request, CancellationToken ct = default);
+    Task<GpaReportResponse>               GetGpaReportAsync(GpaReportRequest request, CancellationToken ct = default);
+    Task<EnrollmentSummaryReportResponse> GetEnrollmentSummaryAsync(EnrollmentSummaryRequest request, CancellationToken ct = default);
+    Task<SemesterResultsReportResponse>   GetSemesterResultsAsync(SemesterResultsRequest request, CancellationToken ct = default);
+
+    /// <summary>Returns an Excel workbook (.xlsx) byte array for the attendance summary report.</summary>
+    Task<byte[]> ExportAttendanceSummaryExcelAsync(AttendanceSummaryRequest request, CancellationToken ct = default);
+
+    /// <summary>Returns an Excel workbook (.xlsx) byte array for the result summary report.</summary>
+    Task<byte[]> ExportResultSummaryExcelAsync(ResultSummaryRequest request, CancellationToken ct = default);
+
+    /// <summary>Returns an Excel workbook (.xlsx) byte array for the GPA report.</summary>
+    Task<byte[]> ExportGpaReportExcelAsync(GpaReportRequest request, CancellationToken ct = default);
+}

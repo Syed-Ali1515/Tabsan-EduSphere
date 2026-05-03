@@ -65,7 +65,8 @@ public class ResultConfiguration : IEntityTypeConfiguration<Result>
         builder.HasKey(r => r.Id);
         builder.Property(r => r.MarksObtained).HasColumnType("decimal(8,2)");
         builder.Property(r => r.MaxMarks).HasColumnType("decimal(8,2)");
-        builder.Property(r => r.ResultType).HasConversion<string>();
+        builder.Property(r => r.ResultType).IsRequired().HasMaxLength(100);
+        builder.Property(r => r.GradePoint).HasColumnType("decimal(4,2)");
         builder.Property(r => r.RowVersion).IsRowVersion();
 
         // At most one result per (student, offering, type) — prevents duplicate entries.

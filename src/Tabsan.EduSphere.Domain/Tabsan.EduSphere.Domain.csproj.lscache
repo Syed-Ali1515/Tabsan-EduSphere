@@ -72,6 +72,7 @@ Assignments/
  Assignment.cs
  AssignmentSubmission.cs
  Result.cs
+ ResultCalculation.cs
  TranscriptExportLog.cs
 Attendance/AttendanceRecord.cs
 Auditing/AuditLog.cs
@@ -107,6 +108,7 @@ Interfaces/
  IPasswordHistoryRepository.cs
  IQuizRepository.cs
  IRegistrationWhitelistRepository.cs
+ IReportRepository.cs
  IResultRepository.cs
  ISemesterRepository.cs
  ISettingsRepository.cs
@@ -135,6 +137,7 @@ Quizzes/
 Settings/
  ModuleRoleAssignment.cs
  ReportDefinition.cs
+ ReportKeys.cs
  ReportRoleAssignment.cs
  SidebarMenuItem.cs
  SidebarMenuRoleAccess.cs

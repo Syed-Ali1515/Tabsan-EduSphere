@@ -1,7 +1,7 @@
 # Tabsan EduSphere Findings and Phased TODO
 
-**Version:** 1.0  
-**Date:** 29 April 2026  
+**Version:** 1.1  
+**Date:** 2 May 2026  
 **Prepared For:** Project kickoff review and phase approval
 
 ---
@@ -35,7 +35,7 @@ The provided startup documents define a strong product vision and feature set, b
 - ASP.NET implementation architecture baseline in PRD
 - Expanded schema conventions and additional core tables
 - Module dependency and activation rules mapped to technical implementation
-- 19-sprint phased development plan with exit criteria (extended from 12 to 19 sprints)
+- 21-sprint phased development plan with exit criteria (extended from 12 to 21 sprints)
 - Tabsan-Lic standalone license creation tool — Phases 7 (Sprints 13–14)
 - Student lifecycle: graduation, semester promotion/failure, dropout, department transfer — Phase 8
 - Finance and payment receipt workflow with optional online payment gateway — Phase 8
@@ -47,6 +47,8 @@ The provided startup documents define a strong product vision and feature set, b
 - Database views and stored procedures for performance — Phase 10
 - Free/open-source email API integration — Phase 10
 - Mobile-responsive UI and accessibility (WCAG 2.1 AA) — Phase 10
+- Result Calculation menu with GPA-to-score mappings and assessment component weightages — Phase 11
+- Automatic subject GPA, semester GPA, and cumulative CGPA processing — Phase 11
 
 ---
 
@@ -104,6 +106,7 @@ The provided startup documents define a strong product vision and feature set, b
 - v1.1: Quizzes, attendance, FYP, AI baseline (Phases 3–6)
 - v1.2: Tabsan-Lic tool, student lifecycle, finance, dashboard settings (Phases 7–9)
 - v1.3: Security hardening, email, performance, mobile UI (Phase 10)
+- v1.4: Result calculation configuration and automated GPA / CGPA workflows (Phase 11)
 
 ---
 
@@ -623,6 +626,117 @@ The provided startup documents define a strong product vision and feature set, b
 
 ---
 
+## Phase 11: Result Calculation & GPA Automation (Sprints 20-21)
+
+> **Status: ✅ COMPLETE**
+>
+> **Scope:** Add a new sidebar menu named `Result Calculation` for admin-managed grading rules and automate subject GPA, semester GPA, and cumulative CGPA calculations.
+
+### Stage 11.1 GPA-to-Score Mapping Configuration
+- [x] Add `Result Calculation` sidebar menu entry for Admin users
+- [x] Add a configuration screen section with repeatable rows for `GPA` and `Score`
+- [x] Add `Add Row` action to append more GPA/Score pairs in the UI
+- [x] Add `Save` action to persist all GPA/Score mappings to the database
+- [x] Enforce ordered, non-overlapping score thresholds during validation
+
+### Stage 11.2 Assessment Component Weightage Configuration
+- [x] Add a second configuration section with repeatable rows for component name and score weightage
+- [x] Support academic components such as `Quizzes`, `Midterms`, and `Finals`
+- [x] Enforce that active component weightages total exactly `100`
+- [x] Persist component configuration to the database for use in all result-entry workflows
+
+### Stage 11.3 Automatic GPA, SGPA, and CGPA Processing
+- [x] Automatically calculate total subject score when teachers enter quiz, midterm, or final marks
+- [x] Automatically resolve subject GPA from the saved GPA/Score mapping
+- [x] Detect when all subjects in a semester have been fully marked for a student
+- [x] Automatically calculate and store semester GPA (SGPA)
+- [x] Automatically recalculate and store cumulative CGPA after semester completion or approved mark edits
+- [x] Add audit logs and integration tests for recalculation events and edge cases
+
+### Phase 11 Implementation Summary
+
+| Artifact | Details |
+|---|---|
+| **Domain — GpaScaleRule** | New entity in `Domain/Assignments/ResultCalculation.cs`. Stores GPA value (0–4), min/max score thresholds, IsActive flag. Table: `gpa_scale_rules`. |
+| **Domain — ResultComponentRule** | New entity. Stores component name (e.g. Quizzes, Midterm, Final), weightage (0–100), IsActive flag. Table: `result_component_rules`. |
+| **Domain — Result** | `ResultType` changed from enum to `string` (nvarchar 100). `GradePoint decimal?` column added. `SetGradePoint(decimal?)` method added. |
+| **Domain — StudentProfile** | `CurrentSemesterGpa decimal` property added. `UpdateAcademicStanding(semGpa, cgpa)` method added. |
+| **Domain — IResultRepository** | 8 new methods: `GetActiveComponentRulesAsync`, `GetGpaScaleRulesAsync`, `ReplaceCalculationRulesAsync`, `GetStudentProfileAsync`, `GetActiveEnrollmentsForSemesterAsync`, `GetActiveEnrollmentsForStudentAsync`, `GetSemesterIdForOfferingAsync`, `GetByStudentAndSemesterAsync`, `UpdateStudentProfile`. |
+| **Application — ResultCalculationDtos** | New file `DTOs/Assignments/ResultCalculationDtos.cs`: `GpaScaleRuleDto`, `ResultComponentRuleDto`, `ResultCalculationSettingsResponse`, `SaveResultCalculationSettingsRequest`. |
+| **Application — IResultCalculationService** | New interface `Interfaces/IResultCalculationService.cs`: `GetSettingsAsync`, `SaveSettingsAsync`. |
+| **Application — ResultCalculationService** | New service `Assignments/ResultCalculationService.cs`. Validates component weights total 100, no duplicate names/thresholds, calls `ReplaceCalculationRulesAsync`. |
+| **Application — ResultService (rewritten)** | Validates each result entry against active component rules, rejects manual `Total` rows, computes GradePoint via GPA scale lookup, recalculates `Total` row automatically, updates StudentProfile SGPA and CGPA. |
+| **Infrastructure — AssignmentResultRepositories** | All result query methods updated for string `ResultType`. All 8 new `IResultRepository` methods implemented. |
+| **Infrastructure — ApplicationDbContext** | `DbSet<GpaScaleRule> GpaScaleRules` and `DbSet<ResultComponentRule> ResultComponentRules` added. |
+| **Infrastructure — ResultCalculationConfigurations** | New EF fluent config file. Maps `gpa_scale_rules` and `result_component_rules` with unique constraints and check constraints. |
+| **Infrastructure — DatabaseSeeder** | `result_calculation` sidebar menu item seeded (displayOrder 7, Admin role). |
+| **EF Migration** | `20260502134611_Phase11ResultCalculation` — adds `CurrentSemesterGpa` to `student_profiles`, `GradePoint` to `results`, alters `ResultType` to nvarchar(100), creates both new tables. Applied ✅. |
+| **API — ResultCalculationController** | New controller at `api/v1/result-calculation`. `[Authorize(Roles="SuperAdmin,Admin")]`. `GET` returns current settings; `POST` saves settings. |
+| **API — Program.cs** | `IResultCalculationService → ResultCalculationService` registered in DI. |
+| **Web — ResultCalculation.cshtml** | New portal view. GPA rules section + component rules section, live weight total counter, Save button. JS `normalizeRows()` + `updateComponentTotal()`. |
+| **Web — PortalController** | `ResultCalculation(ct)` GET and `SaveResultCalculation(model, ct)` POST actions added. |
+| **Web — EduApiClient** | `GetResultCalculationSettingsAsync` and `SaveResultCalculationSettingsAsync` methods added. |
+| **Build** | `Build succeeded. 0 Error(s)`. API and Web services restarted and verified (401 on auth-guarded route ✅). |
+
+---
+
+## Phase 12: Reporting & Document Generation (Sprints 22-23)
+
+> **Status: ✅ COMPLETE**
+>
+> **Scope:** Build a role-gated Report Center portal backed by named `ReportDefinition` records. Provide five standard reports (Attendance Summary, Result Summary, GPA Report, Enrollment Summary, Semester Results) with tabular data views and Excel export. Leverage existing Phase 10 SQL views and Phase 9 report definition infrastructure.
+
+### Stage 12.1 Report Catalog & Role Gating
+- [x] Seed five standard `ReportDefinition` rows at startup (`attendance_summary`, `result_summary`, `gpa_report`, `enrollment_summary`, `semester_results`)
+- [x] Add `reports` sidebar menu entry (Admin, Faculty, Student)
+- [x] `GET /api/v1/reports` — returns reports the calling user's role is permitted to view
+- [x] Leverage existing `ReportRoleAssignment` table and `ISettingsRepository` for role checks
+
+### Stage 12.2 Attendance Summary Report
+- [x] `GET /api/v1/reports/attendance-summary` — returns per-student per-offering attendance aggregates filtered by semester, department, offering, or student
+- [x] `GET /api/v1/reports/attendance-summary/export` — returns Excel (`.xlsx`) download
+- [x] Web portal `ReportAttendance.cshtml` — filter form + sortable table + Export button
+
+### Stage 12.3 Result Summary Report
+- [x] `GET /api/v1/reports/result-summary` — returns all published results filtered by semester, department, offering, or student
+- [x] `GET /api/v1/reports/result-summary/export` — Excel download
+- [x] Web portal `ReportResults.cshtml` — filter form + table + Export button
+
+### Stage 12.4 GPA & CGPA Report
+- [x] `GET /api/v1/reports/gpa-report` — returns per-student GPA/CGPA data filtered by department or program
+- [x] `GET /api/v1/reports/gpa-report/export` — Excel download
+- [x] Web portal `ReportGpa.cshtml` — filter form + table with average CGPA summary
+
+### Stage 12.5 Enrollment Summary Report
+- [x] `GET /api/v1/reports/enrollment-summary` — returns course offering seat utilisation filtered by semester or department
+- [x] Web portal `ReportEnrollment.cshtml` — filter form + table
+
+### Stage 12.6 Semester Results Report
+- [x] `GET /api/v1/reports/semester-results` — returns all published results for a semester (required) with optional department filter
+- [x] Web portal `ReportCenter.cshtml` — landing page listing all available reports for the user's role
+
+### Phase 12 Implementation Summary
+
+| Artifact | Details |
+|---|---|
+| **Domain — ReportKeys** | `Domain/Settings/ReportKeys.cs`. Five const string keys: `attendance_summary`, `result_summary`, `gpa_report`, `enrollment_summary`, `semester_results`. |
+| **Application — ReportDtos** | `Application/DTOs/Reports/ReportDtos.cs`. Request/response records for each report type plus `ReportCatalogResponse`. |
+| **Application — IReportService** | `Application/Interfaces/IReportService.cs`. 9 methods: `GetCatalogAsync`, `GetAttendanceSummaryAsync`, `GetResultSummaryAsync`, `GetGpaReportAsync`, `GetEnrollmentSummaryAsync`, `GetSemesterResultsAsync`, plus three Excel export methods. |
+| **Application — ReportService** | `Application/Services/ReportService.cs`. Queries `IReportRepository`, enriches data, builds `ClosedXML` Excel workbooks for export methods. |
+| **Domain — IReportRepository** | `Domain/Interfaces/IReportRepository.cs`. 6 query methods for report data. |
+| **Infrastructure — ReportRepository** | `Infrastructure/Repositories/ReportRepository.cs`. EF Core queries with joins for all five report types. |
+| **Infrastructure — DatabaseSeeder** | Five `ReportDefinition` rows seeded (idempotent). `reports` sidebar menu item seeded. |
+| **EF Migration** | No schema changes required — `report_definitions` and `report_role_assignments` tables exist from Phase 9. |
+| **API — ReportController** | `API/Controllers/ReportController.cs`. Route `api/v1/reports`. All-roles authenticated; role check against `ReportRoleAssignment` per endpoint. GET catalog + 5 data endpoints + 3 export endpoints. |
+| **API — Program.cs** | `IReportService → ReportService`, `IReportRepository → ReportRepository` registered. |
+| **Web — ReportCenter.cshtml** | Landing page with report cards per available report. |
+| **Web — ReportAttendance/Results/Gpa/Enrollment.cshtml** | Four filter + table pages with Export buttons. |
+| **Web — EduApiClient** | 9 new methods for report endpoints. |
+| **Web — PortalController** | 8 new actions for report pages. |
+| **Build** | `Build succeeded. 0 Error(s)`. |
+
+---
+
 ## 6. Immediate Recommendations
 
 ### 6.1 Architecture and Delivery
@@ -661,7 +775,7 @@ The provided startup documents define a strong product vision and feature set, b
 - [ ] Confirm Tabsan-Lic as a separate .NET application (Phase 7)
 - [x] Confirm email provider choice (MailKit SMTP — `Infrastructure/Email/MailKitEmailSender.cs`) (Phase 10)
 - [ ] Confirm online payment gateway provider (Phase 8)
-- [ ] Approve extended roadmap horizon: 19 sprints / ~38 weeks
+- [ ] Approve extended roadmap horizon: 21 sprints / ~42 weeks
 
 ---
 
@@ -678,5 +792,9 @@ The provided startup documents define a strong product vision and feature set, b
 - [x] Update PRD to v1.8 with new feature requirements
 - [x] Update Modules.md with new modules (Finance, Dashboard/Navigation, Timetable)
 - [x] Update Development Plan with Phases 7–10 and extended roadmap horizon
+- [x] Add Phase 11: Result Calculation and GPA Automation to planning documents
+- [x] Implement Phase 11: Result Calculation and GPA Automation (migration applied, services running)
+- [x] Add Phase 12: Reporting and Document Generation to planning documents
+- [x] Implement Phase 12: Reporting and Document Generation (ReportCenter, 5 standard reports, Excel export)
 
 ---

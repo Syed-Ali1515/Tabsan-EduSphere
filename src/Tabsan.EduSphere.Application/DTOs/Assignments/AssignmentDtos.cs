@@ -64,7 +64,7 @@ public sealed record SubmissionResponse(
 public sealed record CreateResultRequest(
     Guid StudentProfileId,
     Guid CourseOfferingId,
-    string ResultType,   // "Midterm" | "Final" | "Total"
+    string ResultType,
     decimal MarksObtained,
     decimal MaxMarks);
 
@@ -85,6 +85,7 @@ public sealed record ResultResponse(
     decimal MarksObtained,
     decimal MaxMarks,
     decimal Percentage,
+    decimal? GradePoint,
     bool IsPublished,
     DateTime? PublishedAt);
 

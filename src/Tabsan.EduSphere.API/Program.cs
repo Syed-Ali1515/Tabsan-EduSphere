@@ -108,6 +108,7 @@ builder.Services.AddScoped<IAssignmentRepository, AssignmentRepository>();
 builder.Services.AddScoped<IResultRepository, ResultRepository>();
 builder.Services.AddScoped<IAssignmentService, AssignmentService>();
 builder.Services.AddScoped<IResultService, ResultService>();
+builder.Services.AddScoped<IResultCalculationService, ResultCalculationService>();
 
 // ── Phase 4: Notifications and Attendance ─────────────────────────────────
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
@@ -155,6 +156,10 @@ builder.Services.AddScoped<ISidebarMenuService, SidebarMenuService>();
 
 // ── Phase 10: Password history ────────────────────────────────────────────
 builder.Services.AddScoped<IPasswordHistoryRepository, Tabsan.EduSphere.Infrastructure.Repositories.PasswordHistoryRepository>();
+
+// ── Phase 12: Reporting ───────────────────────────────────────────────────
+builder.Services.AddScoped<Tabsan.EduSphere.Domain.Interfaces.IReportRepository, Tabsan.EduSphere.Infrastructure.Reporting.ReportRepository>();
+builder.Services.AddScoped<IReportService, Tabsan.EduSphere.Infrastructure.Reporting.ReportService>();
 
 // ── Rate limiting (OWASP hardening) ─────────────────────────────────────
 builder.Services.AddRateLimiter(opts =>

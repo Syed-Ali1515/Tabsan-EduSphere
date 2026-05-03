@@ -73,7 +73,9 @@ Controllers/
  ProgramController.cs
  QuizController.cs
  RegistrationImportController.cs
+ ReportController.cs
  ReportSettingsController.cs
+ ResultCalculationController.cs
  ResultController.cs
  RoomController.cs
  SemesterController.cs

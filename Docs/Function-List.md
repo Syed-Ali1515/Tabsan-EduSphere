@@ -1947,3 +1947,240 @@
 | Document | Description |
 |---|---|
 | `Docs/Security-Pentest-Checklist.md` | Full OWASP Top 10 (2021) checklist mapped to code evidence for every control. All 10 categories verified. Covers A01 Broken Access Control, A02 Cryptographic Failures, A03 Injection, A04 Insecure Design, A05 Misconfiguration, A06 Vulnerable Components, A07 Auth Failures, A08 Integrity Failures, A09 Logging, A10 SSRF. 5 pre-production action items documented for DevOps/Security Lead sign-off. Sign-off table included. |
+
+---
+
+## Phase 11 — Result Calculation & GPA Automation
+
+### Domain — GpaScaleRule
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GpaScaleRule(gpaValue, minScore, maxScore)` | Constructor — creates a GPA-to-score mapping rule. Validates `0 ≤ minScore < maxScore ≤ 100`. | `Domain/Assignments/ResultCalculation.cs` |
+| `Deactivate()` | Marks the rule inactive so it is excluded from GPA lookups. | `Domain/Assignments/ResultCalculation.cs` |
+
+### Domain — ResultComponentRule
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `ResultComponentRule(name, weightage)` | Constructor — creates a named assessment component with its percentage weight. Validates name non-empty and `0 < weightage ≤ 100`. | `Domain/Assignments/ResultCalculation.cs` |
+| `Deactivate()` | Marks the component rule inactive. | `Domain/Assignments/ResultCalculation.cs` |
+
+### Domain — Result (Phase 11 additions)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `SetGradePoint(decimal? gp)` | Sets the resolved GradePoint after GPA-scale lookup. Called by `ResultService` after computing subject total. | `Domain/Assignments/Result.cs` |
+
+### Domain — StudentProfile (Phase 11 additions)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `UpdateAcademicStanding(semesterGpa, cgpa)` | Updates `CurrentSemesterGpa` and `Cgpa` in a single call. Used after semester GPA/CGPA recalculation. | `Domain/Academic/StudentProfile.cs` |
+
+### Domain — IResultRepository (Phase 11 additions)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetActiveComponentRulesAsync(ct)` | Returns all active `ResultComponentRule` rows ordered by name. | `Domain/Interfaces/IResultRepository.cs` |
+| `GetGpaScaleRulesAsync(ct)` | Returns all active `GpaScaleRule` rows ordered by minScore ascending. | `Domain/Interfaces/IResultRepository.cs` |
+| `ReplaceCalculationRulesAsync(gpaRules, componentRules, ct)` | Deletes all existing GPA and component rules and inserts the new sets atomically. | `Domain/Interfaces/IResultRepository.cs` |
+| `GetStudentProfileAsync(studentProfileId, ct)` | Returns a `StudentProfile` for GPA update operations. | `Domain/Interfaces/IResultRepository.cs` |
+| `GetActiveEnrollmentsForSemesterAsync(studentProfileId, semesterId, ct)` | Returns all active enrollments for a student in a semester. | `Domain/Interfaces/IResultRepository.cs` |
+| `GetActiveEnrollmentsForStudentAsync(studentProfileId, ct)` | Returns all active enrollments for a student across all semesters. | `Domain/Interfaces/IResultRepository.cs` |
+| `GetSemesterIdForOfferingAsync(courseOfferingId, ct)` | Returns the `SemesterId` for a given course offering. | `Domain/Interfaces/IResultRepository.cs` |
+| `GetByStudentAndOfferingAsync(studentProfileId, courseOfferingId, ct)` | Returns all result rows for one student in one offering. | `Domain/Interfaces/IResultRepository.cs` |
+| `GetByStudentAndSemesterAsync(studentProfileId, semesterId, ct)` | Returns all published `Total` results for a student in a semester (for SGPA calculation). | `Domain/Interfaces/IResultRepository.cs` |
+| `UpdateStudentProfile(profile)` | Marks a `StudentProfile` as modified in the EF change tracker. | `Domain/Interfaces/IResultRepository.cs` |
+
+### Application — ResultCalculationDtos
+
+| DTO | Purpose | Location |
+|---|---|---|
+| `GpaScaleRuleDto` | Transfer object for a single GPA/Score mapping row (GpaValue, MinScore, MaxScore). | `Application/DTOs/Assignments/ResultCalculationDtos.cs` |
+| `ResultComponentRuleDto` | Transfer object for a single component weightage row (Name, Weightage). | `Application/DTOs/Assignments/ResultCalculationDtos.cs` |
+| `ResultCalculationSettingsResponse` | Wraps `IReadOnlyList<GpaScaleRuleDto>` and `IReadOnlyList<ResultComponentRuleDto>` for GET response. | `Application/DTOs/Assignments/ResultCalculationDtos.cs` |
+| `SaveResultCalculationSettingsRequest` | Input for POST — carries lists of GPA rules and component rules to save. | `Application/DTOs/Assignments/ResultCalculationDtos.cs` |
+
+### Application — IResultCalculationService
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetSettingsAsync(ct)` | Returns the current active GPA scale and component weightage rules. | `Application/Interfaces/IResultCalculationService.cs` |
+| `SaveSettingsAsync(request, ct)` | Validates and atomically replaces all GPA scale and component rules. | `Application/Interfaces/IResultCalculationService.cs` |
+
+### Application — ResultCalculationService
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetSettingsAsync(ct)` | Fetches active GPA scale rules and component rules; maps to response DTOs. | `Application/Assignments/ResultCalculationService.cs` |
+| `SaveSettingsAsync(request, ct)` | Validates component weights total 100, no duplicate names or overlapping thresholds, then calls `ReplaceCalculationRulesAsync`. | `Application/Assignments/ResultCalculationService.cs` |
+
+### Application — ResultService (Phase 11 updates)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `CreateAsync(request, ct)` | Validates `ResultType` against active component rules; rejects manual `Total` entries; computes `GradePoint` via GPA scale lookup; triggers automatic `Total` row recalculation if all components are present; updates student SGPA/CGPA. | `Application/Assignments/ResultService.cs` |
+
+### Infrastructure — ResultCalculationConfigurations
+
+| Entity Config | Purpose | Location |
+|---|---|---|
+| `GpaScaleRuleConfiguration` | Maps `gpa_scale_rules` table with unique constraint on `(MinScore, MaxScore)` and check constraint `MinScore < MaxScore`. | `Infrastructure/Persistence/Configurations/ResultCalculationConfigurations.cs` |
+| `ResultComponentRuleConfiguration` | Maps `result_component_rules` table with unique constraint on `Name` and check constraint `0 < Weightage <= 100`. | `Infrastructure/Persistence/Configurations/ResultCalculationConfigurations.cs` |
+
+### API — ResultCalculationController
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetSettings(ct)` | `GET /api/v1/result-calculation` — returns current GPA scale and component rules. SuperAdmin/Admin only. | `API/Controllers/ResultCalculationController.cs` |
+| `SaveSettings(request, ct)` | `POST /api/v1/result-calculation` — replaces all calculation rules after validation. SuperAdmin/Admin only. | `API/Controllers/ResultCalculationController.cs` |
+
+### Web — PortalController (Phase 11 additions)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `ResultCalculation(ct)` | `GET /Portal/ResultCalculation` — fetches and displays GPA and component rules. | `Web/Controllers/PortalController.cs` |
+| `SaveResultCalculation(model, ct)` | `POST /Portal/ResultCalculation` — posts settings to API and redirects with success/error message. | `Web/Controllers/PortalController.cs` |
+
+### Web — EduApiClient (Phase 11 additions)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetResultCalculationSettingsAsync(ct)` | Calls `GET /api/v1/result-calculation` and deserialises settings response. | `Web/Services/EduApiClient.cs` |
+| `SaveResultCalculationSettingsAsync(request, ct)` | Posts settings to `POST /api/v1/result-calculation`. | `Web/Services/EduApiClient.cs` |
+
+### EF Migration — Phase11ResultCalculation
+
+| Change | Details | Migration File |
+|---|---|---|
+| `gpa_scale_rules` table | New table: Id, GpaValue (decimal 3,2), MinScore (decimal 5,2), MaxScore (decimal 5,2), IsActive. Unique IX on (MinScore, MaxScore). | `20260502134611_Phase11ResultCalculation.cs` |
+| `result_component_rules` table | New table: Id, Name (nvarchar 100), Weightage (decimal 5,2), IsActive. Unique IX on Name. | `20260502134611_Phase11ResultCalculation.cs` |
+| `results.GradePoint` | New nullable `decimal(3,2)` column on `results` table. | `20260502134611_Phase11ResultCalculation.cs` |
+| `results.ResultType` | Altered from enum int to `nvarchar(100)` for flexible component name storage. | `20260502134611_Phase11ResultCalculation.cs` |
+| `student_profiles.CurrentSemesterGpa` | New `decimal(3,2)` column. | `20260502134611_Phase11ResultCalculation.cs` |
+
+---
+
+## Phase 12 — Reporting & Document Generation
+
+### Domain — ReportKeys
+
+| Constant | Value | Location |
+|---|---|---|
+| `AttendanceSummary` | `"attendance_summary"` | `Domain/Settings/ReportKeys.cs` |
+| `ResultSummary` | `"result_summary"` | `Domain/Settings/ReportKeys.cs` |
+| `GpaReport` | `"gpa_report"` | `Domain/Settings/ReportKeys.cs` |
+| `EnrollmentSummary` | `"enrollment_summary"` | `Domain/Settings/ReportKeys.cs` |
+| `SemesterResults` | `"semester_results"` | `Domain/Settings/ReportKeys.cs` |
+
+### Application — ReportDtos
+
+| DTO | Purpose | Location |
+|---|---|---|
+| `ReportCatalogItemResponse` | Single report entry: Id, Key, Name, Purpose, IsActive, AllowedRoles list. | `Application/DTOs/Reports/ReportDtos.cs` |
+| `ReportCatalogResponse` | Wraps `IReadOnlyList<ReportCatalogItemResponse>`. | `Application/DTOs/Reports/ReportDtos.cs` |
+| `AttendanceSummaryRequest` | Filter: SemesterId?, DepartmentId?, CourseOfferingId?, StudentProfileId?. | `Application/DTOs/Reports/ReportDtos.cs` |
+| `AttendanceSummaryRow` | Row: StudentProfileId, RegNo, StudentName, OfferingId, CourseCode, CourseTitle, TotalSessions, AttendedSessions, AttendancePercentage. | `Application/DTOs/Reports/ReportDtos.cs` |
+| `AttendanceSummaryReportResponse` | Wraps rows list + TotalStudents + GeneratedAt. | `Application/DTOs/Reports/ReportDtos.cs` |
+| `ResultSummaryRequest` | Filter: SemesterId?, DepartmentId?, CourseOfferingId?, StudentProfileId?. | `Application/DTOs/Reports/ReportDtos.cs` |
+| `ResultSummaryRow` | Row: StudentProfileId, RegNo, StudentName, CourseCode, CourseTitle, ResultType, MarksObtained, MaxMarks, Percentage, PublishedAt?. | `Application/DTOs/Reports/ReportDtos.cs` |
+| `ResultSummaryReportResponse` | Wraps rows + TotalRecords + GeneratedAt. | `Application/DTOs/Reports/ReportDtos.cs` |
+| `GpaReportRequest` | Filter: DepartmentId?, ProgramId?. | `Application/DTOs/Reports/ReportDtos.cs` |
+| `GpaReportRow` | Row: StudentProfileId, RegNo, StudentName, ProgramName, DepartmentName, CurrentSemester, Cgpa, CurrentSemesterGpa. | `Application/DTOs/Reports/ReportDtos.cs` |
+| `GpaReportResponse` | Wraps rows + AverageCgpa + TotalStudents + GeneratedAt. | `Application/DTOs/Reports/ReportDtos.cs` |
+| `EnrollmentSummaryRequest` | Filter: SemesterId?, DepartmentId?. | `Application/DTOs/Reports/ReportDtos.cs` |
+| `EnrollmentSummaryRow` | Row: CourseOfferingId, CourseCode, CourseTitle, SemesterName, MaxEnrollment, EnrolledCount, AvailableSeats. | `Application/DTOs/Reports/ReportDtos.cs` |
+| `EnrollmentSummaryReportResponse` | Wraps rows + TotalOfferings + GeneratedAt. | `Application/DTOs/Reports/ReportDtos.cs` |
+| `SemesterResultsRequest` | Required SemesterId + optional DepartmentId. | `Application/DTOs/Reports/ReportDtos.cs` |
+| `SemesterResultsRow` | Row: StudentProfileId, RegNo, StudentName, CourseCode, CourseTitle, ResultType, MarksObtained, MaxMarks, Percentage. | `Application/DTOs/Reports/ReportDtos.cs` |
+| `SemesterResultsReportResponse` | Wraps rows + TotalStudents + GeneratedAt. | `Application/DTOs/Reports/ReportDtos.cs` |
+
+### Domain — IReportRepository
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetCatalogForRoleAsync(roleName, ct)` | Returns active `ReportDefinition` rows where the given role has a `ReportRoleAssignment`. | `Domain/Interfaces/IReportRepository.cs` |
+| `GetAttendanceDataAsync(semesterId?, courseOfferingId?, studentProfileId?, ct)` | Queries `attendance_records` with joins to student profile, user, course offering, course, and semester. | `Domain/Interfaces/IReportRepository.cs` |
+| `GetResultDataAsync(semesterId?, courseOfferingId?, studentProfileId?, ct)` | Queries published `results` with joins. | `Domain/Interfaces/IReportRepository.cs` |
+| `GetGpaDataAsync(departmentId?, programId?, ct)` | Queries `student_profiles` with user, academic program, and department joins. | `Domain/Interfaces/IReportRepository.cs` |
+| `GetEnrollmentDataAsync(semesterId?, departmentId?, ct)` | Queries `course_offerings` with course, semester, department, and enrollment count. | `Domain/Interfaces/IReportRepository.cs` |
+| `GetSemesterResultDataAsync(semesterId, departmentId?, ct)` | Queries published `results` for a specific semester with optional department filter. | `Domain/Interfaces/IReportRepository.cs` |
+
+### Application — IReportService
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetCatalogAsync(roleName, ct)` | Returns the report catalog for the calling role. | `Application/Interfaces/IReportService.cs` |
+| `GetAttendanceSummaryAsync(request, ct)` | Returns `AttendanceSummaryReportResponse` for the given filters. | `Application/Interfaces/IReportService.cs` |
+| `GetResultSummaryAsync(request, ct)` | Returns `ResultSummaryReportResponse`. | `Application/Interfaces/IReportService.cs` |
+| `GetGpaReportAsync(request, ct)` | Returns `GpaReportResponse` with per-student GPA data and average CGPA. | `Application/Interfaces/IReportService.cs` |
+| `GetEnrollmentSummaryAsync(request, ct)` | Returns `EnrollmentSummaryReportResponse`. | `Application/Interfaces/IReportService.cs` |
+| `GetSemesterResultsAsync(request, ct)` | Returns `SemesterResultsReportResponse` for the specified semester. | `Application/Interfaces/IReportService.cs` |
+| `ExportAttendanceSummaryExcelAsync(request, ct)` | Returns a `byte[]` Excel workbook of the attendance summary report. | `Application/Interfaces/IReportService.cs` |
+| `ExportResultSummaryExcelAsync(request, ct)` | Returns a `byte[]` Excel workbook of the result summary report. | `Application/Interfaces/IReportService.cs` |
+| `ExportGpaReportExcelAsync(request, ct)` | Returns a `byte[]` Excel workbook of the GPA report. | `Application/Interfaces/IReportService.cs` |
+
+### Application — ReportService
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetCatalogAsync(roleName, ct)` | Calls `IReportRepository.GetCatalogForRoleAsync`; maps to `ReportCatalogResponse`. | `Application/Services/ReportService.cs` |
+| `GetAttendanceSummaryAsync(request, ct)` | Fetches raw data from repository; groups and maps to `AttendanceSummaryRow` list. | `Application/Services/ReportService.cs` |
+| `GetResultSummaryAsync(request, ct)` | Fetches and maps published results. | `Application/Services/ReportService.cs` |
+| `GetGpaReportAsync(request, ct)` | Fetches student profiles; computes average CGPA. | `Application/Services/ReportService.cs` |
+| `GetEnrollmentSummaryAsync(request, ct)` | Fetches offering data; maps to enrollment rows. | `Application/Services/ReportService.cs` |
+| `GetSemesterResultsAsync(request, ct)` | Fetches semester-scoped published results. | `Application/Services/ReportService.cs` |
+| `ExportAttendanceSummaryExcelAsync(request, ct)` | Calls `GetAttendanceSummaryAsync`; builds ClosedXML workbook with styled header row; returns `byte[]`. | `Application/Services/ReportService.cs` |
+| `ExportResultSummaryExcelAsync(request, ct)` | Same pattern for result summary. | `Application/Services/ReportService.cs` |
+| `ExportGpaReportExcelAsync(request, ct)` | Same pattern for GPA report. | `Application/Services/ReportService.cs` |
+| `BuildExcelBytes(ws, headers, rows)` | Private — writes header row and data rows to an `IXLWorksheet`; auto-fits columns; returns workbook as `byte[]`. | `Application/Services/ReportService.cs` |
+
+### Infrastructure — ReportRepository
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetCatalogForRoleAsync(roleName, ct)` | EF query: `ReportDefinitions.Where(r => r.IsActive && r.RoleAssignments.Any(ra => ra.RoleName == roleName)).Include(RoleAssignments)`. | `Infrastructure/Repositories/ReportRepository.cs` |
+| `GetAttendanceDataAsync(semesterId?, courseOfferingId?, studentProfileId?, ct)` | EF query across `AttendanceRecords`, `StudentProfiles`, `Users`, `CourseOfferings`, `Courses`, `Semesters` with optional filters. | `Infrastructure/Repositories/ReportRepository.cs` |
+| `GetResultDataAsync(semesterId?, courseOfferingId?, studentProfileId?, ct)` | EF query on published `Results` with joins to student, user, offering, course, semester. | `Infrastructure/Repositories/ReportRepository.cs` |
+| `GetGpaDataAsync(departmentId?, programId?, ct)` | EF query on `StudentProfiles` with `AcademicProgram`, `Department`, `User` includes and optional filters. | `Infrastructure/Repositories/ReportRepository.cs` |
+| `GetEnrollmentDataAsync(semesterId?, departmentId?, ct)` | EF query on `CourseOfferings` with course, semester, department, enrollment count via `Count()`. | `Infrastructure/Repositories/ReportRepository.cs` |
+| `GetSemesterResultDataAsync(semesterId, departmentId?, ct)` | EF query on published `Results` filtered by `SemesterId` from `CourseOffering`; optional department filter via program. | `Infrastructure/Repositories/ReportRepository.cs` |
+
+### API — ReportController
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetCatalog(ct)` | `GET /api/v1/reports` — returns active reports for the caller's role. All authenticated roles. | `API/Controllers/ReportController.cs` |
+| `GetAttendanceSummary(request, ct)` | `GET /api/v1/reports/attendance-summary` — attendance data with filter params. Admin/Faculty. | `API/Controllers/ReportController.cs` |
+| `GetResultSummary(request, ct)` | `GET /api/v1/reports/result-summary` — published results with filter params. Admin/Faculty. | `API/Controllers/ReportController.cs` |
+| `GetGpaReport(request, ct)` | `GET /api/v1/reports/gpa-report` — student GPA data. Admin/Faculty. | `API/Controllers/ReportController.cs` |
+| `GetEnrollmentSummary(request, ct)` | `GET /api/v1/reports/enrollment-summary` — offering seat utilisation. Admin/Faculty. | `API/Controllers/ReportController.cs` |
+| `GetSemesterResults(request, ct)` | `GET /api/v1/reports/semester-results` — full published results for a semester. Admin/Faculty. | `API/Controllers/ReportController.cs` |
+| `ExportAttendanceSummary(request, ct)` | `GET /api/v1/reports/attendance-summary/export` — returns `.xlsx` file download. Admin/Faculty. | `API/Controllers/ReportController.cs` |
+| `ExportResultSummary(request, ct)` | `GET /api/v1/reports/result-summary/export` — Excel download. Admin/Faculty. | `API/Controllers/ReportController.cs` |
+| `ExportGpaReport(request, ct)` | `GET /api/v1/reports/gpa-report/export` — Excel download. Admin/Faculty. | `API/Controllers/ReportController.cs` |
+| `GetCurrentUserRole()` | Private — extracts role from JWT claims. | `API/Controllers/ReportController.cs` |
+
+### Web — PortalController (Phase 12 additions)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `ReportCenter(ct)` | `GET /Portal/ReportCenter` — fetches available report catalog and renders landing page. | `Web/Controllers/PortalController.cs` |
+| `ReportAttendance(semesterId?, departmentId?, offeringId?, studentId?, ct)` | `GET /Portal/ReportAttendance` — fetches attendance summary for filters. | `Web/Controllers/PortalController.cs` |
+| `ReportResults(semesterId?, departmentId?, offeringId?, studentId?, ct)` | `GET /Portal/ReportResults` — fetches result summary for filters. | `Web/Controllers/PortalController.cs` |
+| `ReportGpa(departmentId?, programId?, ct)` | `GET /Portal/ReportGpa` — fetches GPA report. | `Web/Controllers/PortalController.cs` |
+| `ReportEnrollment(semesterId?, departmentId?, ct)` | `GET /Portal/ReportEnrollment` — fetches enrollment summary. | `Web/Controllers/PortalController.cs` |
+
+### Web — EduApiClient (Phase 12 additions)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetReportCatalogAsync(ct)` | Calls `GET /api/v1/reports` and deserialises catalog. | `Web/Services/EduApiClient.cs` |
+| `GetAttendanceSummaryReportAsync(query, ct)` | Calls `GET /api/v1/reports/attendance-summary` with query string params. | `Web/Services/EduApiClient.cs` |
+| `GetResultSummaryReportAsync(query, ct)` | Calls `GET /api/v1/reports/result-summary`. | `Web/Services/EduApiClient.cs` |
+| `GetGpaReportAsync(query, ct)` | Calls `GET /api/v1/reports/gpa-report`. | `Web/Services/EduApiClient.cs` |
+| `GetEnrollmentSummaryReportAsync(query, ct)` | Calls `GET /api/v1/reports/enrollment-summary`. | `Web/Services/EduApiClient.cs` |
+| `ExportAttendanceSummaryAsync(query, ct)` | Calls export endpoint; returns `byte[]`. | `Web/Services/EduApiClient.cs` |
+| `ExportResultSummaryAsync(query, ct)` | Calls export endpoint; returns `byte[]`. | `Web/Services/EduApiClient.cs` |
+| `ExportGpaReportAsync(query, ct)` | Calls export endpoint; returns `byte[]`. | `Web/Services/EduApiClient.cs` |

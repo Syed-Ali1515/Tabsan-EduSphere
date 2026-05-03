@@ -59,6 +59,7 @@ Academic/
 AiChat/AiChatService.cs
 Assignments/
  AssignmentService.cs
+ ResultCalculationService.cs
  ResultService.cs
 Attendance/AttendanceService.cs
 Auth/AuthService.cs
@@ -67,13 +68,16 @@ DTOs/
  AccountSecurityDtos.cs
  AiChat/AiChatDtos.cs
  Analytics/AnalyticsDtos.cs
- Assignments/AssignmentDtos.cs
+ Assignments/
+  AssignmentDtos.cs
+  ResultCalculationDtos.cs
  Attendance/AttendanceDtos.cs
  Auth/AuthDtos.cs
  CsvImportDtos.cs
  Fyp/FypDtos.cs
  Notifications/NotificationDtos.cs
  Quizzes/QuizDtos.cs
+ Reports/ReportDtos.cs
  SettingsDtos.cs
  StudentLifecycleDtos.cs
  TimetableDtos.cs
@@ -97,6 +101,8 @@ Interfaces/
  INotificationService.cs
  IPasswordHasher.cs
  IQuizService.cs
+ IReportService.cs
+ IResultCalculationService.cs
  IResultService.cs
  ISettingsServices.cs
  IStudentLifecycleService.cs

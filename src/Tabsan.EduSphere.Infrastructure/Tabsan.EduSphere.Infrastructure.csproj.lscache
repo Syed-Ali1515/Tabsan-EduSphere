@@ -107,6 +107,7 @@ Persistence/
   PaymentReceiptConfiguration.cs
   Phase9Configurations.cs
   QuizConfigurations.cs
+  ResultCalculationConfigurations.cs
   RoleConfiguration.cs
   StudentAcademicConfigurations.cs
   TeacherModificationRequestConfiguration.cs
@@ -132,6 +133,11 @@ Persistence/
   20260430142338_Phase10StoredProcedures.Designer.cs
   20260430143000_Phase10SqlViews.cs
   20260430143000_Phase10SqlViews.Designer.cs
+  20260502134611_Phase11ResultCalculation.cs
+  20260502134611_Phase11ResultCalculation.Designer.cs
+Reporting/
+ ReportRepository.cs
+ ReportService.cs
 Repositories/
  AcademicRepositories.cs
  AcademicSupportRepositories.cs

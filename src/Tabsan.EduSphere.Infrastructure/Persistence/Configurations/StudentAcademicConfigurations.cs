@@ -13,6 +13,7 @@ public class StudentProfileConfiguration : IEntityTypeConfiguration<StudentProfi
         builder.HasKey(sp => sp.Id);
         builder.Property(sp => sp.RegistrationNumber).IsRequired().HasMaxLength(50);
         builder.Property(sp => sp.Cgpa).HasColumnType("decimal(4,2)");
+       builder.Property(sp => sp.CurrentSemesterGpa).HasColumnType("decimal(4,2)");
         builder.Property(sp => sp.RowVersion).IsRowVersion();
 
         builder.HasIndex(sp => sp.RegistrationNumber)

@@ -93,6 +93,12 @@ public class ApplicationDbContext : DbContext
     /// <summary>Published and draft result marks per student per course offering.</summary>
     public DbSet<Result> Results => Set<Result>();
 
+    /// <summary>Configured GPA score thresholds used to derive grade points.</summary>
+    public DbSet<GpaScaleRule> GpaScaleRules => Set<GpaScaleRule>();
+
+    /// <summary>Configured assessment components and their score weightages.</summary>
+    public DbSet<ResultComponentRule> ResultComponentRules => Set<ResultComponentRule>();
+
     /// <summary>Audit log of every transcript export request.</summary>
     public DbSet<TranscriptExportLog> TranscriptExportLogs => Set<TranscriptExportLog>();
 

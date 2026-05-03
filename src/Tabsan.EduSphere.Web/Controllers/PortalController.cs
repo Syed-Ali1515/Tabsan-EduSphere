@@ -587,6 +587,67 @@ public class PortalController : Controller
         return RedirectToAction(nameof(ModuleSettings));
     }
 
+    // ── Result Calculation ────────────────────────────────────────────────
+
+    public async Task<IActionResult> ResultCalculation(CancellationToken ct)
+    {
+        var model = new ResultCalculationSettingsPageModel { IsConnected = _api.IsConnected() };
+        if (model.IsConnected)
+        {
+            try
+            {
+                model = await _api.GetResultCalculationSettingsAsync(ct);
+                model.IsConnected = true;
+            }
+            catch (Exception ex)
+            {
+                model.Message = $"Error loading result calculation settings: {ex.Message}";
+            }
+        }
+
+        if (model.GpaRules.Count == 0)
+        {
+            model.GpaRules.Add(new ResultCalculationGpaRuleItem { DisplayOrder = 1, GradePoint = 2.0m, MinimumScore = 60m });
+            model.GpaRules.Add(new ResultCalculationGpaRuleItem { DisplayOrder = 2, GradePoint = 2.5m, MinimumScore = 65m });
+        }
+
+        if (model.ComponentRules.Count == 0)
+        {
+            model.ComponentRules.Add(new ResultCalculationComponentRuleItem { DisplayOrder = 1, Name = "Quizzes", Weightage = 20m, IsActive = true });
+            model.ComponentRules.Add(new ResultCalculationComponentRuleItem { DisplayOrder = 2, Name = "Midterms", Weightage = 30m, IsActive = true });
+            model.ComponentRules.Add(new ResultCalculationComponentRuleItem { DisplayOrder = 3, Name = "Finals", Weightage = 50m, IsActive = true });
+        }
+
+        return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SaveResultCalculation(ResultCalculationSettingsPageModel model, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try
+            {
+                model.GpaRules = model.GpaRules
+                    .Where(r => r.GradePoint > 0 || r.MinimumScore > 0)
+                    .ToList();
+                model.ComponentRules = model.ComponentRules
+                    .Where(r => !string.IsNullOrWhiteSpace(r.Name) && r.Weightage > 0)
+                    .ToList();
+
+                await _api.SaveResultCalculationSettingsAsync(model, ct);
+                TempData["Message"] = "Result calculation settings updated.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Message"] = $"Error: {ex.Message}";
+            }
+        }
+
+        return RedirectToAction(nameof(ResultCalculation));
+    }
+
     // ── Sidebar Settings ────────────────────────────────────────────────────
 
     public async Task<IActionResult> SidebarSettings(CancellationToken ct)
@@ -1037,6 +1098,114 @@ public class PortalController : Controller
             model.Offerings = await _api.GetCourseOfferingsAsync(null, ct);
             if (offeringId.HasValue)
                 model.Roster = await _api.GetEnrollmentRosterAsync(offeringId.Value, ct);
+        }
+        catch (Exception ex) { model.Message = ex.Message; }
+        return View(model);
+    }
+
+    // ── Reports ────────────────────────────────────────────────────────────
+
+    [HttpGet]
+    public async Task<IActionResult> ReportCenter(CancellationToken ct)
+    {
+        ViewData["Title"] = "Report Center";
+        var model = new ReportCenterPageModel { IsConnected = _api.IsConnected() };
+        if (!model.IsConnected) return View(model);
+        try { model.Reports = await _api.GetReportCatalogAsync(ct); }
+        catch (Exception ex) { model.Message = ex.Message; }
+        return View(model);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ReportAttendance(
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+    {
+        ViewData["Title"] = "Attendance Summary Report";
+        var model = new ReportAttendancePageModel
+        {
+            IsConnected  = _api.IsConnected(),
+            SemesterId   = semesterId,
+            DepartmentId = departmentId,
+            OfferingId   = offeringId,
+            StudentId    = studentId
+        };
+        if (!model.IsConnected) return View(model);
+        try
+        {
+            model.Semesters    = await _api.GetSemestersAsync(ct);
+            model.Departments  = await _api.GetDepartmentsAsync(ct);
+            model.Offerings    = await _api.GetCourseOfferingsAsync(null, ct);
+            if (semesterId.HasValue || departmentId.HasValue || offeringId.HasValue || studentId.HasValue)
+                model.Report = await _api.GetAttendanceSummaryReportAsync(semesterId, departmentId, offeringId, studentId, ct);
+        }
+        catch (Exception ex) { model.Message = ex.Message; }
+        return View(model);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ReportResults(
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+    {
+        ViewData["Title"] = "Result Summary Report";
+        var model = new ReportResultsPageModel
+        {
+            IsConnected  = _api.IsConnected(),
+            SemesterId   = semesterId,
+            DepartmentId = departmentId,
+            OfferingId   = offeringId,
+            StudentId    = studentId
+        };
+        if (!model.IsConnected) return View(model);
+        try
+        {
+            model.Semesters   = await _api.GetSemestersAsync(ct);
+            model.Departments = await _api.GetDepartmentsAsync(ct);
+            model.Offerings   = await _api.GetCourseOfferingsAsync(null, ct);
+            if (semesterId.HasValue || departmentId.HasValue || offeringId.HasValue || studentId.HasValue)
+                model.Report = await _api.GetResultSummaryReportAsync(semesterId, departmentId, offeringId, studentId, ct);
+        }
+        catch (Exception ex) { model.Message = ex.Message; }
+        return View(model);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ReportGpa(Guid? departmentId, Guid? programId, CancellationToken ct)
+    {
+        ViewData["Title"] = "GPA & CGPA Report";
+        var model = new ReportGpaPageModel
+        {
+            IsConnected  = _api.IsConnected(),
+            DepartmentId = departmentId,
+            ProgramId    = programId
+        };
+        if (!model.IsConnected) return View(model);
+        try
+        {
+            model.Departments = await _api.GetDepartmentsAsync(ct);
+            model.Programs    = await _api.GetProgramsAsync(null, ct);
+            if (departmentId.HasValue || programId.HasValue)
+                model.Report = await _api.GetGpaReportAsync(departmentId, programId, ct);
+        }
+        catch (Exception ex) { model.Message = ex.Message; }
+        return View(model);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ReportEnrollment(Guid? semesterId, Guid? departmentId, CancellationToken ct)
+    {
+        ViewData["Title"] = "Enrollment Summary Report";
+        var model = new ReportEnrollmentPageModel
+        {
+            IsConnected  = _api.IsConnected(),
+            SemesterId   = semesterId,
+            DepartmentId = departmentId
+        };
+        if (!model.IsConnected) return View(model);
+        try
+        {
+            model.Semesters   = await _api.GetSemestersAsync(ct);
+            model.Departments = await _api.GetDepartmentsAsync(ct);
+            model.Report = await _api.GetEnrollmentSummaryReportAsync(semesterId, departmentId, ct);
         }
         catch (Exception ex) { model.Message = ex.Message; }
         return View(model);

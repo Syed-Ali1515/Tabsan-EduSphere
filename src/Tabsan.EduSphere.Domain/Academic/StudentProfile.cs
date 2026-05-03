@@ -37,6 +37,9 @@ public class StudentProfile : AuditableEntity
     /// <summary>Current cumulative GPA. Updated by the grading service each time results are published.</summary>
     public decimal Cgpa { get; private set; }
 
+    /// <summary>Latest calculated semester GPA for the student's current semester context.</summary>
+    public decimal CurrentSemesterGpa { get; private set; }
+
     /// <summary>Current semester number the student is in (1-based).</summary>
     public int CurrentSemesterNumber { get; private set; } = 1;
 
@@ -66,6 +69,21 @@ public class StudentProfile : AuditableEntity
         if (newCgpa < 0 || newCgpa > 4.0m)
             throw new ArgumentOutOfRangeException(nameof(newCgpa), "CGPA must be between 0.0 and 4.0.");
         Cgpa = newCgpa;
+        Touch();
+    }
+
+    /// <summary>
+    /// Updates both the latest semester GPA and the cumulative GPA after result recalculation.
+    /// </summary>
+    public void UpdateAcademicStanding(decimal semesterGpa, decimal cgpa)
+    {
+        if (semesterGpa < 0 || semesterGpa > 4.0m)
+            throw new ArgumentOutOfRangeException(nameof(semesterGpa), "Semester GPA must be between 0.0 and 4.0.");
+        if (cgpa < 0 || cgpa > 4.0m)
+            throw new ArgumentOutOfRangeException(nameof(cgpa), "CGPA must be between 0.0 and 4.0.");
+
+        CurrentSemesterGpa = semesterGpa;
+        Cgpa = cgpa;
         Touch();
     }
 

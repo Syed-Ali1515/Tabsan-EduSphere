@@ -69,6 +69,17 @@ public interface IEduApiClient
     Task SetModuleActiveAsync(string key, bool activate, CancellationToken ct);
     Task SetModuleRolesAsync(string key, List<string> roles, CancellationToken ct);
 
+    // Result Calculation
+    Task<ResultCalculationSettingsPageModel> GetResultCalculationSettingsAsync(CancellationToken ct);
+    Task SaveResultCalculationSettingsAsync(ResultCalculationSettingsPageModel model, CancellationToken ct);
+
+    // Phase 12: Reports
+    Task<List<ReportCatalogItem>> GetReportCatalogAsync(CancellationToken ct);
+    Task<AttendanceSummaryWebModel?> GetAttendanceSummaryReportAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
+    Task<ResultSummaryWebModel?> GetResultSummaryReportAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
+    Task<GpaReportWebModel?> GetGpaReportAsync(Guid? departmentId, Guid? programId, CancellationToken ct);
+    Task<EnrollmentSummaryWebModel?> GetEnrollmentSummaryReportAsync(Guid? semesterId, Guid? departmentId, CancellationToken ct);
+
     // Notifications
     Task<List<NotificationItem>> GetNotificationsAsync(CancellationToken ct);
     Task<int> GetUnreadNotificationCountAsync(CancellationToken ct);
@@ -446,6 +457,56 @@ public class EduApiClient : IEduApiClient
     public Task SetSidebarMenuStatusAsync(Guid id, bool isActive, CancellationToken ct)
         => PutAsync<object, object>($"api/v1/sidebar-menu/{id}/status", new { isActive }, ct);
 
+    public async Task<ResultCalculationSettingsPageModel> GetResultCalculationSettingsAsync(CancellationToken ct)
+    {
+        var raw = await GetAsync<ResultCalculationSettingsApiDto>("api/v1/result-calculation", ct);
+        var model = new ResultCalculationSettingsPageModel();
+        if (raw is null) return model;
+
+        model.GpaRules = raw.GpaScaleRules.Select((r, index) => new ResultCalculationGpaRuleItem
+        {
+            Id = r.Id,
+            GradePoint = r.GradePoint,
+            MinimumScore = r.MinimumScore,
+            DisplayOrder = r.DisplayOrder == 0 ? index + 1 : r.DisplayOrder
+        }).ToList();
+
+        model.ComponentRules = raw.ComponentRules.Select((r, index) => new ResultCalculationComponentRuleItem
+        {
+            Id = r.Id,
+            Name = r.Name ?? string.Empty,
+            Weightage = r.Weightage,
+            DisplayOrder = r.DisplayOrder == 0 ? index + 1 : r.DisplayOrder,
+            IsActive = r.IsActive
+        }).ToList();
+
+        return model;
+    }
+
+    public Task SaveResultCalculationSettingsAsync(ResultCalculationSettingsPageModel model, CancellationToken ct)
+    {
+        var payload = new
+        {
+            gpaScaleRules = model.GpaRules.Select((r, index) => new
+            {
+                r.Id,
+                gradePoint = r.GradePoint,
+                minimumScore = r.MinimumScore,
+                displayOrder = index + 1
+            }).ToList(),
+            componentRules = model.ComponentRules.Select((r, index) => new
+            {
+                r.Id,
+                name = r.Name,
+                weightage = r.Weightage,
+                displayOrder = index + 1,
+                isActive = r.IsActive
+            }).ToList()
+        };
+
+        return PostAsync<object, object>("api/v1/result-calculation", payload, ct);
+    }
+
     private static SidebarMenuItemWebModel MapSidebarItem(SidebarMenuApiDto dto) => new()
     {
         Id           = dto.Id,
@@ -478,6 +539,29 @@ public class EduApiClient : IEduApiClient
     {
         public string RoleName  { get; set; } = string.Empty;
         public bool   IsAllowed { get; set; }
+    }
+
+    private sealed class ResultCalculationSettingsApiDto
+    {
+        public List<ResultCalculationGpaRuleApiDto> GpaScaleRules { get; set; } = new();
+        public List<ResultCalculationComponentRuleApiDto> ComponentRules { get; set; } = new();
+    }
+
+    private sealed class ResultCalculationGpaRuleApiDto
+    {
+        public Guid? Id { get; set; }
+        public decimal GradePoint { get; set; }
+        public decimal MinimumScore { get; set; }
+        public int DisplayOrder { get; set; }
+    }
+
+    private sealed class ResultCalculationComponentRuleApiDto
+    {
+        public Guid? Id { get; set; }
+        public string? Name { get; set; }
+        public decimal Weightage { get; set; }
+        public int DisplayOrder { get; set; }
+        public bool IsActive { get; set; }
     }
 
     // ── License ───────────────────────────────────────────────────────────────
@@ -848,7 +932,7 @@ public class EduApiClient : IEduApiClient
 
     public async Task<List<AttendanceSummaryItem>> GetMyAttendanceSummaryAsync(CancellationToken ct)
     {
-        var raw = await GetAsync<List<AttendanceSummaryApiDto>>("api/v1/attendance/my-attendance", ct) ?? new();
+        var raw = await GetAsync<List<MyAttendanceApiDto>>("api/v1/attendance/my-attendance", ct) ?? new();
         return raw.Select(s => new AttendanceSummaryItem
         {
             StudentId            = s.StudentId,
@@ -875,7 +959,7 @@ public class EduApiClient : IEduApiClient
         }).ToList();
     }
 
-    private sealed class AttendanceSummaryApiDto
+    private sealed class MyAttendanceApiDto
     {
         public Guid   StudentId            { get; set; }
         public string? StudentName         { get; set; }
@@ -1248,6 +1332,213 @@ public class EduApiClient : IEduApiClient
         public string? RegistrationNumber { get; set; }
         public string? ProgramName        { get; set; }
         public int     SemesterNumber     { get; set; }
+    }
+
+    // ── Phase 12: Report methods ───────────────────────────────────────────────
+
+    public async Task<List<ReportCatalogItem>> GetReportCatalogAsync(CancellationToken ct)
+    {
+        var raw = await GetAsync<ReportCatalogApiDto>("api/v1/reports", ct);
+        if (raw?.Reports is null) return new();
+        return raw.Reports.Select(r => new ReportCatalogItem
+        {
+            Id           = r.Id,
+            Key          = r.Key ?? "",
+            Name         = r.Name ?? "",
+            Purpose      = r.Purpose ?? "",
+            AllowedRoles = r.AllowedRoles ?? new()
+        }).ToList();
+    }
+
+    public async Task<AttendanceSummaryWebModel?> GetAttendanceSummaryReportAsync(
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+    {
+        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId);
+        var raw = await GetAsync<AttendanceSummaryApiDto>($"api/v1/reports/attendance-summary{qs}", ct);
+        if (raw is null) return null;
+        return new AttendanceSummaryWebModel
+        {
+            TotalStudents = raw.TotalStudents,
+            GeneratedAt   = raw.GeneratedAt,
+            Rows = raw.Rows?.Select(r => new AttendanceSummaryRowItem
+            {
+                RegistrationNumber   = r.RegistrationNumber ?? "",
+                StudentName          = r.StudentName ?? "",
+                CourseCode           = r.CourseCode ?? "",
+                CourseTitle          = r.CourseTitle ?? "",
+                TotalSessions        = r.TotalSessions,
+                AttendedSessions     = r.AttendedSessions,
+                AttendancePercentage = r.AttendancePercentage
+            }).ToList() ?? new()
+        };
+    }
+
+    public async Task<ResultSummaryWebModel?> GetResultSummaryReportAsync(
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+    {
+        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId);
+        var raw = await GetAsync<ResultSummaryApiDto>($"api/v1/reports/result-summary{qs}", ct);
+        if (raw is null) return null;
+        return new ResultSummaryWebModel
+        {
+            TotalRecords = raw.TotalRecords,
+            GeneratedAt  = raw.GeneratedAt,
+            Rows = raw.Rows?.Select(r => new ResultSummaryRowItem
+            {
+                RegistrationNumber = r.RegistrationNumber ?? "",
+                StudentName        = r.StudentName ?? "",
+                CourseCode         = r.CourseCode ?? "",
+                CourseTitle        = r.CourseTitle ?? "",
+                ResultType         = r.ResultType ?? "",
+                MarksObtained      = r.MarksObtained,
+                MaxMarks           = r.MaxMarks,
+                Percentage         = r.Percentage,
+                PublishedAt        = r.PublishedAt
+            }).ToList() ?? new()
+        };
+    }
+
+    public async Task<GpaReportWebModel?> GetGpaReportAsync(
+        Guid? departmentId, Guid? programId, CancellationToken ct)
+    {
+        var parts = new List<string>();
+        if (departmentId.HasValue) parts.Add($"departmentId={departmentId.Value}");
+        if (programId.HasValue)    parts.Add($"programId={programId.Value}");
+        var qs = parts.Any() ? "?" + string.Join("&", parts) : "";
+        var raw = await GetAsync<GpaReportApiDto>($"api/v1/reports/gpa-report{qs}", ct);
+        if (raw is null) return null;
+        return new GpaReportWebModel
+        {
+            AverageCgpa   = raw.AverageCgpa,
+            TotalStudents = raw.TotalStudents,
+            GeneratedAt   = raw.GeneratedAt,
+            Rows = raw.Rows?.Select(r => new GpaReportRowItem
+            {
+                RegistrationNumber = r.RegistrationNumber ?? "",
+                StudentName        = r.StudentName ?? "",
+                ProgramName        = r.ProgramName ?? "",
+                DepartmentName     = r.DepartmentName ?? "",
+                CurrentSemester    = r.CurrentSemester,
+                Cgpa               = r.Cgpa,
+                CurrentSemesterGpa = r.CurrentSemesterGpa
+            }).ToList() ?? new()
+        };
+    }
+
+    public async Task<EnrollmentSummaryWebModel?> GetEnrollmentSummaryReportAsync(
+        Guid? semesterId, Guid? departmentId, CancellationToken ct)
+    {
+        var parts = new List<string>();
+        if (semesterId.HasValue)   parts.Add($"semesterId={semesterId.Value}");
+        if (departmentId.HasValue) parts.Add($"departmentId={departmentId.Value}");
+        var qs = parts.Any() ? "?" + string.Join("&", parts) : "";
+        var raw = await GetAsync<EnrollmentSummaryApiDto>($"api/v1/reports/enrollment-summary{qs}", ct);
+        if (raw is null) return null;
+        return new EnrollmentSummaryWebModel
+        {
+            TotalOfferings = raw.TotalOfferings,
+            GeneratedAt    = raw.GeneratedAt,
+            Rows = raw.Rows?.Select(r => new EnrollmentSummaryRowItem
+            {
+                CourseCode      = r.CourseCode ?? "",
+                CourseTitle     = r.CourseTitle ?? "",
+                SemesterName    = r.SemesterName ?? "",
+                MaxEnrollment   = r.MaxEnrollment,
+                EnrolledCount   = r.EnrolledCount,
+                AvailableSeats  = r.AvailableSeats
+            }).ToList() ?? new()
+        };
+    }
+
+    private static string BuildReportQuery(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId)
+    {
+        var parts = new List<string>();
+        if (semesterId.HasValue)   parts.Add($"semesterId={semesterId.Value}");
+        if (departmentId.HasValue) parts.Add($"departmentId={departmentId.Value}");
+        if (offeringId.HasValue)   parts.Add($"courseOfferingId={offeringId.Value}");
+        if (studentId.HasValue)    parts.Add($"studentProfileId={studentId.Value}");
+        return parts.Any() ? "?" + string.Join("&", parts) : "";
+    }
+
+    // Private API DTOs for Phase 12
+    private sealed class ReportCatalogApiDto
+    {
+        public List<ReportCatalogItemApiDto>? Reports { get; set; }
+    }
+    private sealed class ReportCatalogItemApiDto
+    {
+        public Guid    Id           { get; set; }
+        public string? Key          { get; set; }
+        public string? Name         { get; set; }
+        public string? Purpose      { get; set; }
+        public bool    IsActive     { get; set; }
+        public List<string> AllowedRoles { get; set; } = new();
+    }
+    private sealed class AttendanceSummaryApiDto
+    {
+        public int      TotalStudents { get; set; }
+        public DateTime GeneratedAt   { get; set; }
+        public List<AttendanceSummaryRowApiDto>? Rows { get; set; }
+    }
+    private sealed class AttendanceSummaryRowApiDto
+    {
+        public string? RegistrationNumber   { get; set; }
+        public string? StudentName          { get; set; }
+        public string? CourseCode           { get; set; }
+        public string? CourseTitle          { get; set; }
+        public int     TotalSessions        { get; set; }
+        public int     AttendedSessions     { get; set; }
+        public decimal AttendancePercentage { get; set; }
+    }
+    private sealed class ResultSummaryApiDto
+    {
+        public int      TotalRecords { get; set; }
+        public DateTime GeneratedAt  { get; set; }
+        public List<ResultSummaryRowApiDto>? Rows { get; set; }
+    }
+    private sealed class ResultSummaryRowApiDto
+    {
+        public string?   RegistrationNumber { get; set; }
+        public string?   StudentName        { get; set; }
+        public string?   CourseCode         { get; set; }
+        public string?   CourseTitle        { get; set; }
+        public string?   ResultType         { get; set; }
+        public decimal   MarksObtained      { get; set; }
+        public decimal   MaxMarks           { get; set; }
+        public decimal   Percentage         { get; set; }
+        public DateTime? PublishedAt        { get; set; }
+    }
+    private sealed class GpaReportApiDto
+    {
+        public decimal  AverageCgpa   { get; set; }
+        public int      TotalStudents { get; set; }
+        public DateTime GeneratedAt   { get; set; }
+        public List<GpaReportRowApiDto>? Rows { get; set; }
+    }
+    private sealed class GpaReportRowApiDto
+    {
+        public string? RegistrationNumber { get; set; }
+        public string? StudentName        { get; set; }
+        public string? ProgramName        { get; set; }
+        public string? DepartmentName     { get; set; }
+        public int     CurrentSemester    { get; set; }
+        public decimal Cgpa               { get; set; }
+        public decimal CurrentSemesterGpa { get; set; }
+    }
+    private sealed class EnrollmentSummaryApiDto
+    {
+        public int      TotalOfferings { get; set; }
+        public DateTime GeneratedAt    { get; set; }
+        public List<EnrollmentSummaryRowApiDto>? Rows { get; set; }
+    }
+    private sealed class EnrollmentSummaryRowApiDto
+    {
+        public string? CourseCode     { get; set; }
+        public string? CourseTitle    { get; set; }
+        public string? SemesterName   { get; set; }
+        public int     MaxEnrollment  { get; set; }
+        public int     EnrolledCount  { get; set; }
+        public int     AvailableSeats { get; set; }
     }
 }
 

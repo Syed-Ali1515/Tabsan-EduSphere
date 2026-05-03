@@ -1,5 +1,4 @@
 using Tabsan.EduSphere.Application.DTOs.Assignments;
-using Tabsan.EduSphere.Domain.Assignments;
 
 namespace Tabsan.EduSphere.Application.Interfaces;
 
@@ -25,7 +24,7 @@ public interface IResultService
     /// Publishes a single result, making it visible to the student.
     /// Publication is a one-way operation — use CorrectAsync for Admin corrections.
     /// </summary>
-    Task<bool> PublishAsync(Guid studentProfileId, Guid courseOfferingId, ResultType resultType, Guid publishedByUserId, CancellationToken ct = default);
+    Task<bool> PublishAsync(Guid studentProfileId, Guid courseOfferingId, string resultType, Guid publishedByUserId, CancellationToken ct = default);
 
     /// <summary>
     /// Publishes all draft results for a course offering in one operation.
@@ -39,7 +38,7 @@ public interface IResultService
     /// Admin-only override to correct an already-published result.
     /// The service must log the correction in the AuditLog before applying changes.
     /// </summary>
-    Task<bool> CorrectAsync(Guid studentProfileId, Guid courseOfferingId, ResultType resultType, CorrectResultRequest request, Guid correctedByUserId, CancellationToken ct = default);
+    Task<bool> CorrectAsync(Guid studentProfileId, Guid courseOfferingId, string resultType, CorrectResultRequest request, Guid correctedByUserId, CancellationToken ct = default);
 
     // ── Queries ───────────────────────────────────────────────────────────────
 
