@@ -595,7 +595,7 @@ The provided startup documents define a strong product vision and feature set, b
 
 > **Scope:** OWASP Top 10 hardening, database performance optimisation, free/open-source email delivery, and mobile-responsive UI.
 >
-> **Status: ✅ FULLY COMPLETE — all implementation and documentation done. Pre-production sign-off checklist at `Docs/Security-Pentest-Checklist.md`.**
+> **Status: ✅ FULLY COMPLETE — all implementation, gap-closure, and documentation done. Pre-production sign-off checklist at `Docs/Security-Pentest-Checklist.md`.**
 
 ### Stage 10.1 Security Hardening
 - [x] Complete OWASP Top 10 checklist: injection, broken auth, XSS, IDOR, security misconfiguration, etc.
@@ -603,6 +603,7 @@ The provided startup documents define a strong product vision and feature set, b
 - [x] Input validation and output encoding on all endpoints (FluentValidation + HtmlEncoder)
 - [x] Rate limiting on auth endpoints and sensitive APIs
 - [x] Password policy (complexity, lockout, hashing with Argon2id) — Argon2id hasher with PBKDF2 backwards-compat
+- [x] **Password reuse prevention** — `PasswordHistoryEntry` domain entity + `IPasswordHistoryRepository`; `AuthService.ChangePasswordAsync` blocks reuse of last 5 passwords via Argon2id hash comparison; `AccountSecurityService.ResetPasswordAsync` records new hash in history; EF migration `Phase10SecurityTables` creates `password_history` table with `IX_password_history_user_created` index
 - [x] Dependency vulnerability scan in CI; zero critical/high CVEs before release (CI job `build-test/Vulnerability scan` added to `.github/workflows/dotnet-ci.yml`)
     - [x] Penetration test checklist completed (`Docs/Security-Pentest-Checklist.md`) — OWASP Top 10 fully mapped; 0 High/Critical findings in code; 5 pre-production action items documented for DevOps/Security Lead sign-off
 ### Stage 10.2 Database Performance
@@ -615,14 +616,25 @@ The provided startup documents define a strong product vision and feature set, b
 - [x] Integrate a free/open-source transactional email provider (MailKit SMTP via `MailKitEmailSender`)
 - [x] Email service abstracted behind `IEmailSender` interface — provider is swappable via configuration
 - [x] Use cases: license expiry warning email integrated into `LicenseExpiryWarningJob`
+    - [x] **Email notifications on account unlock and password reset** — `AccountSecurityService.UnlockAccountAsync` and `ResetPasswordAsync` each send a notification email to the user's registered address; email failures are swallowed (non-fatal) so the primary operation always completes
     - [x] Email templates stored in file system (`Infrastructure/Email/Templates/`); HTML files with `{{TOKEN}}` substitution via `IEmailTemplateRenderer`; localisation-ready
-    - [x] All outbound email attempts logged with status (sent / failed / bounced) via `outbound_email_logs` table (`Phase10SecurityTables` migration)
+    - [x] **All outbound email attempts DB-logged** — `OutboundEmailLog` domain entity with `Sent`/`Failed` factory methods; `MailKitEmailSender` writes a row to `outbound_email_logs` table on every attempt (success or failure); DB-log failure is caught and logged via `ILogger` to prevent masking the real email error; EF migration `Phase10SecurityTables` creates the table with `IX_outbound_email_logs_status_attempted` index
 ### Stage 10.4 Mobile-Friendly & Accessible UI
 - [x] Responsive layout using CSS Grid / Bootstrap 5 — `.app-content table` auto scroll wrapper in site.css
 - [x] WCAG 2.1 AA compliance: skip-to-main link, `aria-label` on nav, `role="navigation"`, `role="banner"`, `id="main-content"`
 - [x] Touch-friendly controls (minimum 44×44 px tap targets) added in site.css
 - [x] Focus ring improvements (`:focus-visible` outline) added in site.css
 - [x] Lighthouse score ≥ 90 — `.lighthouserc.yml` config with `treosh/lighthouse-ci-action` CI job; asserting `categories:performance ≥ 0.9`, `categories:accessibility ≥ 0.9`, `categories:best-practices ≥ 0.9`; `<meta>` description, `theme-color`, `robots`, favicon `<link>`, `defer` on all scripts, `lang="en"` all added to `_Layout.cshtml`
+
+### Phase 10 Gap-Closure Summary (Implemented this session)
+
+| Gap | Resolution |
+|---|---|
+| Password reuse prevention | `PasswordHistoryEntry` entity, `IPasswordHistoryRepository`, `PasswordHistoryRepository`, `PasswordHistoryConfiguration`; last-5 check in `AuthService.ChangePasswordAsync`; history recorded on reset in `AccountSecurityService` |
+| Outbound email DB logging | `OutboundEmailLog` entity with `Sent`/`Failed` factories; `MailKitEmailSender` writes a row on every attempt; `ApplicationDbContext.OutboundEmailLogs` DbSet |
+| Email notifications on account events | `AccountSecurityService.UnlockAccountAsync` → sends "account unlocked" email; `ResetPasswordAsync` → sends "password reset" email; both swallow email errors |
+| Integration test parallelism | `EduSphereCollection` xUnit collection fixture; `xunit.runner.json` `parallelizeTestCollections=false`; `EduSphereWebFactory.ForceDropDatabaseSync()` with named OS Mutex; `DatabaseSeeder.SeedAsync` catches SQL error 1801 and retries |
+| Stale sidebar test assertions | Updated SuperAdmin=30, Admin=18, Faculty=16, Student=12; corrected `system_settings` inclusion logic (parent-carrier for `theme_settings`) |
 
 ---
 

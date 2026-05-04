@@ -11,7 +11,8 @@ namespace Tabsan.EduSphere.IntegrationTests;
 /// mutating tests restore the original state in their finally-blocks so later tests
 /// always start from the seeded baseline.
 /// </summary>
-public class SidebarMenuIntegrationTests : IClassFixture<EduSphereWebFactory>
+[Collection(EduSphereCollection.Name)]
+public class SidebarMenuIntegrationTests
 {
     private readonly EduSphereWebFactory _factory;
 
@@ -67,7 +68,7 @@ public class SidebarMenuIntegrationTests : IClassFixture<EduSphereWebFactory>
 
     // ── Role matrix ───────────────────────────────────────────────────────────
 
-    /// <summary>SuperAdmin should see every seeded menu item (13 keys total).</summary>
+    /// <summary>SuperAdmin should see every seeded menu item (30 keys total — all top-level and sub-menus).</summary>
     [Fact]
     public async Task GetVisible_SuperAdmin_ReturnsAllMenus()
     {
@@ -75,23 +76,40 @@ public class SidebarMenuIntegrationTests : IClassFixture<EduSphereWebFactory>
         var menus = await GetVisibleAsync(client);
         var keys  = FlatKeys(menus);
 
-        Assert.Contains("dashboard",        keys);
-        Assert.Contains("timetable_admin",  keys);
-        Assert.Contains("timetable_teacher",keys);
-        Assert.Contains("timetable_student",keys);
-        Assert.Contains("lookups",          keys);
-        Assert.Contains("buildings",        keys);
-        Assert.Contains("rooms",            keys);
-        Assert.Contains("system_settings",  keys);
-        Assert.Contains("module_settings",  keys);
-        Assert.Contains("report_settings",  keys);
-        Assert.Contains("sidebar_settings", keys);
-        Assert.Contains("theme_settings",   keys);
-        Assert.Contains("license_update",   keys);
-        Assert.Equal(13, keys.Count);
+        Assert.Contains("dashboard",           keys);
+        Assert.Contains("timetable_admin",     keys);
+        Assert.Contains("timetable_teacher",   keys);
+        Assert.Contains("timetable_student",   keys);
+        Assert.Contains("lookups",             keys);
+        Assert.Contains("buildings",           keys);
+        Assert.Contains("rooms",               keys);
+        Assert.Contains("system_settings",     keys);
+        Assert.Contains("module_settings",     keys);
+        Assert.Contains("report_settings",     keys);
+        Assert.Contains("sidebar_settings",    keys);
+        Assert.Contains("theme_settings",      keys);
+        Assert.Contains("license_update",      keys);
+        Assert.Contains("dashboard_settings",  keys);
+        Assert.Contains("result_calculation",  keys);
+        Assert.Contains("notifications",       keys);
+        Assert.Contains("students",            keys);
+        Assert.Contains("departments",         keys);
+        Assert.Contains("courses",             keys);
+        Assert.Contains("assignments",         keys);
+        Assert.Contains("attendance",          keys);
+        Assert.Contains("results",             keys);
+        Assert.Contains("quizzes",             keys);
+        Assert.Contains("fyp",                 keys);
+        Assert.Contains("analytics",           keys);
+        Assert.Contains("ai_chat",             keys);
+        Assert.Contains("student_lifecycle",   keys);
+        Assert.Contains("payments",            keys);
+        Assert.Contains("enrollments",         keys);
+        Assert.Contains("report_center",       keys);
+        Assert.Equal(30, keys.Count);
     }
 
-    /// <summary>Admin should see: dashboard, timetable_admin, lookups, buildings, rooms, system_settings (parent of theme_settings), theme_settings.</summary>
+    /// <summary>Admin should see all menus with IsAllowed=true for Admin role (18 total).</summary>
     [Fact]
     public async Task GetVisible_Admin_ReturnsAdminMenusOnly()
     {
@@ -99,17 +117,31 @@ public class SidebarMenuIntegrationTests : IClassFixture<EduSphereWebFactory>
         var menus = await GetVisibleAsync(client);
         var keys  = FlatKeys(menus);
 
-        Assert.Contains("dashboard",       keys);
-        Assert.Contains("timetable_admin", keys);
-        Assert.Contains("lookups",         keys);
-        Assert.Contains("buildings",       keys);
-        Assert.Contains("rooms",           keys);
-        Assert.Contains("system_settings", keys); // included as parent of visible theme_settings
-        Assert.Contains("theme_settings",  keys);
-        Assert.Equal(7, keys.Count);
+        Assert.Contains("dashboard",          keys);
+        Assert.Contains("timetable_admin",    keys);
+        Assert.Contains("lookups",            keys);
+        Assert.Contains("buildings",          keys);
+        Assert.Contains("rooms",              keys);
+        Assert.Contains("theme_settings",     keys);
+        Assert.Contains("result_calculation", keys);
+        Assert.Contains("notifications",      keys);
+        Assert.Contains("students",           keys);
+        Assert.Contains("departments",        keys);
+        Assert.Contains("courses",            keys);
+        Assert.Contains("results",            keys);
+        Assert.Contains("analytics",          keys);
+        Assert.Contains("student_lifecycle",  keys);
+        Assert.Contains("payments",           keys);
+        Assert.Contains("enrollments",        keys);
+        Assert.Contains("report_center",      keys);
+        Assert.Contains("system_settings",    keys); // parent carrier for theme_settings sub-menu
+        Assert.Contains("theme_settings",      keys);
+        Assert.DoesNotContain("module_settings",   keys); // SuperAdmin only (no visible sub-menus)
+        Assert.DoesNotContain("sidebar_settings",  keys); // SuperAdmin only
+        Assert.Equal(18, keys.Count);
     }
 
-    /// <summary>Faculty should see: dashboard, timetable_teacher, system_settings (parent of theme_settings), theme_settings.</summary>
+    /// <summary>Faculty should see all menus with IsAllowed=true for Faculty role (16 total).</summary>
     [Fact]
     public async Task GetVisible_Faculty_ReturnsFacultyMenusOnly()
     {
@@ -119,12 +151,27 @@ public class SidebarMenuIntegrationTests : IClassFixture<EduSphereWebFactory>
 
         Assert.Contains("dashboard",         keys);
         Assert.Contains("timetable_teacher", keys);
-        Assert.Contains("system_settings",   keys); // included as parent of visible theme_settings
         Assert.Contains("theme_settings",    keys);
-        Assert.Equal(4, keys.Count);
+        Assert.Contains("notifications",     keys);
+        Assert.Contains("students",          keys);
+        Assert.Contains("courses",           keys);
+        Assert.Contains("assignments",       keys);
+        Assert.Contains("attendance",        keys);
+        Assert.Contains("results",           keys);
+        Assert.Contains("quizzes",           keys);
+        Assert.Contains("fyp",               keys);
+        Assert.Contains("analytics",         keys);
+        Assert.Contains("ai_chat",           keys);
+        Assert.Contains("enrollments",       keys);
+        Assert.Contains("report_center",     keys);
+        Assert.Contains("system_settings",  keys); // parent carrier for theme_settings
+        Assert.Contains("theme_settings",    keys);
+        Assert.DoesNotContain("timetable_admin",   keys);
+        Assert.DoesNotContain("module_settings",   keys); // SuperAdmin only
+        Assert.Equal(16, keys.Count);
     }
 
-    /// <summary>Student should see: dashboard, timetable_student, system_settings (parent of theme_settings), theme_settings.</summary>
+    /// <summary>Student should see all menus with IsAllowed=true for Student role (12 total).</summary>
     [Fact]
     public async Task GetVisible_Student_ReturnsStudentMenusOnly()
     {
@@ -134,9 +181,20 @@ public class SidebarMenuIntegrationTests : IClassFixture<EduSphereWebFactory>
 
         Assert.Contains("dashboard",         keys);
         Assert.Contains("timetable_student", keys);
-        Assert.Contains("system_settings",   keys); // included as parent of visible theme_settings
         Assert.Contains("theme_settings",    keys);
-        Assert.Equal(4, keys.Count);
+        Assert.Contains("notifications",     keys);
+        Assert.Contains("assignments",       keys);
+        Assert.Contains("attendance",        keys);
+        Assert.Contains("results",           keys);
+        Assert.Contains("quizzes",           keys);
+        Assert.Contains("fyp",               keys);
+        Assert.Contains("ai_chat",           keys);
+        Assert.Contains("payments",          keys);
+        Assert.Contains("system_settings",  keys); // parent carrier for theme_settings
+        Assert.Contains("theme_settings",    keys);
+        Assert.DoesNotContain("timetable_admin",  keys);
+        Assert.DoesNotContain("module_settings",  keys); // SuperAdmin only
+        Assert.Equal(12, keys.Count);
     }
 
     // ── Status toggle ─────────────────────────────────────────────────────────

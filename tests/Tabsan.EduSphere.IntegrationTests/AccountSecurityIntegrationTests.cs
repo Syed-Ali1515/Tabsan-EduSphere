@@ -11,7 +11,8 @@ namespace Tabsan.EduSphere.IntegrationTests;
 /// and authorization correctly.
 /// These tests exercise the live API stack against the integration-test database.
 /// </summary>
-public class AccountSecurityIntegrationTests : IClassFixture<EduSphereWebFactory>
+[Collection(EduSphereCollection.Name)]
+public class AccountSecurityIntegrationTests
 {
     private readonly EduSphereWebFactory _factory;
 

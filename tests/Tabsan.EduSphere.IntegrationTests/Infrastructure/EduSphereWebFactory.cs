@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -29,29 +30,74 @@ public sealed class EduSphereWebFactory : WebApplicationFactory<Program>, IAsync
 
     public async Task InitializeAsync()
     {
-        // Drop any leftover test database BEFORE the factory first builds the app.
-        // (The factory builds lazily on first CreateClient() call, at which point
-        // DatabaseSeeder.SeedAsync runs MigrateAsync + seeds all default data.)
-        await using var db = BuildStandaloneContext();
-        await db.Database.EnsureDeletedAsync();
+        // Use a named system Mutex to prevent parallel test worker processes from
+        // racing to drop/create the same LocalDB database simultaneously.
+        // Run on a dedicated thread so WaitOne and ReleaseMutex stay on the same thread.
+        await Task.Factory.StartNew(async () =>
+        {
+            using var mutex = new Mutex(false, "Global\\TabsanEduSphereTestDb");
+            mutex.WaitOne(TimeSpan.FromSeconds(60));
+            try
+            {
+                ForceDropDatabaseSync();
+            }
+            finally
+            {
+                mutex.ReleaseMutex();
+            }
+        }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default).Unwrap();
     }
 
     public new async Task DisposeAsync()
     {
         // Drop the test database after the full test run so nothing persists.
-        await using var db = BuildStandaloneContext();
-        await db.Database.EnsureDeletedAsync();
-
+        await ForceDropDatabaseAsync();
         await base.DisposeAsync();
     }
 
-    private static ApplicationDbContext BuildStandaloneContext()
+    /// <summary>
+    /// Drops the integration-test database unconditionally, closing all existing
+    /// connections first (SET SINGLE_USER WITH ROLLBACK IMMEDIATE).
+    /// Uses the master database connection so the target DB need not exist.
+    /// </summary>
+    private static async Task ForceDropDatabaseAsync()
     {
-        var opts = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseSqlServer(TestConnectionString,
-                sql => sql.MigrationsAssembly("Tabsan.EduSphere.Infrastructure"))
-            .Options;
-        return new ApplicationDbContext(opts);
+        const string masterConn =
+            @"Server=(localdb)\mssqllocaldb;Database=master;Trusted_Connection=True;";
+
+        await using var conn = new SqlConnection(masterConn);
+        await conn.OpenAsync();
+
+        var sql = $"""
+            IF DB_ID('{TestDbName}') IS NOT NULL
+            BEGIN
+                ALTER DATABASE [{TestDbName}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+                DROP DATABASE [{TestDbName}];
+            END
+            """;
+
+        await using var cmd = new SqlCommand(sql, conn);
+        await cmd.ExecuteNonQueryAsync();
+    }
+
+    private static void ForceDropDatabaseSync()
+    {
+        const string masterConn =
+            @"Server=(localdb)\mssqllocaldb;Database=master;Trusted_Connection=True;";
+
+        using var conn = new SqlConnection(masterConn);
+        conn.Open();
+
+        var sql = $"""
+            IF DB_ID('{TestDbName}') IS NOT NULL
+            BEGIN
+                ALTER DATABASE [{TestDbName}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+                DROP DATABASE [{TestDbName}];
+            END
+            """;
+
+        using var cmd = new SqlCommand(sql, conn);
+        cmd.ExecuteNonQuery();
     }
 
     // ── WebApplicationFactory override ─────────────────────────────────────────

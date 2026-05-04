@@ -104,18 +104,21 @@ public class PasswordHistoryTests
     [Fact]
     public async Task NewPassword_Beyond5History_IsAllowed()
     {
-        // Build 6 historical passwords; only last 5 are checked
+        // Build 6 historical passwords (oldest first in params → newest inserted last at index 0).
+        // After 6 inserts via Insert(0,...), list order is newest-first:
+        //   [Pass1!, Pass2!, Pass3!, Pass4!, Pass5!, Pass6!]
+        // GetRecentAsync(count:5) returns the first 5: Pass1!..Pass5!
+        // Pass6! (the oldest) is at index 5 and is outside the 5-entry window.
         var repo = BuildRepoWithHistory(
             "Pass6!", "Pass5!", "Pass4!", "Pass3!", "Pass2!", "Pass1!");
 
-        // "Pass1!" is the 6th entry — should NOT be in the 5-entry window
         var recentHashes = await repo.GetRecentAsync(UserId, 5, CancellationToken.None);
-        var oldPassword = "Pass6!"; // This is position 0 (most recent)
 
         recentHashes.Count.Should().Be(5, "only 5 entries returned");
 
-        var isReused = recentHashes.Any(h => Hasher.Verify(h.PasswordHash, oldPassword));
-        isReused.Should().BeTrue("Pass6 is the most recent and is within the 5-entry window");
+        // Pass6! is the oldest entry and should NOT appear in the 5-entry window.
+        var isReused = recentHashes.Any(h => Hasher.Verify(h.PasswordHash, "Pass6!"));
+        isReused.Should().BeFalse("Pass6! is beyond the 5-entry window and should be allowed");
     }
 
     [Fact]

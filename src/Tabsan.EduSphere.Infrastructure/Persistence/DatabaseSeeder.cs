@@ -1,3 +1,4 @@
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Tabsan.EduSphere.Application.Interfaces;
@@ -31,7 +32,20 @@ public static class DatabaseSeeder
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
 
-        await db.Database.MigrateAsync();
+        // Retry once on "Database already exists" (SQL error 1801), which can happen
+        // when two processes race to create the same LocalDB database in test scenarios.
+        // On retry MigrateAsync is idempotent because __EFMigrationsHistory is checked.
+        try
+        {
+            await db.Database.MigrateAsync();
+        }
+        catch (SqlException ex) when (ex.Number == 1801)
+        {
+            // Another process won the race and created the DB; wait briefly then migrate
+            // (which will be a no-op since all migrations are already recorded).
+            await Task.Delay(2000);
+            await db.Database.MigrateAsync();
+        }
 
         await SeedRolesAsync(db);
         await SeedModulesAsync(db);
