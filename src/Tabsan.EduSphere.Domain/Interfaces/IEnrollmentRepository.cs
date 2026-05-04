@@ -11,6 +11,10 @@ public interface IEnrollmentRepository
     /// <summary>Returns all active enrollments for the given course offering.</summary>
     Task<IReadOnlyList<Enrollment>> GetByOfferingAsync(Guid courseOfferingId, CancellationToken ct = default);
 
+    // Final-Touches Phase 8 Stage 8.2 — admin drop by enrollment ID
+    /// <summary>Returns the enrollment with the given ID, or null.</summary>
+    Task<Enrollment?> GetByIdAsync(Guid id, CancellationToken ct = default);
+
     /// <summary>Returns the enrollment for the given student + offering pair, or null.</summary>
     Task<Enrollment?> GetAsync(Guid studentProfileId, Guid courseOfferingId, CancellationToken ct = default);
 

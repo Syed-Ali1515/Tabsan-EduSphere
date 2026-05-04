@@ -20,12 +20,18 @@ public class EnrollmentRepository : IEnrollmentRepository
                     .OrderByDescending(e => e.EnrolledAt)
                     .ToListAsync(ct);
 
-    /// <summary>Returns all active enrollments in a course offering.</summary>
+    /// <summary>Returns all active enrollments in a course offering, including student profile + program.</summary>
+    // Final-Touches Phase 8 Stage 8.1 — added Program include so ProgramName can be returned in roster
     public async Task<IReadOnlyList<Enrollment>> GetByOfferingAsync(Guid courseOfferingId, CancellationToken ct = default)
         => await _db.Enrollments
-                    .Include(e => e.StudentProfile)
+                    .Include(e => e.StudentProfile).ThenInclude(sp => sp.Program)
                     .Where(e => e.CourseOfferingId == courseOfferingId && e.Status == EnrollmentStatus.Active)
                     .ToListAsync(ct);
+
+    // Final-Touches Phase 8 Stage 8.2 — look up enrollment by its own ID for admin drop
+    /// <summary>Returns the enrollment with the given ID, or null.</summary>
+    public Task<Enrollment?> GetByIdAsync(Guid id, CancellationToken ct = default)
+        => _db.Enrollments.FirstOrDefaultAsync(e => e.Id == id, ct);
 
     /// <summary>Returns the enrollment for the given student + offering pair, or null.</summary>
     public Task<Enrollment?> GetAsync(Guid studentProfileId, Guid courseOfferingId, CancellationToken ct = default)

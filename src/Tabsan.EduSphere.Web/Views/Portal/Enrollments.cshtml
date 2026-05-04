@@ -1,17 +1,128 @@
 @model Tabsan.EduSphere.Web.Models.Portal.EnrollmentsPageModel
+@* Final-Touches Phase 8 Stage 8.1+8.2 — student own-courses view + admin roster + CRUD *@
 @{ ViewData["Title"] = "Enrollments"; }
 
 @if (!string.IsNullOrWhiteSpace(Model.Message))
 {
-    <div class="alert alert-info">@Model.Message</div>
+    <div class="alert @(Model.Message.Contains("success") || Model.Message.Contains("enrolled") || Model.Message.Contains("dropped") ? "alert-success" : "alert-danger") alert-dismissible fade show" role="alert">
+        @Model.Message
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
 }
 
 @if (!Model.IsConnected)
 {
     <div class="alert alert-warning">Not connected. <a asp-action="Dashboard">Configure API</a>.</div>
 }
+else if (Model.IsStudent)
+{
+    @* ── STUDENT VIEW ─────────────────────────────────────────────── *@
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h5 mb-0">My Enrolled Courses
+            <span class="badge bg-secondary ms-1">@Model.MyCourses.Count</span>
+        </h2>
+        @if (Model.Offerings.Any())
+        {
+            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#enrollModal">
+                + Enroll in Course
+            </button>
+        }
+    </div>
+
+    @if (Model.MyCourses.Count == 0)
+    {
+        <div class="alert alert-info">You are not enrolled in any courses yet.</div>
+    }
+    else
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Course</th>
+                            <th>Semester</th>
+                            <th>Status</th>
+                            <th>Enrolled</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{ int idx = 1; }
+                        @foreach (var e in Model.MyCourses)
+                        {
+                            <tr>
+                                <td class="text-muted small">@(idx++)</td>
+                                <td><strong>@e.CourseCode</strong> — @e.CourseTitle</td>
+                                <td>@e.SemesterName</td>
+                                <td>
+                                    @if (e.Status == "Active")
+                                    {
+                                        <span class="badge bg-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">@e.Status</span>
+                                    }
+                                </td>
+                                <td class="small text-muted">@e.EnrolledAt.ToString("dd MMM yyyy")</td>
+                                <td>
+                                    @if (e.Status == "Active")
+                                    {
+                                        <form method="post" asp-action="StudentDropEnrollment" style="display:inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="courseOfferingId" value="@e.CourseOfferingId" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                    onclick="return confirm('Drop @e.CourseCode?')">Drop</button>
+                                        </form>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+    @* ── Enroll Modal ──────────────────────────────────────────────── *@
+    <div class="modal fade" id="enrollModal" tabindex="-1">
+        <div class="modal-dialog">
+            <form method="post" asp-action="StudentEnroll">
+                @Html.AntiForgeryToken()
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Enroll in a Course</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Course Offering</label>
+                            <select name="courseOfferingId" class="form-select" required>
+                                <option value="">Select offering…</option>
+                                @foreach (var o in Model.Offerings.Where(o => o.IsActive))
+                                {
+                                    <option value="@o.Id">@o.CourseCode — @o.CourseTitle (@o.SemesterName)</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Enroll</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+}
 else
 {
+    @* ── ADMIN / FACULTY VIEW ─────────────────────────────────────── *@
+
+    @* Offering filter + Enroll Student button *@
     <div class="card border-0 shadow-sm mb-3">
         <div class="card-body">
             <form method="get" asp-action="Enrollments" class="row g-2 align-items-end">
@@ -25,19 +136,32 @@ else
                         }
                     </select>
                 </div>
+                @if (Model.SelectedOfferingId.HasValue && (User.IsInRole("Admin") || User.IsInRole("SuperAdmin")))
+                {
+                    <div class="col-md-auto">
+                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#enrollStudentModal">
+                            + Enroll Student
+                        </button>
+                    </div>
+                }
             </form>
         </div>
     </div>
 
+    @* Roster Table *@
     <div class="card border-0 shadow-sm">
         <div class="card-body">
             <h2 class="h5 mb-3">Enrollment Roster
                 <span class="badge bg-secondary ms-1">@Model.Roster.Count</span>
             </h2>
 
-            @if (Model.Roster.Count == 0)
+            @if (!Model.SelectedOfferingId.HasValue)
             {
-                <p class="text-muted">Select a course offering to view its enrollment roster.</p>
+                <p class="text-muted">Select a course offering above to view its enrollment roster.</p>
+            }
+            else if (Model.Roster.Count == 0)
+            {
+                <p class="text-muted">No active enrollments for this offering.</p>
             }
             else
             {
@@ -47,21 +171,35 @@ else
                             <tr>
                                 <th>#</th>
                                 <th>Reg. No.</th>
-                                <th>Student Name</th>
                                 <th>Program</th>
                                 <th>Semester</th>
+                                @if (User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))
+                                {
+                                    <th></th>
+                                }
                             </tr>
                         </thead>
                         <tbody>
-                            @{ int idx = 1; }
+                            @{ int idx2 = 1; }
                             @foreach (var e in Model.Roster)
                             {
                                 <tr>
-                                    <td class="text-muted small">@(idx++)</td>
+                                    <td class="text-muted small">@(idx2++)</td>
                                     <td><code>@e.RegistrationNumber</code></td>
-                                    <td>@e.StudentName</td>
                                     <td>@e.ProgramName</td>
                                     <td>@e.SemesterNumber</td>
+                                    @if (User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))
+                                    {
+                                        <td>
+                                            <form method="post" asp-action="AdminDropEnrollment" style="display:inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="enrollmentId" value="@e.Id" />
+                                                <input type="hidden" name="offeringId" value="@Model.SelectedOfferingId" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                        onclick="return confirm('Drop this enrollment?')">Drop</button>
+                                            </form>
+                                        </td>
+                                    }
                                 </tr>
                             }
                         </tbody>
@@ -70,4 +208,39 @@ else
             }
         </div>
     </div>
+
+    @* ── Enroll Student Modal (Admin/SuperAdmin only) ─────────────── *@
+    @if (Model.SelectedOfferingId.HasValue && (User.IsInRole("Admin") || User.IsInRole("SuperAdmin")))
+    {
+        <div class="modal fade" id="enrollStudentModal" tabindex="-1">
+            <div class="modal-dialog">
+                <form method="post" asp-action="EnrollStudent">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="courseOfferingId" value="@Model.SelectedOfferingId" />
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Enroll Student</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">Student</label>
+                                <select name="studentProfileId" class="form-select" required>
+                                    <option value="">Select student…</option>
+                                    @foreach (var s in Model.Students)
+                                    {
+                                        <option value="@s.Id">@s.FullName (@s.RegistrationNumber)</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Enroll</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
 }

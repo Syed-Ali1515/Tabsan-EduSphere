@@ -1,14 +1,35 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.20 (Phase 7 Complete - Finance and Payments Module)  
+**Version:** 1.21 (Phase 8 Complete - Enrollments Completion)  
 **Status:** Approved  
 **Prepared By:** Product Team  
-**Last Updated:** 4 May 2026  
+**Last Updated:** 5 May 2026  
 
 ---
 
 ## 0. Implementation Update Log
+
+### 2026-05-05 — Phase 8 Complete (Enrollments Completion)
+- **Stage 8.1 (Data and Dropdown Fixes - COMPLETE)**
+  - Fixed `CourseController.GetOfferings()` to return all offerings when no filter provided (was returning empty list); fixed field names `CourseTitle` and `IsActive`.
+  - Fixed `EnrollmentController.GetRoster()` to return `Id, StudentName, RegistrationNumber, ProgramName, SemesterNumber` matching EduApiClient `RosterApiDto`.
+  - Added `ICourseRepository.GetAllOfferingsAsync()` + `CourseRepository` implementation.
+  - Fixed `EnrollmentRepository.GetByOfferingAsync()` to include `StudentProfile.Program` so `ProgramName` is available.
+  - Updated `EnrollmentController.MyCourses()` to include `CourseOfferingId` in response for student-drop flow.
+
+- **Stage 8.2 (Enrollments CRUD - COMPLETE)**
+  - Added `IEnrollmentRepository.GetByIdAsync()` + implementation.
+  - Added `IEnrollmentService.AdminDropByIdAsync()` + `EnrollmentService` implementation.
+  - Added `AdminEnrollRequest` DTO.
+  - Added `POST /api/v1/enrollment/admin` — admin enrolls any student.
+  - Added `DELETE /api/v1/enrollment/admin/{enrollmentId}` — admin drops any active enrollment.
+  - Added 5 new EduApiClient methods: `GetMyEnrollmentsAsync`, `AdminEnrollStudentAsync`, `AdminDropEnrollmentAsync`, `StudentEnrollAsync`, `StudentDropEnrollmentAsync`.
+  - Added `MyEnrollmentItem` view model; expanded `EnrollmentsPageModel` with `IsStudent`, `Students`, `MyCourses`.
+  - Updated `PortalController.Enrollments GET` to branch by role; added 4 POST portal actions.
+  - Rebuilt `Enrollments.cshtml`: student own-courses view + admin roster view with full CRUD.
+
+- **Build Status:** ✅ 0 errors, 0 warnings
 
 ### 2026-05-04 — Phase 2 Stages 2.1–2.3 Complete (Data Visibility & CRUD Entry Points)
 - **Stage 2.1 (Timetable Data Binding - COMPLETE)**

@@ -415,20 +415,50 @@ For **every completed phase**:
 ---
 
 ## Phase 8 - Enrollments Completion
-**Status:** Not Started
+**Status:** ✅ Complete
 
 ### Stage 8.1 - Data and Dropdown Fixes
-- [ ] Fix empty enrollments data grid.
-- [ ] Fix empty dropdown data sources.
+- [x] Fix empty enrollments data grid.
+- [x] Fix empty dropdown data sources.
 
 ### Stage 8.2 - Enrollments CRUD
-- [ ] Add create/edit/delete enrollment workflows.
+- [x] Add create/edit/delete enrollment workflows.
 
 ### Implementation Summary
-- Pending
+
+**Root Causes Fixed (Stage 8.1):**
+1. **Empty dropdown**: `CourseController.GetOfferings()` returned an empty list when no `semesterId` or `departmentId` filter was provided. Added `ICourseRepository.GetAllOfferingsAsync()` (with `CourseRepository` implementation) and updated the controller else-branch to call it. Also fixed field name mismatches: `CourseName` → `CourseTitle`, `IsOpen` → `IsActive` — matching `OfferingApiDto` in EduApiClient.
+2. **Empty roster grid**: `EnrollmentController.GetRoster()` returned `{StudentProfileId, RegNo, EnrolledAt}` which did not match `RosterApiDto` fields (`Id, StudentName, RegistrationNumber, ProgramName, SemesterNumber`). Fixed the response mapping. Added `.ThenInclude(sp => sp.Program)` to `EnrollmentRepository.GetByOfferingAsync()` so `ProgramName` is available.
+
+**New CRUD Workflows (Stage 8.2):**
+- **Admin — Enroll Student**: New `POST /api/v1/enrollment/admin` endpoint (reuses `EnrollmentService.EnrollAsync`). Portal action `EnrollStudent` + modal in Enrollments.cshtml.
+- **Admin — Drop Enrollment**: New `DELETE /api/v1/enrollment/admin/{enrollmentId}` endpoint backed by new `IEnrollmentService.AdminDropByIdAsync` (requires new `IEnrollmentRepository.GetByIdAsync`). Portal action `AdminDropEnrollment` + per-row Drop button.
+- **Student — My Courses View**: `Enrollments GET` now branches on `IsStudent`; loads `GetMyEnrollmentsAsync()` → `GET api/v1/enrollment/my-courses`. `MyCourses` endpoint updated to also return `CourseOfferingId`.
+- **Student — Self-Enroll**: `StudentEnroll` portal action + "Enroll in Course" modal.
+- **Student — Drop Own Enrollment**: `StudentDropEnrollment` portal action + per-row Drop button for active enrollments.
+
+**Files Modified:**
+- `Domain/Interfaces/ICourseRepository.cs` — `GetAllOfferingsAsync`
+- `Domain/Interfaces/IEnrollmentRepository.cs` — `GetByIdAsync`
+- `Application/Interfaces/IEnrollmentService.cs` — `AdminDropByIdAsync`
+- `Application/DTOs/Academic/AcademicDtos.cs` — `AdminEnrollRequest`
+- `Application/Academic/EnrollmentService.cs` — `AdminDropByIdAsync`
+- `Infrastructure/Repositories/CourseRepository.cs` — `GetAllOfferingsAsync`
+- `Infrastructure/Repositories/AcademicSupportRepositories.cs` — fixed `GetByOfferingAsync` includes + `GetByIdAsync`
+- `API/Controllers/CourseController.cs` — `GetOfferings` fixes
+- `API/Controllers/EnrollmentController.cs` — `GetRoster` fix, `MyCourses` fix, `AdminEnroll`, `AdminDrop`
+- `Web/Services/EduApiClient.cs` — 5 new methods + `MyCourseApiDto`
+- `Web/Models/Portal/PortalViewModels.cs` — `MyEnrollmentItem`, expanded `EnrollmentsPageModel`
+- `Web/Controllers/PortalController.cs` — `Enrollments` GET update + 4 new POST actions
+- `Web/Views/Portal/Enrollments.cshtml` — rebuilt with admin roster + student courses view
 
 ### Validation Summary
-- Pending
+- Build: ✅ `dotnet build Tabsan.EduSphere.sln` → **0 errors, 0 warnings**
+- Enrollment dropdown now populated from all offerings (no filter required).
+- Roster returns correct fields: `Id`, `RegistrationNumber`, `ProgramName`, `SemesterNumber`.
+- Admin can select an offering, view roster, enroll a student, and drop any enrollment.
+- Student view shows own courses, active/dropped status, and can enroll or drop.
+- All CSRF tokens (`[ValidateAntiForgeryToken]` + `@Html.AntiForgeryToken()`) applied to all write forms.
 
 ---
 
@@ -469,8 +499,8 @@ For **every completed phase**:
 - [x] Phase 5 complete
 - [x] Phase 6 complete
 - [x] Phase 7 complete
-- [ ] Phase 8 complete
+- [x] Phase 8 complete
 - [ ] Phase 9 complete
 
 ## Next Phase To Execute
-Phase 8 - Enrollments Completion
+Phase 9 - Documentation and Script Regeneration

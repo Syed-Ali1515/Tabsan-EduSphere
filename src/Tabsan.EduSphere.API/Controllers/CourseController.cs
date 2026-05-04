@@ -103,7 +103,8 @@ public class CourseController : ControllerBase
 
     // ── GET /api/v1/course/offerings?semesterId={id} or ?departmentId={id} ──────
 
-    /// <summary>Returns all offerings for the given semester or department.</summary>
+    // Final-Touches Phase 8 Stage 8.1 — return all offerings when no filter; fix field names to match EduApiClient OfferingApiDto
+    /// <summary>Returns all offerings for the given semester or department. Returns all when no filter is provided.</summary>
     [HttpGet("offerings")]
     public async Task<IActionResult> GetOfferings([FromQuery] Guid? semesterId, [FromQuery] Guid? departmentId, CancellationToken ct)
     {
@@ -114,13 +115,13 @@ public class CourseController : ControllerBase
         else if (semesterId.HasValue)
             offerings = await _repo.GetOfferingsBySemesterAsync(semesterId.Value, ct);
         else
-            offerings = new List<CourseOffering>();
+            offerings = await _repo.GetAllOfferingsAsync(ct);
 
         return Ok(offerings.Select(o => new
         {
-            o.Id, o.CourseId, CourseCode = o.Course.Code, CourseName = o.Course.Title, 
+            o.Id, o.CourseId, CourseCode = o.Course.Code, CourseTitle = o.Course.Title,
             o.SemesterId, SemesterName = o.Semester.Name, o.FacultyUserId,
-            o.MaxEnrollment, o.IsOpen
+            o.MaxEnrollment, IsActive = o.IsOpen
         }));
     }
 

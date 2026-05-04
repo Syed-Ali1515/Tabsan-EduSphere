@@ -1395,25 +1395,88 @@ public class PortalController : Controller
 
     // ── Enrollments ────────────────────────────────────────────────────────
 
+    // Final-Touches Phase 8 Stage 8.1+8.2 — student sees own courses; admin sees offering roster + students list
     [HttpGet]
     public async Task<IActionResult> Enrollments(Guid? offeringId, CancellationToken ct)
     {
         ViewData["Title"] = "Enrollments";
+        var isStudent = User.IsInRole("Student");
         var model = new EnrollmentsPageModel
         {
-            IsConnected      = _api.IsConnected(),
+            IsConnected        = _api.IsConnected(),
             SelectedOfferingId = offeringId,
-            Message          = TempData["PortalMessage"]?.ToString()
+            IsStudent          = isStudent,
+            Message            = TempData["PortalMessage"]?.ToString()
         };
         if (!model.IsConnected) return View(model);
         try
         {
             model.Offerings = await _api.GetCourseOfferingsAsync(null, ct);
-            if (offeringId.HasValue)
-                model.Roster = await _api.GetEnrollmentRosterAsync(offeringId.Value, ct);
+            if (isStudent)
+            {
+                model.MyCourses = await _api.GetMyEnrollmentsAsync(ct);
+            }
+            else
+            {
+                model.Students = await _api.GetStudentsAsync(null, ct);
+                if (offeringId.HasValue)
+                    model.Roster = await _api.GetEnrollmentRosterAsync(offeringId.Value, ct);
+            }
         }
         catch (Exception ex) { model.Message = ex.Message; }
         return View(model);
+    }
+
+    // Final-Touches Phase 8 Stage 8.2 — admin enrolls a student
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> EnrollStudent(Guid studentProfileId, Guid courseOfferingId, CancellationToken ct)
+    {
+        try
+        {
+            await _api.AdminEnrollStudentAsync(studentProfileId, courseOfferingId, ct);
+            TempData["PortalMessage"] = "Student enrolled successfully.";
+        }
+        catch (Exception ex) { TempData["PortalMessage"] = ex.Message; }
+        return RedirectToAction(nameof(Enrollments), new { offeringId = courseOfferingId });
+    }
+
+    // Final-Touches Phase 8 Stage 8.2 — admin drops any enrollment by ID
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> AdminDropEnrollment(Guid enrollmentId, Guid offeringId, CancellationToken ct)
+    {
+        try
+        {
+            await _api.AdminDropEnrollmentAsync(enrollmentId, ct);
+            TempData["PortalMessage"] = "Enrollment dropped.";
+        }
+        catch (Exception ex) { TempData["PortalMessage"] = ex.Message; }
+        return RedirectToAction(nameof(Enrollments), new { offeringId });
+    }
+
+    // Final-Touches Phase 8 Stage 8.2 — student self-enrolls in a course offering
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> StudentEnroll(Guid courseOfferingId, CancellationToken ct)
+    {
+        try
+        {
+            await _api.StudentEnrollAsync(courseOfferingId, ct);
+            TempData["PortalMessage"] = "Enrolled successfully.";
+        }
+        catch (Exception ex) { TempData["PortalMessage"] = ex.Message; }
+        return RedirectToAction(nameof(Enrollments));
+    }
+
+    // Final-Touches Phase 8 Stage 8.2 — student drops their own enrollment
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> StudentDropEnrollment(Guid courseOfferingId, CancellationToken ct)
+    {
+        try
+        {
+            await _api.StudentDropEnrollmentAsync(courseOfferingId, ct);
+            TempData["PortalMessage"] = "Course dropped.";
+        }
+        catch (Exception ex) { TempData["PortalMessage"] = ex.Message; }
+        return RedirectToAction(nameof(Enrollments));
     }
 
     // ── Reports ────────────────────────────────────────────────────────────

@@ -35,6 +35,10 @@ public sealed record UpdateMaxEnrollmentRequest(int NewMaxEnrollment);
 /// <summary>Request body for enrolling a student into a course offering.</summary>
 public sealed record EnrollRequest(Guid CourseOfferingId);
 
+// Final-Touches Phase 8 Stage 8.2 — admin-managed enrollment of any student
+/// <summary>Request body for an admin to enroll any student into a course offering.</summary>
+public sealed record AdminEnrollRequest(Guid StudentProfileId, Guid CourseOfferingId);
+
 /// <summary>Response returned after a successful enrollment action.</summary>
 public sealed record EnrollmentResponse(
     Guid EnrollmentId,

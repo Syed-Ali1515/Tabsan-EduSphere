@@ -104,4 +104,18 @@ public class EnrollmentService : IEnrollmentService
     /// <summary>Returns all active enrollments in the given course offering.</summary>
     public Task<IReadOnlyList<Enrollment>> GetForOfferingAsync(Guid courseOfferingId, CancellationToken ct = default)
         => _enrollmentRepo.GetByOfferingAsync(courseOfferingId, ct);
+
+    // Final-Touches Phase 8 Stage 8.2 — admin drop any enrollment by its ID
+    /// <summary>Drops any active enrollment identified by enrollment ID. Returns false when not found or not active.</summary>
+    public async Task<bool> AdminDropByIdAsync(Guid enrollmentId, CancellationToken ct = default)
+    {
+        var enrollment = await _enrollmentRepo.GetByIdAsync(enrollmentId, ct);
+        if (enrollment is null || enrollment.Status != EnrollmentStatus.Active)
+            return false;
+
+        enrollment.Drop();
+        _enrollmentRepo.Update(enrollment);
+        await _enrollmentRepo.SaveChangesAsync(ct);
+        return true;
+    }
 }

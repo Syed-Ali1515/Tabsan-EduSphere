@@ -35,6 +35,15 @@ public class CourseRepository : ICourseRepository
     /// <summary>Marks the course as modified.</summary>
     public void Update(Course course) => _db.Courses.Update(course);
 
+    /// <summary>Returns all course offerings with Course and Semester navigation loaded, ordered by course code.</summary>
+    // Final-Touches Phase 8 Stage 8.1 — all-offerings query for enrollment dropdown
+    public async Task<IReadOnlyList<CourseOffering>> GetAllOfferingsAsync(CancellationToken ct = default)
+        => await _db.CourseOfferings
+                    .Include(o => o.Course)
+                    .Include(o => o.Semester)
+                    .OrderBy(o => o.Course.Code)
+                    .ToListAsync(ct);
+
     /// <summary>Returns all offerings for a semester with Course, Semester navigation loaded.</summary>
     public async Task<IReadOnlyList<CourseOffering>> GetOfferingsBySemesterAsync(Guid semesterId, CancellationToken ct = default)
         => await _db.CourseOfferings

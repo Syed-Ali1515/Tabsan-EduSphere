@@ -27,10 +27,10 @@ Also update this file with:
 
 ## Current Execution Pointer
 - Plan Source: Project startup Docs/Final-Touches.md
-- Active Phase: Phase 8 (next phase)
-- Active Stage: All Phase 7 stages complete
-- Status: Phase 7 Complete ✅
-- Last Updated: 2026-05-04
+- Active Phase: Phase 9 (next phase)
+- Active Stage: All Phase 8 stages complete
+- Status: Phase 8 Complete ✅
+- Last Updated: 2026-05-05
 
 ## Completed Work
 - Phase 1: Navigation, Session Stability, Sidebar Structure (all stages done)
@@ -46,8 +46,9 @@ Also update this file with:
 - Phase 6: Notifications & Analytics — Stage 6.1: fixed `NotificationController` route from `api/[controller]` to `api/v1/[controller]` (resolved all notification 404s); Stage 6.2: replaced raw JSON `<pre>` dumps in Analytics view with typed `DepartmentPerformanceReport`, `DepartmentAttendanceReport`, `AssignmentStatsReport` objects; `EduApiClient` analytics methods now return typed DTOs via `GetAsync<T>`; `AnalyticsPageModel` updated to hold typed properties; `Analytics.cshtml` renders Bootstrap 5 responsive tables per section; summary cards populated from real data; build 0 errors
 
 ## Next Steps
-- Phase 7 (Finance and Payments Module Completion — ✅ Complete)
-- Phase 8 (Enrollments Completion — see Final-Touches.md)
+- Phase 9 (Documentation and Script Regeneration — see Final-Touches.md)
+
+- Phase 8 (Enrollments Completion — ✅ Complete)
 
 ## Pending Extra Tasks (Cross-Phase)
 - Keep Report Center menu visible by role and working links.
@@ -269,4 +270,33 @@ When a phase is completed, update:
 - Final-Touches.md: Marked Phase 7 complete, updated Progress Tracker, Next Phase
 - PRD.md: Bumped to v1.20
 - Function-List.md: Added GetAllReceiptsAsync, GetStudentProfileByUserIdAsync, GetAllReceiptsAsync (service), GetReceiptsByUserAsync
+- Command.md: Updated execution pointer + this entry
+
+---
+
+### Entry 008 — 2026-05-05 — Phase 8 Complete (Enrollments Completion)
+**Completed:**
+- Stage 8.1: Fixed empty enrollment dropdown — added `GetAllOfferingsAsync` to ICourseRepository + CourseRepository; updated CourseController.GetOfferings to call it when no filter, fixed field names (CourseTitle, IsActive).
+- Stage 8.1: Fixed empty roster grid — fixed GetRoster response fields to match RosterApiDto; added .ThenInclude(sp => sp.Program) to GetByOfferingAsync; updated MyCourses to include CourseOfferingId.
+- Stage 8.2: Added IEnrollmentRepository.GetByIdAsync + implementation.
+- Stage 8.2: Added IEnrollmentService.AdminDropByIdAsync + EnrollmentService implementation.
+- Stage 8.2: Added AdminEnrollRequest DTO.
+- Stage 8.2: Added POST /api/v1/enrollment/admin (admin enroll) + DELETE /api/v1/enrollment/admin/{id} (admin drop).
+- Stage 8.2: Added 5 EduApiClient methods + MyCourseApiDto private DTO.
+- Stage 8.2: Added MyEnrollmentItem view model; expanded EnrollmentsPageModel.
+- Stage 8.2: Updated PortalController Enrollments GET (branches on IsStudent); added 4 POST actions (EnrollStudent, AdminDropEnrollment, StudentEnroll, StudentDropEnrollment).
+- Stage 8.2: Rebuilt Enrollments.cshtml — student own-courses + admin roster with CRUD.
+
+**Validation:**
+- Build: 0 errors, 0 warnings.
+- Enrollment dropdown now populated from all offerings.
+- Admin: offering select → roster with Drop buttons + "Enroll Student" modal.
+- Student: own courses list with Drop buttons + "Enroll in Course" modal.
+
+**Moved to:** Phase 9 (Documentation and Script Regeneration)
+
+**Docs Updated:**
+- Final-Touches.md: Marked Phase 8 complete, updated Progress Tracker, Next Phase
+- PRD.md: Bumped to v1.21, added Phase 8 log entry
+- Function-List.md: Added Phase 7 + Phase 8 sections (both were missing)
 - Command.md: Updated execution pointer + this entry

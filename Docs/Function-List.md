@@ -2422,3 +2422,147 @@
 | Attendance accordion | View section | Replaced `<pre><code>` JSON dump with responsive table showing Student, Course, Total Classes, Attended, Percentage (colour-coded green/yellow/red by threshold). | Web/Views/Portal/Analytics.cshtml |
 | Assignments accordion | View section | Replaced `<pre><code>` JSON dump with responsive table showing Title, Course, Students, Submitted, Graded, Avg Marks per assignment. | Web/Views/Portal/Analytics.cshtml |
 
+---
+
+## Final-Touches Phase 7 — Finance and Payments Module Completion
+
+### Infrastructure — StudentLifecycleRepository (Phase 7 Stage 7.2)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `GetAllReceiptsAsync` | Method (new) | Returns all `PaymentReceipt` rows with `StudentProfile` navigation loaded — used by admin receipts view. | Infrastructure/Repositories/StudentLifecycleRepositories.cs |
+| `GetStudentProfileByUserIdAsync` | Method (new) | Looks up `StudentProfile` by `UserId` — required for student's own payment receipt flow. | Infrastructure/Repositories/StudentLifecycleRepositories.cs |
+
+### Application — IStudentLifecycleService / StudentLifecycleService (Phase 7 Stage 7.2–7.3)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `GetAllReceiptsAsync` | Method (new) | Returns all receipts for admin. Delegates to `GetAllReceiptsAsync` on repo. | Application/Interfaces/IStudentLifecycleService.cs + Service |
+| `GetReceiptsByUserAsync` | Method (new) | Returns receipts for the calling student by JWT `userId`. Uses `GetStudentProfileByUserIdAsync` then `GetReceiptsByStudentAsync`. | Application/Interfaces/IStudentLifecycleService.cs + Service |
+
+### API — PaymentReceiptController (Phase 7 Stage 7.2–7.3)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `GetAll` | Endpoint (new) `GET /api/v1/payments` | Admin retrieves all payment receipts. | API/Controllers/PaymentReceiptController.cs |
+| `GetMine` | Endpoint (new) `GET /api/v1/payments/mine` | Student retrieves their own receipts via JWT. | API/Controllers/PaymentReceiptController.cs |
+| `MarkSubmitted` | Endpoint (new) `POST /api/v1/payments/{id}/mark-submitted` | Student submits proof of payment text. | API/Controllers/PaymentReceiptController.cs |
+
+### Web — EduApiClient (Phase 7)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `GetAllPaymentsAsync` | Method (new) | Calls `GET api/v1/payments`. | Web/Services/EduApiClient.cs |
+| `GetMyPaymentsAsync` | Method (new) | Calls `GET api/v1/payments/mine`. | Web/Services/EduApiClient.cs |
+| `CreatePaymentAsync` | Method (new) | Posts to `POST api/v1/payments`. | Web/Services/EduApiClient.cs |
+| `ConfirmPaymentAsync` | Method (new) | Posts to `POST api/v1/payments/{id}/confirm`. | Web/Services/EduApiClient.cs |
+| `CancelPaymentAsync` | Method (new) | Posts to `POST api/v1/payments/{id}/cancel`. | Web/Services/EduApiClient.cs |
+| `SubmitProofAsync` | Method (new) | Posts to `POST api/v1/payments/{id}/mark-submitted`. | Web/Services/EduApiClient.cs |
+
+### Web — PortalController (Phase 7)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `Payments` GET | Action | Branches on `IsStudent` — student loads `GetMyPaymentsAsync`; admin loads `GetAllPaymentsAsync` + student list. | Web/Controllers/PortalController.cs |
+| `CreatePayment` | Action (new) | Admin creates a receipt. | Web/Controllers/PortalController.cs |
+| `ConfirmPayment` | Action (new) | Admin confirms (marks Paid). | Web/Controllers/PortalController.cs |
+| `CancelPayment` | Action (new) | Admin cancels a receipt. | Web/Controllers/PortalController.cs |
+| `SubmitProof` | Action (new) | Student submits proof note. | Web/Controllers/PortalController.cs |
+
+---
+
+## Final-Touches Phase 8 — Enrollments Completion
+
+### Domain — ICourseRepository (Phase 8 Stage 8.1)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `GetAllOfferingsAsync` | Method (new) | Returns all `CourseOffering` rows with Course + Semester navigation loaded, ordered by course code. Used for enrollment dropdown when no filter applied. | Domain/Interfaces/ICourseRepository.cs |
+
+### Domain — IEnrollmentRepository (Phase 8 Stage 8.2)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `GetByIdAsync` | Method (new) | Returns an `Enrollment` by its own ID. Used by admin-drop endpoint. | Domain/Interfaces/IEnrollmentRepository.cs |
+
+### Domain — IEnrollmentService (Phase 8 Stage 8.2)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `AdminDropByIdAsync` | Method (new) | Drops any active enrollment identified by enrollment ID. Returns false when not found or already dropped. | Application/Interfaces/IEnrollmentService.cs |
+
+### Infrastructure — CourseRepository (Phase 8 Stage 8.1)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `GetAllOfferingsAsync` | Method (new) | EF Core query with `Include(o => o.Course).Include(o => o.Semester)`, ordered by `Course.Code`. | Infrastructure/Repositories/CourseRepository.cs |
+
+### Infrastructure — EnrollmentRepository (Phase 8 Stage 8.1+8.2)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `GetByOfferingAsync` | Fix | Added `.ThenInclude(sp => sp.Program)` so roster response can include `ProgramName`. | Infrastructure/Repositories/AcademicSupportRepositories.cs |
+| `GetByIdAsync` | Method (new) | `FirstOrDefaultAsync` by enrollment ID. | Infrastructure/Repositories/AcademicSupportRepositories.cs |
+
+### Application — EnrollmentService (Phase 8 Stage 8.2)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `AdminDropByIdAsync` | Method (new) | Looks up enrollment by ID, calls `enrollment.Drop()`, persists change. | Application/Academic/EnrollmentService.cs |
+
+### Application — AcademicDtos (Phase 8 Stage 8.2)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `AdminEnrollRequest` | Record (new) | `(Guid StudentProfileId, Guid CourseOfferingId)` — request body for admin-managed enrollment. | Application/DTOs/Academic/AcademicDtos.cs |
+
+### API — CourseController (Phase 8 Stage 8.1)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `GetOfferings` | Fix | Now calls `GetAllOfferingsAsync` when no filter provided (was returning empty list). Fixed field names: `CourseTitle` (not `CourseName`), `IsActive` (not `IsOpen`). | API/Controllers/CourseController.cs |
+
+### API — EnrollmentController (Phase 8 Stage 8.1+8.2)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `GetRoster` | Fix | Returns `Id, StudentName, RegistrationNumber, ProgramName, SemesterNumber` matching `RosterApiDto` in EduApiClient. | API/Controllers/EnrollmentController.cs |
+| `MyCourses` | Fix | Added `CourseOfferingId` to response so student can issue a drop using `offeringId`. | API/Controllers/EnrollmentController.cs |
+| `AdminEnroll` | Endpoint (new) `POST /api/v1/enrollment/admin` | Admin enrolls any student using `AdminEnrollRequest` body. Reuses `EnrollmentService.EnrollAsync`. | API/Controllers/EnrollmentController.cs |
+| `AdminDrop` | Endpoint (new) `DELETE /api/v1/enrollment/admin/{enrollmentId}` | Admin drops any active enrollment by its ID. | API/Controllers/EnrollmentController.cs |
+
+### Web — EduApiClient (Phase 8 Stage 8.1+8.2)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `GetMyEnrollmentsAsync` | Method (new) | Calls `GET api/v1/enrollment/my-courses`; returns `List<MyEnrollmentItem>`. | Web/Services/EduApiClient.cs |
+| `AdminEnrollStudentAsync` | Method (new) | Posts `{StudentProfileId, CourseOfferingId}` to `POST api/v1/enrollment/admin`. | Web/Services/EduApiClient.cs |
+| `AdminDropEnrollmentAsync` | Method (new) | Calls `DELETE api/v1/enrollment/admin/{enrollmentId}`. | Web/Services/EduApiClient.cs |
+| `StudentEnrollAsync` | Method (new) | Posts `{CourseOfferingId}` to `POST api/v1/enrollment`. | Web/Services/EduApiClient.cs |
+| `StudentDropEnrollmentAsync` | Method (new) | Calls `DELETE api/v1/enrollment/{offeringId}`. | Web/Services/EduApiClient.cs |
+| `MyCourseApiDto` | Private class (new) | DTO for deserializing `my-courses` response. | Web/Services/EduApiClient.cs |
+
+### Web — PortalViewModels (Phase 8 Stage 8.1+8.2)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `MyEnrollmentItem` | Class (new) | Student's enrolled-course view model: `EnrollmentId`, `CourseOfferingId`, `CourseCode`, `CourseTitle`, `SemesterName`, `Status`, `EnrolledAt`. | Web/Models/Portal/PortalViewModels.cs |
+| `EnrollmentsPageModel` | Expanded | Added `IsStudent`, `Students` (for admin enroll modal), `MyCourses` (for student view). | Web/Models/Portal/PortalViewModels.cs |
+
+### Web — PortalController (Phase 8 Stage 8.1+8.2)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `Enrollments` GET | Fix/Expand | Branches on `IsStudent` — student loads `MyCourses`; admin loads `Students` + roster. | Web/Controllers/PortalController.cs |
+| `EnrollStudent` | Action (new) POST | Admin enrolls a student into a selected offering. | Web/Controllers/PortalController.cs |
+| `AdminDropEnrollment` | Action (new) POST | Admin drops any active enrollment by `enrollmentId`. | Web/Controllers/PortalController.cs |
+| `StudentEnroll` | Action (new) POST | Student self-enrolls in a course offering. | Web/Controllers/PortalController.cs |
+| `StudentDropEnrollment` | Action (new) POST | Student drops their own enrollment by `courseOfferingId`. | Web/Controllers/PortalController.cs |
+
+### Web — Enrollments.cshtml (Phase 8 Stage 8.1+8.2)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| Admin roster view | Rebuilt | Shows offering filter + "Enroll Student" button (Admin/SuperAdmin) + roster table with per-row "Drop" button. | Web/Views/Portal/Enrollments.cshtml |
+| Student own-courses view | New | Shows `MyCourses` list with per-row "Drop" button (Active only) + "Enroll in Course" modal. | Web/Views/Portal/Enrollments.cshtml |
+

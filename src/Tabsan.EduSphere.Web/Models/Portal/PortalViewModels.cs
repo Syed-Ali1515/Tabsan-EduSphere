@@ -757,13 +757,29 @@ public class EnrollmentRosterItem
     public int    SemesterNumber     { get; set; }
 }
 
+// Final-Touches Phase 8 Stage 8.1 — student's own enrolled courses list
+public class MyEnrollmentItem
+{
+    public Guid     EnrollmentId     { get; set; }
+    public Guid     CourseOfferingId { get; set; }
+    public string   CourseCode       { get; set; } = "";
+    public string   CourseTitle      { get; set; } = "";
+    public string   SemesterName     { get; set; } = "";
+    public string   Status           { get; set; } = "";
+    public DateTime EnrolledAt       { get; set; }
+}
+
+// Final-Touches Phase 8 Stage 8.2 — expanded with student list and student own-courses view
 public class EnrollmentsPageModel
 {
-    public bool   IsConnected       { get; set; }
-    public string? Message          { get; set; }
+    public bool   IsConnected        { get; set; }
+    public string? Message           { get; set; }
+    public bool   IsStudent          { get; set; }
     public List<EnrollmentRosterItem> Roster         { get; set; } = new();
     public List<CourseOfferingItem>   Offerings      { get; set; } = new();
     public Guid?  SelectedOfferingId { get; set; }
+    public List<StudentItem>          Students       { get; set; } = new();
+    public List<MyEnrollmentItem>     MyCourses      { get; set; } = new();
 }
 
 // ── Phase 12: Reports ─────────────────────────────────────────────────────────

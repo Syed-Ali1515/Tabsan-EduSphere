@@ -26,4 +26,8 @@ public interface IEnrollmentService
 
     /// <summary>Returns all active enrollments in the given course offering (faculty roster view).</summary>
     Task<IReadOnlyList<Enrollment>> GetForOfferingAsync(Guid courseOfferingId, CancellationToken ct = default);
+
+    // Final-Touches Phase 8 Stage 8.2 — admin drop any enrollment by its ID
+    /// <summary>Drops any active enrollment identified by its enrollment ID. Returns false when not found or not active.</summary>
+    Task<bool> AdminDropByIdAsync(Guid enrollmentId, CancellationToken ct = default);
 }

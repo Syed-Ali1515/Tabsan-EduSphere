@@ -22,6 +22,10 @@ public interface ICourseRepository
 
     // ── Course Offerings ─────────────────────────────────────────────────────
 
+    // Final-Touches Phase 8 Stage 8.1 — return all offerings when no filter applied
+    /// <summary>Returns all course offerings with Course and Semester navigation loaded.</summary>
+    Task<IReadOnlyList<CourseOffering>> GetAllOfferingsAsync(CancellationToken ct = default);
+
     /// <summary>Returns all offerings for the given semester, with Course and Semester loaded.</summary>
     Task<IReadOnlyList<CourseOffering>> GetOfferingsBySemesterAsync(Guid semesterId, CancellationToken ct = default);
 

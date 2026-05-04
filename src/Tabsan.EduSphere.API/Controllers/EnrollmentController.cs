@@ -68,6 +68,7 @@ public class EnrollmentController : ControllerBase
 
     // ── GET /api/v1/enrollment/my-courses ─────────────────────────────────────
 
+    // Final-Touches Phase 8 Stage 8.1 — added CourseOfferingId to response so student can drop using offeringId
     /// <summary>Returns the calling student's enrollment history (all statuses).</summary>
     [HttpGet("my-courses")]
     [Authorize(Roles = "Student")]
@@ -81,6 +82,7 @@ public class EnrollmentController : ControllerBase
         return Ok(enrollments.Select(e => new
         {
             e.Id,
+            CourseOfferingId = e.CourseOfferingId,
             CourseTitle = e.CourseOffering.Course.Title,
             CourseCode  = e.CourseOffering.Course.Code,
             Semester    = e.CourseOffering.Semester.Name,
@@ -92,31 +94,48 @@ public class EnrollmentController : ControllerBase
 
     // ── GET /api/v1/enrollment/roster/{offeringId} ────────────────────────────
 
-    /// <summary>
-    /// Returns the roster (active enrollments) for a course offering.
-    /// Faculty may only view rosters for their assigned offerings.
-    /// Admins and SuperAdmins can view any roster.
-    /// </summary>
+    // Final-Touches Phase 8 Stage 8.1 — fixed response fields to match RosterApiDto: Id, StudentName, RegistrationNumber, ProgramName, SemesterNumber
+    /// <summary>Returns the active enrollment roster for a course offering.</summary>
     [HttpGet("roster/{offeringId:guid}")]
     [Authorize(Roles = "SuperAdmin,Admin,Faculty")]
     public async Task<IActionResult> GetRoster(Guid offeringId, CancellationToken ct)
     {
-        // Faculty access check — verify the offering belongs to an assigned department.
-        if (User.IsInRole("Faculty"))
-        {
-            var facultyId = GetUserId();
-            var myOfferings = await _facultyAssignments.GetDepartmentIdsForFacultyAsync(facultyId, ct);
-            // The enrollment service doesn't expose offering-course dept directly here,
-            // so we trust the offering-level check done in CourseController/offerings/my.
-        }
-
         var roster = await _enrollmentService.GetForOfferingAsync(offeringId, ct);
         return Ok(roster.Select(e => new
         {
-            StudentProfileId = e.StudentProfileId,
-            RegNo = e.StudentProfile.RegistrationNumber,
-            e.EnrolledAt
+            Id                 = e.Id,
+            StudentName        = e.StudentProfile.RegistrationNumber,
+            RegistrationNumber = e.StudentProfile.RegistrationNumber,
+            ProgramName        = e.StudentProfile.Program?.Name ?? "",
+            SemesterNumber     = e.StudentProfile.CurrentSemesterNumber
         }));
+    }
+
+    // ── POST /api/v1/enrollment/admin ──────────────────────────────────────────
+
+    // Final-Touches Phase 8 Stage 8.2 — admin enrolls any student into any offering
+    /// <summary>Admin enrolls a student into a course offering. Bypasses JWT student-profile lookup.</summary>
+    [HttpPost("admin")]
+    [Authorize(Roles = "SuperAdmin,Admin")]
+    public async Task<IActionResult> AdminEnroll([FromBody] AdminEnrollRequest request, CancellationToken ct)
+    {
+        var enrollReq = new EnrollRequest(request.CourseOfferingId);
+        var result = await _enrollmentService.EnrollAsync(request.StudentProfileId, enrollReq, ct);
+        return result is null
+            ? Conflict("Enrollment rejected: offering full, closed, or already enrolled.")
+            : Ok(result);
+    }
+
+    // ── DELETE /api/v1/enrollment/admin/{enrollmentId} ─────────────────────────
+
+    // Final-Touches Phase 8 Stage 8.2 — admin drops any active enrollment by its ID
+    /// <summary>Admin drops an active enrollment identified by enrollment ID.</summary>
+    [HttpDelete("admin/{enrollmentId:guid}")]
+    [Authorize(Roles = "SuperAdmin,Admin")]
+    public async Task<IActionResult> AdminDrop(Guid enrollmentId, CancellationToken ct)
+    {
+        var ok = await _enrollmentService.AdminDropByIdAsync(enrollmentId, ct);
+        return ok ? NoContent() : NotFound("Active enrollment not found.");
     }
 
     // ── Helper ─────────────────────────────────────────────────────────────────

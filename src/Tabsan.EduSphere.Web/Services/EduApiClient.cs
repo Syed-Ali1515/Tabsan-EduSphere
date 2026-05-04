@@ -173,6 +173,12 @@ public interface IEduApiClient
 
     // Enrollments
     Task<List<EnrollmentRosterItem>> GetEnrollmentRosterAsync(Guid offeringId, CancellationToken ct);
+    // Final-Touches Phase 8 Stage 8.1+8.2 — student my-courses, admin enroll/drop, student enroll/drop
+    Task<List<MyEnrollmentItem>> GetMyEnrollmentsAsync(CancellationToken ct);
+    Task AdminEnrollStudentAsync(Guid studentProfileId, Guid courseOfferingId, CancellationToken ct);
+    Task AdminDropEnrollmentAsync(Guid enrollmentId, CancellationToken ct);
+    Task StudentEnrollAsync(Guid courseOfferingId, CancellationToken ct);
+    Task StudentDropEnrollmentAsync(Guid courseOfferingId, CancellationToken ct);
 
     // Portal / Dashboard Settings
     Task<PortalBrandingWebModel> GetPortalBrandingAsync(CancellationToken ct);
@@ -1490,6 +1496,47 @@ public class EduApiClient : IEduApiClient
             ProgramName        = r.ProgramName ?? "",
             SemesterNumber     = r.SemesterNumber
         }).ToList();
+    }
+
+    // Final-Touches Phase 8 Stage 8.1+8.2 — student my-courses, admin enroll/drop, student enroll/drop
+    public async Task<List<MyEnrollmentItem>> GetMyEnrollmentsAsync(CancellationToken ct)
+    {
+        var raw = await GetAsync<List<MyCourseApiDto>>("api/v1/enrollment/my-courses", ct) ?? new();
+        return raw.Select(e => new MyEnrollmentItem
+        {
+            EnrollmentId     = e.Id,
+            CourseOfferingId = e.CourseOfferingId,
+            CourseCode       = e.CourseCode ?? "",
+            CourseTitle      = e.CourseTitle ?? "",
+            SemesterName     = e.Semester ?? "",
+            Status           = e.Status ?? "",
+            EnrolledAt       = e.EnrolledAt
+        }).ToList();
+    }
+
+    public async Task AdminEnrollStudentAsync(Guid studentProfileId, Guid courseOfferingId, CancellationToken ct)
+        => await PostAsync<object, object>("api/v1/enrollment/admin",
+               new { StudentProfileId = studentProfileId, CourseOfferingId = courseOfferingId }, ct);
+
+    public async Task AdminDropEnrollmentAsync(Guid enrollmentId, CancellationToken ct)
+        => await DeleteAsync($"api/v1/enrollment/admin/{enrollmentId}", ct);
+
+    public async Task StudentEnrollAsync(Guid courseOfferingId, CancellationToken ct)
+        => await PostAsync<object, object>("api/v1/enrollment",
+               new { CourseOfferingId = courseOfferingId }, ct);
+
+    public async Task StudentDropEnrollmentAsync(Guid courseOfferingId, CancellationToken ct)
+        => await DeleteAsync($"api/v1/enrollment/{courseOfferingId}", ct);
+
+    private sealed class MyCourseApiDto
+    {
+        public Guid     Id               { get; set; }
+        public Guid     CourseOfferingId { get; set; }
+        public string?  CourseTitle      { get; set; }
+        public string?  CourseCode       { get; set; }
+        public string?  Semester         { get; set; }
+        public string?  Status           { get; set; }
+        public DateTime EnrolledAt       { get; set; }
     }
 
     private sealed class RosterApiDto
