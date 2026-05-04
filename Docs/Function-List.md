@@ -2357,3 +2357,64 @@
 | `ThemeSettings.cshtml` | Alert feedback upgraded from `alert-info` to contextual `alert-success`/`alert-danger` with Bootstrap Icons. | Web/Views/Portal/ThemeSettings.cshtml |
 | `ReportSettings.cshtml` | Same alert feedback upgrade. | Web/Views/Portal/ReportSettings.cshtml |
 | `ModuleSettings.cshtml` | Same alert feedback upgrade. | Web/Views/Portal/ModuleSettings.cshtml |
+
+---
+
+## Final-Touches Phase 6 — Notifications & Analytics
+
+### API — NotificationController (Phase 6 Stage 6.1)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `[Route]` attribute | Controller attribute | Changed from `"api/[controller]"` to `"api/v1/[controller]"` — resolves route mismatch causing all notification endpoints to return 404 for EduApiClient requests. | API/Controllers/NotificationController.cs |
+
+### Web — PortalController (Phase 6 Stage 6.1)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `MarkNotificationRead` | Action method (new) | POST action that calls `MarkNotificationReadAsync(id, ct)` and redirects to Notifications. Enables per-notification mark-as-read from the inbox view. | Web/Controllers/PortalController.cs |
+
+### Web — Notifications.cshtml (Phase 6 Stage 6.1)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| Per-notification mark-read button | View addition | Unread notifications now show a `<form>` posting to `MarkNotificationRead` with an anti-forgery token and the notification ID. Renders a Bootstrap Icon `bi-check2` link button. | Web/Views/Portal/Notifications.cshtml |
+
+### Web — IEduApiClient interface (Phase 6 Stage 6.2)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `GetPerformanceAnalyticsAsync` | Interface method | Replaced `GetPerformanceAnalyticsJsonAsync` (`Task<string?>`) with typed `Task<DepartmentPerformanceReport?>`. | Web/Services/EduApiClient.cs |
+| `GetAttendanceAnalyticsAsync` | Interface method | Replaced `GetAttendanceAnalyticsJsonAsync` (`Task<string?>`) with typed `Task<DepartmentAttendanceReport?>`. | Web/Services/EduApiClient.cs |
+| `GetAssignmentAnalyticsAsync` | Interface method | Replaced `GetAssignmentAnalyticsJsonAsync` (`Task<string?>`) with typed `Task<AssignmentStatsReport?>`. | Web/Services/EduApiClient.cs |
+
+### Web — EduApiClient implementation (Phase 6 Stage 6.2)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `GetPerformanceAnalyticsAsync` | Method | Replaced manual `SendAsync` + raw string read with `GetAsync<DepartmentPerformanceReport>("api/analytics/performance", ct)`. | Web/Services/EduApiClient.cs |
+| `GetAttendanceAnalyticsAsync` | Method | Replaced manual fetch with `GetAsync<DepartmentAttendanceReport>("api/analytics/attendance", ct)`. | Web/Services/EduApiClient.cs |
+| `GetAssignmentAnalyticsAsync` | Method | Replaced manual fetch with `GetAsync<AssignmentStatsReport>("api/analytics/assignments", ct)`. | Web/Services/EduApiClient.cs |
+
+### Web — PortalViewModels (Phase 6 Stage 6.2)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `AnalyticsPageModel.Performance` | Property (new) | Added `DepartmentPerformanceReport?` — replaces removed `PerformanceJson` string. | Web/Models/Portal/PortalViewModels.cs |
+| `AnalyticsPageModel.Attendance` | Property (new) | Added `DepartmentAttendanceReport?` — replaces removed `AttendanceJson` string. | Web/Models/Portal/PortalViewModels.cs |
+| `AnalyticsPageModel.Assignments` | Property (new) | Added `AssignmentStatsReport?` — replaces removed `AssignmentJson` string. | Web/Models/Portal/PortalViewModels.cs |
+
+### Web — PortalController (Phase 6 Stage 6.2)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `Analytics` | Action method | Updated to call `GetPerformanceAnalyticsAsync`, `GetAttendanceAnalyticsAsync`, `GetAssignmentAnalyticsAsync` (typed). Populates `model.Cards` with real summary values (avg marks, attendance %, assignment count). | Web/Controllers/PortalController.cs |
+
+### Web — Analytics.cshtml (Phase 6 Stage 6.2)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| Performance accordion | View section | Replaced `<pre><code>` JSON dump with responsive Bootstrap 5 table showing Reg No., Name, Semester, Avg Marks, Assignments, Submitted per student. | Web/Views/Portal/Analytics.cshtml |
+| Attendance accordion | View section | Replaced `<pre><code>` JSON dump with responsive table showing Student, Course, Total Classes, Attended, Percentage (colour-coded green/yellow/red by threshold). | Web/Views/Portal/Analytics.cshtml |
+| Assignments accordion | View section | Replaced `<pre><code>` JSON dump with responsive table showing Title, Course, Students, Submitted, Graded, Avg Marks per assignment. | Web/Views/Portal/Analytics.cshtml |
+

@@ -1,3 +1,5 @@
+using Tabsan.EduSphere.Application.DTOs.Analytics;
+
 namespace Tabsan.EduSphere.Web.Models.Portal;
 
 public class ApiConnectionModel
@@ -646,14 +648,15 @@ public class AnalyticsSummaryCard
     public string  Icon       { get; set; } = "📊";
 }
 
+// Final-Touches Phase 6 Stage 6.2 — replaced JSON string fields with typed DTO properties
 public class AnalyticsPageModel
 {
-    public bool   IsConnected    { get; set; }
-    public string? Message       { get; set; }
-    public List<AnalyticsSummaryCard> Cards         { get; set; } = new();
-    public string? PerformanceJson { get; set; }
-    public string? AttendanceJson  { get; set; }
-    public string? AssignmentJson  { get; set; }
+    public bool   IsConnected { get; set; }
+    public string? Message    { get; set; }
+    public List<AnalyticsSummaryCard>   Cards       { get; set; } = new();
+    public DepartmentPerformanceReport? Performance { get; set; }
+    public DepartmentAttendanceReport?  Attendance  { get; set; }
+    public AssignmentStatsReport?       Assignments { get; set; }
 }
 
 // ── AI Chat ───────────────────────────────────────────────────────────────────

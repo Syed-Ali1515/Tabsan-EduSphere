@@ -1,3 +1,4 @@
+@* Final-Touches Phase 6 Stage 6.2 — replaced raw JSON pre/code blocks with proper Bootstrap 5 cards and tables *@
 @model Tabsan.EduSphere.Web.Models.Portal.AnalyticsPageModel
 @{ ViewData["Title"] = "Analytics"; }
 
@@ -12,16 +13,17 @@
 }
 else
 {
+    @* Summary cards *@
     @if (Model.Cards.Count > 0)
     {
         <div class="row g-3 mb-4">
             @foreach (var card in Model.Cards)
             {
-                <div class="col-sm-6 col-xl-3">
+                <div class="col-sm-6 col-xl-4">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-body">
-                            <div class="text-muted small text-uppercase fw-semibold mb-1">@card.Label</div>
-                            <div class="display-6 fw-bold">@card.Value</div>
+                            <div class="text-muted small text-uppercase fw-semibold mb-1">@card.Icon @card.Label</div>
+                            <div class="display-6 fw-bold @card.ColorClass">@card.Value</div>
                             @if (!string.IsNullOrWhiteSpace(card.SubText))
                             {
                                 <div class="text-muted small mt-1">@card.SubText</div>
@@ -34,63 +36,173 @@ else
     }
 
     <div class="accordion" id="analyticsAccordion">
-        @if (!string.IsNullOrWhiteSpace(Model.PerformanceJson))
+
+        @* Performance accordion *@
+        @if (Model.Performance is not null)
         {
-            <div class="accordion-item border-0 shadow-sm mb-2">
+            <div class="accordion-item border-0 shadow-sm mb-3">
                 <h2 class="accordion-header">
-                    <button class="accordion-button collapsed" type="button"
+                    <button class="accordion-button" type="button"
                             data-bs-toggle="collapse" data-bs-target="#collapsePerf">
-                        📊 Performance Analytics
+                        <i class="bi bi-bar-chart-line me-2"></i>
+                        Performance — @Model.Performance.DepartmentName
+                        <span class="badge bg-primary ms-2">Avg @Model.Performance.AverageMarks.ToString("F1")%</span>
                     </button>
                 </h2>
-                <div id="collapsePerf" class="accordion-collapse collapse" data-bs-parent="#analyticsAccordion">
-                    <div class="accordion-body">
-                        <pre class="bg-light p-3 rounded small" style="max-height:300px;overflow:auto;"><code>@Model.PerformanceJson</code></pre>
+                <div id="collapsePerf" class="accordion-collapse collapse show" data-bs-parent="#analyticsAccordion">
+                    <div class="accordion-body p-0">
+                        @if (Model.Performance.Students.Count == 0)
+                        {
+                            <p class="text-muted p-3 mb-0">No student data available.</p>
+                        }
+                        else
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-hover table-sm mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Reg No.</th>
+                                            <th>Name</th>
+                                            <th>Semester</th>
+                                            <th class="text-end">Avg Marks</th>
+                                            <th class="text-end">Assignments</th>
+                                            <th class="text-end">Submitted</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var s in Model.Performance.Students)
+                                        {
+                                            <tr>
+                                                <td class="font-monospace small">@s.RegistrationNumber</td>
+                                                <td>@s.FullName</td>
+                                                <td>Sem @s.CurrentSemester</td>
+                                                <td class="text-end fw-semibold">@s.AverageMarks.ToString("F1")%</td>
+                                                <td class="text-end">@s.TotalAssignments</td>
+                                                <td class="text-end">@s.SubmittedAssignments</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
         }
 
-        @if (!string.IsNullOrWhiteSpace(Model.AttendanceJson))
+        @* Attendance accordion *@
+        @if (Model.Attendance is not null)
         {
-            <div class="accordion-item border-0 shadow-sm mb-2">
+            <div class="accordion-item border-0 shadow-sm mb-3">
                 <h2 class="accordion-header">
                     <button class="accordion-button collapsed" type="button"
                             data-bs-toggle="collapse" data-bs-target="#collapseAtt">
-                        📋 Attendance Analytics
+                        <i class="bi bi-calendar-check me-2"></i>
+                        Attendance — @Model.Attendance.DepartmentName
+                        <span class="badge bg-success ms-2">@Model.Attendance.OverallAttendancePercentage.ToString("F1")% overall</span>
                     </button>
                 </h2>
                 <div id="collapseAtt" class="accordion-collapse collapse" data-bs-parent="#analyticsAccordion">
-                    <div class="accordion-body">
-                        <pre class="bg-light p-3 rounded small" style="max-height:300px;overflow:auto;"><code>@Model.AttendanceJson</code></pre>
+                    <div class="accordion-body p-0">
+                        @if (Model.Attendance.Rows.Count == 0)
+                        {
+                            <p class="text-muted p-3 mb-0">No attendance data available.</p>
+                        }
+                        else
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-hover table-sm mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Student</th>
+                                            <th>Course</th>
+                                            <th class="text-end">Total Classes</th>
+                                            <th class="text-end">Attended</th>
+                                            <th class="text-end">Percentage</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var r in Model.Attendance.Rows)
+                                        {
+                                            var pct   = r.AttendancePercentage;
+                                            var badge = pct >= 75 ? "text-success" : pct >= 50 ? "text-warning" : "text-danger";
+                                            <tr>
+                                                <td>@r.FullName</td>
+                                                <td class="small text-muted">@r.CourseName</td>
+                                                <td class="text-end">@r.TotalClasses</td>
+                                                <td class="text-end">@r.AttendedClasses</td>
+                                                <td class="text-end fw-semibold @badge">@pct.ToString("F1")%</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
         }
 
-        @if (!string.IsNullOrWhiteSpace(Model.AssignmentJson))
+        @* Assignments accordion *@
+        @if (Model.Assignments is not null)
         {
-            <div class="accordion-item border-0 shadow-sm mb-2">
+            <div class="accordion-item border-0 shadow-sm mb-3">
                 <h2 class="accordion-header">
                     <button class="accordion-button collapsed" type="button"
                             data-bs-toggle="collapse" data-bs-target="#collapseAssign">
-                        📝 Assignment Analytics
+                        <i class="bi bi-clipboard-check me-2"></i>
+                        Assignments — @Model.Assignments.DepartmentName
+                        <span class="badge bg-warning text-dark ms-2">@Model.Assignments.Assignments.Count assignments</span>
                     </button>
                 </h2>
                 <div id="collapseAssign" class="accordion-collapse collapse" data-bs-parent="#analyticsAccordion">
-                    <div class="accordion-body">
-                        <pre class="bg-light p-3 rounded small" style="max-height:300px;overflow:auto;"><code>@Model.AssignmentJson</code></pre>
+                    <div class="accordion-body p-0">
+                        @if (Model.Assignments.Assignments.Count == 0)
+                        {
+                            <p class="text-muted p-3 mb-0">No assignment data available.</p>
+                        }
+                        else
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-hover table-sm mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Title</th>
+                                            <th>Course</th>
+                                            <th class="text-end">Students</th>
+                                            <th class="text-end">Submitted</th>
+                                            <th class="text-end">Graded</th>
+                                            <th class="text-end">Avg Marks</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var a in Model.Assignments.Assignments)
+                                        {
+                                            <tr>
+                                                <td>@a.Title</td>
+                                                <td class="small text-muted">@a.CourseName</td>
+                                                <td class="text-end">@a.TotalStudents</td>
+                                                <td class="text-end">@a.Submissions</td>
+                                                <td class="text-end">@a.Graded</td>
+                                                <td class="text-end fw-semibold">@a.AverageMarks.ToString("F1")</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
         }
+
     </div>
 
-    @if (Model.Cards.Count == 0 && string.IsNullOrWhiteSpace(Model.PerformanceJson))
+    @if (Model.Performance is null && Model.Attendance is null && Model.Assignments is null)
     {
         <div class="card border-0 shadow-sm">
             <div class="card-body text-center text-muted py-5">
-                <div class="fs-1 mb-2">📊</div>
+                <div class="fs-1 mb-2"><i class="bi bi-bar-chart"></i></div>
                 <p>No analytics data available.</p>
             </div>
         </div>

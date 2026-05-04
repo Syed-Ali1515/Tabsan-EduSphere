@@ -1,6 +1,7 @@
 ﻿using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using Tabsan.EduSphere.Application.DTOs.Analytics;
 using Tabsan.EduSphere.Web.Models.Portal;
 
 namespace Tabsan.EduSphere.Web.Services;
@@ -143,10 +144,10 @@ public interface IEduApiClient
     Task ApproveFypProjectAsync(Guid id, string? remarks, CancellationToken ct);
     Task RejectFypProjectAsync(Guid id, string remarks, CancellationToken ct);
 
-    // Analytics
-    Task<string?> GetPerformanceAnalyticsJsonAsync(CancellationToken ct);
-    Task<string?> GetAttendanceAnalyticsJsonAsync(CancellationToken ct);
-    Task<string?> GetAssignmentAnalyticsJsonAsync(CancellationToken ct);
+    // Analytics — Final-Touches Phase 6 Stage 6.2: typed return instead of raw JSON strings
+    Task<DepartmentPerformanceReport?> GetPerformanceAnalyticsAsync(CancellationToken ct);
+    Task<DepartmentAttendanceReport?> GetAttendanceAnalyticsAsync(CancellationToken ct);
+    Task<AssignmentStatsReport?> GetAssignmentAnalyticsAsync(CancellationToken ct);
 
     // AI Chat
     Task<List<AiChatConversationItem>> GetChatConversationsAsync(CancellationToken ct);
@@ -1298,29 +1299,15 @@ public class EduApiClient : IEduApiClient
 
     // ── Analytics ─────────────────────────────────────────────────────────────
 
-    public async Task<string?> GetPerformanceAnalyticsJsonAsync(CancellationToken ct)
-    {
-        using var req  = CreateRequest(HttpMethod.Get, "api/analytics/performance");
-        using var resp = await CreateClient().SendAsync(req, ct);
-        if (!resp.IsSuccessStatusCode) return null;
-        return await resp.Content.ReadAsStringAsync(ct);
-    }
+    // Final-Touches Phase 6 Stage 6.2 — replaced raw JSON fetch with typed GetAsync<T> deserialization
+    public Task<DepartmentPerformanceReport?> GetPerformanceAnalyticsAsync(CancellationToken ct)
+        => GetAsync<DepartmentPerformanceReport>("api/analytics/performance", ct);
 
-    public async Task<string?> GetAttendanceAnalyticsJsonAsync(CancellationToken ct)
-    {
-        using var req  = CreateRequest(HttpMethod.Get, "api/analytics/attendance");
-        using var resp = await CreateClient().SendAsync(req, ct);
-        if (!resp.IsSuccessStatusCode) return null;
-        return await resp.Content.ReadAsStringAsync(ct);
-    }
+    public Task<DepartmentAttendanceReport?> GetAttendanceAnalyticsAsync(CancellationToken ct)
+        => GetAsync<DepartmentAttendanceReport>("api/analytics/attendance", ct);
 
-    public async Task<string?> GetAssignmentAnalyticsJsonAsync(CancellationToken ct)
-    {
-        using var req  = CreateRequest(HttpMethod.Get, "api/analytics/assignments");
-        using var resp = await CreateClient().SendAsync(req, ct);
-        if (!resp.IsSuccessStatusCode) return null;
-        return await resp.Content.ReadAsStringAsync(ct);
-    }
+    public Task<AssignmentStatsReport?> GetAssignmentAnalyticsAsync(CancellationToken ct)
+        => GetAsync<AssignmentStatsReport>("api/analytics/assignments", ct);
 
     // ── AI Chat ───────────────────────────────────────────────────────────────
 

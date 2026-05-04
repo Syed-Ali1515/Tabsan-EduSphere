@@ -10,8 +10,9 @@ namespace Tabsan.EduSphere.API.Controllers;
 /// Admins/Faculty: send and deactivate notifications.
 /// All authenticated users: view inbox and mark notifications read.
 /// </summary>
+// Final-Touches Phase 6 Stage 6.1 — fixed route to include v1 prefix (was "api/[controller]")
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/v1/[controller]")]
 [Authorize]
 public class NotificationController : ControllerBase
 {

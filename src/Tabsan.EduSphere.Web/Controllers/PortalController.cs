@@ -749,6 +749,18 @@ public class PortalController : Controller
         return RedirectToAction(nameof(Notifications));
     }
 
+    // Final-Touches Phase 6 Stage 6.1 — mark individual notification as read
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> MarkNotificationRead(Guid id, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.MarkNotificationReadAsync(id, ct); }
+            catch { /* swallow */ }
+        }
+        return RedirectToAction(nameof(Notifications));
+    }
+
     // ── Students ──────────────────────────────────────────────────────────
 
     [HttpGet]
@@ -1161,9 +1173,45 @@ public class PortalController : Controller
         if (!model.IsConnected) return View(model);
         try
         {
-            model.PerformanceJson = await _api.GetPerformanceAnalyticsJsonAsync(ct);
-            model.AttendanceJson  = await _api.GetAttendanceAnalyticsJsonAsync(ct);
-            model.AssignmentJson  = await _api.GetAssignmentAnalyticsJsonAsync(ct);
+            // Final-Touches Phase 6 Stage 6.2 — fetch typed DTOs instead of raw JSON
+            model.Performance = await _api.GetPerformanceAnalyticsAsync(ct);
+            model.Attendance  = await _api.GetAttendanceAnalyticsAsync(ct);
+            model.Assignments = await _api.GetAssignmentAnalyticsAsync(ct);
+
+            // Populate summary cards from real data
+            if (model.Performance is not null)
+            {
+                model.Cards.Add(new AnalyticsSummaryCard
+                {
+                    Label      = "Avg. Marks",
+                    Value      = $"{model.Performance.AverageMarks:F1}%",
+                    SubText    = $"{model.Performance.TotalStudents} students · {model.Performance.DepartmentName}",
+                    ColorClass = "text-primary",
+                    Icon       = "📊"
+                });
+            }
+            if (model.Attendance is not null)
+            {
+                model.Cards.Add(new AnalyticsSummaryCard
+                {
+                    Label      = "Avg. Attendance",
+                    Value      = $"{model.Attendance.OverallAttendancePercentage:F1}%",
+                    SubText    = model.Attendance.DepartmentName,
+                    ColorClass = "text-success",
+                    Icon       = "📋"
+                });
+            }
+            if (model.Assignments is not null)
+            {
+                model.Cards.Add(new AnalyticsSummaryCard
+                {
+                    Label      = "Assignments",
+                    Value      = model.Assignments.Assignments.Count.ToString(),
+                    SubText    = model.Assignments.DepartmentName,
+                    ColorClass = "text-warning",
+                    Icon       = "📝"
+                });
+            }
         }
         catch (Exception ex) { model.Message = ex.Message; }
         return View(model);

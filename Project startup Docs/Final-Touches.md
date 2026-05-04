@@ -55,7 +55,7 @@ For **every completed phase**:
 ---
 
 ## Phase 2 - Timetable and Core Lookup Data Visibility
-**Status:** In Progress
+**Status:** ✅ Complete
 
 ### Stage 2.1 - Faculty/Student Timetable Data
 - [x] Fix My Timetable (Faculty) data binding.
@@ -165,7 +165,7 @@ For **every completed phase**:
 ---
 
 ## Phase 3 - Assignment, Attendance, Results, Quizzes, FYP Access and Workflows
-**Status:** In Progress
+**Status:** ✅ Complete
 
 ### Stage 3.1 - 403 Authorization Fixes
 - [x] Resolve 403 in Assignments.
@@ -354,21 +354,29 @@ For **every completed phase**:
 ---
 
 ## Phase 6 - Notifications and Analytics
-**Status:** Not Started
+**Status:** ✅ Complete
 
 ### Stage 6.1 - Notifications 404 Fix
-- [ ] Fix Notifications endpoint mismatch or missing route.
-- [ ] Verify notification list, read state, and mark-all-read behavior.
+- [x] Fix Notifications endpoint mismatch or missing route.
+- [x] Verify notification list, read state, and mark-all-read behavior.
 
 ### Stage 6.2 - Analytics Data Rendering
-- [ ] Replace random/static code output with real analytics data.
-- [ ] Validate Performance, Attendance, Assignment analytics cards and sections.
+- [x] Replace random/static code output with real analytics data.
+- [x] Validate Performance, Attendance, Assignment analytics cards and sections.
 
 ### Implementation Summary
-- Pending
+- **Stage 6.1**: `NotificationController` had `[Route("api/[controller]")]` resolving to `api/notification`, while `EduApiClient` called `api/v1/notification/...`. Fixed by changing the controller route to `[Route("api/v1/[controller]")]`.
+- **Stage 6.2**: `EduApiClient` analytics methods returned raw JSON strings; the view displayed them in `<pre><code>` blocks. Fixed by:
+  1. Updating `IEduApiClient` interface: replaced `GetPerformanceAnalyticsJsonAsync`, `GetAttendanceAnalyticsJsonAsync`, `GetAssignmentAnalyticsJsonAsync` (returning `string?`) with typed versions returning `DepartmentPerformanceReport?`, `DepartmentAttendanceReport?`, `AssignmentStatsReport?`.
+  2. Updating `EduApiClient` implementation to use `GetAsync<T>()` helper.
+  3. Replacing `PerformanceJson`, `AttendanceJson`, `AssignmentJson` string fields in `AnalyticsPageModel` with typed `Performance`, `Attendance`, `Assignments` DTO properties.
+  4. Updating `PortalController.Analytics` to call typed methods and populate summary cards from real data.
+  5. Rewrote `Analytics.cshtml`: accordion panels now render Bootstrap 5 tables with real student/course rows instead of raw JSON.
 
 ### Validation Summary
-- Pending
+- Build: ✅ 0 errors, 0 warnings
+- Notifications: Route mismatch resolved — inbox, badge, mark-all-read all route correctly to `api/v1/notification/...`; per-notification mark-as-read button added to inbox view, posts to new `MarkNotificationRead` action
+- Analytics: Performance, Attendance, Assignment sections render as proper responsive tables with per-row data; summary cards display average marks, attendance %, and assignment count from live API data.
 
 ---
 
@@ -444,15 +452,15 @@ For **every completed phase**:
 ---
 
 ## Progress Tracker
-- [ ] Phase 1 complete
-- [ ] Phase 2 complete
-- [ ] Phase 3 complete
+- [x] Phase 1 complete
+- [x] Phase 2 complete
+- [x] Phase 3 complete
 - [x] Phase 4 complete
 - [x] Phase 5 complete
-- [ ] Phase 6 complete
+- [x] Phase 6 complete
 - [ ] Phase 7 complete
 - [ ] Phase 8 complete
 - [ ] Phase 9 complete
 
 ## Next Phase To Execute
-Phase 1 - Navigation, Session Stability, Sidebar Structure
+Phase 7 - Finance and Payments Module Completion

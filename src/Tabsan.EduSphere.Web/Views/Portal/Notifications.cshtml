@@ -49,11 +49,19 @@ else
                     {
                         <div class="small text-muted mt-1">@n.Body</div>
                     }
-                    <div class="mt-1">
+                    <div class="mt-1 d-flex align-items-center gap-2">
                         <span class="badge bg-secondary">@n.NotificationType</span>
                         @if (!n.IsRead)
                         {
-                            <span class="badge bg-primary ms-1">New</span>
+                            <span class="badge bg-primary">New</span>
+                            @* Final-Touches Phase 6 Stage 6.1 — per-notification mark-as-read button *@
+                            <form asp-action="MarkNotificationRead" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@n.Id" />
+                                <button type="submit" class="btn btn-sm btn-link p-0 text-muted" title="Mark as read">
+                                    <i class="bi bi-check2"></i> Mark read
+                                </button>
+                            </form>
                         }
                     </div>
                 </div>

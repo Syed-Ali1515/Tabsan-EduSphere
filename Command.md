@@ -27,13 +27,15 @@ Also update this file with:
 
 ## Current Execution Pointer
 - Plan Source: Project startup Docs/Final-Touches.md
-- Active Phase: Phase 6 (next phase)
-- Active Stage: All Phase 5 stages complete
-- Status: Phase 5 Complete ✅
+- Active Phase: Phase 7 (next phase)
+- Active Stage: All Phase 6 stages complete
+- Status: Phase 6 Complete ✅
 - Last Updated: 2026-05-04
 
 ## Completed Work
 - Phase 1: Navigation, Session Stability, Sidebar Structure (all stages done)
+- Phase 2: All stages complete (Timetable data binding, Buildings/Students/Departments/Courses visibility, CRUD entry points) — status updated to ✅ Complete
+- Phase 3: All stages complete (403 fixes, data entry workflows, result-driven promotion) — status updated to ✅ Complete
 - Phase 2: Timetable and Core Lookup Data Visibility (all stages done)
 - Phase 3 Stage 3.1: Route prefix fix on AssignmentController, AttendanceController, ResultController, QuizController, FypController (api/ → api/v1/); added GET api/v1/quiz/my-attempts endpoint + GetAllMyAttemptsAsync service chain
 - Phase 3 Stage 3.2: Data entry workflows for Assignments, Attendance, Results, Quizzes, FYP (create/publish/delete, grade submissions, bulk mark attendance, propose/approve/reject FYP)
@@ -41,9 +43,10 @@ Also update this file with:
 - Phase 4 Stage 4.1: Report Center fixes — key mismatch resolved (DB hyphen vs switch underscore), static sidebar Report Center link added, Semester Results report full chain, 3 Excel export Portal proxy actions + EduApiClient methods, DB seeds updated
 - Phase 4 Stage 4.2: 3 new reports — Student Transcript (with Excel export), Low Attendance Warning, FYP Status Report; all 6 infrastructure layers implemented; 3 Razor views; ReportCenter.cshtml switch; DatabaseSeeder + ReportKeys updated; build 0 errors
 - Phase 5: Settings Pages — theme persistence fixed in _Layout.cshtml (data-theme on html tag, session-cached API call); 5 new themes added (Steel Blue, Forest Green, Amber Gold, Warm Copper, Indigo Dusk); success/error alert styling improved in ThemeSettings, ReportSettings, ModuleSettings; all settings save actions verified working; build 0 errors
+- Phase 6: Notifications & Analytics — Stage 6.1: fixed `NotificationController` route from `api/[controller]` to `api/v1/[controller]` (resolved all notification 404s); Stage 6.2: replaced raw JSON `<pre>` dumps in Analytics view with typed `DepartmentPerformanceReport`, `DepartmentAttendanceReport`, `AssignmentStatsReport` objects; `EduApiClient` analytics methods now return typed DTOs via `GetAsync<T>`; `AnalyticsPageModel` updated to hold typed properties; `Analytics.cshtml` renders Bootstrap 5 responsive tables per section; summary cards populated from real data; build 0 errors
 
 ## Next Steps
-- Phase 6 (to be determined from Final-Touches.md)
+- Phase 7 (Finance and Payments Module Completion — see Final-Touches.md)
 
 ## Pending Extra Tasks (Cross-Phase)
 - Keep Report Center menu visible by role and working links.
