@@ -55,6 +55,28 @@ public class UserRepository : IUserRepository
             .OrderBy(u => u.Username)
             .ToListAsync(ct);
 
+    /// <summary>Returns active users that belong to any role in <paramref name="roleNames"/>.</summary>
+    public async Task<IList<User>> GetActiveUsersByRolesAsync(IReadOnlyList<string> roleNames, CancellationToken ct = default)
+    {
+        if (roleNames.Count == 0)
+            return new List<User>();
+
+        var normalized = roleNames
+            .Where(r => !string.IsNullOrWhiteSpace(r))
+            .Select(r => r.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        if (normalized.Count == 0)
+            return new List<User>();
+
+        return await _db.Users
+            .Include(u => u.Role)
+            .Where(u => u.IsActive && normalized.Contains(u.Role.Name))
+            .OrderBy(u => u.Username)
+            .ToListAsync(ct);
+    }
+
     /// <summary>Queues the new user entity for insertion on the next SaveChanges call.</summary>
     public async Task AddAsync(User user, CancellationToken ct = default)
         => await _db.Users.AddAsync(user, ct);

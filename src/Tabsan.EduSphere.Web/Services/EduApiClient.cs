@@ -818,7 +818,7 @@ public class EduApiClient : IEduApiClient
     {
         Id                 = s.Id,
         RegistrationNumber = s.RegistrationNumber ?? "",
-        FullName           = s.FullName ?? s.UserName ?? "",
+        FullName           = s.FullName ?? s.UserName ?? s.Email ?? s.RegistrationNumber ?? "Student",
         Email              = s.Email,
         DepartmentName     = s.DepartmentName ?? "",
         ProgramName        = s.ProgramName ?? "",
@@ -1453,10 +1453,10 @@ public class EduApiClient : IEduApiClient
         => PostAsync<object, object>("api/v1/payments", new { studentProfileId, amount, description, dueDate }, ct);
 
     public Task ConfirmPaymentAsync(Guid receiptId, CancellationToken ct)
-        => PostAsync<object, object>($"api/v1/payments/{receiptId}/confirm", new { }, ct);
+        => PostAsync<string, object>($"api/v1/payments/{receiptId}/confirm", string.Empty, ct);
 
     public Task CancelPaymentAsync(Guid receiptId, CancellationToken ct)
-        => PostAsync<object, object>($"api/v1/payments/{receiptId}/cancel", new { }, ct);
+        => PostAsync<string, object>($"api/v1/payments/{receiptId}/cancel", string.Empty, ct);
 
     public Task SubmitProofAsync(Guid receiptId, string proofNote, CancellationToken ct)
         => PostAsync<string, object>($"api/v1/payments/{receiptId}/mark-submitted", proofNote, ct);

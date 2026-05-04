@@ -18,11 +18,16 @@ public class StudentLifecycleService : IStudentLifecycleService
 {
     private readonly IStudentLifecycleRepository _repository;
     private readonly INotificationService _notifications;
+    private readonly IUserRepository _users;
 
-    public StudentLifecycleService(IStudentLifecycleRepository repository, INotificationService notifications)
+    public StudentLifecycleService(
+        IStudentLifecycleRepository repository,
+        INotificationService notifications,
+        IUserRepository users)
     {
         _repository    = repository;
         _notifications = notifications;
+        _users         = users;
     }
 
     // ── Graduation ────────────────────────────────────────────────────────
@@ -347,7 +352,7 @@ public class StudentLifecycleService : IStudentLifecycleService
     {
         var student = await _repository.GetByIdAsync(studentProfileId, ct);
         var receipts = await _repository.GetActiveReceiptsByStudentAsync(studentProfileId, ct);
-        return receipts.Select(r => MapPaymentReceipt(r, student?.UserId.ToString() ?? "")).ToList();
+        return receipts.Select(r => MapPaymentReceipt(r, student?.RegistrationNumber ?? "")).ToList();
     }
 
     public async Task<StudentFeeStatusDto> GetStudentFeeStatusAsync(
@@ -357,7 +362,7 @@ public class StudentLifecycleService : IStudentLifecycleService
         var unpaidReceipts = await _repository.GetUnpaidReceiptsByStudentAsync(studentProfileId, ct);
         var student = await _repository.GetByIdAsync(studentProfileId, ct);
 
-        var dtos = unpaidReceipts.Select(r => MapPaymentReceipt(r, student?.UserId.ToString() ?? "")).ToList();
+        var dtos = unpaidReceipts.Select(r => MapPaymentReceipt(r, student?.RegistrationNumber ?? "")).ToList();
 
         return new StudentFeeStatusDto(
             studentProfileId,
@@ -374,8 +379,7 @@ public class StudentLifecycleService : IStudentLifecycleService
         if (receipt == null)
             return null;
 
-        var studentId = receipt.StudentProfile?.Id;
-        return MapPaymentReceipt(receipt, studentId?.ToString() ?? "");
+        return MapPaymentReceipt(receipt, receipt.StudentProfile?.RegistrationNumber ?? "");
     }
 
     public async Task SubmitPaymentProofAsync(Guid receiptId, string proofPath, CancellationToken ct = default)
@@ -388,13 +392,18 @@ public class StudentLifecycleService : IStudentLifecycleService
         await _repository.UpdateReceiptAsync(receipt, ct);
 
         // Final-Touches Phase 7 Stage 7.3 — notify admins that proof was submitted
-        // (No admin user ID list here — system notification; admins will see in their inbox)
-        _ = Task.Run(() => _notifications.SendSystemAsync(
-            title:            "Payment Proof Submitted",
-            body:             $"A student has submitted proof of payment for receipt {receiptId}. Please verify.",
-            type:             NotificationType.System,
-            recipientUserIds: Array.Empty<Guid>(),
-            ct:               CancellationToken.None), CancellationToken.None);
+        var reviewerUsers = await _users.GetActiveUsersByRolesAsync(new[] { "Finance", "Admin", "SuperAdmin" }, ct);
+        var reviewerIds = reviewerUsers.Select(u => u.Id).Distinct().ToList();
+
+        if (reviewerIds.Count > 0)
+        {
+            await _notifications.SendSystemAsync(
+                title:            "Payment Proof Submitted",
+                body:             $"A student has submitted proof of payment for receipt {receiptId}. Please verify.",
+                type:             NotificationType.System,
+                recipientUserIds: reviewerIds,
+                ct:               ct);
+        }
     }
 
     public async Task ConfirmPaymentAsync(
@@ -481,6 +490,10 @@ public class StudentLifecycleService : IStudentLifecycleService
 
     private static PaymentReceiptDto MapPaymentReceipt(PaymentReceipt receipt, string studentName = "")
     {
+        var status = Enum.IsDefined(typeof(PaymentReceiptStatus), receipt.Status)
+            ? receipt.Status.ToString()
+            : PaymentReceiptStatus.Pending.ToString();
+
         return new PaymentReceiptDto(
             receipt.Id,
             receipt.StudentProfileId,
@@ -488,7 +501,7 @@ public class StudentLifecycleService : IStudentLifecycleService
             receipt.Amount,
             receipt.Description,
             receipt.DueDate,
-            receipt.Status.ToString(),
+            status,
             receipt.ProofOfPaymentPath,
             receipt.ProofUploadedAt,
             receipt.ConfirmedAt,

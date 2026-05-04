@@ -224,7 +224,7 @@ public class ApplicationDbContext : DbContext
     {
         foreach (var entry in ChangeTracker.Entries<Domain.Common.BaseEntity>())
         {
-            if (entry.State == EntityState.Modified)
+            if (entry.State == EntityState.Added || entry.State == EntityState.Modified)
                 entry.Entity.Touch();
         }
     }
