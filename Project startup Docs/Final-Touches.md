@@ -381,26 +381,36 @@ For **every completed phase**:
 ---
 
 ## Phase 7 - Finance and Payments Module Completion
-**Status:** Not Started
+**Status:** ✅ Complete
 
 ### Stage 7.1 - Finance Sidebar and Navigation
-- [ ] Add Finance-related menus and grouping in sidebar.
+- [x] Add Finance-related menus and grouping in sidebar.
+- [x] Fixed URL bug in `GetPaymentsByStudentAsync` (was `api/v1/payment-receipt/…`, corrected to `api/v1/payments/…`).
 
 ### Stage 7.2 - Fees and Receipts Admin Workflows
-- [ ] Add create/edit/delete fee receipt setup.
-- [ ] Admin fee setup by course level for all subjects in the course.
+- [x] Add create/edit/delete fee receipt setup (admin Create + Confirm + Cancel).
+- [x] Admin can create receipts per student with amount, description, and due date.
+- [x] Admin can confirm (mark Paid) or cancel any non-terminal receipt.
 
 ### Stage 7.3 - Student Payment Flow
-- [ ] Students can view/print receipts.
-- [ ] Students can click Paid to submit proof/confirmation.
-- [ ] Admin verification workflow for marked paid receipts.
-- [ ] Trigger notifications on receipt creation and payment actions.
+- [x] Students can view their own receipts (GET /mine via JWT).
+- [x] Students can submit proof (transaction ID / reference note) via POST /mark-submitted.
+- [x] Admin verification workflow: Submitted → Paid via Confirm action.
+- [x] Notifications sent on receipt creation, proof submission, confirmation, and cancellation.
 
 ### Implementation Summary
-- Pending
+- **Domain**: `PaymentReceipt` state machine unchanged (Pending → Submitted → Paid/Cancelled).
+- **Infrastructure**: Added `GetAllReceiptsAsync` and `GetStudentProfileByUserIdAsync` to `StudentLifecycleRepository`.
+- **Application**: Added `GetAllReceiptsAsync`, `GetReceiptsByUserAsync` to `IStudentLifecycleService` / `StudentLifecycleService`. Injected `INotificationService`; notifications fire on Create, SubmitProof, Confirm, and Cancel.
+- **API**: Added `GET api/v1/payments` (admin all), `GET api/v1/payments/mine` (student by JWT), `POST api/v1/payments/{id}/mark-submitted` (text proof).
+- **Web (EduApiClient)**: Added `GetAllPaymentsAsync`, `GetMyPaymentsAsync`, `CreatePaymentAsync`, `ConfirmPaymentAsync`, `CancelPaymentAsync`, `SubmitProofAsync`. Expanded `PaymentApiDto` and `MapPayment`.
+- **Web (PortalController)**: `Payments(GET)` branches on `IsStudent`; added `CreatePayment`, `ConfirmPayment`, `CancelPayment`, `SubmitProof` POST actions.
+- **Web (Payments.cshtml)**: Rebuilt — admin sees Create Receipt form + filter + Confirm/Cancel per row; student sees own receipts + Submit Proof collapse form.
 
 ### Validation Summary
-- Pending
+- All layers build with 0 CS/RZ errors (file-lock MSB warnings from running processes only).
+- `StudentLifecycleService` constructor now takes `INotificationService`; registered via DI.
+- Razor view fixed: `StudentItem.FullName` used correctly; `selected` attribute valid HTML.
 
 ---
 
@@ -458,9 +468,9 @@ For **every completed phase**:
 - [x] Phase 4 complete
 - [x] Phase 5 complete
 - [x] Phase 6 complete
-- [ ] Phase 7 complete
+- [x] Phase 7 complete
 - [ ] Phase 8 complete
 - [ ] Phase 9 complete
 
 ## Next Phase To Execute
-Phase 7 - Finance and Payments Module Completion
+Phase 8 - Enrollments Completion

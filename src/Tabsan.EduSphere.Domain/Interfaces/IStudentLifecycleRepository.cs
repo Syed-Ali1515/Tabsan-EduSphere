@@ -81,6 +81,12 @@ public interface IStudentLifecycleRepository
     /// <summary>Gets all unpaid receipts across all students.</summary>
     Task<IList<PaymentReceipt>> GetAllUnpaidReceiptsAsync(CancellationToken ct = default);
 
+    /// <summary>Gets all receipts across all students (for admin view).</summary>
+    Task<IList<PaymentReceipt>> GetAllReceiptsAsync(CancellationToken ct = default);
+
+    /// <summary>Gets a student profile by the linked user account ID.</summary>
+    Task<StudentProfile?> GetStudentProfileByUserIdAsync(Guid userId, CancellationToken ct = default);
+
     /// <summary>Creates a new payment receipt.</summary>
     Task AddReceiptAsync(PaymentReceipt receipt, CancellationToken ct = default);
 

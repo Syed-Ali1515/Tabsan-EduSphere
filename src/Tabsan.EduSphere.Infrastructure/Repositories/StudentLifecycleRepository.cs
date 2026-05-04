@@ -244,6 +244,25 @@ public class StudentLifecycleRepository : IStudentLifecycleRepository
             .ToListAsync(ct);
     }
 
+    // Final-Touches Phase 7 Stage 7.2 — all receipts for admin + student profile by user ID
+    public async Task<IList<PaymentReceipt>> GetAllReceiptsAsync(CancellationToken ct = default)
+    {
+        return await _db.PaymentReceipts
+            .AsNoTracking()
+            .Include(pr => pr.StudentProfile)
+            .OrderByDescending(pr => pr.CreatedAt)
+            .ToListAsync(ct);
+    }
+
+    public async Task<StudentProfile?> GetStudentProfileByUserIdAsync(Guid userId, CancellationToken ct = default)
+    {
+        return await _db.StudentProfiles
+            .AsNoTracking()
+            .Where(sp => sp.UserId == userId)
+            .Include(sp => sp.Program)
+            .FirstOrDefaultAsync(ct);
+    }
+
     public async Task AddReceiptAsync(PaymentReceipt receipt, CancellationToken ct = default)
     {
         await _db.PaymentReceipts.AddAsync(receipt, ct);

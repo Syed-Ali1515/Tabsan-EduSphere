@@ -4,6 +4,7 @@ using Tabsan.EduSphere.Application.Interfaces;
 using Tabsan.EduSphere.Domain.Academic;
 using Tabsan.EduSphere.Domain.Enums;
 using Tabsan.EduSphere.Domain.Interfaces;
+using Tabsan.EduSphere.Domain.Notifications;
 using Tabsan.EduSphere.Domain.StudentLifecycle;
 
 namespace Tabsan.EduSphere.Application.Services;
@@ -16,10 +17,12 @@ namespace Tabsan.EduSphere.Application.Services;
 public class StudentLifecycleService : IStudentLifecycleService
 {
     private readonly IStudentLifecycleRepository _repository;
+    private readonly INotificationService _notifications;
 
-    public StudentLifecycleService(IStudentLifecycleRepository repository)
+    public StudentLifecycleService(IStudentLifecycleRepository repository, INotificationService notifications)
     {
-        _repository = repository;
+        _repository    = repository;
+        _notifications = notifications;
     }
 
     // ── Graduation ────────────────────────────────────────────────────────
@@ -294,6 +297,21 @@ public class StudentLifecycleService : IStudentLifecycleService
     }
 
     // ── Payment Receipts ───────────────────────────────────────────────────
+    // Final-Touches Phase 7 Stage 7.2 — GetAllReceiptsAsync + GetReceiptsByUserAsync
+    public async Task<IList<PaymentReceiptDto>> GetAllReceiptsAsync(CancellationToken ct = default)
+    {
+        var receipts = await _repository.GetAllReceiptsAsync(ct);
+        return receipts.Select(r => MapPaymentReceipt(r, r.StudentProfile?.RegistrationNumber ?? "")).ToList();
+    }
+
+    public async Task<IList<PaymentReceiptDto>> GetReceiptsByUserAsync(Guid userId, CancellationToken ct = default)
+    {
+        var profile = await _repository.GetStudentProfileByUserIdAsync(userId, ct);
+        if (profile is null) return new List<PaymentReceiptDto>();
+        var receipts = await _repository.GetActiveReceiptsByStudentAsync(profile.Id, ct);
+        return receipts.Select(r => MapPaymentReceipt(r, profile.RegistrationNumber)).ToList();
+    }
+
     public async Task<PaymentReceiptDto> CreatePaymentReceiptAsync(
         Guid financeUserId,
         CreatePaymentReceiptCommand cmd,
@@ -309,9 +327,18 @@ public class StudentLifecycleService : IStudentLifecycleService
 
         await _repository.AddReceiptAsync(receipt, ct);
 
-        // TODO: Send receipt creation notification to student
+        // Final-Touches Phase 7 Stage 7.3 — notify student on receipt creation
         var student = await _repository.GetByIdAsync(cmd.StudentProfileId, ct);
-        return MapPaymentReceipt(receipt, student?.UserId.ToString() ?? "");
+        if (student is not null)
+        {
+            await _notifications.SendSystemAsync(
+                title:            "New Fee Receipt",
+                body:             $"A fee receipt of {cmd.Amount:N2} for '{cmd.Description}' has been created. Due: {cmd.DueDate:dd MMM yyyy}.",
+                type:             NotificationType.System,
+                recipientUserIds: new[] { student.UserId },
+                ct:               ct);
+        }
+        return MapPaymentReceipt(receipt, student?.RegistrationNumber ?? "");
     }
 
     public async Task<IList<PaymentReceiptDto>> GetActiveReceiptsByStudentAsync(
@@ -360,7 +387,14 @@ public class StudentLifecycleService : IStudentLifecycleService
         receipt.SubmitProof(proofPath);
         await _repository.UpdateReceiptAsync(receipt, ct);
 
-        // TODO: Send proof submission notification to finance/admins
+        // Final-Touches Phase 7 Stage 7.3 — notify admins that proof was submitted
+        // (No admin user ID list here — system notification; admins will see in their inbox)
+        _ = Task.Run(() => _notifications.SendSystemAsync(
+            title:            "Payment Proof Submitted",
+            body:             $"A student has submitted proof of payment for receipt {receiptId}. Please verify.",
+            type:             NotificationType.System,
+            recipientUserIds: Array.Empty<Guid>(),
+            ct:               CancellationToken.None), CancellationToken.None);
     }
 
     public async Task ConfirmPaymentAsync(
@@ -376,7 +410,17 @@ public class StudentLifecycleService : IStudentLifecycleService
         receipt.ConfirmPayment(financeUserId, notes);
         await _repository.UpdateReceiptAsync(receipt, ct);
 
-        // TODO: Send payment confirmation notification to student
+        // Final-Touches Phase 7 Stage 7.3 — notify student their payment was confirmed
+        var student = await _repository.GetByIdAsync(receipt.StudentProfileId, ct);
+        if (student is not null)
+        {
+            await _notifications.SendSystemAsync(
+                title:            "Payment Confirmed",
+                body:             $"Your payment for receipt {receiptId} has been confirmed as Paid.",
+                type:             NotificationType.System,
+                recipientUserIds: new[] { student.UserId },
+                ct:               ct);
+        }
     }
 
     public async Task CancelReceiptAsync(
@@ -392,7 +436,17 @@ public class StudentLifecycleService : IStudentLifecycleService
         receipt.Cancel(financeUserId, reason);
         await _repository.UpdateReceiptAsync(receipt, ct);
 
-        // TODO: Send cancellation notification to student
+        // Final-Touches Phase 7 Stage 7.3 — notify student their receipt was cancelled
+        var student = await _repository.GetByIdAsync(receipt.StudentProfileId, ct);
+        if (student is not null)
+        {
+            await _notifications.SendSystemAsync(
+                title:            "Receipt Cancelled",
+                body:             $"Your payment receipt {receiptId} has been cancelled. Reason: {reason ?? "Not specified"}.",
+                type:             NotificationType.System,
+                recipientUserIds: new[] { student.UserId },
+                ct:               ct);
+        }
     }
 
     // ── Mapping helpers ────────────────────────────────────────────────────

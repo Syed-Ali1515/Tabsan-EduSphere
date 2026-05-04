@@ -1303,6 +1303,7 @@ public class PortalController : Controller
     }
 
     // ── Payments ───────────────────────────────────────────────────────────
+    // Final-Touches Phase 7 — admin all-receipts view + student own receipts
 
     [HttpGet]
     public async Task<IActionResult> Payments(Guid? studentId, CancellationToken ct)
@@ -1310,19 +1311,86 @@ public class PortalController : Controller
         ViewData["Title"] = "Payments";
         var model = new PaymentsPageModel
         {
-            IsConnected    = _api.IsConnected(),
+            IsConnected       = _api.IsConnected(),
             SelectedStudentId = studentId,
-            Message        = TempData["PortalMessage"]?.ToString()
+            Message           = TempData["PortalMessage"]?.ToString()
         };
         if (!model.IsConnected) return View(model);
         try
         {
-            model.Departments = await _api.GetDepartmentsAsync(ct);
-            if (studentId.HasValue)
-                model.Payments = await _api.GetPaymentsByStudentAsync(studentId.Value, ct);
+            // Student role: load their own receipts via JWT
+            var identity = _api.GetSessionIdentity();
+            if (identity?.IsStudent == true)
+            {
+                model.Payments = await _api.GetMyPaymentsAsync(ct);
+            }
+            else
+            {
+                // Admin / Finance: load all receipts + student list for create form
+                model.Payments = await _api.GetAllPaymentsAsync(ct);
+                model.Students = await _api.GetStudentsAsync(null, ct);
+                if (studentId.HasValue)
+                    model.Payments = await _api.GetPaymentsByStudentAsync(studentId.Value, ct);
+            }
         }
         catch (Exception ex) { model.Message = ex.Message; }
         return View(model);
+    }
+
+    // Final-Touches Phase 7 Stage 7.2 — create receipt (Admin/Finance)
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreatePayment(CreatePaymentForm form, CancellationToken ct)
+    {
+        try
+        {
+            await _api.CreatePaymentAsync(form.StudentProfileId, form.Amount, form.Description, form.DueDate, ct);
+            TempData["PortalMessage"] = "Receipt created successfully.";
+        }
+        catch (Exception ex) { TempData["PortalMessage"] = ex.Message; }
+        return RedirectToAction(nameof(Payments));
+    }
+
+    // Final-Touches Phase 7 Stage 7.2 — confirm payment (Admin/Finance)
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ConfirmPayment(Guid receiptId, CancellationToken ct)
+    {
+        try
+        {
+            await _api.ConfirmPaymentAsync(receiptId, ct);
+            TempData["PortalMessage"] = "Payment confirmed.";
+        }
+        catch (Exception ex) { TempData["PortalMessage"] = ex.Message; }
+        return RedirectToAction(nameof(Payments));
+    }
+
+    // Final-Touches Phase 7 Stage 7.2 — cancel receipt (Admin/Finance)
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CancelPayment(Guid receiptId, CancellationToken ct)
+    {
+        try
+        {
+            await _api.CancelPaymentAsync(receiptId, ct);
+            TempData["PortalMessage"] = "Receipt cancelled.";
+        }
+        catch (Exception ex) { TempData["PortalMessage"] = ex.Message; }
+        return RedirectToAction(nameof(Payments));
+    }
+
+    // Final-Touches Phase 7 Stage 7.3 — student marks receipt as submitted
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SubmitProof(Guid receiptId, string proofNote, CancellationToken ct)
+    {
+        try
+        {
+            await _api.SubmitProofAsync(receiptId, proofNote, ct);
+            TempData["PortalMessage"] = "Proof of payment submitted.";
+        }
+        catch (Exception ex) { TempData["PortalMessage"] = ex.Message; }
+        return RedirectToAction(nameof(Payments));
     }
 
     // ── Enrollments ────────────────────────────────────────────────────────

@@ -163,6 +163,13 @@ public interface IEduApiClient
 
     // Payments
     Task<List<PaymentReceiptItem>> GetPaymentsByStudentAsync(Guid studentId, CancellationToken ct);
+    // Final-Touches Phase 7 — admin all-receipts, student own, create, confirm, cancel, submit proof
+    Task<List<PaymentReceiptItem>> GetAllPaymentsAsync(CancellationToken ct);
+    Task<List<PaymentReceiptItem>> GetMyPaymentsAsync(CancellationToken ct);
+    Task CreatePaymentAsync(Guid studentProfileId, decimal amount, string description, DateTime dueDate, CancellationToken ct);
+    Task ConfirmPaymentAsync(Guid receiptId, CancellationToken ct);
+    Task CancelPaymentAsync(Guid receiptId, CancellationToken ct);
+    Task SubmitProofAsync(Guid receiptId, string proofNote, CancellationToken ct);
 
     // Enrollments
     Task<List<EnrollmentRosterItem>> GetEnrollmentRosterAsync(Guid offeringId, CancellationToken ct);
@@ -1410,32 +1417,64 @@ public class EduApiClient : IEduApiClient
 
     public async Task<List<PaymentReceiptItem>> GetPaymentsByStudentAsync(Guid studentId, CancellationToken ct)
     {
-        var raw = await GetAsync<List<PaymentApiDto>>($"api/v1/payment-receipt/student/{studentId}", ct) ?? new();
+        var raw = await GetAsync<List<PaymentApiDto>>($"api/v1/payments/student/{studentId}", ct) ?? new();
         return raw.Select(MapPayment).ToList();
     }
 
     private static PaymentReceiptItem MapPayment(PaymentApiDto p) => new()
     {
         Id                 = p.Id,
+        StudentProfileId   = p.StudentProfileId,
         StudentName        = p.StudentName ?? "",
         RegistrationNumber = p.RegistrationNumber ?? "",
         Amount             = p.Amount,
-        FeeType            = p.FeeType ?? "",
+        FeeType            = p.Description ?? p.FeeType ?? "",
         Status             = p.Status ?? "",
         DueDate            = p.DueDate,
-        PaidDate           = p.PaidDate
+        PaidDate           = p.PaidDate,
+        ProofOfPaymentPath = p.ProofOfPaymentPath,
+        Notes              = p.Notes
     };
+
+    // Final-Touches Phase 7 — admin and student payment actions
+    public async Task<List<PaymentReceiptItem>> GetAllPaymentsAsync(CancellationToken ct)
+    {
+        var raw = await GetAsync<List<PaymentApiDto>>("api/v1/payments", ct) ?? new();
+        return raw.Select(MapPayment).ToList();
+    }
+
+    public async Task<List<PaymentReceiptItem>> GetMyPaymentsAsync(CancellationToken ct)
+    {
+        var raw = await GetAsync<List<PaymentApiDto>>("api/v1/payments/mine", ct) ?? new();
+        return raw.Select(MapPayment).ToList();
+    }
+
+    public Task CreatePaymentAsync(Guid studentProfileId, decimal amount, string description, DateTime dueDate, CancellationToken ct)
+        => PostAsync<object, object>("api/v1/payments", new { studentProfileId, amount, description, dueDate }, ct);
+
+    public Task ConfirmPaymentAsync(Guid receiptId, CancellationToken ct)
+        => PostAsync<object, object>($"api/v1/payments/{receiptId}/confirm", new { }, ct);
+
+    public Task CancelPaymentAsync(Guid receiptId, CancellationToken ct)
+        => PostAsync<object, object>($"api/v1/payments/{receiptId}/cancel", new { }, ct);
+
+    public Task SubmitProofAsync(Guid receiptId, string proofNote, CancellationToken ct)
+        => PostAsync<string, object>($"api/v1/payments/{receiptId}/mark-submitted", proofNote, ct);
 
     private sealed class PaymentApiDto
     {
         public Guid     Id                 { get; set; }
+        public Guid     StudentProfileId   { get; set; }
         public string?  StudentName        { get; set; }
         public string?  RegistrationNumber { get; set; }
         public decimal  Amount             { get; set; }
         public string?  FeeType            { get; set; }
+        public string?  Description        { get; set; }
         public string?  Status             { get; set; }
         public DateTime DueDate            { get; set; }
         public DateTime? PaidDate          { get; set; }
+        public string?  ProofOfPaymentPath { get; set; }
+        public string?  Notes              { get; set; }
     }
 
     // ── Enrollments ───────────────────────────────────────────────────────────

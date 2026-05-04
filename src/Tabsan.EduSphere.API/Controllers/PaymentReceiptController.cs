@@ -44,7 +44,31 @@ public class PaymentReceiptController : ControllerBase
         var receipt = await _service.CreatePaymentReceiptAsync(userId, cmd, ct);
         return CreatedAtAction(nameof(GetById), new { id = receipt.Id }, receipt);
     }
+    // ── GET /api/v1/payments ──────────────────────────────────────────────
 
+    // Final-Touches Phase 7 Stage 7.2 — all receipts for admin view
+    /// <summary>Returns all payment receipts across all students. Admin / Finance only.</summary>
+    [HttpGet]
+    [Authorize(Roles = "SuperAdmin,Admin,Finance")]
+    public async Task<IActionResult> GetAll(CancellationToken ct)
+    {
+        var receipts = await _service.GetAllReceiptsAsync(ct);
+        return Ok(receipts);
+    }
+
+    // ── GET /api/v1/payments/mine ─────────────────────────────────────────
+
+    // Final-Touches Phase 7 Stage 7.3 — student views their own receipts via JWT
+    /// <summary>Student views their own payment receipts (resolved from JWT user ID).</summary>
+    [HttpGet("mine")]
+    [Authorize(Roles = "Student")]
+    public async Task<IActionResult> GetMine(CancellationToken ct)
+    {
+        var userId = GetUserId();
+        if (userId == Guid.Empty) return Forbid();
+        var receipts = await _service.GetReceiptsByUserAsync(userId, ct);
+        return Ok(receipts);
+    }
     // ── GET /api/v1/payments/student/{studentProfileId} ──────────────────────
 
     /// <summary>Returns all active (non-cancelled) receipts for a student. Admin or Finance only.</summary>
@@ -86,6 +110,32 @@ public class PaymentReceiptController : ControllerBase
         var receipt = await _service.GetPaymentReceiptByIdAsync(id, ct);
         if (receipt is null) return NotFound();
         return Ok(receipt);
+    }
+
+    // ── POST /api/v1/payments/{id}/mark-submitted ──────────────────────────
+
+    // Final-Touches Phase 7 Stage 7.3 — student marks receipt as submitted with a text note as proof reference
+    /// <summary>Student marks a receipt as Submitted, providing a text reference as proof (e.g., transaction ID).</summary>
+    [HttpPost("{id:guid}/mark-submitted")]
+    [Authorize(Roles = "Student")]
+    public async Task<IActionResult> MarkSubmitted(Guid id, [FromBody] string proofNote, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(proofNote))
+            return BadRequest(new { message = "Proof note cannot be empty." });
+
+        try
+        {
+            await _service.SubmitPaymentProofAsync(id, proofNote, ct);
+            return NoContent();
+        }
+        catch (KeyNotFoundException e)
+        {
+            return NotFound(new { message = e.Message });
+        }
+        catch (InvalidOperationException e)
+        {
+            return BadRequest(new { message = e.Message });
+        }
     }
 
     // ── POST /api/v1/payments/{id}/submit-proof ───────────────────────────────

@@ -1355,6 +1355,8 @@
 | `SubmitProofAsync(id, proofFilePath, ct)` | Student submits payment proof; calls `PaymentReceipt.SubmitProof`. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
 | `ConfirmPaymentAsync(id, financeUserId, ct)` | Finance confirms payment; calls `PaymentReceipt.Confirm`. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
 | `CancelReceiptAsync(id, cancelledByUserId, reason, ct)` | Cancels a receipt; calls `PaymentReceipt.Cancel`. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `GetAllReceiptsAsync(ct)` | Returns all payment receipts ordered by CreatedAt desc (admin view). Added Phase 7. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `GetStudentProfileByUserIdAsync(userId, ct)` | Looks up a student profile by the application user ID. Added Phase 7. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
 | `AddRegistrationNumberAsync(registrationNumber, ct)` | Adds a single registration number to the whitelist. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
 | `BulkAddRegistrationNumbersAsync(numbers, ct)` | Adds a list of registration numbers from CSV import. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
 | `RegistrationNumberExistsAsync(registrationNumber, ct)` | Returns true if a registration number is in the whitelist. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
@@ -1394,6 +1396,8 @@
 | `ConfirmPaymentAsync(id, financeUserId, ct)` | Finance confirms payment. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
 | `CancelReceiptAsync(id, cancelledByUserId, reason, ct)` | Cancels a payment receipt. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
 | `GetFeeStatusAsync(studentId, ct)` | Returns outstanding fee status (any unpaid receipts). | `Application/StudentLifecycle/StudentLifecycleService.cs` |
+| `GetAllReceiptsAsync(ct)` | Returns all receipts (admin). Added Phase 7. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
+| `GetReceiptsByUserAsync(userId, ct)` | Returns receipts for a student by user ID (JWT-based). Added Phase 7. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
 | `ImportRegistrationCsvAsync(csv, ct)` | Parses and bulk-imports registration numbers from CSV string. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
 | `AddRegistrationNumberAsync(number, ct)` | Adds single registration number to whitelist. | `Application/StudentLifecycle/StudentLifecycleService.cs` |
 | `ValidateSignupRegistrationAsync(number, ct)` | Validates number exists in whitelist and has no existing account. | `Application/StudentLifecycle/StudentLifecycleService.cs` |

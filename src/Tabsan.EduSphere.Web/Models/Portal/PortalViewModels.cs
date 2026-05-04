@@ -714,6 +714,7 @@ public class StudentLifecyclePageModel
 public class PaymentReceiptItem
 {
     public Guid     Id                 { get; set; }
+    public Guid     StudentProfileId   { get; set; }
     public string   StudentName        { get; set; } = "";
     public string   RegistrationNumber { get; set; } = "";
     public decimal  Amount             { get; set; }
@@ -721,6 +722,17 @@ public class PaymentReceiptItem
     public string   Status             { get; set; } = "";
     public DateTime DueDate            { get; set; }
     public DateTime? PaidDate          { get; set; }
+    public string?  ProofOfPaymentPath { get; set; }
+    public string?  Notes              { get; set; }
+}
+
+// Final-Touches Phase 7 Stage 7.2 — form for creating a new receipt
+public class CreatePaymentForm
+{
+    public Guid     StudentProfileId { get; set; }
+    public decimal  Amount           { get; set; }
+    public string   Description      { get; set; } = "";
+    public DateTime DueDate          { get; set; } = DateTime.Today.AddDays(30);
 }
 
 public class PaymentsPageModel
@@ -729,7 +741,9 @@ public class PaymentsPageModel
     public string? Message    { get; set; }
     public List<PaymentReceiptItem> Payments    { get; set; } = new();
     public List<LookupItem>         Departments { get; set; } = new();
+    public List<StudentItem>         Students    { get; set; } = new();
     public Guid?  SelectedStudentId { get; set; }
+    public CreatePaymentForm CreateForm { get; set; } = new();
 }
 
 // ── Enrollments ───────────────────────────────────────────────────────────────

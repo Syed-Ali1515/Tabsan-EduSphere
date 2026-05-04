@@ -3,7 +3,9 @@
 
 @if (!string.IsNullOrWhiteSpace(Model.Message))
 {
-    <div class="alert alert-info">@Model.Message</div>
+    <div class="alert alert-info alert-dismissible fade show">@Model.Message
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
 }
 
 @if (!Model.IsConnected)
@@ -12,29 +14,83 @@
 }
 else
 {
-    @if (Model.Departments.Count > 0)
+    @* ── Admin: Create Receipt Form ──────────────────────────────────── *@
+    @if (Model.Students.Count > 0)
     {
-        <div class="card border-0 shadow-sm mb-3">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-transparent fw-semibold">Create Fee Receipt</div>
             <div class="card-body">
-                <form method="get" asp-action="Payments" class="row g-2 align-items-end">
-                    <div class="col-md-5">
-                        <label class="form-label">Filter by Department</label>
-                        <select name="departmentId" class="form-select" onchange="this.form.submit()">
-                            <option value="">All Departments</option>
-                            @foreach (var d in Model.Departments)
-                            {
-                                <option value="@d.Id">@d.Name</option>
-                            }
-                        </select>
+                <form method="post" asp-action="CreatePayment">
+                    @Html.AntiForgeryToken()
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Student</label>
+                            <select name="StudentProfileId" class="form-select" required>
+                                <option value="">— Select Student —</option>
+                                @foreach (var s in Model.Students)
+                                {
+                                    <option value="@s.Id">@s.FullName (@s.RegistrationNumber)</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Amount</label>
+                            <input name="Amount" type="number" step="0.01" min="0.01" class="form-control" placeholder="e.g. 5000" required />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Description</label>
+                            <input name="Description" type="text" class="form-control" placeholder="e.g. Semester 1 Tuition" required />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Due Date</label>
+                            <input name="DueDate" type="date" class="form-control"
+                                   value="@DateTime.Today.AddDays(30).ToString("yyyy-MM-dd")" required />
+                        </div>
+                        <div class="col-md-1 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">Create</button>
+                        </div>
                     </div>
                 </form>
             </div>
         </div>
     }
 
+    @* ── Filter by Student (Admin) ───────────────────────────────────── *@
+    @if (Model.Students.Count > 0)
+    {
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body py-2">
+                <form method="get" asp-action="Payments" class="row g-2 align-items-end">
+                    <div class="col-md-5">
+                        <label class="form-label mb-1">Filter by Student</label>
+                        <select name="studentId" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="">All Students</option>
+                            @foreach (var s in Model.Students)
+                            {
+                                <option value="@s.Id" selected="@(Model.SelectedStudentId == s.Id)">
+                                    @s.FullName (@s.RegistrationNumber)
+                                </option>
+                            }
+                        </select>
+                    </div>
+                    @if (Model.SelectedStudentId.HasValue)
+                    {
+                        <div class="col-auto">
+                            <a asp-action="Payments" class="btn btn-sm btn-outline-secondary">Clear Filter</a>
+                        </div>
+                    }
+                </form>
+            </div>
+        </div>
+    }
+
+    @* ── Receipts Table ──────────────────────────────────────────────── *@
     <div class="card border-0 shadow-sm">
         <div class="card-body">
-            <h2 class="h5 mb-3">Receipts <span class="badge bg-secondary ms-1">@Model.Payments.Count</span></h2>
+            <h2 class="h5 mb-3">
+                @(Model.Students.Count > 0 ? "All Receipts" : "My Receipts")
+                <span class="badge bg-secondary ms-1">@Model.Payments.Count</span>
+            </h2>
 
             @if (Model.Payments.Count == 0)
             {
@@ -43,15 +99,16 @@ else
             else
             {
                 <div class="table-responsive">
-                    <table class="table table-hover mb-0">
+                    <table class="table table-hover align-middle mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th>Student</th>
-                                <th>Fee Type</th>
+                                @if (Model.Students.Count > 0) { <th>Student</th> }
+                                <th>Description</th>
                                 <th>Amount</th>
                                 <th>Due Date</th>
-                                <th>Paid At</th>
                                 <th>Status</th>
+                                <th>Confirmed</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -59,18 +116,83 @@ else
                             {
                                 var badgeCls = r.Status switch
                                 {
-                                    "Paid" => "bg-success",
-                                    "Pending" => "bg-warning text-dark",
-                                    "Overdue" => "bg-danger",
-                                    _ => "bg-secondary"
+                                    "Paid"      => "bg-success",
+                                    "Pending"   => "bg-warning text-dark",
+                                    "Submitted" => "bg-info text-dark",
+                                    "Cancelled" => "bg-secondary",
+                                    _           => "bg-secondary"
                                 };
                                 <tr>
-                                    <td>@r.StudentName</td>
-                                    <td>@r.FeeType</td>
+                                    @if (Model.Students.Count > 0)
+                                    {
+                                        <td>
+                                            <div class="fw-semibold">@r.StudentName</div>
+                                            <small class="text-muted">@r.RegistrationNumber</small>
+                                        </td>
+                                    }
+                                    <td>
+                                        @r.FeeType
+                                        @if (!string.IsNullOrWhiteSpace(r.ProofOfPaymentPath))
+                                        {
+                                            <br /><small class="text-muted">Proof: @r.ProofOfPaymentPath</small>
+                                        }
+                                    </td>
                                     <td class="fw-semibold">@r.Amount.ToString("N2")</td>
                                     <td>@r.DueDate.ToString("dd MMM yyyy")</td>
-                                    <td>@(r.PaidDate?.ToString("dd MMM yyyy") ?? "–")</td>
                                     <td><span class="badge @badgeCls">@r.Status</span></td>
+                                    <td>@(r.PaidDate?.ToString("dd MMM yyyy") ?? "–")</td>
+                                    <td>
+                                        @* Admin actions: Confirm (Pending/Submitted) or Cancel (not Paid/Cancelled) *@
+                                        @if (Model.Students.Count > 0)
+                                        {
+                                            @if (r.Status is "Pending" or "Submitted")
+                                            {
+                                                <form method="post" asp-action="ConfirmPayment" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="receiptId" value="@r.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-success me-1"
+                                                            onclick="return confirm('Mark this receipt as Paid?')">
+                                                        Confirm Paid
+                                                    </button>
+                                                </form>
+                                            }
+                                            @if (r.Status is not ("Paid" or "Cancelled"))
+                                            {
+                                                <form method="post" asp-action="CancelPayment" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="receiptId" value="@r.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                            onclick="return confirm('Cancel this receipt?')">
+                                                        Cancel
+                                                    </button>
+                                                </form>
+                                            }
+                                        }
+                                        @* Student action: Submit proof when Pending *@
+                                        @if (Model.Students.Count == 0 && r.Status == "Pending")
+                                        {
+                                            <button type="button" class="btn btn-sm btn-primary"
+                                                    data-bs-toggle="collapse"
+                                                    data-bs-target="#proof-@r.Id">
+                                                Submit Proof
+                                            </button>
+                                            <div class="collapse mt-2" id="proof-@r.Id">
+                                                <form method="post" asp-action="SubmitProof">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="receiptId" value="@r.Id" />
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="text" name="proofNote" class="form-control"
+                                                               placeholder="Transaction ID or reference note" required />
+                                                        <button type="submit" class="btn btn-success">Submit</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        }
+                                        @if (r.Status is "Paid" or "Cancelled")
+                                        {
+                                            <span class="text-muted small">–</span>
+                                        }
+                                    </td>
                                 </tr>
                             }
                         </tbody>
