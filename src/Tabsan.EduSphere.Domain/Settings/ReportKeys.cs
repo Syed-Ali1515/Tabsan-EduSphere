@@ -6,9 +6,12 @@ namespace Tabsan.EduSphere.Domain.Settings;
 /// </summary>
 public static class ReportKeys
 {
-    public const string AttendanceSummary = "attendance_summary";
-    public const string ResultSummary     = "result_summary";
-    public const string GpaReport         = "gpa_report";
-    public const string EnrollmentSummary = "enrollment_summary";
-    public const string SemesterResults   = "semester_results";
+    public const string AttendanceSummary    = "attendance_summary";
+    public const string ResultSummary        = "result_summary";
+    public const string GpaReport            = "gpa_report";
+    public const string EnrollmentSummary    = "enrollment_summary";
+    public const string SemesterResults      = "semester_results";
+    public const string StudentTranscript    = "student_transcript";
+    public const string LowAttendanceWarning = "low_attendance_warning";
+    public const string FypStatus            = "fyp_status";
 }

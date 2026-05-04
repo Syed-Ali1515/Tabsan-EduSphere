@@ -84,6 +84,12 @@ public interface IEduApiClient
     Task<byte[]> ExportResultSummaryAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
     Task<byte[]> ExportGpaReportAsync(Guid? departmentId, Guid? programId, CancellationToken ct);
 
+    // Stage 4.2: Additional Reports
+    Task<TranscriptWebModel?> GetStudentTranscriptReportAsync(Guid studentProfileId, CancellationToken ct);
+    Task<LowAttendanceWebModel?> GetLowAttendanceReportAsync(decimal threshold, Guid? departmentId, Guid? courseOfferingId, CancellationToken ct);
+    Task<FypStatusWebModel?> GetFypStatusReportAsync(Guid? departmentId, string? status, CancellationToken ct);
+    Task<byte[]> ExportStudentTranscriptAsync(Guid studentProfileId, CancellationToken ct);
+
     // Notifications
     Task<List<NotificationItem>> GetNotificationsAsync(CancellationToken ct);
     Task<int> GetUnreadNotificationCountAsync(CancellationToken ct);
@@ -1649,6 +1655,97 @@ public class EduApiClient : IEduApiClient
         return GetBytesAsync($"api/v1/reports/gpa-report/export{qs}", ct);
     }
 
+    // ── Stage 4.2: Additional Report Proxy Methods ─────────────────────────────
+
+    public async Task<TranscriptWebModel?> GetStudentTranscriptReportAsync(
+        Guid studentProfileId, CancellationToken ct)
+    {
+        var raw = await GetAsync<TranscriptApiDto>(
+            $"api/v1/reports/student-transcript?studentProfileId={studentProfileId}", ct);
+        if (raw is null) return null;
+        return new TranscriptWebModel
+        {
+            StudentProfileId   = raw.StudentProfileId,
+            RegistrationNumber = raw.RegistrationNumber ?? "",
+            StudentName        = raw.StudentName ?? "",
+            ProgramName        = raw.ProgramName ?? "",
+            DepartmentName     = raw.DepartmentName ?? "",
+            Cgpa               = raw.Cgpa,
+            GeneratedAt        = raw.GeneratedAt,
+            Rows = raw.Rows?.Select(r => new TranscriptRowItem
+            {
+                CourseCode    = r.CourseCode ?? "",
+                CourseTitle   = r.CourseTitle ?? "",
+                SemesterName  = r.SemesterName ?? "",
+                ResultType    = r.ResultType ?? "",
+                MarksObtained = r.MarksObtained,
+                MaxMarks      = r.MaxMarks,
+                Percentage    = r.Percentage,
+                GradePoint    = r.GradePoint,
+                PublishedAt   = r.PublishedAt
+            }).ToList() ?? new()
+        };
+    }
+
+    public async Task<LowAttendanceWebModel?> GetLowAttendanceReportAsync(
+        decimal threshold, Guid? departmentId, Guid? courseOfferingId, CancellationToken ct)
+    {
+        var parts = new List<string> { $"threshold={threshold}" };
+        if (departmentId.HasValue)     parts.Add($"departmentId={departmentId.Value}");
+        if (courseOfferingId.HasValue) parts.Add($"courseOfferingId={courseOfferingId.Value}");
+        var raw = await GetAsync<LowAttendanceApiDto>(
+            $"api/v1/reports/low-attendance?{string.Join("&", parts)}", ct);
+        if (raw is null) return null;
+        return new LowAttendanceWebModel
+        {
+            ThresholdPercent    = raw.ThresholdPercent,
+            TotalStudentsAtRisk = raw.TotalStudentsAtRisk,
+            GeneratedAt         = raw.GeneratedAt,
+            Rows = raw.Rows?.Select(r => new LowAttendanceRowItem
+            {
+                RegistrationNumber   = r.RegistrationNumber ?? "",
+                StudentName          = r.StudentName ?? "",
+                CourseCode           = r.CourseCode ?? "",
+                CourseTitle          = r.CourseTitle ?? "",
+                SemesterName         = r.SemesterName ?? "",
+                DepartmentName       = r.DepartmentName ?? "",
+                TotalSessions        = r.TotalSessions,
+                AttendedSessions     = r.AttendedSessions,
+                AttendancePercentage = r.AttendancePercentage
+            }).ToList() ?? new()
+        };
+    }
+
+    public async Task<FypStatusWebModel?> GetFypStatusReportAsync(
+        Guid? departmentId, string? status, CancellationToken ct)
+    {
+        var parts = new List<string>();
+        if (departmentId.HasValue)         parts.Add($"departmentId={departmentId.Value}");
+        if (!string.IsNullOrEmpty(status)) parts.Add($"status={Uri.EscapeDataString(status)}");
+        var qs = parts.Any() ? "?" + string.Join("&", parts) : "";
+        var raw = await GetAsync<FypStatusApiDto>($"api/v1/reports/fyp-status{qs}", ct);
+        if (raw is null) return null;
+        return new FypStatusWebModel
+        {
+            TotalProjects = raw.TotalProjects,
+            GeneratedAt   = raw.GeneratedAt,
+            Rows = raw.Rows?.Select(r => new FypStatusRowItem
+            {
+                Title              = r.Title ?? "",
+                StudentName        = r.StudentName ?? "",
+                RegistrationNumber = r.RegistrationNumber ?? "",
+                DepartmentName     = r.DepartmentName ?? "",
+                SupervisorName     = r.SupervisorName,
+                Status             = r.Status ?? "",
+                ProposedAt         = r.ProposedAt,
+                MeetingCount       = r.MeetingCount
+            }).ToList() ?? new()
+        };
+    }
+
+    public Task<byte[]> ExportStudentTranscriptAsync(Guid studentProfileId, CancellationToken ct)
+        => GetBytesAsync($"api/v1/reports/student-transcript/export?studentProfileId={studentProfileId}", ct);
+
     // Private API DTOs for Phase 12
     private sealed class ReportCatalogApiDto
     {
@@ -1747,6 +1844,67 @@ public class EduApiClient : IEduApiClient
         public decimal MarksObtained      { get; set; }
         public decimal MaxMarks           { get; set; }
         public decimal Percentage         { get; set; }
+    }
+
+    // Stage 4.2 private DTOs
+    private sealed class TranscriptApiDto
+    {
+        public Guid    StudentProfileId   { get; set; }
+        public string? RegistrationNumber { get; set; }
+        public string? StudentName        { get; set; }
+        public string? ProgramName        { get; set; }
+        public string? DepartmentName     { get; set; }
+        public decimal Cgpa               { get; set; }
+        public DateTime GeneratedAt       { get; set; }
+        public List<TranscriptRowApiDto>? Rows { get; set; }
+    }
+    private sealed class TranscriptRowApiDto
+    {
+        public string?   CourseCode    { get; set; }
+        public string?   CourseTitle   { get; set; }
+        public string?   SemesterName  { get; set; }
+        public string?   ResultType    { get; set; }
+        public decimal   MarksObtained { get; set; }
+        public decimal   MaxMarks      { get; set; }
+        public decimal   Percentage    { get; set; }
+        public decimal?  GradePoint    { get; set; }
+        public DateTime? PublishedAt   { get; set; }
+    }
+    private sealed class LowAttendanceApiDto
+    {
+        public decimal  ThresholdPercent    { get; set; }
+        public int      TotalStudentsAtRisk { get; set; }
+        public DateTime GeneratedAt         { get; set; }
+        public List<LowAttendanceRowApiDto>? Rows { get; set; }
+    }
+    private sealed class LowAttendanceRowApiDto
+    {
+        public string? RegistrationNumber   { get; set; }
+        public string? StudentName          { get; set; }
+        public string? CourseCode           { get; set; }
+        public string? CourseTitle          { get; set; }
+        public string? SemesterName         { get; set; }
+        public string? DepartmentName       { get; set; }
+        public int     TotalSessions        { get; set; }
+        public int     AttendedSessions     { get; set; }
+        public decimal AttendancePercentage { get; set; }
+    }
+    private sealed class FypStatusApiDto
+    {
+        public int      TotalProjects { get; set; }
+        public DateTime GeneratedAt   { get; set; }
+        public List<FypStatusRowApiDto>? Rows { get; set; }
+    }
+    private sealed class FypStatusRowApiDto
+    {
+        public string?   Title              { get; set; }
+        public string?   StudentName        { get; set; }
+        public string?   RegistrationNumber { get; set; }
+        public string?   DepartmentName     { get; set; }
+        public string?   SupervisorName     { get; set; }
+        public string?   Status             { get; set; }
+        public DateTime  ProposedAt         { get; set; }
+        public int       MeetingCount       { get; set; }
     }
 
     // ── Portal / Dashboard Settings ───────────────────────────────────────────

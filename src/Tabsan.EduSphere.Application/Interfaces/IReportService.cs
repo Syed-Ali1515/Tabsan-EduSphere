@@ -24,4 +24,12 @@ public interface IReportService
 
     /// <summary>Returns an Excel workbook (.xlsx) byte array for the GPA report.</summary>
     Task<byte[]> ExportGpaReportExcelAsync(GpaReportRequest request, CancellationToken ct = default);
+
+    // ── Stage 4.2: Additional reports ─────────────────────────────────────────
+    Task<TranscriptReportResponse?>    GetStudentTranscriptAsync(TranscriptRequest request, CancellationToken ct = default);
+    Task<LowAttendanceReportResponse>  GetLowAttendanceWarningAsync(LowAttendanceRequest request, CancellationToken ct = default);
+    Task<FypStatusReportResponse>      GetFypStatusReportAsync(FypStatusRequest request, CancellationToken ct = default);
+
+    /// <summary>Returns an Excel workbook (.xlsx) byte array for the student transcript.</summary>
+    Task<byte[]> ExportTranscriptExcelAsync(TranscriptRequest request, CancellationToken ct = default);
 }

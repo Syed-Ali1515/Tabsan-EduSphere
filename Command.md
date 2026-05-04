@@ -19,13 +19,17 @@ Also update this file with:
 - next steps
 - pending extras
 
+**Code quality rules (enforced from Phase 5 onward):**
+- Add a `// Final-Touches Phase X Stage X.X — <description>` comment above every block of code added or changed for that phase.
+- Update `Docs/Function-List.md` with a new `## Final-Touches Phase X` section listing all new/modified functions, their purpose, and file location after every completed phase.
+
 ---
 
 ## Current Execution Pointer
 - Plan Source: Project startup Docs/Final-Touches.md
-- Active Phase: Phase 4 - Reporting and Export Completion
-- Active Stage: Stage 4.2 - Add Additional Reports
-- Status: Ready to Start
+- Active Phase: Phase 6 (next phase)
+- Active Stage: All Phase 5 stages complete
+- Status: Phase 5 Complete ✅
 - Last Updated: 2026-05-04
 
 ## Completed Work
@@ -35,9 +39,11 @@ Also update this file with:
 - Phase 3 Stage 3.2: Data entry workflows for Assignments, Attendance, Results, Quizzes, FYP (create/publish/delete, grade submissions, bulk mark attendance, propose/approve/reject FYP)
 - Phase 3 Stage 3.3: Result-driven promotion — Promote column in Results table, "Promote to next semester" checkbox in Enter Result modal (Final type), standalone PromoteStudentFromResult action
 - Phase 4 Stage 4.1: Report Center fixes — key mismatch resolved (DB hyphen vs switch underscore), static sidebar Report Center link added, Semester Results report full chain, 3 Excel export Portal proxy actions + EduApiClient methods, DB seeds updated
+- Phase 4 Stage 4.2: 3 new reports — Student Transcript (with Excel export), Low Attendance Warning, FYP Status Report; all 6 infrastructure layers implemented; 3 Razor views; ReportCenter.cshtml switch; DatabaseSeeder + ReportKeys updated; build 0 errors
+- Phase 5: Settings Pages — theme persistence fixed in _Layout.cshtml (data-theme on html tag, session-cached API call); 5 new themes added (Steel Blue, Forest Green, Amber Gold, Warm Copper, Indigo Dusk); success/error alert styling improved in ThemeSettings, ReportSettings, ModuleSettings; all settings save actions verified working; build 0 errors
 
 ## Next Steps
-- Phase 4 Stage 4.2: Add additional reports as required by PRD scope and current modules
+- Phase 6 (to be determined from Final-Touches.md)
 
 ## Pending Extra Tasks (Cross-Phase)
 - Keep Report Center menu visible by role and working links.

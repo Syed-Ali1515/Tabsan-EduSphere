@@ -157,6 +157,70 @@ public sealed class ReportController : ControllerBase
         return Ok(result);
     }
 
+    // ── Stage 4.2: Student Transcript ─────────────────────────────────────────
+
+    /// <summary>Returns all published results for a single student (transcript).</summary>
+    [HttpGet("student-transcript")]
+    [Authorize]
+    public async Task<IActionResult> GetStudentTranscript(
+        [FromQuery] Guid studentProfileId,
+        CancellationToken ct)
+    {
+        if (studentProfileId == Guid.Empty)
+            return BadRequest("studentProfileId is required.");
+
+        var request = new TranscriptRequest(studentProfileId);
+        var result = await _reports.GetStudentTranscriptAsync(request, ct);
+        if (result is null) return NotFound("Student not found.");
+        return Ok(result);
+    }
+
+    /// <summary>Downloads student transcript as an Excel file.</summary>
+    [HttpGet("student-transcript/export")]
+    [Authorize]
+    public async Task<IActionResult> ExportStudentTranscript(
+        [FromQuery] Guid studentProfileId,
+        CancellationToken ct)
+    {
+        if (studentProfileId == Guid.Empty)
+            return BadRequest("studentProfileId is required.");
+
+        var request = new TranscriptRequest(studentProfileId);
+        var bytes = await _reports.ExportTranscriptExcelAsync(request, ct);
+        return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "student-transcript.xlsx");
+    }
+
+    // ── Stage 4.2: Low Attendance Warning ─────────────────────────────────────
+
+    /// <summary>Returns students whose attendance is below the given threshold.</summary>
+    [HttpGet("low-attendance")]
+    [Authorize(Policy = "Faculty")]
+    public async Task<IActionResult> GetLowAttendanceWarning(
+        [FromQuery] decimal threshold = 75m,
+        [FromQuery] Guid? departmentId = null,
+        [FromQuery] Guid? courseOfferingId = null,
+        CancellationToken ct = default)
+    {
+        var request = new LowAttendanceRequest(threshold, departmentId, courseOfferingId);
+        var result = await _reports.GetLowAttendanceWarningAsync(request, ct);
+        return Ok(result);
+    }
+
+    // ── Stage 4.2: FYP Status Report ──────────────────────────────────────────
+
+    /// <summary>Returns all FYP project rows, optionally filtered by department and status.</summary>
+    [HttpGet("fyp-status")]
+    [Authorize(Policy = "Faculty")]
+    public async Task<IActionResult> GetFypStatusReport(
+        [FromQuery] Guid? departmentId,
+        [FromQuery] string? status,
+        CancellationToken ct)
+    {
+        var request = new FypStatusRequest(departmentId, status);
+        var result = await _reports.GetFypStatusReportAsync(request, ct);
+        return Ok(result);
+    }
+
     // ── Private helpers ────────────────────────────────────────────────────────
 
     private string? GetCurrentUserRole() =>

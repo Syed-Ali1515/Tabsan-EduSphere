@@ -2263,3 +2263,97 @@
 | `RejectFypProject(id, remarks, departmentId, ct)` | POST — rejects FYP project with remarks. Admin. | Web/Controllers/PortalController.cs |
 | PortalController.DashboardSettings() [POST] | Accepts branding form and calls SavePortalBrandingAsync; redirects with TempData message. | Web/Controllers/PortalController.cs |
 | Branding cache block in _Layout | Loads portal branding from API; caches in session (PortalBrandingCache); uses cache on API failure. | Web/Views/Shared/_Layout.cshtml |
+
+---
+
+## Final-Touches Phase 4 — Report Center & New Reports (Stages 4.1 + 4.2)
+
+### API — ReportController (Phase 4 Final-Touches additions)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GET /api/v1/reports/semester-results` | Returns semester results report data filtered by semesterId + optional departmentId. | API/Controllers/ReportController.cs |
+| `GET /api/v1/reports/semester-results/export` | Streams an Excel (.xlsx) of semester results. | API/Controllers/ReportController.cs |
+| `GET /api/v1/reports/student-transcript` | Returns full academic transcript for a given studentProfileId. | API/Controllers/ReportController.cs |
+| `GET /api/v1/reports/student-transcript/export` | Streams Excel transcript file. | API/Controllers/ReportController.cs |
+| `GET /api/v1/reports/low-attendance` | Returns students below an attendance threshold, with optional department/course filters. | API/Controllers/ReportController.cs |
+| `GET /api/v1/reports/fyp-status` | Returns FYP project list filtered by department and/or status. | API/Controllers/ReportController.cs |
+
+### Application — IReportService (Phase 4 additions)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetSemesterResultsAsync(semesterId, departmentId?, ct)` | Aggregates semester result rows from repository. | Application/Interfaces/IReportService.cs |
+| `ExportSemesterResultsExcelAsync(semesterId, departmentId?, ct)` | Builds ClosedXML workbook for semester results. | Application/Interfaces/IReportService.cs |
+| `GetStudentTranscriptAsync(studentProfileId, ct)` | Returns full academic transcript rows per student. | Application/Interfaces/IReportService.cs |
+| `ExportTranscriptExcelAsync(studentProfileId, ct)` | Builds ClosedXML workbook for student transcript. | Application/Interfaces/IReportService.cs |
+| `GetLowAttendanceWarningAsync(threshold, departmentId?, courseOfferingId?, ct)` | Returns students whose attendance % is below the threshold. | Application/Interfaces/IReportService.cs |
+| `GetFypStatusReportAsync(departmentId?, status?, ct)` | Returns FYP projects filtered by department and status. | Application/Interfaces/IReportService.cs |
+
+### Domain — IReportRepository (Phase 4 additions)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetSemesterResultsDataAsync(semesterId, departmentId?, ct)` | Queries EF Core for semester result raw rows. | Domain/Interfaces/IReportRepository.cs |
+| `GetTranscriptDataAsync(studentProfileId, ct)` | Queries EF Core for all result/grade records for a student. | Domain/Interfaces/IReportRepository.cs |
+| `GetLowAttendanceDataAsync(threshold, departmentId?, courseOfferingId?, ct)` | Queries EF Core for students below attendance threshold. | Domain/Interfaces/IReportRepository.cs |
+| `GetFypStatusDataAsync(departmentId?, status?, ct)` | Queries EF Core for FYP projects filtered by department/status. | Domain/Interfaces/IReportRepository.cs |
+
+### Web — PortalController (Phase 4 Final-Touches additions)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `ReportCenter(ct)` | GET — loads all visible report definitions for the catalog landing page. | Web/Controllers/PortalController.cs |
+| `ReportSemesterResults(semesterId?, departmentId?, ct)` | GET — loads semester results report page with filters. | Web/Controllers/PortalController.cs |
+| `ExportSemesterResults(semesterId, departmentId?, ct)` | GET — proxies Excel export stream from API. | Web/Controllers/PortalController.cs |
+| `ExportAttendanceSummary(...)` | GET — proxies attendance summary Excel export. | Web/Controllers/PortalController.cs |
+| `ExportResultSummary(...)` | GET — proxies result summary Excel export. | Web/Controllers/PortalController.cs |
+| `ExportGpaReport(...)` | GET — proxies GPA report Excel export. | Web/Controllers/PortalController.cs |
+| `ReportTranscript(studentProfileId?, ct)` | GET — loads student transcript report page with student lookup. | Web/Controllers/PortalController.cs |
+| `ExportStudentTranscript(studentProfileId, ct)` | GET — proxies student transcript Excel export. | Web/Controllers/PortalController.cs |
+| `ReportLowAttendance(threshold, departmentId?, courseOfferingId?, ct)` | GET — loads low attendance warning report with filters. | Web/Controllers/PortalController.cs |
+| `ReportFypStatus(departmentId?, status?, ct)` | GET — loads FYP status report with department/status filters. | Web/Controllers/PortalController.cs |
+
+### Web — EduApiClient (Phase 4 Final-Touches additions)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetSemesterResultsReportAsync(semesterId, departmentId?, ct)` | Calls GET /api/v1/reports/semester-results. | Web/Services/EduApiClient.cs |
+| `GetStudentTranscriptReportAsync(studentProfileId, ct)` | Calls GET /api/v1/reports/student-transcript. | Web/Services/EduApiClient.cs |
+| `ExportStudentTranscriptAsync(studentProfileId, ct)` | Calls GET /api/v1/reports/student-transcript/export; returns `byte[]`. | Web/Services/EduApiClient.cs |
+| `GetLowAttendanceReportAsync(threshold, departmentId?, courseOfferingId?, ct)` | Calls GET /api/v1/reports/low-attendance. | Web/Services/EduApiClient.cs |
+| `GetFypStatusReportAsync(departmentId?, status?, ct)` | Calls GET /api/v1/reports/fyp-status. | Web/Services/EduApiClient.cs |
+
+---
+
+## Final-Touches Phase 5 — Settings Pages Functional Save Actions
+
+### Web — _Layout.cshtml (Phase 5 additions)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| Theme load + `data-theme` block | On every page load, fetches current user's theme key from `GET /api/v1/theme` (session-cached as `CurrentThemeCache`). Sets `data-theme` attribute on `<html>` element so CSS variables apply globally. | Web/Views/Shared/_Layout.cshtml |
+
+### Web — PortalViewModels (Phase 5 additions)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `ThemeOption` (5 new entries) | Added: Steel Blue, Forest Green, Amber Gold, Warm Copper, Indigo Dusk. Total themes: 20. | Web/Models/Portal/PortalViewModels.cs |
+
+### Web — CSS (Phase 5 additions)
+
+| Theme Key | Description | Location |
+|---|---|---|
+| `steel_blue` | Blue-navy sidebar, light blue card/body. | wwwroot/css/site.css |
+| `forest_green` | Deep green sidebar, soft green body. | wwwroot/css/site.css |
+| `amber_gold` | Brown-amber sidebar, warm yellow-tinted body. | wwwroot/css/site.css |
+| `warm_copper` | Dark copper-red sidebar, soft orange body. | wwwroot/css/site.css |
+| `indigo_dusk` | Deep indigo sidebar, pale violet body. | wwwroot/css/site.css |
+
+### Web — Settings Views (Phase 5 fixes)
+
+| View | Change | Location |
+|---|---|---|
+| `ThemeSettings.cshtml` | Alert feedback upgraded from `alert-info` to contextual `alert-success`/`alert-danger` with Bootstrap Icons. | Web/Views/Portal/ThemeSettings.cshtml |
+| `ReportSettings.cshtml` | Same alert feedback upgrade. | Web/Views/Portal/ReportSettings.cshtml |
+| `ModuleSettings.cshtml` | Same alert feedback upgrade. | Web/Views/Portal/ModuleSettings.cshtml |

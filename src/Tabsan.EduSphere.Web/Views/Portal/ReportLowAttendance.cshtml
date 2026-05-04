@@ -1,0 +1,108 @@
+@model Tabsan.EduSphere.Web.Models.Portal.ReportLowAttendancePageModel
+@{
+    ViewData["Title"] = "Low Attendance Warning";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex align-items-center mb-4">
+        <a asp-action="ReportCenter" asp-controller="Portal" class="btn btn-sm btn-outline-secondary me-3"><i class="bi bi-arrow-left"></i></a>
+        <div>
+            <h2 class="mb-0"><i class="bi bi-exclamation-triangle me-2 text-warning"></i>Low Attendance Warning</h2>
+            <small class="text-muted">Students below the attendance threshold</small>
+        </div>
+    </div>
+
+    @if (!Model.IsConnected)
+    {
+        <div class="alert alert-warning"><i class="bi bi-wifi-off me-2"></i>Not connected to API.</div>
+    }
+    else
+    {
+        if (!string.IsNullOrEmpty(Model.Message))
+        {
+            <div class="alert alert-danger">@Model.Message</div>
+        }
+
+        <form method="get" class="card shadow-sm border-0 mb-4">
+            <div class="card-body p-3">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-2">
+                        <label class="form-label small mb-1">Threshold (%)</label>
+                        <input type="number" name="threshold" class="form-control form-control-sm"
+                               value="@Model.Threshold" min="1" max="100" step="1" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small mb-1">Department</label>
+                        <select name="departmentId" class="form-select form-select-sm">
+                            <option value="">All Departments</option>
+                            @foreach (var d in Model.Departments)
+                            {
+                                <option value="@d.Id" selected="@(Model.DepartmentId == d.Id)">@d.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small mb-1">Course</label>
+                        <select name="courseOfferingId" class="form-select form-select-sm">
+                            <option value="">All Courses</option>
+                            @foreach (var c in Model.CourseOfferings)
+                            {
+                                <option value="@c.Id" selected="@(Model.CourseOfferingId == c.Id)">@c.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary btn-sm w-100"><i class="bi bi-funnel me-1"></i>Filter</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        @if (Model.Report is not null)
+        {
+            var r = Model.Report;
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="text-muted small">
+                    <strong class="text-danger">@r.TotalStudentsAtRisk</strong> student(s) below @r.ThresholdPercent%
+                    &mdash; generated @r.GeneratedAt.ToString("dd MMM yyyy, HH:mm")
+                </span>
+            </div>
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Reg. No.</th>
+                                    <th>Student</th>
+                                    <th>Course</th>
+                                    <th>Semester</th>
+                                    <th>Department</th>
+                                    <th class="text-center">Sessions</th>
+                                    <th class="text-center">Attended</th>
+                                    <th class="text-center">Attendance %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var row in r.Rows)
+                                {
+                                    <tr class="@(row.AttendancePercentage < 50 ? "table-danger" : "table-warning")">
+                                        <td>@row.RegistrationNumber</td>
+                                        <td>@row.StudentName</td>
+                                        <td>@row.CourseCode — @row.CourseTitle</td>
+                                        <td>@row.SemesterName</td>
+                                        <td>@row.DepartmentName</td>
+                                        <td class="text-center">@row.TotalSessions</td>
+                                        <td class="text-center">@row.AttendedSessions</td>
+                                        <td class="text-center fw-bold">@row.AttendancePercentage.ToString("F1")%</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>

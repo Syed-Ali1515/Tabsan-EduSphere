@@ -358,11 +358,14 @@ public static class DatabaseSeeder
 
         var definitions = new[]
         {
-            (ReportKeys.AttendanceSummary, "Attendance Summary",   "Per-student attendance percentage per course offering, filterable by semester and department."),
-            (ReportKeys.ResultSummary,     "Result Summary",       "All published result entries with marks and percentage, filterable by semester, offering, or student."),
-            (ReportKeys.GpaReport,         "GPA & CGPA Report",    "Per-student current semester GPA and cumulative CGPA, filterable by department and program."),
-            (ReportKeys.EnrollmentSummary, "Enrollment Summary",   "Course offering seat utilisation showing enrolled count versus maximum capacity."),
-            (ReportKeys.SemesterResults,   "Semester Results",     "Full published result set for a selected semester with optional department filter."),
+            (ReportKeys.AttendanceSummary,    "Attendance Summary",        "Per-student attendance percentage per course offering, filterable by semester and department."),
+            (ReportKeys.ResultSummary,        "Result Summary",            "All published result entries with marks and percentage, filterable by semester, offering, or student."),
+            (ReportKeys.GpaReport,            "GPA & CGPA Report",         "Per-student current semester GPA and cumulative CGPA, filterable by department and program."),
+            (ReportKeys.EnrollmentSummary,    "Enrollment Summary",        "Course offering seat utilisation showing enrolled count versus maximum capacity."),
+            (ReportKeys.SemesterResults,      "Semester Results",          "Full published result set for a selected semester with optional department filter."),
+            (ReportKeys.StudentTranscript,    "Student Transcript",        "Full academic record for a selected student including all result components."),
+            (ReportKeys.LowAttendanceWarning, "Low Attendance Warning",    "Students whose attendance falls below a configurable threshold."),
+            (ReportKeys.FypStatus,            "FYP Status Report",         "Final Year Project status overview filterable by department and project status."),
         };
 
         foreach (var (key, name, purpose) in definitions)
@@ -376,6 +379,9 @@ public static class DatabaseSeeder
             db.Set<ReportRoleAssignment>().Add(new ReportRoleAssignment(report.Id, "SuperAdmin"));
             db.Set<ReportRoleAssignment>().Add(new ReportRoleAssignment(report.Id, "Admin"));
             db.Set<ReportRoleAssignment>().Add(new ReportRoleAssignment(report.Id, "Faculty"));
+            // Student Transcript is also accessible by students
+            if (key == ReportKeys.StudentTranscript)
+                db.Set<ReportRoleAssignment>().Add(new ReportRoleAssignment(report.Id, "Student"));
         }
     }
 }

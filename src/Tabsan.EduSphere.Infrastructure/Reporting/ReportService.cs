@@ -157,6 +157,71 @@ public sealed class ReportService : IReportService
         return BuildExcelBytes("GPA Report", headers, rows);
     }
 
+    // ── Stage 4.2: Student Transcript ─────────────────────────────────────────
+
+    public async Task<TranscriptReportResponse?> GetStudentTranscriptAsync(
+        TranscriptRequest request, CancellationToken ct = default)
+    {
+        var raw = await _repo.GetTranscriptDataAsync(request.StudentProfileId, ct);
+        if (raw is null) return null;
+
+        var rows = raw.Rows.Select(r => new TranscriptRow(
+            r.CourseCode, r.CourseTitle, r.SemesterName, r.ResultType,
+            r.MarksObtained, r.MaxMarks, r.Percentage, r.GradePoint, r.PublishedAt)).ToList();
+
+        return new TranscriptReportResponse(
+            raw.StudentProfileId, raw.RegistrationNumber, raw.StudentName,
+            raw.ProgramName, raw.DepartmentName, raw.Cgpa,
+            rows, DateTime.UtcNow);
+    }
+
+    public async Task<byte[]> ExportTranscriptExcelAsync(
+        TranscriptRequest request, CancellationToken ct = default)
+    {
+        var report = await GetStudentTranscriptAsync(request, ct);
+        if (report is null) return Array.Empty<byte>();
+
+        var headers = new[] { "Course Code", "Course Title", "Semester", "Component", "Marks", "Max Marks", "%", "Grade Point", "Published" };
+        var rows = report.Rows.Select(r => new object[]
+        {
+            r.CourseCode, r.CourseTitle, r.SemesterName, r.ResultType,
+            r.MarksObtained, r.MaxMarks, r.Percentage,
+            r.GradePoint.HasValue ? (object)r.GradePoint.Value : "-",
+            r.PublishedAt.HasValue ? r.PublishedAt.Value.ToString("yyyy-MM-dd") : "-"
+        }).ToList();
+        return BuildExcelBytes($"Transcript_{report.RegistrationNumber}", headers, rows);
+    }
+
+    // ── Stage 4.2: Low Attendance Warning ─────────────────────────────────────
+
+    public async Task<LowAttendanceReportResponse> GetLowAttendanceWarningAsync(
+        LowAttendanceRequest request, CancellationToken ct = default)
+    {
+        var raw = await _repo.GetLowAttendanceDataAsync(
+            request.ThresholdPercent, request.DepartmentId, request.CourseOfferingId, ct);
+
+        var rows = raw.Select(r => new LowAttendanceRow(
+            r.StudentProfileId, r.RegistrationNumber, r.StudentName,
+            r.CourseCode, r.CourseTitle, r.SemesterName, r.DepartmentName,
+            r.TotalSessions, r.AttendedSessions, r.AttendancePercentage)).ToList();
+
+        return new LowAttendanceReportResponse(rows, request.ThresholdPercent, rows.Select(r => r.StudentProfileId).Distinct().Count(), DateTime.UtcNow);
+    }
+
+    // ── Stage 4.2: FYP Status Report ──────────────────────────────────────────
+
+    public async Task<FypStatusReportResponse> GetFypStatusReportAsync(
+        FypStatusRequest request, CancellationToken ct = default)
+    {
+        var raw = await _repo.GetFypStatusDataAsync(request.DepartmentId, request.Status, ct);
+
+        var rows = raw.Select(r => new FypStatusRow(
+            r.ProjectId, r.Title, r.StudentName, r.RegistrationNumber,
+            r.DepartmentName, r.SupervisorName, r.Status, r.ProposedAt, r.MeetingCount)).ToList();
+
+        return new FypStatusReportResponse(rows, rows.Count, DateTime.UtcNow);
+    }
+
     // ── Private Helpers ────────────────────────────────────────────────────────
 
     private static byte[] BuildExcelBytes(string sheetName, string[] headers, IList<object[]> rows)

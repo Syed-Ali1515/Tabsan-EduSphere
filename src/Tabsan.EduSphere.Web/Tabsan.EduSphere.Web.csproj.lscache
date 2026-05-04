@@ -475,10 +475,13 @@ Views/
   ReportAttendance.cshtml
   ReportCenter.cshtml
   ReportEnrollment.cshtml
+  ReportFypStatus.cshtml
   ReportGpa.cshtml
+  ReportLowAttendance.cshtml
   ReportResults.cshtml
   ReportSemesterResults.cshtml
   ReportSettings.cshtml
+  ReportTranscript.cshtml
   ResultCalculation.cshtml
   Results.cshtml
   Rooms.cshtml
@@ -523,10 +526,13 @@ Views/
   ReportAttendance.cshtml
   ReportCenter.cshtml
   ReportEnrollment.cshtml
+  ReportFypStatus.cshtml
   ReportGpa.cshtml
+  ReportLowAttendance.cshtml
   ReportResults.cshtml
   ReportSemesterResults.cshtml
   ReportSettings.cshtml
+  ReportTranscript.cshtml
   ResultCalculation.cshtml
   Results.cshtml
   Rooms.cshtml

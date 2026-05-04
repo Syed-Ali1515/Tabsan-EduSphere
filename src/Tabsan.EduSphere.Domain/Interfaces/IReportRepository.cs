@@ -55,6 +55,30 @@ public interface IReportRepository
         Guid semesterId,
         Guid? departmentId,
         CancellationToken ct = default);
+
+    /// <summary>
+    /// Returns all published results for a single student (transcript), ordered by semester then course.
+    /// </summary>
+    Task<TranscriptReportRepoResult?> GetTranscriptDataAsync(
+        Guid studentProfileId,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// Returns attendance rows where the attendance percentage is below <paramref name="thresholdPercent"/>.
+    /// </summary>
+    Task<IList<LowAttendanceReportRow>> GetLowAttendanceDataAsync(
+        decimal thresholdPercent,
+        Guid? departmentId,
+        Guid? courseOfferingId,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// Returns all FYP project rows, optionally filtered by department or status.
+    /// </summary>
+    Task<IList<FypStatusReportRow>> GetFypStatusDataAsync(
+        Guid? departmentId,
+        string? status,
+        CancellationToken ct = default);
 }
 
 // ── Raw data row types returned by the repository ─────────────────────────────
@@ -104,3 +128,48 @@ public sealed record EnrollmentReportRow(
     string DepartmentName,
     int MaxEnrollment,
     int EnrolledCount);
+
+// ── New row types for Stage 4.2 additional reports ────────────────────────────
+
+public sealed record TranscriptResultRow(
+    string CourseCode,
+    string CourseTitle,
+    string SemesterName,
+    string ResultType,
+    decimal MarksObtained,
+    decimal MaxMarks,
+    decimal Percentage,
+    decimal? GradePoint,
+    DateTime? PublishedAt);
+
+public sealed record TranscriptReportRepoResult(
+    Guid StudentProfileId,
+    string RegistrationNumber,
+    string StudentName,
+    string ProgramName,
+    string DepartmentName,
+    decimal Cgpa,
+    IList<TranscriptResultRow> Rows);
+
+public sealed record LowAttendanceReportRow(
+    Guid StudentProfileId,
+    string RegistrationNumber,
+    string StudentName,
+    string CourseCode,
+    string CourseTitle,
+    string SemesterName,
+    string DepartmentName,
+    int TotalSessions,
+    int AttendedSessions,
+    decimal AttendancePercentage);
+
+public sealed record FypStatusReportRow(
+    Guid ProjectId,
+    string Title,
+    string StudentName,
+    string RegistrationNumber,
+    string DepartmentName,
+    string? SupervisorName,
+    string Status,
+    DateTime ProposedAt,
+    int MeetingCount);

@@ -17,11 +17,14 @@
         </div>
     }
 
+    @* Final-Touches Phase 5 Stage 5.1 — contextual success/danger alert feedback *@
     @if (!string.IsNullOrWhiteSpace(tempMsg))
     {
+        var alertClass = tempMsg!.StartsWith("Error") ? "alert-danger" : "alert-success";
+        var alertIcon  = tempMsg.StartsWith("Error") ? "bi-x-circle-fill" : "bi-check-circle-fill";
         <div class="col-12">
-            <div class="alert alert-info alert-dismissible fade show" role="alert">
-                @tempMsg
+            <div class="alert @alertClass alert-dismissible fade show" role="alert">
+                <i class="bi @alertIcon me-2"></i>@tempMsg
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         </div>

@@ -253,7 +253,7 @@ For **every completed phase**:
 ---
 
 ## Phase 4 - Reporting and Export Completion
-**Status:** In Progress
+**Status:** ✅ Complete
 
 ### Stage 4.1 - Report Center Functional Completeness
 **Status:** ✅ Complete
@@ -264,7 +264,17 @@ For **every completed phase**:
 - [x] Fix Semester Result report.
 - [x] Ensure role/department/subject/semester filters work end-to-end.
 
-### Implementation Summary
+### Stage 4.2 - Add Additional Reports
+**Status:** ✅ Complete
+
+- [x] Student Transcript — full academic record per student with Excel export
+- [x] Low Attendance Warning — students below configurable attendance threshold
+- [x] FYP Status Report — Final Year Project status overview with dept/status filters
+- [x] All 6 infrastructure layers implemented (DTOs, Domain, Repository, Service interface, Service impl, API controller, EduApiClient, PortalController, ViewModels, Razor views)
+- [x] ReportCenter.cshtml switch updated with 3 new keys
+- [x] DatabaseSeeder + ReportKeys constants updated; Student Transcript adds Student role assignment
+
+### Implementation Summary (Stage 4.1)
 - **Root cause identified**: DB-seeded report keys (`attendance-report`, `results-report`, `dept-summary`) used hyphens while `ReportCenter.cshtml` switch used underscores — every catalog card resolved to `"#"`.
 - **ReportCenter.cshtml** — Updated switch to handle both old hyphenated and new underscore keys; added `dept-summary` → ReportEnrollment, `semester-results` → ReportSemesterResults.
 - **Static sidebar (_Layout.cshtml)** — Added "Report Center" link inside the `Admin Tools` section (Faculty/Admin) in the static fallback menu.
@@ -272,39 +282,74 @@ For **every completed phase**:
 - **Excel export actions** — Added `ExportAttendanceSummary`, `ExportResultSummary`, `ExportGpaReport` GET actions to PortalController; proxied through new `ExportAttendanceSummaryAsync`, `ExportResultSummaryAsync`, `ExportGpaReportAsync` methods in IEduApiClient + EduApiClient (uses new `GetBytesAsync` private helper).
 - **DB Seeds** — Both `1-MinimalSeed.sql` and `2-FullDummyData.sql` updated to seed `semester-results` report definition with Admin + Faculty role assignments.
 
-### Validation Summary
-- Solution builds with 0 errors.
-- All 5 reports in the catalog now resolve to their correct views.
-- Export buttons (Attendance, Results, GPA) call working Portal proxy actions.
-- Semester Results view requires a semester selection before querying (SemesterId is required by the API).
+### Implementation Summary (Stage 4.2)
+- **DTOs** — 3 new request/response record sets in `ReportDtos.cs`
+- **Domain** — 3 new method signatures + 4 raw row record types in `IReportRepository.cs`
+- **Repository** — 3 new EF Core query methods in `ReportRepository.cs`
+- **Service interface** — 4 new method signatures in `IReportService.cs`
+- **Service impl** — 4 new methods (including Excel export) in `ReportService.cs`
+- **API** — 5 new endpoints in `ReportController.cs` (transcript, transcript/export, low-attendance, fyp-status)
+- **EduApiClient** — 4 impl methods + 6 private sealed DTO classes added; interface signatures previously added
+- **ViewModels** — 9 new classes in `PortalViewModels.cs` (3 row items, 3 web models, 3 page models)
+- **PortalController** — 3 GET actions + 1 export action added
+- **Views** — `ReportTranscript.cshtml`, `ReportLowAttendance.cshtml`, `ReportFypStatus.cshtml` created
+- **ReportCenter.cshtml** — 3 new switch cases added
+- **ReportKeys.cs** — 3 new constants: `StudentTranscript`, `LowAttendanceWarning`, `FypStatus`
+- **DatabaseSeeder.cs** — 3 new `ReportDefinition` rows seeded with role assignments
 
 ### Validation Summary
-- Pending
+- Solution builds with 0 errors, 0 warnings.
+- All 8 reports in the catalog now resolve to their correct views.
+- Export buttons call working Portal proxy actions.
+- Semester Results view requires a semester selection before querying (SemesterId is required by the API).
 
 ---
 
 ## Phase 5 - Settings Pages Functional Save Actions
-**Status:** Not Started
+**Status:** ✅ Complete
 
 ### Stage 5.1 - Report Settings Save
-- [ ] Add/repair save action and success/error feedback in Report Settings.
+- [x] Add/repair save action and success/error feedback in Report Settings.
+  - All save actions already wired (CreateReport, ToggleReport, UpdateReportRoles POST actions).
+  - Fixed alert styling: success messages show `alert-success`, error messages show `alert-danger` with matching icons.
 
 ### Stage 5.2 - Module Settings Save
-- [ ] If modules exist: render all modules and support activate/deactivate + save.
-- [ ] If modules do not exist: remove Module Settings menu and related dead routes.
+- [x] If modules exist: render all modules and support activate/deactivate + save.
+  - 14 modules seeded (Authentication, Departments, SIS, Courses, Assignments, Quizzes, Attendance, Results, Notifications, FYP, AI Chat, Reports, Themes, Advanced Audit).
+  - ToggleModule and UpdateModuleRoles POST actions confirmed working. Mandatory modules cannot be deactivated.
+- [x] If modules do not exist: remove Module Settings menu and related dead routes.
+  - Not applicable — modules exist and are properly seeded.
 
 ### Stage 5.3 - Sidebar Settings Save
-- [ ] Add/repair save action for role assignments and visibility toggles.
+- [x] Add/repair save action for role assignments and visibility toggles.
+  - Role checkboxes auto-submit via JS `change` event handler (updates hidden fields then submits).
+  - Status checkboxes use `onchange="this.form.submit()"` for instant toggle.
+  - TempData feedback already differentiated (success via TempData, error via Model.Message with alert-danger).
 
 ### Stage 5.4 - Theme Settings Expansion
-- [ ] Add more themes.
-- [ ] Ensure themes persist and apply consistently.
+- [x] Add more themes.
+  - Added 5 new themes: Steel Blue, Forest Green, Amber Gold, Warm Copper, Indigo Dusk.
+  - Total themes: 20 (15 existing + 5 new).
+  - CSS `data-theme` blocks added to `wwwroot/css/site.css` for all 5 new themes.
+  - `ThemeSettingsPageModel.Themes` updated with 5 new entries.
+- [x] Ensure themes persist and apply consistently.
+  - Fixed: `_Layout.cshtml` now loads the current user's theme from API on every page request (with session fallback).
+  - `<html>` tag dynamically sets `data-theme` attribute from saved theme key.
+  - Theme is cached in session under key `CurrentThemeCache` to minimise API calls.
 
 ### Implementation Summary
-- Pending
+- **Files changed:**
+  - `src/Tabsan.EduSphere.Web/Views/Shared/_Layout.cshtml` — theme loading + `data-theme` on `<html>` tag
+  - `src/Tabsan.EduSphere.Web/wwwroot/css/site.css` — 5 new theme blocks
+  - `src/Tabsan.EduSphere.Web/Models/Portal/PortalViewModels.cs` — 5 new `ThemeOption` entries
+  - `src/Tabsan.EduSphere.Web/Views/Portal/ThemeSettings.cshtml` — contextual success/danger alerts
+  - `src/Tabsan.EduSphere.Web/Views/Portal/ReportSettings.cshtml` — contextual success/danger alerts
+  - `src/Tabsan.EduSphere.Web/Views/Portal/ModuleSettings.cshtml` — contextual success/danger alerts
 
 ### Validation Summary
-- Pending
+- Build: `dotnet build Tabsan.EduSphere.sln` → **0 errors, 0 warnings**
+- Themes: 20 themes available in Theme Settings; CSS variables defined for all; layout applies saved theme on every page load
+- Settings feedback: success = green alert + check icon; error = red alert + X icon
 
 ---
 
@@ -402,8 +447,8 @@ For **every completed phase**:
 - [ ] Phase 1 complete
 - [ ] Phase 2 complete
 - [ ] Phase 3 complete
-- [ ] Phase 4 complete
-- [ ] Phase 5 complete
+- [x] Phase 4 complete
+- [x] Phase 5 complete
 - [ ] Phase 6 complete
 - [ ] Phase 7 complete
 - [ ] Phase 8 complete

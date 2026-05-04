@@ -41,7 +41,10 @@
                     "gpa_report"                                => ("bi-graph-up",          Url.Action("ReportGpa",              "Portal")),
                     "enrollment_summary"                        => ("bi-people",            Url.Action("ReportEnrollment",       "Portal")),
                     "dept-summary"       or "department_summary"=> ("bi-building",          Url.Action("ReportEnrollment",       "Portal")),
-                    "semester-results"   or "semester_results"  => ("bi-calendar3",         Url.Action("ReportSemesterResults",  "Portal")),
+                    "semester-results"    or "semester_results"      => ("bi-calendar3",           Url.Action("ReportSemesterResults", "Portal")),
+                    "student_transcript" or "student-transcript" => ("bi-journal-text",       Url.Action("ReportTranscript",      "Portal")),
+                    "low_attendance_warning"                     => ("bi-exclamation-triangle",Url.Action("ReportLowAttendance",   "Portal")),
+                    "fyp_status"         or "fyp-status"         => ("bi-mortarboard",         Url.Action("ReportFypStatus",       "Portal")),
                     _                                           => ("bi-file-earmark-text", "#")
                 };
                 <div class="col-md-6 col-xl-4">

@@ -1478,6 +1478,86 @@ public class PortalController : Controller
         return RedirectToAction(nameof(ReportGpa), new { departmentId, programId });
     }
 
+    // ── Stage 4.2: Additional Reports ─────────────────────────────────────────
+
+    [HttpGet]
+    public async Task<IActionResult> ReportTranscript(Guid? studentProfileId, CancellationToken ct)
+    {
+        ViewData["Title"] = "Student Transcript";
+        var model = new ReportTranscriptPageModel
+        {
+            IsConnected      = _api.IsConnected(),
+            StudentProfileId = studentProfileId
+        };
+        if (!model.IsConnected) return View(model);
+        try
+        {
+            var students = await _api.GetStudentsAsync(null, ct);
+            model.Students = students.Select(s => new LookupItem { Id = s.Id, Name = $"{s.FullName} ({s.RegistrationNumber})" }).ToList();
+            if (studentProfileId.HasValue)
+                model.Report = await _api.GetStudentTranscriptReportAsync(studentProfileId.Value, ct);
+        }
+        catch (Exception ex) { model.Message = ex.Message; }
+        return View(model);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ExportStudentTranscript(Guid studentProfileId, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(ReportTranscript));
+        try
+        {
+            var bytes = await _api.ExportStudentTranscriptAsync(studentProfileId, ct);
+            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "student-transcript.xlsx");
+        }
+        catch (Exception ex) { TempData["PortalMessage"] = $"Export failed: {ex.Message}"; }
+        return RedirectToAction(nameof(ReportTranscript), new { studentProfileId });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ReportLowAttendance(
+        decimal threshold = 75m, Guid? departmentId = null, Guid? courseOfferingId = null, CancellationToken ct = default)
+    {
+        ViewData["Title"] = "Low Attendance Warning";
+        var model = new ReportLowAttendancePageModel
+        {
+            IsConnected      = _api.IsConnected(),
+            Threshold        = threshold,
+            DepartmentId     = departmentId,
+            CourseOfferingId = courseOfferingId
+        };
+        if (!model.IsConnected) return View(model);
+        try
+        {
+            model.Departments     = await _api.GetDepartmentsAsync(ct);
+            model.CourseOfferings = await _api.GetCoursesAsync(departmentId, ct);
+            model.Report = await _api.GetLowAttendanceReportAsync(threshold, departmentId, courseOfferingId, ct);
+        }
+        catch (Exception ex) { model.Message = ex.Message; }
+        return View(model);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ReportFypStatus(
+        Guid? departmentId = null, string? status = null, CancellationToken ct = default)
+    {
+        ViewData["Title"] = "FYP Status Report";
+        var model = new ReportFypStatusPageModel
+        {
+            IsConnected    = _api.IsConnected(),
+            DepartmentId   = departmentId,
+            SelectedStatus = status
+        };
+        if (!model.IsConnected) return View(model);
+        try
+        {
+            model.Departments = await _api.GetDepartmentsAsync(ct);
+            model.Report = await _api.GetFypStatusReportAsync(departmentId, status, ct);
+        }
+        catch (Exception ex) { model.Message = ex.Message; }
+        return View(model);
+    }
+
     // ── Dashboard Settings ────────────────────────────────────────────────────
 
     [HttpGet]

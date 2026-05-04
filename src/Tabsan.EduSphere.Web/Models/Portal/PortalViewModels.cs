@@ -284,6 +284,12 @@ public class ThemeSettingsPageModel
         new() { Key = "cobalt_night",  DisplayName = "Cobalt Night",         PreviewColor = "#1565c0" },
         new() { Key = "olive_grove",   DisplayName = "Olive Grove",          PreviewColor = "#558b2f" },
         new() { Key = "cosmic_violet", DisplayName = "Cosmic Violet",        PreviewColor = "#7b1fa2" },
+        // Final-Touches Phase 5 Stage 5.4 — 5 new themes added below
+        new() { Key = "steel_blue",    DisplayName = "Steel Blue",           PreviewColor = "#2b6cb0" },
+        new() { Key = "forest_green",  DisplayName = "Forest Green",         PreviewColor = "#15803d" },
+        new() { Key = "amber_gold",    DisplayName = "Amber Gold",           PreviewColor = "#b45309" },
+        new() { Key = "warm_copper",   DisplayName = "Warm Copper",          PreviewColor = "#c2410c" },
+        new() { Key = "indigo_dusk",   DisplayName = "Indigo Dusk",          PreviewColor = "#4f46e5" },
     };
 }
 
@@ -924,6 +930,98 @@ public class ReportSemesterResultsPageModel
     public List<LookupItem> Semesters   { get; set; } = new();
     public List<LookupItem> Departments { get; set; } = new();
     public SemesterResultsWebModel? Report { get; set; }
+}
+
+// ── Stage 4.2: Additional Report Web Models ───────────────────────────────────
+
+public class TranscriptRowItem
+{
+    public string    CourseCode    { get; set; } = "";
+    public string    CourseTitle   { get; set; } = "";
+    public string    SemesterName  { get; set; } = "";
+    public string    ResultType    { get; set; } = "";
+    public decimal   MarksObtained { get; set; }
+    public decimal   MaxMarks      { get; set; }
+    public decimal   Percentage    { get; set; }
+    public decimal?  GradePoint    { get; set; }
+    public DateTime? PublishedAt   { get; set; }
+}
+public class TranscriptWebModel
+{
+    public Guid     StudentProfileId   { get; set; }
+    public string   RegistrationNumber { get; set; } = "";
+    public string   StudentName        { get; set; } = "";
+    public string   ProgramName        { get; set; } = "";
+    public string   DepartmentName     { get; set; } = "";
+    public decimal  Cgpa               { get; set; }
+    public DateTime GeneratedAt        { get; set; }
+    public List<TranscriptRowItem> Rows { get; set; } = new();
+}
+public class ReportTranscriptPageModel
+{
+    public bool             IsConnected      { get; set; }
+    public string?          Message          { get; set; }
+    public List<LookupItem> Students         { get; set; } = new();
+    public Guid?            StudentProfileId { get; set; }
+    public TranscriptWebModel? Report        { get; set; }
+}
+
+public class LowAttendanceRowItem
+{
+    public string  RegistrationNumber   { get; set; } = "";
+    public string  StudentName          { get; set; } = "";
+    public string  CourseCode           { get; set; } = "";
+    public string  CourseTitle          { get; set; } = "";
+    public string  SemesterName         { get; set; } = "";
+    public string  DepartmentName       { get; set; } = "";
+    public int     TotalSessions        { get; set; }
+    public int     AttendedSessions     { get; set; }
+    public decimal AttendancePercentage { get; set; }
+}
+public class LowAttendanceWebModel
+{
+    public decimal  ThresholdPercent    { get; set; }
+    public int      TotalStudentsAtRisk { get; set; }
+    public DateTime GeneratedAt         { get; set; }
+    public List<LowAttendanceRowItem> Rows { get; set; } = new();
+}
+public class ReportLowAttendancePageModel
+{
+    public bool             IsConnected      { get; set; }
+    public string?          Message          { get; set; }
+    public List<LookupItem> Departments      { get; set; } = new();
+    public List<LookupItem> CourseOfferings  { get; set; } = new();
+    public decimal          Threshold        { get; set; } = 75m;
+    public Guid?            DepartmentId     { get; set; }
+    public Guid?            CourseOfferingId { get; set; }
+    public LowAttendanceWebModel? Report     { get; set; }
+}
+
+public class FypStatusRowItem
+{
+    public string    Title              { get; set; } = "";
+    public string    StudentName        { get; set; } = "";
+    public string    RegistrationNumber { get; set; } = "";
+    public string    DepartmentName     { get; set; } = "";
+    public string?   SupervisorName     { get; set; }
+    public string    Status             { get; set; } = "";
+    public DateTime  ProposedAt         { get; set; }
+    public int       MeetingCount       { get; set; }
+}
+public class FypStatusWebModel
+{
+    public int      TotalProjects { get; set; }
+    public DateTime GeneratedAt   { get; set; }
+    public List<FypStatusRowItem> Rows { get; set; } = new();
+}
+public class ReportFypStatusPageModel
+{
+    public bool             IsConnected    { get; set; }
+    public string?          Message        { get; set; }
+    public List<LookupItem> Departments    { get; set; } = new();
+    public string?          SelectedStatus { get; set; }
+    public Guid?            DepartmentId   { get; set; }
+    public FypStatusWebModel? Report       { get; set; }
 }
 
 // ── Dashboard Settings ────────────────────────────────────────────────────────

@@ -158,10 +158,33 @@
 
         _ => ("General", 9)
     };
+
+    // ── Final-Touches Phase 5 Stage 5.4 — Theme persistence across all pages ──────────
+    // Fetches current user theme from API on every request; falls back to session cache.
+    // Sets data-theme on the <html> element so CSS variables apply site-wide.
+    const string ThemeCacheKey = "CurrentThemeCache";
+    var currentTheme = "";
+    if (isConnected)
+    {
+        try
+        {
+            var freshTheme = await EduApi.GetCurrentThemeAsync(CancellationToken.None);
+            currentTheme = freshTheme ?? "";
+            Context.Session.SetString(ThemeCacheKey, currentTheme);
+        }
+        catch
+        {
+            currentTheme = Context.Session.GetString(ThemeCacheKey) ?? "";
+        }
+    }
+    else
+    {
+        currentTheme = Context.Session.GetString(ThemeCacheKey) ?? "";
+    }
 }
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" @(string.IsNullOrEmpty(currentTheme) ? "" : Html.Raw($"data-theme=\"{currentTheme}\""))>
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />

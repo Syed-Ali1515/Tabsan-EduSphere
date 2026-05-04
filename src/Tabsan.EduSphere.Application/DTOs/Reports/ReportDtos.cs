@@ -118,3 +118,73 @@ public record SemesterResultsReportResponse(
     IReadOnlyList<SemesterResultsRow> Rows,
     int TotalStudents,
     DateTime GeneratedAt);
+
+// ── Student Transcript ─────────────────────────────────────────────────────────
+
+public record TranscriptRequest(Guid StudentProfileId);
+
+public record TranscriptRow(
+    string CourseCode,
+    string CourseTitle,
+    string SemesterName,
+    string ResultType,
+    decimal MarksObtained,
+    decimal MaxMarks,
+    decimal Percentage,
+    decimal? GradePoint,
+    DateTime? PublishedAt);
+
+public record TranscriptReportResponse(
+    Guid StudentProfileId,
+    string RegistrationNumber,
+    string StudentName,
+    string ProgramName,
+    string DepartmentName,
+    decimal Cgpa,
+    IReadOnlyList<TranscriptRow> Rows,
+    DateTime GeneratedAt);
+
+// ── Low Attendance Warning ──────────────────────────────────────────────────────
+
+public record LowAttendanceRequest(
+    decimal ThresholdPercent,
+    Guid? DepartmentId,
+    Guid? CourseOfferingId);
+
+public record LowAttendanceRow(
+    Guid StudentProfileId,
+    string RegistrationNumber,
+    string StudentName,
+    string CourseCode,
+    string CourseTitle,
+    string SemesterName,
+    string DepartmentName,
+    int TotalSessions,
+    int AttendedSessions,
+    decimal AttendancePercentage);
+
+public record LowAttendanceReportResponse(
+    IReadOnlyList<LowAttendanceRow> Rows,
+    decimal ThresholdPercent,
+    int TotalStudentsAtRisk,
+    DateTime GeneratedAt);
+
+// ── FYP Status Report ──────────────────────────────────────────────────────────
+
+public record FypStatusRequest(Guid? DepartmentId, string? Status);
+
+public record FypStatusRow(
+    Guid ProjectId,
+    string Title,
+    string StudentName,
+    string RegistrationNumber,
+    string DepartmentName,
+    string? SupervisorName,
+    string Status,
+    DateTime ProposedAt,
+    int MeetingCount);
+
+public record FypStatusReportResponse(
+    IReadOnlyList<FypStatusRow> Rows,
+    int TotalProjects,
+    DateTime GeneratedAt);
