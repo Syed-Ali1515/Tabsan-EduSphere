@@ -27,9 +27,9 @@ Also update this file with:
 
 ## Current Execution Pointer
 - Plan Source: Project startup Docs/Final-Touches.md
-- Active Phase: Phase 9 (next phase)
-- Active Stage: All Phase 8 stages complete
-- Status: Phase 8 Complete ✅
+- Active Phase: All Phases Complete
+- Active Stage: N/A
+- Status: Phase 9 Complete ✅ — All phases (1–9) done
 - Last Updated: 2026-05-05
 
 ## Completed Work
@@ -299,4 +299,30 @@ When a phase is completed, update:
 - Final-Touches.md: Marked Phase 8 complete, updated Progress Tracker, Next Phase
 - PRD.md: Bumped to v1.21, added Phase 8 log entry
 - Function-List.md: Added Phase 7 + Phase 8 sections (both were missing)
+- Command.md: Updated execution pointer + this entry
+
+---
+
+### Entry 009 — 2026-05-05 — Phase 9 Complete (Documentation and Script Regeneration)
+**Completed:**
+- Stage 9.1: `1-MinimalSeed.sql` §15 — added 16 missing sidebar menu items (`result_calculation`, `notifications`, `students`, `departments`, `courses`, `assignments`, `attendance`, `results`, `quizzes`, `fyp`, `analytics`, `ai_chat`, `student_lifecycle`, `payments`, `enrollments`, `report_center`, `dashboard_settings`) + role accesses matching DatabaseSeeder.
+- Stage 9.1: `1-MinimalSeed.sql` §17 — replaced 4 old hyphen-key report defs with 8 canonical underscore-key defs matching ReportKeys.cs; added gpa_report, enrollment_summary, low_attendance_warning, fyp_status.
+- Stage 9.1: `2-FullDummyData.sql` — same §15 and §17 changes.
+- Stage 9.2: User guides bumped to v1.1 (Student, Admin, Faculty, SuperAdmin, License-KeyGen, README).
+- Stage 9.2: Student guide — added Section 12 (Enrollments self-service: view/enroll/drop).
+- Stage 9.2: Admin guide — updated Section 6 (admin enrollment CRUD: roster/enroll/drop workflows).
+- Stage 9.2: Faculty guide — updated Section 4 (Enrollments roster view).
+- Stage 9.3: PRD v1.22, Final-Touches Phase 9 complete, Command.md pointer updated.
+
+**Validation:**
+- SQL scripts: all new INSERT statements use IF NOT EXISTS guards — idempotent on re-run.
+- Role accesses match DatabaseSeeder.SeedSidebarMenusAsync exactly.
+- Report keys match ReportKeys.cs constants exactly.
+- No C# changes — build remains 0 errors, 0 warnings.
+
+**Moved to:** All phases complete.
+
+**Docs Updated:**
+- Final-Touches.md: Marked Phase 9 complete, filled Implementation/Validation summaries, updated Progress Tracker
+- PRD.md: Bumped to v1.22, added Phase 9 log entry
 - Command.md: Updated execution pointer + this entry

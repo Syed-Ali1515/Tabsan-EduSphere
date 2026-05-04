@@ -1,7 +1,7 @@
 # Student User Guide
 
-Version: 1.0  
-Date: 02 May 2026
+Version: 1.1  
+Date: 05 May 2026
 
 ## 1. Purpose
 
@@ -127,13 +127,28 @@ Suggested usage:
 
 Do not share sensitive personal data in chat messages.
 
-## 12. Theme and Personalization
+## 12. Enrollments
+
+Path: Sidebar > Enrollments
+
+You can:
+- View all your currently enrolled courses with status (Active or Dropped)
+- See enrollment date for each course
+- Drop an active enrollment by clicking the Drop button on that row
+- Enroll in a new course by clicking "Enroll in Course" and selecting from available open offerings
+
+Notes:
+- Only courses with open offerings appear in the enrollment list.
+- Dropping an enrollment may affect attendance and result records — contact your admin if you do so in error.
+- Enrollment windows may be limited by institutional policy.
+
+## 13. Theme and Personalization
 
 Path: Profile menu > Settings > Appearance
 
 You can switch theme to improve readability and accessibility.
 
-## 13. Common Issues
+## 14. Common Issues
 
 1. Cannot log in:
 - Check username format
@@ -150,7 +165,7 @@ You can switch theme to improve readability and accessibility.
 4. Attendance looks incorrect:
 - Contact course faculty with exact lecture date
 
-## 14. Student Checklist
+## 15. Student Checklist
 
 Use this weekly:
 - Review dashboard

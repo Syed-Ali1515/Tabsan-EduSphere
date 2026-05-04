@@ -2,6 +2,8 @@
 
 This folder contains role-based manuals for day-to-day use of the platform.
 
+Version: 1.1 — updated 05 May 2026
+
 ## Documents
 
 - [Student-Guide.md](Student-Guide.md)

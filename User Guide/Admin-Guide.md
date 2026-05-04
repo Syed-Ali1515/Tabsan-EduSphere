@@ -1,7 +1,7 @@
 # Admin User Guide
 
-Version: 1.0  
-Date: 02 May 2026
+Version: 1.1  
+Date: 05 May 2026
 
 ## 1. Purpose
 
@@ -62,9 +62,14 @@ Before publishing timetable:
 
 ## 6. Enrollment and SIS Oversight
 
-Path: Sidebar > SIS / Enrollment
+Path: Sidebar > Enrollments
 
-Use SIS views to:
+Admin enrollment workflows:
+- **View roster**: Select a course offering from the dropdown to see all enrolled students (registration number, program, semester).
+- **Enroll a student**: When an offering is selected, click "Enroll Student", choose the student profile from the dropdown, and confirm.
+- **Drop an enrollment**: Click the Drop button next to any active enrollment row in the roster.
+
+SIS oversight tasks:
 - Verify student profiles and program mapping
 - Monitor active enrollments
 - Address registration exceptions

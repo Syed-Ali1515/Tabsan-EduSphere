@@ -378,6 +378,7 @@ END
 
 -- ═══════════════════════════════════════════════════════════
 -- §15  SIDEBAR MENU ITEMS + ROLE ACCESSES  (idempotent)
+-- Final-Touches Phase 9 Stage 9.1 — Added missing content-area sidebar items
 -- ═══════════════════════════════════════════════════════════
 DECLARE @SMDashboard    UNIQUEIDENTIFIER = NEWID();
 DECLARE @SMTTAdmin      UNIQUEIDENTIFIER = NEWID();
@@ -392,6 +393,23 @@ DECLARE @SMModuleSet    UNIQUEIDENTIFIER = NEWID();
 DECLARE @SMSidebarSet   UNIQUEIDENTIFIER = NEWID();
 DECLARE @SMThemeSet     UNIQUEIDENTIFIER = NEWID();
 DECLARE @SMLicUpd       UNIQUEIDENTIFIER = NEWID();
+DECLARE @SMDashSet      UNIQUEIDENTIFIER = NEWID();
+DECLARE @SMResultCalc   UNIQUEIDENTIFIER = NEWID();
+DECLARE @SMNotif        UNIQUEIDENTIFIER = NEWID();
+DECLARE @SMStudents     UNIQUEIDENTIFIER = NEWID();
+DECLARE @SMDepts        UNIQUEIDENTIFIER = NEWID();
+DECLARE @SMCourses      UNIQUEIDENTIFIER = NEWID();
+DECLARE @SMAssign       UNIQUEIDENTIFIER = NEWID();
+DECLARE @SMAttend       UNIQUEIDENTIFIER = NEWID();
+DECLARE @SMResults      UNIQUEIDENTIFIER = NEWID();
+DECLARE @SMQuizzes      UNIQUEIDENTIFIER = NEWID();
+DECLARE @SMFyp          UNIQUEIDENTIFIER = NEWID();
+DECLARE @SMAnalytics    UNIQUEIDENTIFIER = NEWID();
+DECLARE @SMAiChat       UNIQUEIDENTIFIER = NEWID();
+DECLARE @SMLifecycle    UNIQUEIDENTIFIER = NEWID();
+DECLARE @SMPayments     UNIQUEIDENTIFIER = NEWID();
+DECLARE @SMEnrollments  UNIQUEIDENTIFIER = NEWID();
+DECLARE @SMReportCenter UNIQUEIDENTIFIER = NEWID();
 
 -- Helper to upsert a menu item and return its ID
 -- Using IF NOT EXISTS pattern for each item
@@ -487,20 +505,139 @@ IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key] = N'license_update')
             N'Upload and activate a new license file',@SMSettings,5,1,1,@Now,0);
 ELSE SELECT @SMLicUpd = Id FROM sidebar_menu_items WHERE [Key] = N'license_update';
 
+IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key] = N'dashboard_settings')
+    INSERT INTO sidebar_menu_items
+        (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
+    VALUES (@SMDashSet,N'dashboard_settings',N'Dashboard Settings',
+            N'Customise portal branding and name',@SMSettings,6,1,1,@Now,0);
+
+IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key] = N'result_calculation')
+    INSERT INTO sidebar_menu_items
+        (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
+    VALUES (@SMResultCalc,N'result_calculation',N'Result Calculation',
+            N'Configure GPA scale and assessment weights',NULL,7,1,0,@Now,0);
+
+IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key] = N'notifications')
+    INSERT INTO sidebar_menu_items
+        (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
+    VALUES (@SMNotif,N'notifications',N'Notifications',
+            N'View system and academic notifications',NULL,8,1,0,@Now,0);
+
+IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key] = N'students')
+    INSERT INTO sidebar_menu_items
+        (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
+    VALUES (@SMStudents,N'students',N'Students',
+            N'Manage student profiles',NULL,9,1,0,@Now,0);
+
+IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key] = N'departments')
+    INSERT INTO sidebar_menu_items
+        (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
+    VALUES (@SMDepts,N'departments',N'Departments',
+            N'Manage academic departments',NULL,10,1,0,@Now,0);
+
+IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key] = N'courses')
+    INSERT INTO sidebar_menu_items
+        (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
+    VALUES (@SMCourses,N'courses',N'Courses',
+            N'Manage courses and offerings',NULL,11,1,0,@Now,0);
+
+IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key] = N'assignments')
+    INSERT INTO sidebar_menu_items
+        (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
+    VALUES (@SMAssign,N'assignments',N'Assignments',
+            N'Manage and submit assignments',NULL,12,1,0,@Now,0);
+
+IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key] = N'attendance')
+    INSERT INTO sidebar_menu_items
+        (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
+    VALUES (@SMAttend,N'attendance',N'Attendance',
+            N'Record and view attendance',NULL,13,1,0,@Now,0);
+
+IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key] = N'results')
+    INSERT INTO sidebar_menu_items
+        (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
+    VALUES (@SMResults,N'results',N'Results',
+            N'View and publish academic results',NULL,14,1,0,@Now,0);
+
+IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key] = N'quizzes')
+    INSERT INTO sidebar_menu_items
+        (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
+    VALUES (@SMQuizzes,N'quizzes',N'Quizzes',
+            N'Manage and attempt quizzes',NULL,15,1,0,@Now,0);
+
+IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key] = N'fyp')
+    INSERT INTO sidebar_menu_items
+        (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
+    VALUES (@SMFyp,N'fyp',N'FYP',
+            N'Final Year Projects management',NULL,16,1,0,@Now,0);
+
+IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key] = N'analytics')
+    INSERT INTO sidebar_menu_items
+        (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
+    VALUES (@SMAnalytics,N'analytics',N'Analytics',
+            N'Academic analytics and dashboards',NULL,17,1,0,@Now,0);
+
+IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key] = N'ai_chat')
+    INSERT INTO sidebar_menu_items
+        (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
+    VALUES (@SMAiChat,N'ai_chat',N'AI Chat',
+            N'AI-powered academic assistant',NULL,18,1,0,@Now,0);
+
+IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key] = N'student_lifecycle')
+    INSERT INTO sidebar_menu_items
+        (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
+    VALUES (@SMLifecycle,N'student_lifecycle',N'Student Lifecycle',
+            N'Manage promotions, holds and withdrawals',NULL,19,1,0,@Now,0);
+
+IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key] = N'payments')
+    INSERT INTO sidebar_menu_items
+        (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
+    VALUES (@SMPayments,N'payments',N'Payments',
+            N'Manage and view fee payment records',NULL,20,1,0,@Now,0);
+
+IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key] = N'enrollments')
+    INSERT INTO sidebar_menu_items
+        (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
+    VALUES (@SMEnrollments,N'enrollments',N'Enrollments',
+            N'Manage course enrollments and rosters',NULL,21,1,0,@Now,0);
+
+IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key] = N'report_center')
+    INSERT INTO sidebar_menu_items
+        (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
+    VALUES (@SMReportCenter,N'report_center',N'Report Center',
+            N'Generate and export academic reports',NULL,22,1,0,@Now,0);
+
 -- Re-read IDs (needed after the ELSE branches above)
-SELECT @SMDashboard  = Id FROM sidebar_menu_items WHERE [Key] = N'dashboard';
-SELECT @SMTTAdmin    = Id FROM sidebar_menu_items WHERE [Key] = N'timetable_admin';
-SELECT @SMTTTeacher  = Id FROM sidebar_menu_items WHERE [Key] = N'timetable_teacher';
-SELECT @SMTTStudent  = Id FROM sidebar_menu_items WHERE [Key] = N'timetable_student';
-SELECT @SMLookups    = Id FROM sidebar_menu_items WHERE [Key] = N'lookups';
-SELECT @SMBuildings  = Id FROM sidebar_menu_items WHERE [Key] = N'buildings';
-SELECT @SMRooms      = Id FROM sidebar_menu_items WHERE [Key] = N'rooms';
-SELECT @SMSettings   = Id FROM sidebar_menu_items WHERE [Key] = N'system_settings';
-SELECT @SMReportSet  = Id FROM sidebar_menu_items WHERE [Key] = N'report_settings';
-SELECT @SMModuleSet  = Id FROM sidebar_menu_items WHERE [Key] = N'module_settings';
-SELECT @SMSidebarSet = Id FROM sidebar_menu_items WHERE [Key] = N'sidebar_settings';
-SELECT @SMThemeSet   = Id FROM sidebar_menu_items WHERE [Key] = N'theme_settings';
-SELECT @SMLicUpd     = Id FROM sidebar_menu_items WHERE [Key] = N'license_update';
+SELECT @SMDashboard   = Id FROM sidebar_menu_items WHERE [Key] = N'dashboard';
+SELECT @SMTTAdmin     = Id FROM sidebar_menu_items WHERE [Key] = N'timetable_admin';
+SELECT @SMTTTeacher   = Id FROM sidebar_menu_items WHERE [Key] = N'timetable_teacher';
+SELECT @SMTTStudent   = Id FROM sidebar_menu_items WHERE [Key] = N'timetable_student';
+SELECT @SMLookups     = Id FROM sidebar_menu_items WHERE [Key] = N'lookups';
+SELECT @SMBuildings   = Id FROM sidebar_menu_items WHERE [Key] = N'buildings';
+SELECT @SMRooms       = Id FROM sidebar_menu_items WHERE [Key] = N'rooms';
+SELECT @SMSettings    = Id FROM sidebar_menu_items WHERE [Key] = N'system_settings';
+SELECT @SMReportSet   = Id FROM sidebar_menu_items WHERE [Key] = N'report_settings';
+SELECT @SMModuleSet   = Id FROM sidebar_menu_items WHERE [Key] = N'module_settings';
+SELECT @SMSidebarSet  = Id FROM sidebar_menu_items WHERE [Key] = N'sidebar_settings';
+SELECT @SMThemeSet    = Id FROM sidebar_menu_items WHERE [Key] = N'theme_settings';
+SELECT @SMLicUpd      = Id FROM sidebar_menu_items WHERE [Key] = N'license_update';
+SELECT @SMDashSet     = Id FROM sidebar_menu_items WHERE [Key] = N'dashboard_settings';
+SELECT @SMResultCalc  = Id FROM sidebar_menu_items WHERE [Key] = N'result_calculation';
+SELECT @SMNotif       = Id FROM sidebar_menu_items WHERE [Key] = N'notifications';
+SELECT @SMStudents    = Id FROM sidebar_menu_items WHERE [Key] = N'students';
+SELECT @SMDepts       = Id FROM sidebar_menu_items WHERE [Key] = N'departments';
+SELECT @SMCourses     = Id FROM sidebar_menu_items WHERE [Key] = N'courses';
+SELECT @SMAssign      = Id FROM sidebar_menu_items WHERE [Key] = N'assignments';
+SELECT @SMAttend      = Id FROM sidebar_menu_items WHERE [Key] = N'attendance';
+SELECT @SMResults     = Id FROM sidebar_menu_items WHERE [Key] = N'results';
+SELECT @SMQuizzes     = Id FROM sidebar_menu_items WHERE [Key] = N'quizzes';
+SELECT @SMFyp         = Id FROM sidebar_menu_items WHERE [Key] = N'fyp';
+SELECT @SMAnalytics   = Id FROM sidebar_menu_items WHERE [Key] = N'analytics';
+SELECT @SMAiChat      = Id FROM sidebar_menu_items WHERE [Key] = N'ai_chat';
+SELECT @SMLifecycle   = Id FROM sidebar_menu_items WHERE [Key] = N'student_lifecycle';
+SELECT @SMPayments    = Id FROM sidebar_menu_items WHERE [Key] = N'payments';
+SELECT @SMEnrollments = Id FROM sidebar_menu_items WHERE [Key] = N'enrollments';
+SELECT @SMReportCenter= Id FROM sidebar_menu_items WHERE [Key] = N'report_center';
 
 -- Sidebar role accesses (use MERGE to avoid unique-index violations)
 DECLARE @SidebarRoles TABLE (ItemId UNIQUEIDENTIFIER, RoleName NVARCHAR(100), IsAllowed BIT);
@@ -524,10 +661,45 @@ INSERT INTO @SidebarRoles VALUES
     (@SMModuleSet,  N'SuperAdmin', 1),
     (@SMSidebarSet, N'SuperAdmin', 1),
     -- Theme: all roles
-    (@SMThemeSet,   N'SuperAdmin', 1), (@SMThemeSet,   N'Admin',    1),
-    (@SMThemeSet,   N'Faculty',    1), (@SMThemeSet,   N'Student',  1),
-    -- License: SuperAdmin only
-    (@SMLicUpd,     N'SuperAdmin', 1);
+    (@SMThemeSet,     N'SuperAdmin', 1), (@SMThemeSet,     N'Admin',    1),
+    (@SMThemeSet,     N'Faculty',    1), (@SMThemeSet,     N'Student',  1),
+    -- License + Dashboard Settings: SuperAdmin only
+    (@SMLicUpd,       N'SuperAdmin', 1),
+    (@SMDashSet,      N'SuperAdmin', 1),
+    -- Result Calculation: Admin only
+    (@SMResultCalc,   N'Admin', 1),
+    -- Notifications: all roles
+    (@SMNotif,        N'Admin', 1),    (@SMNotif,     N'Faculty', 1),
+    (@SMNotif,        N'Student', 1),
+    -- Students: Admin + Faculty
+    (@SMStudents,     N'Admin', 1),    (@SMStudents,  N'Faculty', 1),
+    -- Departments: Admin only
+    (@SMDepts,        N'Admin', 1),
+    -- Courses: Admin + Faculty
+    (@SMCourses,      N'Admin', 1),    (@SMCourses,   N'Faculty', 1),
+    -- Assignments: Faculty + Student
+    (@SMAssign,       N'Faculty', 1),  (@SMAssign,    N'Student', 1),
+    -- Attendance: Faculty + Student
+    (@SMAttend,       N'Faculty', 1),  (@SMAttend,    N'Student', 1),
+    -- Results: Admin + Faculty + Student
+    (@SMResults,      N'Admin', 1),    (@SMResults,   N'Faculty', 1),
+    (@SMResults,      N'Student', 1),
+    -- Quizzes: Faculty + Student
+    (@SMQuizzes,      N'Faculty', 1),  (@SMQuizzes,   N'Student', 1),
+    -- FYP: Faculty + Student
+    (@SMFyp,          N'Faculty', 1),  (@SMFyp,       N'Student', 1),
+    -- Analytics: Admin + Faculty
+    (@SMAnalytics,    N'Admin', 1),    (@SMAnalytics, N'Faculty', 1),
+    -- AI Chat: Faculty + Student
+    (@SMAiChat,       N'Faculty', 1),  (@SMAiChat,    N'Student', 1),
+    -- Student Lifecycle: Admin only
+    (@SMLifecycle,    N'Admin', 1),
+    -- Payments: Admin + Student
+    (@SMPayments,     N'Admin', 1),    (@SMPayments,  N'Student', 1),
+    -- Enrollments: Admin + Faculty
+    (@SMEnrollments,  N'Admin', 1),    (@SMEnrollments, N'Faculty', 1),
+    -- Report Center: Admin + Faculty
+    (@SMReportCenter, N'Admin', 1),    (@SMReportCenter, N'Faculty', 1);
 
 INSERT INTO sidebar_menu_role_accesses
     (Id, SidebarMenuItemId, RoleName, IsAllowed, CreatedAt)
@@ -582,46 +754,76 @@ WHERE NOT EXISTS (
 
 -- ═══════════════════════════════════════════════════════════
 -- §17  REPORT DEFINITIONS + ROLE ASSIGNMENTS
+-- Final-Touches Phase 9 Stage 9.1 — Updated to canonical ReportKeys (underscore)
+--   and added gpa_report, enrollment_summary, low_attendance_warning, fyp_status
 -- ═══════════════════════════════════════════════════════════
-DECLARE @RptAttend  UNIQUEIDENTIFIER = NEWID();
-DECLARE @RptResults UNIQUEIDENTIFIER = NEWID();
-DECLARE @RptDept    UNIQUEIDENTIFIER = NEWID();
-DECLARE @RptSemRes  UNIQUEIDENTIFIER = NEWID();
+DECLARE @RptAttSumm  UNIQUEIDENTIFIER = NEWID();
+DECLARE @RptResSumm  UNIQUEIDENTIFIER = NEWID();
+DECLARE @RptGpa      UNIQUEIDENTIFIER = NEWID();
+DECLARE @RptEnrSumm  UNIQUEIDENTIFIER = NEWID();
+DECLARE @RptSemRes   UNIQUEIDENTIFIER = NEWID();
+DECLARE @RptTranscr  UNIQUEIDENTIFIER = NEWID();
+DECLARE @RptLowAtt   UNIQUEIDENTIFIER = NEWID();
+DECLARE @RptFypStat  UNIQUEIDENTIFIER = NEWID();
 
-IF NOT EXISTS (SELECT 1 FROM report_definitions WHERE [Key] = N'attendance-report')
-    INSERT INTO report_definitions
-        (Id,[Key],Name,Purpose,IsActive,CreatedAt,IsDeleted)
-    VALUES (@RptAttend,N'attendance-report',N'Attendance Summary',
-            N'Per-student and per-course attendance breakdown',1,@Now,0);
-ELSE SELECT @RptAttend = Id FROM report_definitions WHERE [Key] = N'attendance-report';
+IF NOT EXISTS (SELECT 1 FROM report_definitions WHERE [Key] = N'attendance_summary')
+    INSERT INTO report_definitions (Id,[Key],Name,Purpose,IsActive,CreatedAt,IsDeleted)
+    VALUES (@RptAttSumm,N'attendance_summary',N'Attendance Summary',
+            N'Per-student attendance percentage per course offering, filterable by semester and department.',1,@Now,0);
+ELSE SELECT @RptAttSumm = Id FROM report_definitions WHERE [Key] = N'attendance_summary';
 
-IF NOT EXISTS (SELECT 1 FROM report_definitions WHERE [Key] = N'results-report')
-    INSERT INTO report_definitions
-        (Id,[Key],Name,Purpose,IsActive,CreatedAt,IsDeleted)
-    VALUES (@RptResults,N'results-report',N'Student Results',
-            N'Midterm and final marks for enrolled students',1,@Now,0);
-ELSE SELECT @RptResults = Id FROM report_definitions WHERE [Key] = N'results-report';
+IF NOT EXISTS (SELECT 1 FROM report_definitions WHERE [Key] = N'result_summary')
+    INSERT INTO report_definitions (Id,[Key],Name,Purpose,IsActive,CreatedAt,IsDeleted)
+    VALUES (@RptResSumm,N'result_summary',N'Result Summary',
+            N'All published result entries with marks and percentage, filterable by semester, offering, or student.',1,@Now,0);
+ELSE SELECT @RptResSumm = Id FROM report_definitions WHERE [Key] = N'result_summary';
 
-IF NOT EXISTS (SELECT 1 FROM report_definitions WHERE [Key] = N'dept-summary')
-    INSERT INTO report_definitions
-        (Id,[Key],Name,Purpose,IsActive,CreatedAt,IsDeleted)
-    VALUES (@RptDept,N'dept-summary',N'Department Summary',
-            N'High-level student and course counts by department',1,@Now,0);
-ELSE SELECT @RptDept = Id FROM report_definitions WHERE [Key] = N'dept-summary';
+IF NOT EXISTS (SELECT 1 FROM report_definitions WHERE [Key] = N'gpa_report')
+    INSERT INTO report_definitions (Id,[Key],Name,Purpose,IsActive,CreatedAt,IsDeleted)
+    VALUES (@RptGpa,N'gpa_report',N'GPA & CGPA Report',
+            N'Per-student current semester GPA and cumulative CGPA, filterable by department and program.',1,@Now,0);
+ELSE SELECT @RptGpa = Id FROM report_definitions WHERE [Key] = N'gpa_report';
 
-IF NOT EXISTS (SELECT 1 FROM report_definitions WHERE [Key] = N'semester-results')
-    INSERT INTO report_definitions
-        (Id,[Key],Name,Purpose,IsActive,CreatedAt,IsDeleted)
-    VALUES (@RptSemRes,N'semester-results',N'Semester Results',
-            N'All published results for students in a specific semester',1,@Now,0);
-ELSE SELECT @RptSemRes = Id FROM report_definitions WHERE [Key] = N'semester-results';
+IF NOT EXISTS (SELECT 1 FROM report_definitions WHERE [Key] = N'enrollment_summary')
+    INSERT INTO report_definitions (Id,[Key],Name,Purpose,IsActive,CreatedAt,IsDeleted)
+    VALUES (@RptEnrSumm,N'enrollment_summary',N'Enrollment Summary',
+            N'Course offering seat utilisation showing enrolled count versus maximum capacity.',1,@Now,0);
+ELSE SELECT @RptEnrSumm = Id FROM report_definitions WHERE [Key] = N'enrollment_summary';
+
+IF NOT EXISTS (SELECT 1 FROM report_definitions WHERE [Key] = N'semester_results')
+    INSERT INTO report_definitions (Id,[Key],Name,Purpose,IsActive,CreatedAt,IsDeleted)
+    VALUES (@RptSemRes,N'semester_results',N'Semester Results',
+            N'Full published result set for a selected semester with optional department filter.',1,@Now,0);
+ELSE SELECT @RptSemRes = Id FROM report_definitions WHERE [Key] = N'semester_results';
+
+IF NOT EXISTS (SELECT 1 FROM report_definitions WHERE [Key] = N'student_transcript')
+    INSERT INTO report_definitions (Id,[Key],Name,Purpose,IsActive,CreatedAt,IsDeleted)
+    VALUES (@RptTranscr,N'student_transcript',N'Student Transcript',
+            N'Full academic record for a selected student including all result components.',1,@Now,0);
+ELSE SELECT @RptTranscr = Id FROM report_definitions WHERE [Key] = N'student_transcript';
+
+IF NOT EXISTS (SELECT 1 FROM report_definitions WHERE [Key] = N'low_attendance_warning')
+    INSERT INTO report_definitions (Id,[Key],Name,Purpose,IsActive,CreatedAt,IsDeleted)
+    VALUES (@RptLowAtt,N'low_attendance_warning',N'Low Attendance Warning',
+            N'Students whose attendance falls below a configurable threshold.',1,@Now,0);
+ELSE SELECT @RptLowAtt = Id FROM report_definitions WHERE [Key] = N'low_attendance_warning';
+
+IF NOT EXISTS (SELECT 1 FROM report_definitions WHERE [Key] = N'fyp_status')
+    INSERT INTO report_definitions (Id,[Key],Name,Purpose,IsActive,CreatedAt,IsDeleted)
+    VALUES (@RptFypStat,N'fyp_status',N'FYP Status Report',
+            N'Final Year Project status overview filterable by department and project status.',1,@Now,0);
+ELSE SELECT @RptFypStat = Id FROM report_definitions WHERE [Key] = N'fyp_status';
 
 DECLARE @RRAData TABLE (RptId UNIQUEIDENTIFIER, RoleName NVARCHAR(50));
 INSERT INTO @RRAData VALUES
-    (@RptAttend,  N'Admin'),   (@RptAttend,  N'Faculty'),  (@RptAttend,  N'Student'),
-    (@RptResults, N'Admin'),   (@RptResults, N'Faculty'),  (@RptResults, N'Student'),
-    (@RptDept,    N'Admin'),   (@RptDept,    N'SuperAdmin'),
-    (@RptSemRes,  N'Admin'),   (@RptSemRes,  N'Faculty');
+    (@RptAttSumm, N'SuperAdmin'), (@RptAttSumm, N'Admin'), (@RptAttSumm, N'Faculty'), (@RptAttSumm, N'Student'),
+    (@RptResSumm, N'SuperAdmin'), (@RptResSumm, N'Admin'), (@RptResSumm, N'Faculty'), (@RptResSumm, N'Student'),
+    (@RptGpa,     N'SuperAdmin'), (@RptGpa,     N'Admin'), (@RptGpa,     N'Faculty'),
+    (@RptEnrSumm, N'SuperAdmin'), (@RptEnrSumm, N'Admin'),
+    (@RptSemRes,  N'SuperAdmin'), (@RptSemRes,  N'Admin'), (@RptSemRes,  N'Faculty'),
+    (@RptTranscr, N'SuperAdmin'), (@RptTranscr, N'Admin'), (@RptTranscr, N'Student'),
+    (@RptLowAtt,  N'SuperAdmin'), (@RptLowAtt,  N'Admin'), (@RptLowAtt,  N'Faculty'),
+    (@RptFypStat, N'SuperAdmin'), (@RptFypStat, N'Admin'), (@RptFypStat, N'Faculty');
 
 INSERT INTO report_role_assignments (Id, ReportDefinitionId, RoleName, CreatedAt)
 SELECT NEWID(), r.RptId, r.RoleName, @Now

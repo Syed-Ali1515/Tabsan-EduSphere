@@ -1,7 +1,7 @@
 # Faculty User Guide
 
-Version: 1.0  
-Date: 02 May 2026
+Version: 1.1  
+Date: 05 May 2026
 
 ## 1. Purpose
 
@@ -28,14 +28,17 @@ Dashboard highlights typically include:
 
 Recommended routine: review dashboard at the start and end of each teaching day.
 
-## 4. Course Offerings and Class Context
+## 4. Course Offerings and Enrollment View
 
-Path: Sidebar > Courses
+Path: Sidebar > Courses / Enrollments
 
-Use this area to:
+Use Courses to:
 - Open assigned offerings by semester
 - Review enrolled students
 - Confirm class capacity and open state
+
+Use Enrollments to:
+- Select an offering from the dropdown and view the full roster with registration number, program, and semester number
 
 If a course is not visible, request course offering assignment from Admin.
 

@@ -1,7 +1,7 @@
 # License KeyGen User Guide
 
-Version: 1.0  
-Date: 02 May 2026  
+Version: 1.1  
+Date: 05 May 2026  
 Applies to: tools/KeyGen/KeyGen.cs
 
 ## 1. Purpose

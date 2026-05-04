@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.21 (Phase 8 Complete - Enrollments Completion)  
+**Version:** 1.22 (Phase 9 Complete - Documentation and Script Regeneration)  
 **Status:** Approved  
 **Prepared By:** Product Team  
 **Last Updated:** 5 May 2026  
@@ -9,6 +9,22 @@
 ---
 
 ## 0. Implementation Update Log
+
+### 2026-05-05 — Phase 9 Complete (Documentation and Script Regeneration)
+- **Stage 9.1 (Script Modernization - COMPLETE)**
+  - `1-MinimalSeed.sql` §15: Added 16 missing sidebar menu items and role accesses to match `DatabaseSeeder.cs`.
+  - `1-MinimalSeed.sql` §17: Replaced 4 old hyphen-key report definitions with 8 canonical underscore-key definitions matching `ReportKeys.cs`.
+  - `2-FullDummyData.sql`: Same §15 and §17 changes applied.
+- **Stage 9.2 (Documentation Refresh - COMPLETE)**
+  - User guides (Student, Admin, Faculty, SuperAdmin, License-KeyGen) bumped to v1.1.
+  - Student guide: added Section 12 (Enrollments self-service).
+  - Admin guide: updated Section 6 (Enrollment admin CRUD via portal).
+  - Faculty guide: updated Section 4 (Enrollments roster view).
+- **Stage 9.3 (Completion Artifacts - COMPLETE)**
+  - All phase summaries recorded in Final-Touches.md Implementation/Validation summaries.
+  - Function-List.md has Phase 7 and Phase 8 function tables.
+  - PRD.md and Command.md updated per phase.
+- **Build Status:** ✅ 0 errors, 0 warnings (no C# changes in Phase 9)
 
 ### 2026-05-05 — Phase 8 Complete (Enrollments Completion)
 - **Stage 8.1 (Data and Dropdown Fixes - COMPLETE)**
