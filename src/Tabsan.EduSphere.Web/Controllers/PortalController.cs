@@ -1043,6 +1043,10 @@ public class PortalController : Controller
             try
             {
                 await _api.CreateResultAsync(studentProfileId, offeringId, resultType, marksObtained, maxMarks, ct);
+
+                // Promotion is only offered in the UI for Final result type.
+                // When the checkbox is checked the form sends promote=true;
+                // unchecked checkboxes send nothing, so promote defaults to false.
                 if (promote)
                     await _api.PromoteStudentAsync(studentProfileId, ct);
             }
@@ -1051,6 +1055,9 @@ public class PortalController : Controller
         return RedirectToAction(nameof(Results), new { offeringId });
     }
 
+    // Standalone per-row Promote button in the Results table.
+    // Reuses the existing POST api/v1/student-lifecycle/{id}/promote endpoint
+    // without requiring a new result entry.
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> PromoteStudentFromResult(Guid studentProfileId, Guid? offeringId, CancellationToken ct)
     {
@@ -1416,12 +1423,19 @@ public class PortalController : Controller
         {
             model.Semesters   = await _api.GetSemestersAsync(ct);
             model.Departments = await _api.GetDepartmentsAsync(ct);
+
+            // API requires a non-empty semesterId; do not query until one is selected.
             if (semesterId.HasValue)
                 model.Report = await _api.GetSemesterResultsReportAsync(semesterId.Value, departmentId, ct);
         }
         catch (Exception ex) { model.Message = ex.Message; }
         return View(model);
     }
+
+    // Excel export actions — these act as portal-side proxies:
+    // they call the API export endpoint, receive the .xlsx bytes, and
+    // stream the file directly to the browser. On failure they fall back
+    // to the report view with a TempData error message.
 
     [HttpGet]
     public async Task<IActionResult> ExportAttendanceSummary(

@@ -529,6 +529,7 @@ public class AttendancePageModel
 public class ResultItem
 {
     public Guid   Id                 { get; set; }
+    // Used by the per-row Promote button in the Results table to identify the student.
     public Guid   StudentProfileId   { get; set; }
     public string CourseName         { get; set; } = "";
     public string CourseCode         { get; set; } = "";
@@ -889,6 +890,7 @@ public class ReportEnrollmentPageModel
 
 // ── Semester Results Report ──────────────────────────────────────────────────
 
+// One row in the semester results report: a student's result for a single course.
 public class SemesterResultsRowItem
 {
     public string  RegistrationNumber { get; set; } = "";
@@ -901,6 +903,8 @@ public class SemesterResultsRowItem
     public decimal Percentage         { get; set; }
 }
 
+// Aggregated report returned by GET api/v1/reports/semester-results.
+// TotalStudents is the count of distinct students (not the number of result rows).
 public class SemesterResultsWebModel
 {
     public int                           TotalStudents { get; set; }
@@ -908,6 +912,9 @@ public class SemesterResultsWebModel
     public List<SemesterResultsRowItem>  Rows          { get; set; } = new();
 }
 
+// Page model for the ReportSemesterResults view.
+// SemesterId is treated as required by the action — the report is only fetched
+// when a semester is selected; otherwise only the filter dropdowns are rendered.
 public class ReportSemesterResultsPageModel
 {
     public bool   IsConnected  { get; set; }

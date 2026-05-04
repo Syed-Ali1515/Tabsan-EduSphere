@@ -391,6 +391,9 @@ public class EduApiClient : IEduApiClient
         if (!response.IsSuccessStatusCode) throw BuildException(response.StatusCode, body);
     }
 
+    // Dedicated byte-array downloader for binary responses (Excel exports).
+    // Cannot reuse GetAsync<T> here because that method reads the body as JSON
+    // and attempts to deserialize it, which corrupts binary xlsx content.
     private async Task<byte[]> GetBytesAsync(string path, CancellationToken ct)
     {
         using var request  = CreateRequest(HttpMethod.Get, path);
@@ -1074,6 +1077,9 @@ public class EduApiClient : IEduApiClient
         return raw.Select(MapResult).ToList();
     }
 
+    // Maps the raw API DTO to the view-facing ResultItem.
+    // StudentProfileId is included so the Results table can render
+    // the per-row Promote button with the correct student identity.
     private static ResultItem MapResult(ResultApiDto r) => new()
     {
         Id                 = r.Id,
@@ -1589,6 +1595,8 @@ public class EduApiClient : IEduApiClient
         return parts.Any() ? "?" + string.Join("&", parts) : "";
     }
 
+    // semesterId is required by the API; departmentId is optional and narrows the result set
+    // to a single department when provided.
     public async Task<SemesterResultsWebModel?> GetSemesterResultsReportAsync(
         Guid semesterId, Guid? departmentId, CancellationToken ct)
     {
@@ -1614,6 +1622,9 @@ public class EduApiClient : IEduApiClient
         };
     }
 
+    // All three export methods delegate to GetBytesAsync because the API returns a
+    // binary .xlsx file, not JSON. BuildReportQuery assembles the shared filter params.
+
     public Task<byte[]> ExportAttendanceSummaryAsync(
         Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
     {
@@ -1628,6 +1639,7 @@ public class EduApiClient : IEduApiClient
         return GetBytesAsync($"api/v1/reports/result-summary/export{qs}", ct);
     }
 
+    // GPA report uses department + program filters only (no per-offering or per-student scope).
     public Task<byte[]> ExportGpaReportAsync(Guid? departmentId, Guid? programId, CancellationToken ct)
     {
         var parts = new List<string>();
@@ -1717,6 +1729,8 @@ public class EduApiClient : IEduApiClient
         public int     EnrolledCount  { get; set; }
         public int     AvailableSeats { get; set; }
     }
+    // Internal DTOs for the Semester Results report endpoint.
+    // These are private to EduApiClient; the web layer uses SemesterResultsWebModel instead.
     private sealed class SemesterResultsApiDto
     {
         public int      TotalStudents { get; set; }
