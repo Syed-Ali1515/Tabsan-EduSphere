@@ -65,7 +65,7 @@ DECLARE @Now  DATETIME2 = GETUTCDATE();
 -- ── Password placeholder ─────────────────────────────────────
 -- Replace with output of Scripts\GenerateTestHashes.ps1
 DECLARE @PwdHash NVARCHAR(500) =
-    N'PLACEHOLDER_RUN_GenerateTestHashes.ps1_TO_REPLACE';
+    N'argon2id:gXOrvhV3MbGzXkKsN6qpOv8wGg0jYiWZ1RZUjQudjZw=:Co4QiapUrf1wkOUrJdddTz7IKxq/LsTKYkhzeTif7lE=';
 -- ─────────────────────────────────────────────────────────────
 
 -- ═══════════════════════════════════════════════════════════

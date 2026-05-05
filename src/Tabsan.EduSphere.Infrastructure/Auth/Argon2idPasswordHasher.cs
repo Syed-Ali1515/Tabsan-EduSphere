@@ -107,7 +107,18 @@ public sealed class Argon2idPasswordHasher : IPasswordHasher
 
     private static bool VerifyLegacy(string storedHash, string providedPassword)
     {
-        var result = _legacyHasher.VerifyHashedPassword(string.Empty, storedHash, providedPassword);
-        return result != Microsoft.AspNetCore.Identity.PasswordVerificationResult.Failed;
+        try
+        {
+            var result = _legacyHasher.VerifyHashedPassword(string.Empty, storedHash, providedPassword);
+            return result != Microsoft.AspNetCore.Identity.PasswordVerificationResult.Failed;
+        }
+        catch (FormatException)
+        {
+            return false;
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
     }
 }

@@ -19,17 +19,27 @@ public static class JwtTestHelper
     public static string GenerateToken(
         string role,
         string userId = "00000000-0000-0000-0000-000000000001",
-        string email  = "test@tabsan.local")
+        string email  = "test@tabsan.local",
+        string? studentProfileId = null)
     {
         var key   = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SecretKey));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        var claims = new[]
+        var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, userId),
             new Claim(ClaimTypes.Email,          email),
             new Claim(ClaimTypes.Role,           role),
         };
+
+        if (string.Equals(role, "Student", StringComparison.OrdinalIgnoreCase))
+        {
+            claims.Add(new Claim(
+                "studentProfileId",
+                string.IsNullOrWhiteSpace(studentProfileId)
+                    ? "00000000-0000-0000-0000-000000000123"
+                    : studentProfileId));
+        }
 
         var token = new JwtSecurityToken(
             issuer:             Issuer,

@@ -42,7 +42,7 @@ using System.Security.Cryptography;
 using System.Text;
 
 var password = Environment.GetEnvironmentVariable("HS_PWD") ?? throw new Exception("HS_PWD not set");
-var salt = new byte[16];
+var salt = new byte[32];
 RandomNumberGenerator.Fill(salt);
 
 using var argon2 = new Argon2id(Encoding.UTF8.GetBytes(password))
@@ -53,7 +53,7 @@ using var argon2 = new Argon2id(Encoding.UTF8.GetBytes(password))
     DegreeOfParallelism = 4
 };
 var hash = argon2.GetBytes(32);
-Console.Write($"\$argon2id\$v=19\$m=65536,t=3,p=4\${Convert.ToBase64String(salt)}\${Convert.ToBase64String(hash)}");
+Console.Write($"argon2id:{Convert.ToBase64String(salt)}:{Convert.ToBase64String(hash)}");
 "@
 
 # Write temporary project

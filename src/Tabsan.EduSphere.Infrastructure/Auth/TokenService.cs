@@ -2,10 +2,12 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Tabsan.EduSphere.Application.Interfaces;
 using Tabsan.EduSphere.Domain.Identity;
+using Tabsan.EduSphere.Infrastructure.Persistence;
 
 namespace Tabsan.EduSphere.Infrastructure.Auth;
 
@@ -38,8 +40,13 @@ public class JwtSettings
 public class TokenService : ITokenService
 {
     private readonly JwtSettings _settings;
+    private readonly ApplicationDbContext _db;
 
-    public TokenService(IOptions<JwtSettings> options) => _settings = options.Value;
+    public TokenService(IOptions<JwtSettings> options, ApplicationDbContext db)
+    {
+        _settings = options.Value;
+        _db = db;
+    }
 
     /// <summary>
     /// Builds and signs a JWT access token for the given user.
@@ -62,6 +69,17 @@ public class TokenService : ITokenService
         // Embed department scope into the token so API policies can filter without DB.
         if (user.DepartmentId.HasValue)
             claims.Add(new Claim("department_id", user.DepartmentId.Value.ToString()));
+
+        // Student-only endpoints expect this claim. Resolve it at login so runtime
+        // authorization does not depend on ad-hoc claim injection.
+        var studentProfileId = _db.StudentProfiles
+            .AsNoTracking()
+            .Where(sp => sp.UserId == user.Id)
+            .Select(sp => (Guid?)sp.Id)
+            .FirstOrDefault();
+
+        if (studentProfileId.HasValue)
+            claims.Add(new Claim("studentProfileId", studentProfileId.Value.ToString()));
 
         var token = new JwtSecurityToken(
             issuer: _settings.Issuer,
