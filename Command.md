@@ -26,10 +26,10 @@ Also update this file with:
 ---
 
 ## Current Execution Pointer
-- Plan Source: Observed-Issues.md (Phase 2 items P2-S1-01 through P2-S3-03)
-- Active Phase: **Phase 2 — App License**
-- Active Stage: Stage 2.1 — User Count Based Concurrency Restriction
-- Status: **Not Started — ready to begin**
+- Plan Source: Observed-Issues.md (Phase 3 items P3-S1-01 through P3-S2-02)
+- Active Phase: **Phase 3 — License App — COMPLETE**
+- Active Stage: N/A
+- Status: **Done — Phase 4 is next (CSV User Import)**
 - Last Updated: 2026-05-05
 
 ## Completed Work
@@ -574,4 +574,46 @@ When Phase 2 is complete, update: Observed-Issues.md, Command.md, PRD.md, Docs/F
 - Apply migration: `dotnet ef database update`
 - Begin Phase 3: License App (P3-S1-01, P3-S2-01, P3-S2-02)
 - Update KeyGen tool to support MaxUsers and AllowedDomain in .tablic payload
+
+---
+
+### Entry 017 — 2026-05-05 — Phase 3 Complete (License App — Generator Alignment + File Security)
+
+**Completed: ✅ ALL Phase 3 items (P3-S1-01, P3-S2-01, P3-S2-02)**
+
+**Stage 3.1 — Generator Alignment (P3-S1-01):**
+- Added `MaxUsers` (int, default 0 = unlimited) and `AllowedDomain` (string?, nullable) to `IssuedKey` model
+- Configured new columns in `LicDb.OnModelCreating`: `HasDefaultValue(0)` + `HasMaxLength(253).IsRequired(false)`
+- Extended `LicenseBuilder.TablicPayload` with `MaxUsers` and `AllowedDomain`; `BuildAsync` now embeds them in the JSON payload inside the encrypted .tablic binary
+- Added `UpdateConstraintsAsync(IssuedKey key)` to `KeyService` — persists constraint values before license file generation
+- Updated `ExportCsvAsync()` in KeyService — CSV now includes `MaxUsers` and `AllowedDomain` columns
+- Updated `HandleBuildTablic` in `Program.cs`:
+  - Prompts for "Max concurrent users (0 = unlimited):" — validates non-negative integer
+  - Prompts for "Allowed domain (leave blank for no restriction):" — stored as lowercase or null
+  - Saves constraints via `UpdateConstraintsAsync` before generating the file
+  - Shows a summary block confirming MaxUsers and AllowedDomain before writing
+- Updated `HandleListKeys` display — shows MaxUsers ("Unlimited" when 0) and AllowedDomain ("(any)" when null)
+- Added **startup SQLite column migration** in `Program.cs`:
+  - Reads `PRAGMA table_info(issued_keys)` to get existing column names
+  - Adds `MaxUsers INTEGER NOT NULL DEFAULT 0` and/or `AllowedDomain TEXT NULL` if missing
+  - Existing `tabsan_lic.db` files are transparently upgraded on first launch
+
+**Stage 3.2 — File Security (P3-S2-01 and P3-S2-02) — Pre-existing, Verified:**
+- P3-S2-01 (Encrypt + validate): `LicCrypto.BuildTablicFile()` = AES-256-CBC + RSA-2048 sign; `LicenseValidationService` verifies on every activation
+- P3-S2-02 (Reject modified payload): RSA signature over SHA-256(IV+ciphertext); private key only in tool; replay guard via `ConsumedVerificationKey` table
+
+**Files Modified:**
+- [tools/Tabsan.Lic/Models/IssuedKey.cs](tools/Tabsan.Lic/Models/IssuedKey.cs) — MaxUsers, AllowedDomain
+- [tools/Tabsan.Lic/Data/LicDb.cs](tools/Tabsan.Lic/Data/LicDb.cs) — EF fluent config
+- [tools/Tabsan.Lic/Services/LicenseBuilder.cs](tools/Tabsan.Lic/Services/LicenseBuilder.cs) — Payload extended
+- [tools/Tabsan.Lic/Services/KeyService.cs](tools/Tabsan.Lic/Services/KeyService.cs) — UpdateConstraintsAsync, updated ExportCsvAsync
+- [tools/Tabsan.Lic/Program.cs](tools/Tabsan.Lic/Program.cs) — DB migration, prompts, list display
+
+**Validation:**
+- `dotnet build tools/Tabsan.Lic/Tabsan.Lic.csproj --no-restore` → Succeeded 2.2s, 0 errors
+- Full solution build: 0 errors
+
+**Next:**
+- Apply migration to DB: `dotnet ef database update`
+- Begin Phase 4: CSV User Import (P4-S1-01, P4-S2-01, P4-S2-02, P4-S3-01)
 

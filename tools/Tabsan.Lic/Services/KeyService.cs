@@ -90,21 +90,34 @@ public class KeyService
         await _db.SaveChangesAsync();
     }
 
+    // P3-S1-01: Persist Phase 2 constraint values (MaxUsers, AllowedDomain) back to DB
+    /// <summary>
+    /// Persists updated MaxUsers and AllowedDomain constraint values for the given key.
+    /// Call this before generating the .tablic so the DB record matches the payload.
+    /// </summary>
+    public async Task UpdateConstraintsAsync(IssuedKey key)
+    {
+        _db.IssuedKeys.Update(key);
+        await _db.SaveChangesAsync();
+    }
+
     /// <summary>
     /// Exports all issued keys to a CSV string suitable for writing to a file.
-    /// Columns: Id, KeyId, ExpiryType, IssuedAt, ExpiresAt, IsLicenseGenerated, Label.
+    /// Columns: Id, KeyId, ExpiryType, IssuedAt, ExpiresAt, IsLicenseGenerated, MaxUsers, AllowedDomain, Label.
     /// </summary>
     public async Task<string> ExportCsvAsync()
     {
         var keys = await ListAllAsync();
         var sb   = new System.Text.StringBuilder();
-        sb.AppendLine("Id,KeyId,ExpiryType,IssuedAt,ExpiresAt,IsLicenseGenerated,Label");
+        // P3-S1-01: Include MaxUsers and AllowedDomain in export
+        sb.AppendLine("Id,KeyId,ExpiryType,IssuedAt,ExpiresAt,IsLicenseGenerated,MaxUsers,AllowedDomain,Label");
         foreach (var k in keys)
         {
             sb.AppendLine(
                 $"{k.Id},{k.KeyId},{k.ExpiryType},{k.IssuedAt:O}," +
                 $"{k.ExpiresAt?.ToString("O") ?? ""}," +
-                $"{k.IsLicenseGenerated},{EscapeCsv(k.Label)}");
+                $"{k.IsLicenseGenerated}," +
+                $"{k.MaxUsers},{EscapeCsv(k.AllowedDomain)},{EscapeCsv(k.Label)}");
         }
         return sb.ToString();
     }

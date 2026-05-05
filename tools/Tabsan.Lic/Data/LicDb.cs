@@ -28,6 +28,9 @@ public class LicDb : DbContext
             e.Property(k => k.ExpiryType).HasConversion<string>().IsRequired();
             e.Property(k => k.IssuedAt).IsRequired();
             e.Property(k => k.Label).HasMaxLength(256);
+            // P3-S1-01: Phase 2 constraint fields
+            e.Property(k => k.MaxUsers).HasDefaultValue(0);
+            e.Property(k => k.AllowedDomain).HasMaxLength(253).IsRequired(false);
         });
     }
 }

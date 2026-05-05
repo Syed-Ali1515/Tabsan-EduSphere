@@ -27,10 +27,13 @@ public class LicenseBuilder
             LicenseType         = key.ExpiryType == ExpiryType.Permanent ? "Permanent" : "Yearly",
             IssuedAt            = key.IssuedAt,
             ExpiresAt           = key.ExpiresAt,
-            VerificationKeyHash = key.VerificationKeyHash
+            VerificationKeyHash = key.VerificationKeyHash,
+            // P3-S1-01: Embed Phase 2 constraint fields in the payload
+            MaxUsers            = key.MaxUsers,
+            AllowedDomain       = key.AllowedDomain
         };
 
-        var json     = JsonSerializer.Serialize(payload, TablicJsonOptions.Default);
+        var json      = JsonSerializer.Serialize(payload, TablicJsonOptions.Default);
         var fileBytes = LicCrypto.BuildTablicFile(json);
 
         await File.WriteAllBytesAsync(outputPath, fileBytes);
@@ -45,6 +48,9 @@ public class LicenseBuilder
         public DateTime IssuedAt { get; init; }
         public DateTime? ExpiresAt { get; init; }
         public string VerificationKeyHash { get; init; } = default!;
+        // P3-S1-01: Phase 2 constraint fields
+        public int MaxUsers { get; init; }
+        public string? AllowedDomain { get; init; }
     }
 
     private static class TablicJsonOptions

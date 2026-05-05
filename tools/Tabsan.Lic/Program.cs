@@ -24,6 +24,31 @@ using (var scope = sp.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<LicDb>();
     await db.Database.EnsureCreatedAsync();
+
+    // P3-S1-01: Add Phase 2 columns to existing databases that pre-date this update.
+    // SQLite does not support IF NOT EXISTS in ALTER TABLE, so we inspect PRAGMA first.
+    var conn = db.Database.GetDbConnection();
+    await conn.OpenAsync();
+    using var pragmaCmd = conn.CreateCommand();
+    pragmaCmd.CommandText = "PRAGMA table_info(issued_keys);";
+    var existingColumns = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase);
+    using (var reader = await pragmaCmd.ExecuteReaderAsync())
+        while (await reader.ReadAsync())
+            existingColumns.Add(reader.GetString(1)); // column 1 = name
+
+    if (!existingColumns.Contains("MaxUsers"))
+    {
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "ALTER TABLE issued_keys ADD COLUMN MaxUsers INTEGER NOT NULL DEFAULT 0;";
+        await cmd.ExecuteNonQueryAsync();
+    }
+    if (!existingColumns.Contains("AllowedDomain"))
+    {
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "ALTER TABLE issued_keys ADD COLUMN AllowedDomain TEXT NULL;";
+        await cmd.ExecuteNonQueryAsync();
+    }
+    await conn.CloseAsync();
 }
 
 // ── Main Menu ─────────────────────────────────────────────────────────────────
@@ -161,6 +186,30 @@ static async Task HandleBuildTablic(KeyService keySvc, LicenseBuilder builder)
         if (Console.ReadLine()?.Trim().ToLower() != "y") return;
     }
 
+    // P3-S1-01: Prompt for Phase 2 constraint fields
+    Console.WriteLine();
+    Console.WriteLine("  ── License Constraints (Phase 2) ──────────────────────────────────");
+    Console.Write("  Max concurrent users (0 = unlimited): ");
+    var maxUsersInput = Console.ReadLine()?.Trim();
+    if (!int.TryParse(maxUsersInput, out var maxUsers) || maxUsers < 0)
+    {
+        WriteError("Invalid MaxUsers. Must be a non-negative integer (0 = unlimited)."); Pause(); return;
+    }
+    key.MaxUsers = maxUsers;
+
+    Console.Write("  Allowed domain (leave blank for no restriction, e.g. portal.university.edu): ");
+    var domainInput = Console.ReadLine()?.Trim();
+    key.AllowedDomain = string.IsNullOrWhiteSpace(domainInput) ? null : domainInput.ToLowerInvariant();
+
+    await keySvc.UpdateConstraintsAsync(key);
+
+    Console.WriteLine();
+    Console.ForegroundColor = ConsoleColor.Cyan;
+    Console.WriteLine($"  MaxUsers    : {(maxUsers == 0 ? "Unlimited" : maxUsers.ToString())}");
+    Console.WriteLine($"  AllowedDomain: {key.AllowedDomain ?? "(none — unrestricted)"}");
+    Console.ResetColor();
+    Console.WriteLine();
+
     Console.Write("  Output path (e.g. C:\\Licenses\\license.tablic): ");
     var outPath = Console.ReadLine()?.Trim();
     if (string.IsNullOrWhiteSpace(outPath)) { WriteError("Invalid path."); Pause(); return; }
@@ -189,13 +238,16 @@ static async Task HandleListKeys(KeyService keySvc)
     var keys = await keySvc.ListAllAsync();
     if (keys.Count == 0) { Console.WriteLine("  No keys issued yet."); Pause(); return; }
 
-    Console.WriteLine($"  {"Id",-4} {"KeyId (short)",-10} {"Expiry",-12} {"IssuedAt",-22} {"LicGenerated",-14} Label");
-    Console.WriteLine(new string('-', 90));
+    // P3-S1-01: Show MaxUsers and AllowedDomain in list
+    Console.WriteLine($"  {"Id",-4} {"KeyId (short)",-10} {"Expiry",-12} {"MaxUsers",-10} {"LicGenerated",-14} {"AllowedDomain",-30} Label");
+    Console.WriteLine(new string('-', 110));
     foreach (var k in keys)
     {
         var expiry  = k.ExpiresAt?.ToString("yyyy-MM-dd") ?? "Permanent";
         var licMark = k.IsLicenseGenerated ? "Yes" : "No";
-        Console.WriteLine($"  {k.Id,-4} {k.KeyId.ToString()[..8],-10} {expiry,-12} {k.IssuedAt:yyyy-MM-dd HH:mm,-22} {licMark,-14} {k.Label}");
+        var maxU    = k.MaxUsers == 0 ? "Unlimited" : k.MaxUsers.ToString();
+        var domain  = k.AllowedDomain ?? "(any)";
+        Console.WriteLine($"  {k.Id,-4} {k.KeyId.ToString()[..8],-10} {expiry,-12} {maxU,-10} {licMark,-14} {domain,-30} {k.Label}");
     }
 
     Pause();
@@ -206,6 +258,7 @@ static async Task HandleExportCsv(KeyService keySvc)
     var desktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
     var path    = Path.Combine(desktop, $"tabsan-keys-{DateTime.UtcNow:yyyyMMddHHmm}.csv");
 
+    // P3-S1-01: CSV now includes MaxUsers and AllowedDomain columns
     var csv = await keySvc.ExportCsvAsync();
     await File.WriteAllTextAsync(path, csv, System.Text.Encoding.UTF8);
 

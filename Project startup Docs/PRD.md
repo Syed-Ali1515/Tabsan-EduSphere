@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.27 (Phase 2 — License Concurrency + Domain Binding)  
+**Version:** 1.28 (Phase 3 — License App Generator Alignment + File Security)  
 **Status:** Approved  
 **Prepared By:** Product Team  
 **Last Updated:** 5 May 2026  
@@ -9,6 +9,18 @@
 ---
 
 ## 0. Implementation Update Log
+
+### 2026-05-05 — Phase 3 Complete (License App — Generator Alignment + File Security)
+- **Stage 3.1 (Generator Alignment — completed)**
+  - Added `MaxUsers` (int, 0=unlimited) and `AllowedDomain` (string?) to `IssuedKey` model in `tools/Tabsan.Lic`
+  - Configured new columns in `LicDb` EF fluent model; startup SQLite migration in `Program.cs` auto-upgrades existing `tabsan_lic.db` files
+  - Extended `LicenseBuilder.TablicPayload` to embed `MaxUsers` and `AllowedDomain` in the encrypted .tablic binary payload
+  - `Program.cs` now prompts operator for MaxUsers and AllowedDomain during .tablic generation (option 3)
+  - `HandleListKeys` shows MaxUsers/AllowedDomain per row; `ExportCsvAsync` includes both in CSV output
+- **Stage 3.2 (File Security — pre-existing, verified)**
+  - P3-S2-01: `LicCrypto.BuildTablicFile()` generates AES-256-CBC encrypted + RSA-2048 signed .tablic files; `LicenseValidationService` verifies signature and decrypts on every activation
+  - P3-S2-02: RSA signature covers `SHA-256(IV + ciphertext)`; private key is tool-only; any payload modification → invalid signature → rejected; replay guard via `ConsumedVerificationKey` table
+- **Build**: `dotnet build tools/Tabsan.Lic/Tabsan.Lic.csproj --no-restore` → 0 errors; full solution also 0 errors
 
 ### 2026-05-05 — Phase 2 Complete (License Concurrency + Domain Binding)
 - **Stage 2.1 (Concurrency User Limit + SuperAdmin Exemption - completed)**

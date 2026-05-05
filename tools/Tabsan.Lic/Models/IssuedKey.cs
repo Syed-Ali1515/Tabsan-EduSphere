@@ -42,4 +42,18 @@ public class IssuedKey
 
     /// <summary>Human-readable label / customer note (optional).</summary>
     public string? Label { get; set; }
+
+    // P3-S1-01: Phase 2 constraint fields
+    /// <summary>
+    /// Maximum concurrent users allowed by this license. 0 = unlimited.
+    /// Embedded in the .tablic payload and enforced by EduSphere on login.
+    /// </summary>
+    public int MaxUsers { get; set; } = 0;
+
+    /// <summary>
+    /// Optional domain to which this license is restricted (e.g. "portal.university.edu").
+    /// If set, EduSphere will reject the license on any other domain.
+    /// Null = no domain restriction.
+    /// </summary>
+    public string? AllowedDomain { get; set; }
 }
