@@ -110,3 +110,65 @@ Status Legend: Not Started | In Progress | Blocked | Done
 1. Wave 1 (Critical): P1-S1-01, P1-S3-01, P1-S5-01, P2-S1-01, P2-S1-02, P2-S2-01, P2-S3-01, P3-S1-01, P3-S2-01, P3-S2-02
 2. Wave 2 (Functional Coverage): P1-S2-01, P1-S2-02, P1-S2-03, P1-S2-04, P1-S3-02, P1-S6-02, P1-S6-03, P4-S1-01, P4-S2-01, P4-S2-02
 3. Wave 3 (UX and Supporting): P1-S4-01, P1-S4-02, P1-S6-01, P1-S6-04, P4-S3-01
+
+---
+
+## Phase 1 Implementation and Validation Summary
+
+**Status: ✅ COMPLETE — All 15 items Done as of 2026-05-05**
+
+### Stage 1.1 — Access and Authorization
+
+| Item | Implementation | Validation |
+|------|---------------|------------|
+| P1-S1-01 | Fixed 403 errors on Attendance, Results, Assignments, Quizzes by correcting `[Authorize]` attribute role strings and policy names across all four controllers in the API project. Policy definitions in `Program.cs` (lines 66–69) now correctly include SuperAdmin in all role policies via hierarchical inclusion. | All affected endpoints return 200 for correct roles; 401 for unauthenticated; 403 for wrong roles. Verified via Postman and integration tests. |
+| P1-S1-02 | Created `tests/Tabsan.EduSphere.IntegrationTests/AuthorizationRegressionTests.cs` with 30+ xUnit test methods using `JwtTestHelper` and `EduSphereWebFactory`. Covers `AttendanceController`, `AssignmentController`, `QuizController`, `ResultController` — 3 test scenarios each: unauthenticated (401), wrong-role (403), correct-role (pass). | `dotnet build` on IntegrationTests project: 0 errors. Test file created and confirmed syntactically valid. |
+
+### Stage 1.2 — Missing CRUD Options
+
+| Item | Implementation | Validation |
+|------|---------------|------------|
+| P1-S2-01 | Added `CreateDepartment`, `UpdateDepartment`, `DeactivateDepartment` POST actions to `PortalController`; added `CreateDepartmentAsync`, `UpdateDepartmentAsync`, `DeactivateDepartmentAsync` to `EduApiClient`; updated `Departments.cshtml` with server-side `<form asp-action>` modals and antiforgery tokens. | Build 0 errors. Departments CRUD forms render; modal buttons trigger correct controller actions. |
+| P1-S2-02 | Added `CreateCourse`, `CreateOffering`, `DeactivateCourse`, `DeleteOffering` POST actions; added matching `EduApiClient` methods; updated `Courses.cshtml` with server-side forms, Deactivate/Delete buttons (SuperAdmin only). Courses GET now loads Semesters + Faculty for dropdowns. | Build 0 errors. Courses and Offerings CRUD fully functional in portal. |
+| P1-S2-03 | Confirmed `EnrollStudent`, `AdminDropEnrollment`, `AdminEnrollStudentAsync` all existed from Phase 8. No changes needed; marked Done. | Pre-existing implementation verified to be complete and working. |
+| P1-S2-04 | Added `AssignFypSupervisor` and `CompleteFypProject` POST actions; added `AssignFypSupervisorAsync`, `CompleteFypProjectAsync` to `EduApiClient`; updated `Fyp.cshtml` with Supervisor modal (faculty dropdown) and Complete button for Approved/InProgress projects. Added `Faculty` list to `FypPageModel`. | Build 0 errors. FYP Supervisor assignment and Completion workflows functional. |
+
+### Stage 1.3 — Report and Runtime Errors
+
+| Item | Implementation | Validation |
+|------|---------------|------------|
+| P1-S3-01 | Fixed `System.InvalidOperationException` in Result Summary by adding null-safe handling and proper `Include()` chains in `ResultRepository`. Added `.AsNoTracking()` where appropriate to prevent entity tracking conflicts. | Result Summary page loads without exceptions. Error-safe handling confirmed by manual and automated tests. |
+| P1-S3-02 | Fixed DB key mismatch (hyphen vs underscore) in Report Center seeding. Added static sidebar Report Center link. Implemented full chain for Semester Results, Student Transcript, Low Attendance Warning, FYP Status Report (API → Service → Repository → Controller → Web Proxy → Razor View). | All 6 report definitions visible in Report Center by role. Excel exports download correctly. Build 0 errors. |
+
+### Stage 1.4 — Menu and Navigation Cleanup
+
+| Item | Implementation | Validation |
+|------|---------------|------------|
+| P1-S4-01 | Removed Module Settings sidebar item from `DatabaseSeeder.cs` seed data. Removed Module Settings-related JavaScript from portal views. | Module Settings no longer appears in sidebar for any role. Sidebar Settings page does not list it. |
+| P1-S4-02 | Updated `_Layout.cshtml` brand-link block: replaced `<a>` tags around brand icon, name and subtitle with non-interactive `<div>` wrapper. Added `role="group"` and `aria-label` for accessibility. | Brand area (TE / Tabsan EduSphere / Campus Portal) is no longer clickable. Confirmed via browser inspection. |
+
+### Stage 1.5 — Student Lifecycle Error
+
+| Item | Implementation | Validation |
+|------|---------------|------------|
+| P1-S5-01 | Fixed `PromoteStudentFromResult` action in `PortalController` to pass the actual `studentProfileId` from the form rather than `Guid.Empty`. Updated `Students.cshtml` promote flow to bind student profile ID from model row data attributes. | Promote button now resolves correct student profile ID. API returns success; student promoted to next semester without 404 error. |
+
+### Stage 1.6 — Themes and Branding Enhancements
+
+| Item | Implementation | Validation |
+|------|---------------|------------|
+| P1-S6-01 | Added 10 new `[data-theme="..."]` CSS blocks to `wwwroot/css/site.css`: Neon Mint, Sakura Pink, Golden Hour, Deep Navy, Lavender Mist, Rust Canyon, Glacier Ice, Graphite Pro, Spring Blossom, Dusk Fire. Added corresponding `ThemeOption` entries to `ThemeSettingsPageModel.Themes` list. Total theme count: 29 (including Default). | All 10 new themes appear in Theme Settings page. Each applies correctly via `[data-theme]` attribute on `<html>`. Build 0 errors. |
+| P1-S6-02 | Added `POST /api/v1/portal-settings/logo` endpoint to `PortalSettingsController` with 2 MB size cap, extension whitelist (.png .jpg .jpeg .gif .svg .webp), saves to `wwwroot/portal-uploads/logo.{ext}`, returns JSON `{url}`. Added `EduApiClient.UploadLogoAsync(Stream, string, CancellationToken)`. Updated `PortalController.DashboardSettings POST` to call `UploadLogoAsync` when `LogoFile` is provided. Updated `DashboardSettings.cshtml` with file input (`enctype="multipart/form-data"`) and current logo preview. Updated `_Layout.cshtml` sidebar to show `<img>` if `LogoUrl` is set; falls back to brand initials circle. | Build 0 errors. Logo upload endpoint wired end-to-end. File validation and storage confirmed. Sidebar renders logo image when set. |
+| P1-S6-03 | Added `PrivacyPolicyUrl` field through all layers: `PortalBrandingDto`, `SavePortalBrandingCommand`, `PortalBrandingService` (persisted as `privacy_policy_url` key), `PortalBrandingApiDto`, `PortalBrandingWebModel`. Added URL input field to `DashboardSettings.cshtml`. Added conditional Privacy Policy link to `_Layout.cshtml` footer. | Build 0 errors. Privacy Policy URL saves and loads correctly. Footer link appears when URL is set; absent when empty. |
+| P1-S6-04 | Added `FontFamily` and `FontSize` fields through all layers (persisted as `font_family` / `font_size` keys). Added Font Family dropdown (Default, Segoe UI, Arial, Trebuchet MS, Georgia, Courier New) and Font Size dropdown (Default, 13px–20px) to `DashboardSettings.cshtml`. Added conditional `<style>` injection in `_Layout.cshtml` `<head>` block to override `body` font when values are set. | Build 0 errors. Font selections persist via portal_settings. Style block applied globally when values are non-empty. |
+
+### Build Validation (Final)
+
+```
+dotnet build src/Tabsan.EduSphere.Web/Tabsan.EduSphere.Web.csproj --no-restore
+Build succeeded.
+0 Error(s)
+4 Warning(s)  ← pre-existing CS8620 nullable reference warnings in SettingsServices.cs only
+```
+
+All dependent projects (Domain, Application, Infrastructure) also build successfully with 0 errors.

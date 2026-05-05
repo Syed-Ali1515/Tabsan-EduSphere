@@ -26,27 +26,30 @@ Also update this file with:
 ---
 
 ## Current Execution Pointer
-- Plan Source: Project startup Docs/Final-Touches.md
-- Active Phase: Phase 1 Remediation Restart
-- Active Stage: Stage 1.1 / 1.2 / 1.6 (Batch 3 complete for Stage 1.3)
-- Status: In Progress
+- Plan Source: Observed-Issues.md (Phase 2 items P2-S1-01 through P2-S3-03)
+- Active Phase: **Phase 2 — App License**
+- Active Stage: Stage 2.1 — User Count Based Concurrency Restriction
+- Status: **Not Started — ready to begin**
 - Last Updated: 2026-05-05
 
 ## Completed Work
-- Phase 1: Navigation, Session Stability, Sidebar Structure (all stages done)
-- Phase 2: All stages complete (Timetable data binding, Buildings/Students/Departments/Courses visibility, CRUD entry points) — status updated to ✅ Complete
-- Phase 3: All stages complete (403 fixes, data entry workflows, result-driven promotion) — status updated to ✅ Complete
-- Phase 2: Timetable and Core Lookup Data Visibility (all stages done)
-- Phase 3 Stage 3.1: Route prefix fix on AssignmentController, AttendanceController, ResultController, QuizController, FypController (api/ → api/v1/); added GET api/v1/quiz/my-attempts endpoint + GetAllMyAttemptsAsync service chain
-- Phase 3 Stage 3.2: Data entry workflows for Assignments, Attendance, Results, Quizzes, FYP (create/publish/delete, grade submissions, bulk mark attendance, propose/approve/reject FYP)
-- Phase 3 Stage 3.3: Result-driven promotion — Promote column in Results table, "Promote to next semester" checkbox in Enter Result modal (Final type), standalone PromoteStudentFromResult action
-- Phase 4 Stage 4.1: Report Center fixes — key mismatch resolved (DB hyphen vs switch underscore), static sidebar Report Center link added, Semester Results report full chain, 3 Excel export Portal proxy actions + EduApiClient methods, DB seeds updated
-- Phase 4 Stage 4.2: 3 new reports — Student Transcript (with Excel export), Low Attendance Warning, FYP Status Report; all 6 infrastructure layers implemented; 3 Razor views; ReportCenter.cshtml switch; DatabaseSeeder + ReportKeys updated; build 0 errors
-- Phase 5: Settings Pages — theme persistence fixed in _Layout.cshtml (data-theme on html tag, session-cached API call); 5 new themes added (Steel Blue, Forest Green, Amber Gold, Warm Copper, Indigo Dusk); success/error alert styling improved in ThemeSettings, ReportSettings, ModuleSettings; all settings save actions verified working; build 0 errors
-- Phase 6: Notifications & Analytics — Stage 6.1: fixed `NotificationController` route from `api/[controller]` to `api/v1/[controller]` (resolved all notification 404s); Stage 6.2: replaced raw JSON `<pre>` dumps in Analytics view with typed `DepartmentPerformanceReport`, `DepartmentAttendanceReport`, `AssignmentStatsReport` objects; `EduApiClient` analytics methods now return typed DTOs via `GetAsync<T>`; `AnalyticsPageModel` updated to hold typed properties; `Analytics.cshtml` renders Bootstrap 5 responsive tables per section; summary cards populated from real data; build 0 errors
+- **Phase 1 Remediation — ALL 15 items Done (P1-S1-01 through P1-S6-04)** ✅
+  - Stage 1.1: 403 auth fixes on Attendance/Assignments/Quizzes/Results; 30+ regression tests in AuthorizationRegressionTests.cs
+  - Stage 1.2: Departments, Courses+Offerings, Enrollments, FYP Management CRUD fully implemented
+  - Stage 1.3: Result Summary exception fixed; all Report Center reports visible by role
+  - Stage 1.4: Module Settings removed from sidebar; brand area made non-clickable
+  - Stage 1.5: Student lifecycle Promote flow fixed (correct profileId passed)
+  - Stage 1.6: 29 total themes (10 new); logo upload endpoint + sidebar; privacy policy footer link; font family/size dropdowns with CSS injection
+- Final-Touches Phases 1–9 (original work before remediation): all complete
+- Phase 1 Remediation Batches 1–5: all complete
 
 ## Next Steps
-- Continue Phase 1 remediation: finish Stage 1.1, Stage 1.2, and Stage 1.6 enhancements.
+- **P2-S1-01**: Implement concurrent user limit enforcement based on `LicenseInfo.MaxUsers` in license file. Track active sessions in DB or in-memory. Reject login (non-SuperAdmin) when count >= MaxUsers.
+- **P2-S1-02**: Exempt SuperAdmin role from all concurrency checks — SuperAdmin can always log in regardless of user count.
+- **P2-S2-01**: Support `MaxUsers = 0` (or special sentinel like `"All"`) to mean unlimited — skip all concurrency checks for that license.
+- **P2-S3-01**: Bind license to deployment domain on first activation. Store `ActivatedDomain` in DB; reject license on domain mismatch.
+- **P2-S3-02**: Force re-upload of license when app detects it is running on a new domain (ActivatedDomain missing or mismatch).
+- **P2-S3-03**: Add HMAC/signature verification to license file validation — reject if payload was tampered with even if structurally valid.
 
 - Phase 8 (Enrollments Completion — ✅ Complete)
 
@@ -434,3 +437,62 @@ When a phase is completed, update:
 - Observed-Issues.md: Marked P1-S1-01, P1-S1-02, P1-S6-01, P1-S6-02, P1-S6-03, P1-S6-04 as Done
 - Command.md: This entry
 - PRD.md: Bumped to v1.26
+
+---
+
+### Entry 015 — 2026-05-05 — Phase 1 Complete / Phase 2 Handover
+
+**Purpose:** Full handover record for resuming work on a different system or in a new session.
+
+**Phase 1 Remediation — Final Status: ✅ ALL DONE**
+
+All 15 Phase 1 items (P1-S1-01 through P1-S6-04) are complete. See Observed-Issues.md for the detailed implementation and validation summary added to each stage.
+
+**Key files changed across all Phase 1 Remediation batches:**
+
+| File | Changes |
+|------|---------|
+| `src/Tabsan.EduSphere.API/Controllers/AttendanceController.cs` | Fixed `[Authorize]` policy/role strings; corrected route prefix |
+| `src/Tabsan.EduSphere.API/Controllers/AssignmentController.cs` | Fixed `[Authorize]` policy/role strings |
+| `src/Tabsan.EduSphere.API/Controllers/QuizController.cs` | Fixed `[Authorize]` policy/role strings |
+| `src/Tabsan.EduSphere.API/Controllers/ResultController.cs` | Fixed `[Authorize]` policy/role strings |
+| `src/Tabsan.EduSphere.API/Controllers/PortalSettingsController.cs` | Added `POST /api/v1/portal-settings/logo` upload endpoint with file validation |
+| `src/Tabsan.EduSphere.Application/DTOs/SettingsDtos.cs` | Added `LogoUrl`, `PrivacyPolicyUrl`, `FontFamily`, `FontSize` to `PortalBrandingDto` and `SavePortalBrandingCommand` |
+| `src/Tabsan.EduSphere.Application/Services/SettingsServices.cs` | Updated `PortalBrandingService.GetAsync/SaveAsync` for all 8 keys |
+| `src/Tabsan.EduSphere.Web/Controllers/PortalController.cs` | Added Departments/Courses/FYP CRUD POST actions; updated DashboardSettings POST to call UploadLogoAsync |
+| `src/Tabsan.EduSphere.Web/Services/EduApiClient.cs` | Added `UploadLogoAsync`; updated `PortalBrandingApiDto` for 8 fields; added Departments/Courses/FYP CRUD client methods |
+| `src/Tabsan.EduSphere.Web/Models/Portal/PortalViewModels.cs` | Added `LogoUrl`, `PrivacyPolicyUrl`, `FontFamily`, `FontSize` to `PortalBrandingWebModel`; added `LogoFile` to `DashboardSettingsPageModel`; added 10 new `ThemeOption` entries |
+| `src/Tabsan.EduSphere.Web/Views/Portal/DashboardSettings.cshtml` | Added logo file input + preview, privacy policy URL input, font family/size dropdowns; form `enctype="multipart/form-data"` |
+| `src/Tabsan.EduSphere.Web/Views/Portal/Departments.cshtml` | Added Create/Edit/Deactivate modals with server-side form actions |
+| `src/Tabsan.EduSphere.Web/Views/Portal/Courses.cshtml` | Added Create Course/Offering, Deactivate/Delete with server-side forms |
+| `src/Tabsan.EduSphere.Web/Views/Portal/Fyp.cshtml` | Added Supervisor assignment modal and Complete button |
+| `src/Tabsan.EduSphere.Web/Views/Shared/_Layout.cshtml` | Logo in sidebar (with initials fallback); privacy policy footer link; font CSS injection in `<head>` |
+| `src/Tabsan.EduSphere.Web/wwwroot/css/site.css` | Added 10 new theme blocks (Neon Mint → Dusk Fire) |
+| `tests/Tabsan.EduSphere.IntegrationTests/AuthorizationRegressionTests.cs` | New file: 30+ regression tests for auth on Attendance/Assignment/Quiz/Result endpoints |
+
+**Architecture context (Phase 2 must follow these patterns):**
+- JWT auth policies defined in `src/Tabsan.EduSphere.API/Program.cs` lines 66–69. All policies include SuperAdmin.
+- License data stored in `Tabsan.EduSphere.Domain/Licensing/` entities.
+- License validation service: `src/Tabsan.EduSphere.Application/Services/` (look for `LicenseService` or similar).
+- Background job for license expiry warning: `src/Tabsan.EduSphere.BackgroundJobs/LicenseExpiryWarningJob.cs`.
+- License import/update in portal: `src/Tabsan.EduSphere.Web/Controllers/PortalController.cs` — `LicenseUpdate` action.
+- License key generator tool: `tools/KeyGen/` and `tools/Tabsan.Lic/`.
+
+**Phase 2 Work Plan (next up):**
+
+| ID | Work Item | Approach |
+|----|-----------|----------|
+| P2-S1-01 | Concurrent user limit based on `MaxUsers` in license | Track active logins in a DB table (e.g., `ActiveSessions`). On login, count active non-expired sessions. If count >= MaxUsers, reject login with HTTP 403 + meaningful message. |
+| P2-S1-02 | SuperAdmin always exempt from concurrency limit | In the concurrency check, skip if role is SuperAdmin. |
+| P2-S2-01 | `MaxUsers = 0` or `"All"` = unlimited mode | Treat zero/negative/`"All"` as unlimited; skip concurrency check entirely. |
+| P2-S3-01 | One-time domain binding on first activation | On first license load: capture request domain, persist as `ActivatedDomain` in license entity. On subsequent loads: compare current domain — reject if mismatch. |
+| P2-S3-02 | Force re-upload when domain changes | If `ActivatedDomain` is set and does not match current domain, redirect to LicenseUpdate page with an error message. |
+| P2-S3-03 | HMAC anti-tamper on license file | License file signed with HMAC-SHA256 using a server secret. Validate signature before parsing payload. Reject with clear error if tampered. |
+
+**Resume prompt for new session:**
+```
+Read Command.md first. Phase 1 Remediation is complete (all Done in Observed-Issues.md).
+Begin Phase 2 from P2-S1-01. Refer to the Phase 2 Work Plan table in Entry 015.
+Do not re-do any Phase 1 work.
+When Phase 2 is complete, update: Observed-Issues.md, Command.md, PRD.md, Docs/Function-List.md.
+```
