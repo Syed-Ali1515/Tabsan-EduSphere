@@ -21,3 +21,15 @@ public record CsvWhitelistRow(
     string DepartmentId,
     string ProgramId
 );
+
+/// <summary>
+/// Result of a CSV user import operation (P4-S1-01).
+/// Contains counts for imported, duplicate, and errored rows plus per-row error messages.
+/// </summary>
+public record UserImportResult(
+    int TotalRows,
+    int Imported,
+    int Duplicates,
+    int Errors,
+    IList<string> ErrorDetails
+);

@@ -81,6 +81,14 @@ public class UserRepository : IUserRepository
     public async Task AddAsync(User user, CancellationToken ct = default)
         => await _db.Users.AddAsync(user, ct);
 
+    /// <summary>Bulk-queues multiple new user entities for insertion (P4-S1-01 CSV import).</summary>
+    public async Task AddRangeAsync(IEnumerable<User> users, CancellationToken ct = default)
+        => await _db.Users.AddRangeAsync(users, ct);
+
+    /// <summary>Returns the role matching the given name (case-insensitive), or null if not found.</summary>
+    public Task<Role?> GetRoleByNameAsync(string roleName, CancellationToken ct = default)
+        => _db.Roles.FirstOrDefaultAsync(r => r.Name.ToLower() == roleName.ToLower(), ct);
+
     /// <summary>Marks the user entity as Modified so EF Core generates an UPDATE statement.</summary>
     public void Update(User user) => _db.Users.Update(user);
 

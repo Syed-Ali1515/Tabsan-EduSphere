@@ -52,16 +52,24 @@ public class User : AuditableEntity
     /// </summary>
     public string? ThemeKey { get; private set; }
 
+    /// <summary>
+    /// When true the user must change their password before proceeding.
+    /// Set to true on CSV import (P4-S2-02); cleared after a successful forced password change.
+    /// </summary>
+    public bool MustChangePassword { get; private set; } = false;
+
     private User() { }
 
     /// <summary>Creates a new user. Password must already be hashed by the caller.</summary>
-    public User(string username, string passwordHash, int roleId, string? email = null, Guid? departmentId = null)
+    public User(string username, string passwordHash, int roleId, string? email = null, Guid? departmentId = null,
+                bool mustChangePassword = false)
     {
         Username = username;
         PasswordHash = passwordHash;
         RoleId = roleId;
         Email = email;
         DepartmentId = departmentId;
+        MustChangePassword = mustChangePassword;
     }
 
     /// <summary>Records a successful login by updating the LastLoginAt timestamp.</summary>
@@ -147,6 +155,15 @@ public class User : AuditableEntity
     public void SetTheme(string? themeKey)
     {
         ThemeKey = themeKey?.Trim().ToLowerInvariant();
+        Touch();
+    }
+
+    /// <summary>
+    /// Clears the forced-password-change flag after the user has successfully set a new password (P4-S2-02).
+    /// </summary>
+    public void ClearMustChangePassword()
+    {
+        MustChangePassword = false;
         Touch();
     }
 }

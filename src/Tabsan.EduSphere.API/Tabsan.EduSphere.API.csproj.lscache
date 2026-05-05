@@ -86,6 +86,7 @@ Controllers/
  TeacherModificationController.cs
  ThemeController.cs
  TimetableController.cs
+ UserImportController.cs
 Middleware/
  LicenseDomainMiddleware.cs
  SecurityHeadersMiddleware.cs

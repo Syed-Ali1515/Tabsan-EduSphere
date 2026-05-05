@@ -103,4 +103,30 @@ public class AuthController : ControllerBase
 
         return NoContent();
     }
+
+    // ── POST /api/v1/auth/force-change-password ───────────────────────────────
+
+    /// <summary>
+    /// Allows a user flagged with MustChangePassword (imported via CSV) to set a new password (P4-S2-02).
+    /// Does NOT require the old password. Returns 204 on success, 400 on failure.
+    /// </summary>
+    [HttpPost("force-change-password")]
+    [Authorize]
+    public async Task<IActionResult> ForceChangePassword(
+        [FromBody] ForceChangePasswordRequest request,
+        CancellationToken ct)
+    {
+        var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                     ?? User.FindFirst("sub")?.Value;
+
+        if (!Guid.TryParse(userIdStr, out var userId))
+            return Forbid();
+
+        var success = await _auth.ForceChangePasswordAsync(userId, request.NewPassword, ct);
+
+        if (!success)
+            return BadRequest(new { message = "Failed to change password. Ensure the new password is not empty." });
+
+        return NoContent();
+    }
 }

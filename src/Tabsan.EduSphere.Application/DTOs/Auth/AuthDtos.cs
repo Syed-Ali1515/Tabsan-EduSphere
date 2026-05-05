@@ -7,6 +7,8 @@ public sealed record LoginRequest(string Username, string Password);
 /// Returned on a successful login.
 /// The access token is short-lived (default 15 min).
 /// The refresh token is long-lived (default 7 days) and stored as an HttpOnly cookie.
+/// MustChangePassword is true for accounts imported via CSV (P4-S2-02) — the client
+/// must redirect the user to the forced password change page before any other action.
 /// </summary>
 public sealed record LoginResponse(
     string AccessToken,
@@ -14,13 +16,17 @@ public sealed record LoginResponse(
     DateTime AccessTokenExpiry,
     string Role,
     Guid UserId,
-    string Username);
+    string Username,
+    bool MustChangePassword = false);
 
 /// <summary>Request body sent to POST /api/v1/auth/refresh.</summary>
 public sealed record RefreshRequest(string RefreshToken);
 
 /// <summary>Request body for POST /api/v1/auth/change-password.</summary>
 public sealed record ChangePasswordRequest(string CurrentPassword, string NewPassword);
+
+/// <summary>Request body for POST /api/v1/auth/force-change-password (P4-S2-02).</summary>
+public sealed record ForceChangePasswordRequest(string NewPassword);
 
 // ── P2-S1-01: Login result with failure reason for concurrency enforcement ──
 

@@ -2803,6 +2803,94 @@ New themes added to site.css and ThemeSettingsPageModel: `neon_mint`, `sakura_pi
 - ✅ P3-S2-02: Modified payload rejection — RSA signing makes tampering detectable (pre-existing, verified)
 - **Build**: `Tabsan.Lic` 0 errors; full solution 0 errors
 - **Next**: Phase 4 — CSV User Import (P4-S1-01 through P4-S3-01)
+
+---
+
+## Phase 4 — CSV User Import (2026-05-06)
+
+### Domain — User (Phase 4 additions)
+
+| Symbol | Type | Purpose | Location |
+|---|---|---|---|
+| `MustChangePassword` | Property (bool) | Flags a user account as requiring a password change on next login. Set to `true` on CSV import; cleared by `ClearMustChangePassword()`. | Domain/Identity/User.cs |
+| `User(…, mustChangePassword)` | Constructor | Extended to accept `mustChangePassword` parameter (default `false`). | Domain/Identity/User.cs |
+| `ClearMustChangePassword()` | Method | Clears the `MustChangePassword` flag after a successful forced password change. | Domain/Identity/User.cs |
+
+### Infrastructure — UserConfiguration (Phase 4)
+
+| Symbol | Type | Purpose | Location |
+|---|---|---|---|
+| `MustChangePassword` EF config | Configuration | Maps `bit NOT NULL DEFAULT 0` column on the `users` table. | Infrastructure/Persistence/Configurations/UserConfiguration.cs |
+
+### Infrastructure — Migrations (Phase 4)
+
+| Symbol | Type | Purpose | Location |
+|---|---|---|---|
+| `Phase4UserImport` | Migration | Adds `MustChangePassword bit NOT NULL DEFAULT 0` column to the `users` table. | Infrastructure/Migrations/20260506_Phase4UserImport.cs |
+
+### Domain — IUserRepository (Phase 4 additions)
+
+| Symbol | Type | Purpose | Location |
+|---|---|---|---|
+| `AddRangeAsync(IEnumerable<User>, ct)` | Method | Bulk-inserts multiple User entities in a single batch for CSV import. | Domain/Interfaces/IUserRepository.cs |
+| `GetRoleByNameAsync(string, ct)` | Method | Resolves a Role entity by name (case-insensitive) — used by the import service to look up role IDs. | Domain/Interfaces/IUserRepository.cs |
+
+### Infrastructure — UserRepository (Phase 4 additions)
+
+| Symbol | Type | Purpose | Location |
+|---|---|---|---|
+| `AddRangeAsync` | Method | Calls `_db.Users.AddRangeAsync`. | Infrastructure/Repositories/UserRepository.cs |
+| `GetRoleByNameAsync` | Method | `_db.Roles.FirstOrDefaultAsync(r => r.Name.ToLower() == ...)` | Infrastructure/Repositories/UserRepository.cs |
+
+### Application — IUserImportService (Phase 4 new)
+
+| Symbol | Type | Purpose | Location |
+|---|---|---|---|
+| `IUserImportService` | Interface | Contract for CSV user import. Defines `ImportFromCsvAsync(Stream, ct)`. | Application/Interfaces/IUserImportService.cs |
+| `UserImportResult` | Record | Import summary DTO: TotalRows, Imported, Duplicates, Errors, ErrorDetails. | Application/DTOs/CsvImportDtos.cs |
+
+### Application — UserImportService (Phase 4 new)
+
+| Symbol | Type | Purpose | Location |
+|---|---|---|---|
+| `UserImportService` | Service | Parses CSV (Username,Email,FullName,Role[,DepartmentId]), validates each row, sets password=username (P4-S2-01), sets MustChangePassword=true (P4-S2-02), bulk-inserts valid rows. | Application/Services/UserImportService.cs |
+| `ImportFromCsvAsync` | Method | Entry point — parses stream, resolves roles, detects duplicates (intra-batch + DB), returns `UserImportResult`. | Application/Services/UserImportService.cs |
+
+### Application — AuthService / IAuthService (Phase 4 additions)
+
+| Symbol | Type | Purpose | Location |
+|---|---|---|---|
+| `ForceChangePasswordAsync(Guid, string, ct)` | Method | Sets a new password for a `MustChangePassword` user without requiring the old password; clears the flag on success. | Application/Auth/AuthService.cs |
+| `LoginAsync` | Modified | Now includes `MustChangePassword` in the returned `LoginResponse`. | Application/Auth/AuthService.cs |
+| `ForceChangePasswordRequest` | DTO | Request body for the force-change-password endpoint. | Application/DTOs/Auth/AuthDtos.cs |
+| `LoginResponse.MustChangePassword` | Property | `bool` (default `false`). Set to `true` for imported users on first login. | Application/DTOs/Auth/AuthDtos.cs |
+
+### API — UserImportController (Phase 4 new)
+
+| Symbol | Type | Purpose | Location |
+|---|---|---|---|
+| `UserImportController` | Controller | `POST /api/v1/user-import/csv` — SuperAdmin/Admin only. Accepts IFormFile, streams to `IUserImportService`. | API/Controllers/UserImportController.cs |
+
+### API — AuthController (Phase 4 addition)
+
+| Symbol | Type | Purpose | Location |
+|---|---|---|---|
+| `ForceChangePassword` | Action | `POST /api/v1/auth/force-change-password` — Authorized. Sets new password for flagged users; clears MustChangePassword. | API/Controllers/AuthController.cs |
+
+### P4-S3-01 — User Import Sheets folder
+
+| File | Purpose |
+|---|---|
+| `User Import Sheets/user-import-template.csv` | Template CSV with header row + 1 sample row. |
+| `User Import Sheets/README.md` | Column descriptions, rules, and import instructions. |
+
+**Phase 4 Completion Summary:**
+- ✅ P4-S1-01: CSV user import via `POST /api/v1/user-import/csv` (SuperAdmin/Admin)
+- ✅ P4-S2-01: Initial password = Username for all imported users
+- ✅ P4-S2-02: `MustChangePassword` flag + `POST /api/v1/auth/force-change-password` endpoint
+- ✅ P4-S3-01: `User Import Sheets/` folder with CSV template and README
+- **Build**: 0 errors
+- **Next**: Apply migration `dotnet ef database update --project src/Tabsan.EduSphere.Infrastructure`, then proceed to next phase
 | `StudentEnrollAsync` | Method (new) | Posts `{CourseOfferingId}` to `POST api/v1/enrollment`. | Web/Services/EduApiClient.cs |
 | `StudentDropEnrollmentAsync` | Method (new) | Calls `DELETE api/v1/enrollment/{offeringId}`. | Web/Services/EduApiClient.cs |
 | `MyCourseApiDto` | Private class (new) | DTO for deserializing `my-courses` response. | Web/Services/EduApiClient.cs |

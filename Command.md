@@ -26,11 +26,48 @@ Also update this file with:
 ---
 
 ## Current Execution Pointer
-- Plan Source: Observed-Issues.md (Phase 3 items P3-S1-01 through P3-S2-02)
-- Active Phase: **Phase 3 — License App — COMPLETE**
+- Plan Source: Observed-Issues.md (Phase 4 items P4-S1-01 through P4-S3-01)
+- Active Phase: **Phase 4 — CSV User Import — COMPLETE**
 - Active Stage: N/A
-- Status: **Done — Phase 4 is next (CSV User Import)**
-- Last Updated: 2026-05-05
+- Status: **Done — All Observed-Issues phases complete. See "Resuming at Home" below for exact next steps.**
+- Last Updated: 2026-05-06
+
+---
+
+## ⚡ Resuming at Home — Start Here
+
+### Step 1: Apply pending DB migrations (REQUIRED before running the app)
+
+Both migrations are written but NOT yet applied to the SQL Server database:
+
+```powershell
+cd "C:\Users\alin\Desktop\Prj\Tabsan-EduSphere"
+dotnet ef database update --project src/Tabsan.EduSphere.Infrastructure --startup-project src/Tabsan.EduSphere.API
+```
+
+This applies:
+1. `20260505_Phase2LicenseConcurrency` — adds `MaxUsers` + `ActivatedDomain` to `license_state`
+2. `20260506_Phase4UserImport` — adds `MustChangePassword` to `users`
+
+### Step 2: Decide what comes next
+
+All items in Observed-Issues.md are now **Done** (Phases 1–4). Options:
+
+**Option A — Add Web UI for Phase 4 (recommended)**
+The `POST /api/v1/user-import/csv` API endpoint is complete, but there is no admin portal page yet.
+Work needed:
+- Add `ImportUsersAsync(IFormFile)` to `EduApiClient` in `Tabsan.EduSphere.Web`
+- Add an "Import Users" page/action to `PortalController`
+- Add a Razor view with a file upload form and import result display
+- Add a "Force Change Password" page that fires on login when `MustChangePassword == true`
+
+**Option B — Define new phases**
+Open `Observed-Issues.md` and add new Phase 5 items, then tell the assistant to begin.
+
+**Option C — Integration tests for Phase 4**
+Write unit/integration tests for `UserImportService` and the `ForceChangePasswordAsync` flow.
+
+---
 
 ## Completed Work
 - **Phase 1 Remediation — ALL 15 items Done (P1-S1-01 through P1-S6-04)** ✅
@@ -616,4 +653,42 @@ When Phase 2 is complete, update: Observed-Issues.md, Command.md, PRD.md, Docs/F
 **Next:**
 - Apply migration to DB: `dotnet ef database update`
 - Begin Phase 4: CSV User Import (P4-S1-01, P4-S2-01, P4-S2-02, P4-S3-01)
+
+---
+
+## Entry 018 — Phase 4: CSV User Import (2026-05-06)
+
+**Items completed:**
+- P4-S1-01: CSV user import via `POST /api/v1/user-import/csv` (SuperAdmin/Admin only)
+- P4-S2-01: Initial password = username on CSV import
+- P4-S2-02: `MustChangePassword` flag set on import; `POST /api/v1/auth/force-change-password` clears it
+- P4-S3-01: `User Import Sheets/` folder with `user-import-template.csv` + `README.md`
+
+**Files created:**
+- [src/Tabsan.EduSphere.Application/Interfaces/IUserImportService.cs](src/Tabsan.EduSphere.Application/Interfaces/IUserImportService.cs) — import interface
+- [src/Tabsan.EduSphere.Application/Services/UserImportService.cs](src/Tabsan.EduSphere.Application/Services/UserImportService.cs) — import implementation
+- [src/Tabsan.EduSphere.API/Controllers/UserImportController.cs](src/Tabsan.EduSphere.API/Controllers/UserImportController.cs) — API endpoint
+- [src/Tabsan.EduSphere.Infrastructure/Migrations/20260506_Phase4UserImport.cs](src/Tabsan.EduSphere.Infrastructure/Migrations/20260506_Phase4UserImport.cs) — MustChangePassword column
+- [User Import Sheets/user-import-template.csv](User%20Import%20Sheets/user-import-template.csv) — CSV template
+- [User Import Sheets/README.md](User%20Import%20Sheets/README.md) — usage instructions
+
+**Files modified:**
+- [src/Tabsan.EduSphere.Domain/Identity/User.cs](src/Tabsan.EduSphere.Domain/Identity/User.cs) — `MustChangePassword` property + `ClearMustChangePassword()` method
+- [src/Tabsan.EduSphere.Infrastructure/Persistence/Configurations/UserConfiguration.cs](src/Tabsan.EduSphere.Infrastructure/Persistence/Configurations/UserConfiguration.cs) — EF config for MustChangePassword
+- [src/Tabsan.EduSphere.Domain/Interfaces/IUserRepository.cs](src/Tabsan.EduSphere.Domain/Interfaces/IUserRepository.cs) — added `AddRangeAsync`, `GetRoleByNameAsync`
+- [src/Tabsan.EduSphere.Infrastructure/Repositories/UserRepository.cs](src/Tabsan.EduSphere.Infrastructure/Repositories/UserRepository.cs) — implementations of above
+- [src/Tabsan.EduSphere.Application/DTOs/Auth/AuthDtos.cs](src/Tabsan.EduSphere.Application/DTOs/Auth/AuthDtos.cs) — `MustChangePassword` in `LoginResponse`, `ForceChangePasswordRequest`
+- [src/Tabsan.EduSphere.Application/Interfaces/IAuthService.cs](src/Tabsan.EduSphere.Application/Interfaces/IAuthService.cs) — `ForceChangePasswordAsync`
+- [src/Tabsan.EduSphere.Application/Auth/AuthService.cs](src/Tabsan.EduSphere.Application/Auth/AuthService.cs) — `ForceChangePasswordAsync` impl, MustChangePassword in login response
+- [src/Tabsan.EduSphere.API/Controllers/AuthController.cs](src/Tabsan.EduSphere.API/Controllers/AuthController.cs) — `POST /api/v1/auth/force-change-password`
+- [src/Tabsan.EduSphere.API/Program.cs](src/Tabsan.EduSphere.API/Program.cs) — `IUserImportService` DI registration
+- [src/Tabsan.EduSphere.Application/DTOs/CsvImportDtos.cs](src/Tabsan.EduSphere.Application/DTOs/CsvImportDtos.cs) — `UserImportResult` record
+- [src/Tabsan.EduSphere.Infrastructure/Migrations/ApplicationDbContextModelSnapshot.cs](src/Tabsan.EduSphere.Infrastructure/Migrations/ApplicationDbContextModelSnapshot.cs) — snapshot updated
+
+**Validation:**
+- `dotnet build src/Tabsan.EduSphere.API/Tabsan.EduSphere.API.csproj` → 0 errors
+
+**Next:**
+- Apply migration: `dotnet ef database update --project src/Tabsan.EduSphere.Infrastructure`
+- Proceed to next phase as defined in Observed-Issues.md
 

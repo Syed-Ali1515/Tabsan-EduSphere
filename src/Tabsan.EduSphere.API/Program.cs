@@ -141,6 +141,9 @@ builder.Services.AddScoped<IStudentLifecycleService, StudentLifecycleService>();
 builder.Services.AddScoped<IAccountSecurityService, AccountSecurityService>();
 builder.Services.AddScoped<ICsvRegistrationImportService, CsvRegistrationImportService>();
 
+// ── Phase 4: CSV User Import (P4-S1-01) ──────────────────────────────────
+builder.Services.AddScoped<IUserImportService, UserImportService>();
+
 // ── Phase 9: Timetable, Report Settings, Module Roles, Theme ─────────────
 builder.Services.AddScoped<ITimetableRepository, TimetableRepository>();
 builder.Services.AddScoped<IBuildingRoomRepository, BuildingRoomRepository>();

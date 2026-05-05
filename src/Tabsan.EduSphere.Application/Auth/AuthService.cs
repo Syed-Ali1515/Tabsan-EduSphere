@@ -107,7 +107,8 @@ public class AuthService : IAuthService
             AccessTokenExpiry: DateTime.UtcNow.AddMinutes(15),
             Role: user.Role?.Name ?? string.Empty,
             UserId: user.Id,
-            Username: user.Username));
+            Username: user.Username,
+            MustChangePassword: user.MustChangePassword));
     }
 
     // ── Refresh ────────────────────────────────────────────────────────────────
@@ -199,6 +200,38 @@ public class AuthService : IAuthService
         await _passwordHistory.SaveChangesAsync(ct);
 
         await _audit.LogAsync(new AuditLog("ChangePassword", "User", userId.ToString(),
+            actorUserId: userId), ct);
+
+        return true;
+    }
+
+    // ── Force Change Password (P4-S2-02) ──────────────────────────────────────
+
+    /// <summary>
+    /// Sets a new password for a user who is flagged with MustChangePassword = true.
+    /// Does NOT require the current password (because the imported password is just a placeholder).
+    /// Clears MustChangePassword on success.
+    /// Returns false when the user is not found or the new password is empty.
+    /// </summary>
+    public async Task<bool> ForceChangePasswordAsync(Guid userId, string newPassword, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(newPassword))
+            return false;
+
+        var user = await _userRepo.GetByIdAsync(userId, ct);
+        if (user is null) return false;
+
+        var newHash = _passwordHasher.Hash(newPassword);
+        user.UpdatePasswordHash(newHash);
+        user.ClearMustChangePassword();
+        _userRepo.Update(user);
+        await _userRepo.SaveChangesAsync(ct);
+
+        // Record in password history so that re-use rules apply going forward.
+        await _passwordHistory.AddAsync(new PasswordHistoryEntry(userId, newHash), ct);
+        await _passwordHistory.SaveChangesAsync(ct);
+
+        await _audit.LogAsync(new AuditLog("ForceChangePassword", "User", userId.ToString(),
             actorUserId: userId), ct);
 
         return true;

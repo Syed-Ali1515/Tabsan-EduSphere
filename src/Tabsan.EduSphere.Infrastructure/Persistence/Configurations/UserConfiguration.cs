@@ -69,5 +69,10 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.ThemeKey)
                .HasMaxLength(50)
                .IsRequired(false);
+
+        // Phase 4 (P4-S2-02): force password change on first login after CSV import.
+        builder.Property(u => u.MustChangePassword)
+               .IsRequired()
+               .HasDefaultValue(false);
     }
 }

@@ -31,8 +31,14 @@ public interface IUserRepository
     /// <summary>Returns all active users assigned to any of the provided role names.</summary>
     Task<IList<User>> GetActiveUsersByRolesAsync(IReadOnlyList<string> roleNames, CancellationToken ct = default);
 
+    /// <summary>Returns the role matching the given name (case-insensitive), or null if not found.</summary>
+    Task<Role?> GetRoleByNameAsync(string roleName, CancellationToken ct = default);
+
     /// <summary>Persists a new user entity.</summary>
     Task AddAsync(User user, CancellationToken ct = default);
+
+    /// <summary>Persists a collection of new user entities in a single batch (P4-S1-01 CSV import).</summary>
+    Task AddRangeAsync(IEnumerable<User> users, CancellationToken ct = default);
 
     /// <summary>Marks the entity as modified so EF Core tracks the change.</summary>
     void Update(User user);

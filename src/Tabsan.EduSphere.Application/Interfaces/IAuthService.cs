@@ -35,4 +35,11 @@ public interface IAuthService
     /// Returns false when the current password does not match.
     /// </summary>
     Task<bool> ChangePasswordAsync(Guid userId, ChangePasswordRequest request, CancellationToken ct = default);
+
+    /// <summary>
+    /// Sets a new password for a user who was flagged as MustChangePassword (P4-S2-02).
+    /// Clears the MustChangePassword flag on success.
+    /// Returns false when the user is not found or the new password is invalid.
+    /// </summary>
+    Task<bool> ForceChangePasswordAsync(Guid userId, string newPassword, CancellationToken ct = default);
 }

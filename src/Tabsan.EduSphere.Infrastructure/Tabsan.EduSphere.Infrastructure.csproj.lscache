@@ -83,6 +83,8 @@ Migrations/
  20260429041941_VerificationKeys.Designer.cs
  20260505_Phase2LicenseConcurrency.cs
  20260505_Phase2LicenseConcurrency.Designer.cs
+ 20260506_Phase4UserImport.cs
+ 20260506_Phase4UserImport.Designer.cs
  ApplicationDbContextModelSnapshot.cs
 Modules/ModuleEntitlementResolver.cs
 obj/Debug/net8.0/

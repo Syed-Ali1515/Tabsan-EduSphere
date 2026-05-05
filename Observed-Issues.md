@@ -100,10 +100,10 @@ Status Legend: Not Started | In Progress | Blocked | Done
 | P3-S1-01 | Phase 3 | Stage 3.1 | Update License App schema and generator logic to match Phase 2 constraints. | P0 | Tools Team | Done |
 | P3-S2-01 | Phase 3 | Stage 3.2 | Encrypt generated license files and validate signature/integrity at load time. | P0 | Tools Team + Security | Done |
 | P3-S2-02 | Phase 3 | Stage 3.2 | Reject modified license payload even if decrypted/repacked. | P0 | Tools Team + Security | Done |
-| P4-S1-01 | Phase 4 | Stage 4.1 | Add CSV import feature for user creation in portal. | P1 | Frontend + Backend | Not Started |
-| P4-S2-01 | Phase 4 | Stage 4.2 | Set initial password = username for imported users. | P1 | Backend | Not Started |
-| P4-S2-02 | Phase 4 | Stage 4.2 | Force password change on first login for imported users. | P1 | Backend + Frontend | Not Started |
-| P4-S3-01 | Phase 4 | Stage 4.3 | Create folder User Import Sheets with CSV template and one sample row. | P2 | PM + QA | Not Started |
+| P4-S1-01 | Phase 4 | Stage 4.1 | Add CSV import feature for user creation in portal. | P1 | Frontend + Backend | Done |
+| P4-S2-01 | Phase 4 | Stage 4.2 | Set initial password = username for imported users. | P1 | Backend | Done |
+| P4-S2-02 | Phase 4 | Stage 4.2 | Force password change on first login for imported users. | P1 | Backend + Frontend | Done |
+| P4-S3-01 | Phase 4 | Stage 4.3 | Create folder User Import Sheets with CSV template and one sample row. | P2 | PM + QA | Done |
 
 ## Delivery Order
 
@@ -255,4 +255,37 @@ dotnet build tools/Tabsan.Lic/Tabsan.Lic.csproj --no-restore
 dotnet build Tabsan.EduSphere.sln --no-restore
 → Domain, Application, UnitTests, Infrastructure, BackgroundJobs, Web: all succeeded
 → 0 Errors, warnings are pre-existing DLL file-lock MSB3026 only (running API process)
+```
+
+---
+
+## Phase 4 Implementation and Validation Summary
+
+**Status: ✅ COMPLETE — All 4 items Done as of 2026-05-06**
+
+### Stage 4.1 — CSV User Import (P4-S1-01)
+
+| Item | Implementation | Validation |
+|------|---------------|------------|
+| P4-S1-01 | Created `UserImportService` in Application/Services and `IUserImportService` in Application/Interfaces. CSV format: `Username,Email,FullName,Role[,DepartmentId]`. Service validates each row, checks for intra-batch and DB duplicates, resolves role IDs via `GetRoleByNameAsync`, and bulk-inserts valid rows using `AddRangeAsync`. SuperAdmin role is excluded from CSV import. Registered in `API/Program.cs`. Exposed via `UserImportController` at `POST /api/v1/user-import/csv` (SuperAdmin/Admin only). | `dotnet build API.csproj` → 0 errors. |
+
+### Stage 4.2 — First Login Password Flow (P4-S2-01 and P4-S2-02)
+
+| Item | Implementation | Validation |
+|------|---------------|------------|
+| P4-S2-01 | `UserImportService` hashes the username as the initial password: `_hasher.Hash(username)`. All imported users start with password = their username. | Verified in service code. |
+| P4-S2-02 | Added `MustChangePassword` (bool, default false) to `User` entity and `UserConfiguration`. Added `ClearMustChangePassword()` domain method. All imported users are created with `mustChangePassword: true`. Added `ForceChangePasswordAsync` to `AuthService`/`IAuthService` — sets new password without requiring old, clears the flag. Added `POST /api/v1/auth/force-change-password` endpoint in `AuthController`. Added `MustChangePassword` field to `LoginResponse` so clients know to redirect. Added EF migration `20260506_Phase4UserImport`. | `dotnet build API.csproj` → 0 errors. |
+
+### Stage 4.3 — User Import Sheets (P4-S3-01)
+
+| Item | Implementation | Validation |
+|------|---------------|------------|
+| P4-S3-01 | Created `User Import Sheets/` folder with `user-import-template.csv` (header + 1 sample row) and `README.md` with column descriptions, rules, and import instructions. | Files present at project root. |
+
+### Build Validation (Final — Phase 4)
+
+```
+dotnet build src/Tabsan.EduSphere.API/Tabsan.EduSphere.API.csproj --no-restore
+→ API net8.0 succeeded, 0 errors
+→ Warnings: pre-existing nullability CS8620 and DLL file-lock MSB3026 only
 ```

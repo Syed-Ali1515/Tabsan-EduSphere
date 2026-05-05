@@ -110,6 +110,7 @@ Interfaces/
  ITimetableExporters.cs
  ITimetableService.cs
  ITokenService.cs
+ IUserImportService.cs
  IUserSessionRepository.cs
 Modules/ModuleService.cs
 Notifications/NotificationService.cs
@@ -125,6 +126,7 @@ Services/
  SettingsServices.cs
  StudentLifecycleService.cs
  TimetableService.cs
+ UserImportService.cs
 Validators/AuthValidators.cs
 
 [metadataReferences]
