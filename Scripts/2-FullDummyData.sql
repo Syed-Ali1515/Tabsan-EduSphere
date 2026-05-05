@@ -620,7 +620,7 @@ DECLARE @SMD  UNIQUEIDENTIFIER = NEWID(); DECLARE @SMTTA UNIQUEIDENTIFIER = NEWI
 DECLARE @SMTTF UNIQUEIDENTIFIER = NEWID(); DECLARE @SMTTS UNIQUEIDENTIFIER = NEWID();
 DECLARE @SML  UNIQUEIDENTIFIER = NEWID(); DECLARE @SMBL UNIQUEIDENTIFIER = NEWID();
 DECLARE @SMRM UNIQUEIDENTIFIER = NEWID(); DECLARE @SMSS UNIQUEIDENTIFIER = NEWID();
-DECLARE @SMRS UNIQUEIDENTIFIER = NEWID(); DECLARE @SMMS UNIQUEIDENTIFIER = NEWID();
+DECLARE @SMRS UNIQUEIDENTIFIER = NEWID();
 DECLARE @SMSI UNIQUEIDENTIFIER = NEWID(); DECLARE @SMTS UNIQUEIDENTIFIER = NEWID();
 DECLARE @SMLU UNIQUEIDENTIFIER = NEWID();
 DECLARE @SMDashSet     UNIQUEIDENTIFIER = NEWID();
@@ -683,10 +683,6 @@ SELECT @SMSS = Id FROM sidebar_menu_items WHERE [Key]=N'system_settings';
 IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key]=N'report_settings')
     INSERT INTO sidebar_menu_items (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
     VALUES (@SMRS,N'report_settings',N'Report Settings',N'Report access control',@SMSS,1,1,1,@Now,0);
-
-IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key]=N'module_settings')
-    INSERT INTO sidebar_menu_items (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
-    VALUES (@SMMS,N'module_settings',N'Module Settings',N'Enable/disable modules',@SMSS,2,1,1,@Now,0);
 
 IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key]=N'sidebar_settings')
     INSERT INTO sidebar_menu_items (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
@@ -778,7 +774,6 @@ SELECT @SMBL =Id FROM sidebar_menu_items WHERE [Key]=N'buildings';
 SELECT @SMRM =Id FROM sidebar_menu_items WHERE [Key]=N'rooms';
 SELECT @SMSS =Id FROM sidebar_menu_items WHERE [Key]=N'system_settings';
 SELECT @SMRS =Id FROM sidebar_menu_items WHERE [Key]=N'report_settings';
-SELECT @SMMS =Id FROM sidebar_menu_items WHERE [Key]=N'module_settings';
 SELECT @SMSI =Id FROM sidebar_menu_items WHERE [Key]=N'sidebar_settings';
 SELECT @SMTS =Id FROM sidebar_menu_items WHERE [Key]=N'theme_settings';
 SELECT @SMLU =Id FROM sidebar_menu_items WHERE [Key]=N'license_update';
@@ -811,7 +806,6 @@ INSERT INTO @SRA VALUES
     (@SMRM,N'SuperAdmin',1),(@SMRM,N'Admin',1),
     (@SMSS,N'SuperAdmin',1),
     (@SMRS,N'SuperAdmin',1),
-    (@SMMS,N'SuperAdmin',1),
     (@SMSI,N'SuperAdmin',1),
     (@SMTS,N'SuperAdmin',1),(@SMTS,N'Admin',1),(@SMTS,N'Faculty',1),(@SMTS,N'Student',1),
     (@SMLU,N'SuperAdmin',1),
@@ -837,6 +831,21 @@ INSERT INTO sidebar_menu_role_accesses (Id,SidebarMenuItemId,RoleName,IsAllowed,
 SELECT NEWID(),r.ItemId,r.RoleName,r.IsAllowed,@Now FROM @SRA r
 WHERE NOT EXISTS (SELECT 1 FROM sidebar_menu_role_accesses x
                   WHERE x.SidebarMenuItemId=r.ItemId AND x.RoleName=r.RoleName);
+
+-- Legacy cleanup: hide historical Module Settings menu rows.
+UPDATE sra
+SET sra.IsAllowed = 0
+FROM sidebar_menu_role_accesses sra
+INNER JOIN sidebar_menu_items smi ON smi.Id = sra.SidebarMenuItemId
+WHERE smi.[Key] = N'module_settings';
+
+UPDATE sidebar_menu_items
+SET IsActive = 0,
+        IsDeleted = 1,
+        DeletedAt = COALESCE(DeletedAt, SYSUTCDATETIME()),
+        UpdatedAt = SYSUTCDATETIME()
+WHERE [Key] = N'module_settings'
+    AND IsDeleted = 0;
 
 -- ═══════════════════════════════════════════════════════════
 -- §16  MODULE ROLE ASSIGNMENTS

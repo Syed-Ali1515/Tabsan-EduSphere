@@ -23,6 +23,16 @@ public sealed class ReportRepository : IReportRepository
     public async Task<IList<ReportDefinition>> GetCatalogForRoleAsync(
         string roleName, CancellationToken ct = default)
     {
+        // Final-Touches Phase 1 Stage 1.3 — SuperAdmin must always see all active reports.
+        if (roleName.Equals("SuperAdmin", StringComparison.OrdinalIgnoreCase))
+        {
+            return await _db.ReportDefinitions
+                .Include(r => r.RoleAssignments)
+                .Where(r => r.IsActive)
+                .OrderBy(r => r.Name)
+                .ToListAsync(ct);
+        }
+
         return await _db.ReportDefinitions
             .Include(r => r.RoleAssignments)
             .Where(r => r.IsActive && r.RoleAssignments.Any(ra => ra.RoleName == roleName))
@@ -93,7 +103,6 @@ public sealed class ReportRepository : IReportRepository
         CancellationToken ct = default)
     {
         return await BuildResultQuery(semesterId, courseOfferingId, studentProfileId, null)
-            .OrderBy(r => r.StudentName).ThenBy(r => r.CourseCode)
             .ToListAsync(ct);
     }
 
@@ -103,7 +112,7 @@ public sealed class ReportRepository : IReportRepository
         CancellationToken ct = default)
     {
         var query = BuildResultQuery(semesterId, null, null, departmentId);
-        return await query.OrderBy(r => r.StudentName).ThenBy(r => r.CourseCode).ToListAsync(ct);
+        return await query.ToListAsync(ct);
     }
 
     private IQueryable<ResultReportRow> BuildResultQuery(
@@ -124,6 +133,7 @@ public sealed class ReportRepository : IReportRepository
                && (courseOfferingId == null || r.CourseOfferingId  == courseOfferingId)
                && (studentProfileId == null || r.StudentProfileId  == studentProfileId)
                && (departmentId     == null || c.DepartmentId      == departmentId)
+            orderby u.Username, c.Code
             select new ResultReportRow(
                 r.StudentProfileId,
                 sp.RegistrationNumber,

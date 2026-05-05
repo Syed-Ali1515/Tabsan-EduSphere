@@ -292,6 +292,17 @@ public class ThemeSettingsPageModel
         new() { Key = "amber_gold",    DisplayName = "Amber Gold",           PreviewColor = "#b45309" },
         new() { Key = "warm_copper",   DisplayName = "Warm Copper",          PreviewColor = "#c2410c" },
         new() { Key = "indigo_dusk",   DisplayName = "Indigo Dusk",          PreviewColor = "#4f46e5" },
+        // P1-S6-01 — 10 additional themes
+        new() { Key = "neon_mint",      DisplayName = "Neon Mint",           PreviewColor = "#059669" },
+        new() { Key = "sakura_pink",    DisplayName = "Sakura Pink",         PreviewColor = "#db2777" },
+        new() { Key = "golden_hour",    DisplayName = "Golden Hour",         PreviewColor = "#d97706" },
+        new() { Key = "deep_navy",      DisplayName = "Deep Navy",           PreviewColor = "#0284c7" },
+        new() { Key = "lavender_mist",  DisplayName = "Lavender Mist",       PreviewColor = "#7c3aed" },
+        new() { Key = "rust_canyon",    DisplayName = "Rust Canyon",         PreviewColor = "#ea580c" },
+        new() { Key = "glacier_ice",    DisplayName = "Glacier Ice",         PreviewColor = "#0891b2" },
+        new() { Key = "graphite_pro",   DisplayName = "Graphite Pro",        PreviewColor = "#52525b" },
+        new() { Key = "spring_blossom", DisplayName = "Spring Blossom",      PreviewColor = "#16a34a" },
+        new() { Key = "dusk_fire",      DisplayName = "Dusk Fire",           PreviewColor = "#c2410c" },
     };
 }
 
@@ -452,9 +463,11 @@ public class CoursesPageModel
 {
     public bool   IsConnected { get; set; }
     public string? Message    { get; set; }
-    public List<CourseItem>        Courses   { get; set; } = new();
-    public List<CourseOfferingItem> Offerings { get; set; } = new();
-    public List<LookupItem>        Departments { get; set; } = new();
+    public List<CourseItem>         Courses     { get; set; } = new();
+    public List<CourseOfferingItem> Offerings   { get; set; } = new();
+    public List<LookupItem>         Departments { get; set; } = new();
+    public List<LookupItem>         Semesters   { get; set; } = new();
+    public List<FacultyLookupItem>  Faculty     { get; set; } = new();
     public Guid?  SelectedDepartmentId { get; set; }
 }
 
@@ -631,9 +644,10 @@ public class FypPageModel
 {
     public bool   IsConnected { get; set; }
     public string? Message    { get; set; }
-    public List<FypProjectItem> Projects         { get; set; } = new();
-    public List<FypMeetingItem> UpcomingMeetings { get; set; } = new();
-    public List<LookupItem>     Departments      { get; set; } = new();
+    public List<FypProjectItem>    Projects         { get; set; } = new();
+    public List<FypMeetingItem>    UpcomingMeetings { get; set; } = new();
+    public List<LookupItem>        Departments      { get; set; } = new();
+    public List<FacultyLookupItem> Faculty          { get; set; } = new();
     public Guid?  SelectedDepartmentId { get; set; }
 }
 
@@ -1065,6 +1079,10 @@ public class PortalBrandingWebModel
     public string BrandInitials   { get; set; } = "TE";
     public string PortalSubtitle  { get; set; } = "Campus Portal";
     public string FooterText      { get; set; } = "© 2026 Tabsan EduSphere";
+    public string? LogoUrl        { get; set; }
+    public string? PrivacyPolicyUrl { get; set; }
+    public string? FontFamily     { get; set; }
+    public string? FontSize       { get; set; }
 }
 
 public class DashboardSettingsPageModel
@@ -1072,4 +1090,5 @@ public class DashboardSettingsPageModel
     public bool   IsConnected      { get; set; }
     public string? Message         { get; set; }
     public PortalBrandingWebModel  Branding { get; set; } = new();
+    public Microsoft.AspNetCore.Http.IFormFile? LogoFile { get; set; }
 }

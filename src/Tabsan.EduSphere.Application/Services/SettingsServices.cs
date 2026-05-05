@@ -333,6 +333,10 @@ public class PortalBrandingService : IPortalBrandingService
     private const string KeyBrandInitials   = "brand_initials";
     private const string KeyPortalSubtitle  = "portal_subtitle";
     private const string KeyFooterText      = "footer_text";
+    private const string KeyLogoUrl         = "logo_url";
+    private const string KeyPrivacyPolicy   = "privacy_policy_url";
+    private const string KeyFontFamily      = "font_family";
+    private const string KeyFontSize        = "font_size";
 
     private readonly ISettingsRepository _repo;
 
@@ -345,16 +349,24 @@ public class PortalBrandingService : IPortalBrandingService
             all.GetValueOrDefault(KeyUniversityName, "Tabsan EduSphere"),
             all.GetValueOrDefault(KeyBrandInitials,  "TE"),
             all.GetValueOrDefault(KeyPortalSubtitle, "Campus Portal"),
-            all.GetValueOrDefault(KeyFooterText,     "© 2026 Tabsan EduSphere")
+            all.GetValueOrDefault(KeyFooterText,     "© 2026 Tabsan EduSphere"),
+            all.GetValueOrDefault(KeyLogoUrl,        null),
+            all.GetValueOrDefault(KeyPrivacyPolicy,  null),
+            all.GetValueOrDefault(KeyFontFamily,     null),
+            all.GetValueOrDefault(KeyFontSize,       null)
         );
     }
 
     public async Task SaveAsync(SavePortalBrandingCommand cmd, CancellationToken ct = default)
     {
-        await _repo.UpsertPortalSettingAsync(KeyUniversityName, cmd.UniversityName ?? string.Empty, ct);
-        await _repo.UpsertPortalSettingAsync(KeyBrandInitials,  cmd.BrandInitials  ?? string.Empty, ct);
-        await _repo.UpsertPortalSettingAsync(KeyPortalSubtitle, cmd.PortalSubtitle ?? string.Empty, ct);
-        await _repo.UpsertPortalSettingAsync(KeyFooterText,     cmd.FooterText     ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(KeyUniversityName, cmd.UniversityName   ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(KeyBrandInitials,  cmd.BrandInitials    ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(KeyPortalSubtitle, cmd.PortalSubtitle   ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(KeyFooterText,     cmd.FooterText       ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(KeyLogoUrl,        cmd.LogoUrl          ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(KeyPrivacyPolicy,  cmd.PrivacyPolicyUrl ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(KeyFontFamily,     cmd.FontFamily       ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(KeyFontSize,       cmd.FontSize         ?? string.Empty, ct);
         await _repo.SaveChangesAsync(ct);
     }
 }

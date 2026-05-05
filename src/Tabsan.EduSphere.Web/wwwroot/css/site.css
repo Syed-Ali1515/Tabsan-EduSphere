@@ -418,6 +418,198 @@ body {
 [data-theme] .btn-primary { background-color: var(--btn-primary-bg); border-color: var(--btn-primary-bg); color: var(--btn-primary-text); }
 [data-theme] .form-control{ background-color: var(--input-bg); color: var(--input-text); }
 
+/* ── P1-S6-01: 10 additional themes ───────────────────────────────────── */
+
+/* ── Neon Mint ──────────────────────────────────────────────────────────── */
+[data-theme="neon_mint"] {
+  --sidebar-bg:      #064e3b;
+  --sidebar-text:    #a7f3d0;
+  --sidebar-active:  #34d399;
+  --topbar-bg:       #065f46;
+  --topbar-text:     #ecfdf5;
+  --card-bg:         #f0fdf4;
+  --card-border:     #bbf7d0;
+  --body-bg:         #f0fdf4;
+  --body-text:       #064e3b;
+  --link-color:      #059669;
+  --btn-primary-bg:  #059669;
+  --btn-primary-text:#ffffff;
+  --input-bg:        #ffffff;
+  --input-text:      #064e3b;
+  --table-stripe:    rgba(5,150,105,.07);
+}
+
+/* ── Sakura Pink ────────────────────────────────────────────────────────── */
+[data-theme="sakura_pink"] {
+  --sidebar-bg:      #831843;
+  --sidebar-text:    #fce7f3;
+  --sidebar-active:  #f9a8d4;
+  --topbar-bg:       #9d174d;
+  --topbar-text:     #fdf2f8;
+  --card-bg:         #fdf2f8;
+  --card-border:     #fbcfe8;
+  --body-bg:         #fff1f2;
+  --body-text:       #881337;
+  --link-color:      #db2777;
+  --btn-primary-bg:  #db2777;
+  --btn-primary-text:#ffffff;
+  --input-bg:        #ffffff;
+  --input-text:      #881337;
+  --table-stripe:    rgba(219,39,119,.07);
+}
+
+/* ── Golden Hour ────────────────────────────────────────────────────────── */
+[data-theme="golden_hour"] {
+  --sidebar-bg:      #78350f;
+  --sidebar-text:    #fef3c7;
+  --sidebar-active:  #fcd34d;
+  --topbar-bg:       #92400e;
+  --topbar-text:     #fffbeb;
+  --card-bg:         #fffbeb;
+  --card-border:     #fde68a;
+  --body-bg:         #fefce8;
+  --body-text:       #78350f;
+  --link-color:      #d97706;
+  --btn-primary-bg:  #d97706;
+  --btn-primary-text:#ffffff;
+  --input-bg:        #ffffff;
+  --input-text:      #78350f;
+  --table-stripe:    rgba(217,119,6,.07);
+}
+
+/* ── Deep Navy ──────────────────────────────────────────────────────────── */
+[data-theme="deep_navy"] {
+  --sidebar-bg:      #0f172a;
+  --sidebar-text:    #94a3b8;
+  --sidebar-active:  #38bdf8;
+  --topbar-bg:       #1e293b;
+  --topbar-text:     #f1f5f9;
+  --card-bg:         #1e293b;
+  --card-border:     #334155;
+  --body-bg:         #0f172a;
+  --body-text:       #e2e8f0;
+  --link-color:      #38bdf8;
+  --btn-primary-bg:  #0284c7;
+  --btn-primary-text:#ffffff;
+  --input-bg:        #1e293b;
+  --input-text:      #e2e8f0;
+  --table-stripe:    rgba(56,189,248,.07);
+}
+
+/* ── Lavender Mist ──────────────────────────────────────────────────────── */
+[data-theme="lavender_mist"] {
+  --sidebar-bg:      #4c1d95;
+  --sidebar-text:    #ede9fe;
+  --sidebar-active:  #a78bfa;
+  --topbar-bg:       #5b21b6;
+  --topbar-text:     #f5f3ff;
+  --card-bg:         #f5f3ff;
+  --card-border:     #ddd6fe;
+  --body-bg:         #faf5ff;
+  --body-text:       #4c1d95;
+  --link-color:      #7c3aed;
+  --btn-primary-bg:  #7c3aed;
+  --btn-primary-text:#ffffff;
+  --input-bg:        #ffffff;
+  --input-text:      #4c1d95;
+  --table-stripe:    rgba(124,58,237,.07);
+}
+
+/* ── Rust Canyon ────────────────────────────────────────────────────────── */
+[data-theme="rust_canyon"] {
+  --sidebar-bg:      #7c2d12;
+  --sidebar-text:    #fed7aa;
+  --sidebar-active:  #fb923c;
+  --topbar-bg:       #9a3412;
+  --topbar-text:     #fff7ed;
+  --card-bg:         #fff7ed;
+  --card-border:     #fed7aa;
+  --body-bg:         #fff7ed;
+  --body-text:       #7c2d12;
+  --link-color:      #ea580c;
+  --btn-primary-bg:  #ea580c;
+  --btn-primary-text:#ffffff;
+  --input-bg:        #ffffff;
+  --input-text:      #7c2d12;
+  --table-stripe:    rgba(234,88,12,.07);
+}
+
+/* ── Glacier Ice ────────────────────────────────────────────────────────── */
+[data-theme="glacier_ice"] {
+  --sidebar-bg:      #164e63;
+  --sidebar-text:    #cffafe;
+  --sidebar-active:  #67e8f9;
+  --topbar-bg:       #155e75;
+  --topbar-text:     #ecfeff;
+  --card-bg:         #ecfeff;
+  --card-border:     #a5f3fc;
+  --body-bg:         #f0f9ff;
+  --body-text:       #164e63;
+  --link-color:      #0891b2;
+  --btn-primary-bg:  #0891b2;
+  --btn-primary-text:#ffffff;
+  --input-bg:        #ffffff;
+  --input-text:      #164e63;
+  --table-stripe:    rgba(8,145,178,.07);
+}
+
+/* ── Graphite Pro ───────────────────────────────────────────────────────── */
+[data-theme="graphite_pro"] {
+  --sidebar-bg:      #18181b;
+  --sidebar-text:    #a1a1aa;
+  --sidebar-active:  #f4f4f5;
+  --topbar-bg:       #27272a;
+  --topbar-text:     #fafafa;
+  --card-bg:         #27272a;
+  --card-border:     #3f3f46;
+  --body-bg:         #18181b;
+  --body-text:       #e4e4e7;
+  --link-color:      #a1a1aa;
+  --btn-primary-bg:  #52525b;
+  --btn-primary-text:#ffffff;
+  --input-bg:        #3f3f46;
+  --input-text:      #fafafa;
+  --table-stripe:    rgba(244,244,245,.05);
+}
+
+/* ── Spring Blossom ─────────────────────────────────────────────────────── */
+[data-theme="spring_blossom"] {
+  --sidebar-bg:      #166534;
+  --sidebar-text:    #dcfce7;
+  --sidebar-active:  #86efac;
+  --topbar-bg:       #15803d;
+  --topbar-text:     #f0fdf4;
+  --card-bg:         #f0fdf4;
+  --card-border:     #bbf7d0;
+  --body-bg:         #f7fee7;
+  --body-text:       #14532d;
+  --link-color:      #16a34a;
+  --btn-primary-bg:  #16a34a;
+  --btn-primary-text:#ffffff;
+  --input-bg:        #ffffff;
+  --input-text:      #14532d;
+  --table-stripe:    rgba(22,163,74,.07);
+}
+
+/* ── Dusk Fire ──────────────────────────────────────────────────────────── */
+[data-theme="dusk_fire"] {
+  --sidebar-bg:      #1c1917;
+  --sidebar-text:    #d6d3d1;
+  --sidebar-active:  #fb923c;
+  --topbar-bg:       #292524;
+  --topbar-text:     #fafaf9;
+  --card-bg:         #292524;
+  --card-border:     #44403c;
+  --body-bg:         #1c1917;
+  --body-text:       #e7e5e4;
+  --link-color:      #f97316;
+  --btn-primary-bg:  #c2410c;
+  --btn-primary-text:#ffffff;
+  --input-bg:        #44403c;
+  --input-text:      #fafaf9;
+  --table-stripe:    rgba(249,115,22,.07);
+}
+
 
 /* -- WCAG 2.1 / Mobile Accessibility ------------------------------------- */
 

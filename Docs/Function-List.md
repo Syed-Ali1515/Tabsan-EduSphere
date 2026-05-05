@@ -3,6 +3,80 @@
 > **Maintenance rule**: Every function added to the codebase must be registered here with Name, Purpose, and Location.
 > Format: `Name | Purpose | Location`
 
+## Final-Touches Phase 1 Remediation — Batch 1 (2026-05-05)
+
+### API — CourseController
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetMyOfferings(ct)` | Expanded role support to SuperAdmin/Admin/Faculty/Student and added role-aware offering resolution so core academic pages can always load offering lists for SuperAdmin. | `API/Controllers/CourseController.cs` |
+| `GetStudentProfileId()` | New helper to read `studentProfileId` claim when resolving student offerings. | `API/Controllers/CourseController.cs` |
+
+### Infrastructure — ReportRepository
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetCatalogForRoleAsync(roleName, ct)` | Added SuperAdmin bypass so all active reports are visible in Report Center even without explicit role assignment rows. | `Infrastructure/Reporting/ReportRepository.cs` |
+
+### Web — EduApiClient
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `MapStudent(s)` | Fixed lifecycle student mapping to prefer `StudentProfileId` and semester fallback fields, preventing empty GUID promote requests. | `Web/Services/EduApiClient.cs` |
+
+### Web — Shared Layout
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `ResolveRoute(key)` | Removed `module_settings` route mapping from dynamic sidebar rendering. | `Web/Views/Shared/_Layout.cshtml` |
+| `ResolveGroup(key)` | Removed `module_settings` group mapping from dynamic sidebar rendering. | `Web/Views/Shared/_Layout.cshtml` |
+| Sidebar brand container | Converted header brand block from clickable link to non-clickable container (TE / Tabsan EduSphere / Campus Portal). | `Web/Views/Shared/_Layout.cshtml` |
+
+## Final-Touches Phase 1 Remediation — Batch 2 (2026-05-05)
+
+### Web — Shared Layout (Batch 2)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| SuperAdmin system links block | Removed static `Module Settings` sidebar link from System Settings section. | `Web/Views/Shared/_Layout.cshtml` |
+
+### Infrastructure — Database Seeder
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `SeedAsync(services)` | Removed `module_settings` upsert path and added legacy cleanup that disables role access and soft-deletes historical `module_settings` sidebar row. | `Infrastructure/Persistence/DatabaseSeeder.cs` |
+
+### SQL Seeds
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| Sidebar seed block (`§15`) | Removed `module_settings` creation and role-assignment rows; added legacy cleanup SQL to hide existing `module_settings` records. | `Scripts/1-MinimalSeed.sql` |
+| Sidebar seed block (`§15`) | Removed `module_settings` creation and role-assignment rows; added legacy cleanup SQL to hide existing `module_settings` records. | `Scripts/2-FullDummyData.sql` |
+
+### Integration Tests
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetVisible_SuperAdmin_ReturnsAllMenus()` | Updated expected seeded menu count and removed `module_settings` key assertion after menu cleanup. | `tests/Tabsan.EduSphere.IntegrationTests/SidebarMenuIntegrationTests.cs` |
+
+## Final-Touches Phase 1 Remediation — Batch 3 (2026-05-05)
+
+### Infrastructure — Report Repository
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetResultDataAsync(semesterId, courseOfferingId, studentProfileId, ct)` | Removed post-projection ordering to avoid EF translation failures on `ResultReportRow` projection. | `Infrastructure/Reporting/ReportRepository.cs` |
+| `GetSemesterResultDataAsync(semesterId, departmentId, ct)` | Removed post-projection ordering to keep query fully translatable by EF Core. | `Infrastructure/Reporting/ReportRepository.cs` |
+| `BuildResultQuery(semesterId, courseOfferingId, studentProfileId, departmentId)` | Added SQL-level `orderby u.Username, c.Code` before projection to resolve Result Summary InvalidOperationException. | `Infrastructure/Reporting/ReportRepository.cs` |
+
+### API — Report Controller
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetResultSummary(...)` | Authorization expanded to `SuperAdmin,Admin,Faculty` so SuperAdmin can always access Result Summary data. | `API/Controllers/ReportController.cs` |
+| `ExportResultSummary(...)` | Authorization expanded to `SuperAdmin,Admin,Faculty` for export parity with data endpoint. | `API/Controllers/ReportController.cs` |
+| Report data/export endpoints | Attendance, GPA, Enrollment, Semester Results, Low Attendance, and FYP status endpoints now explicitly allow `SuperAdmin,Admin,Faculty`. | `API/Controllers/ReportController.cs` |
+
 ---
 
 ## Domain Layer
@@ -2265,8 +2339,44 @@
 | `ProposeFypProject(departmentId, title, description, ct)` | POST — submits FYP proposal. Student. | Web/Controllers/PortalController.cs |
 | `ApproveFypProject(id, remarks, departmentId, ct)` | POST — approves FYP project. Admin. | Web/Controllers/PortalController.cs |
 | `RejectFypProject(id, remarks, departmentId, ct)` | POST — rejects FYP project with remarks. Admin. | Web/Controllers/PortalController.cs |
-| PortalController.DashboardSettings() [POST] | Accepts branding form and calls SavePortalBrandingAsync; redirects with TempData message. | Web/Controllers/PortalController.cs |
+| PortalController.DashboardSettings() [POST] | Accepts branding form (incl. LogoFile), calls UploadLogoAsync if file present, then SavePortalBrandingAsync; redirects with TempData message. | Web/Controllers/PortalController.cs |
 | Branding cache block in _Layout | Loads portal branding from API; caches in session (PortalBrandingCache); uses cache on API failure. | Web/Views/Shared/_Layout.cshtml |
+
+---
+
+## Phase 1 Remediation — Batch 5 Final Push (P1-S1-02, P1-S6-01/02/03/04)
+
+### P1-S1-02 — Authorization Regression Tests
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `AuthorizationRegressionTests` (class) | xUnit integration test class covering 401/403/pass cases for Attendance, Assignment, Quiz, Result endpoints across all roles. | tests/IntegrationTests/AuthorizationRegressionTests.cs |
+
+### P1-S6-01 — 10 Additional Themes (Total: 29 incl. Default)
+
+New themes added to site.css and ThemeSettingsPageModel: `neon_mint`, `sakura_pink`, `golden_hour`, `deep_navy`, `lavender_mist`, `rust_canyon`, `glacier_ice`, `graphite_pro`, `spring_blossom`, `dusk_fire`.
+
+### P1-S6-02 — Logo Upload
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `POST /api/v1/portal-settings/logo` | Accepts multipart file upload (≤2 MB, PNG/JPG/GIF/SVG/WEBP), saves to wwwroot/portal-uploads/, returns JSON {url}. SuperAdmin only. | API/Controllers/PortalSettingsController.cs |
+| `EduApiClient.UploadLogoAsync(stream, fileName, ct)` | Sends multipart POST to logo endpoint; returns relative URL string on success. | Web/Services/EduApiClient.cs |
+| Sidebar brand area in _Layout | Shows `<img>` with LogoUrl if set; falls back to brand initials circle. | Web/Views/Shared/_Layout.cshtml |
+
+### P1-S6-03 — Privacy Policy URL
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `PrivacyPolicyUrl` field in PortalBrandingDto/Service | Persisted as `privacy_policy_url` key in portal_settings table. | Application/Services/SettingsServices.cs |
+| Footer privacy link in _Layout | Renders `<a href>` Privacy Policy link in footer if PrivacyPolicyUrl is non-empty. | Web/Views/Shared/_Layout.cshtml |
+
+### P1-S6-04 — Text Style Options
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `FontFamily` / `FontSize` in PortalBrandingDto/Service | Persisted as `font_family` / `font_size` keys in portal_settings. | Application/Services/SettingsServices.cs |
+| Font CSS injection in _Layout `<head>` | Injects `<style>` block with `font-family` / `font-size` overrides on `body` when set. | Web/Views/Shared/_Layout.cshtml |
 
 ---
 

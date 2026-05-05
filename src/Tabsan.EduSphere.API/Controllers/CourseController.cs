@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using Tabsan.EduSphere.Application.DTOs.Academic;
 using Tabsan.EduSphere.Domain.Academic;
 using Tabsan.EduSphere.Domain.Interfaces;
@@ -17,11 +18,16 @@ public class CourseController : ControllerBase
 {
     private readonly ICourseRepository _repo;
     private readonly IFacultyAssignmentRepository _facultyAssignments;
+    private readonly IEnrollmentRepository _enrollments;
 
-    public CourseController(ICourseRepository repo, IFacultyAssignmentRepository facultyAssignments)
+    public CourseController(
+        ICourseRepository repo,
+        IFacultyAssignmentRepository facultyAssignments,
+        IEnrollmentRepository enrollments)
     {
         _repo = repo;
         _facultyAssignments = facultyAssignments;
+        _enrollments = enrollments;
     }
 
     // ────────────────────── COURSES ────────────────────────────────────────────
@@ -128,26 +134,103 @@ public class CourseController : ControllerBase
     // ── GET /api/v1/course/offerings/my ───────────────────────────────────────
 
     /// <summary>
-    /// Returns all offerings assigned to the calling faculty member.
-    /// Data is further constrained to departments the faculty is assigned to.
+    /// Returns offerings for the current user role:
+    /// - SuperAdmin/Admin: all offerings
+    /// - Faculty: assigned offerings (department constrained)
+    /// - Student: enrolled offerings (fallback to all offerings if claim is missing)
     /// </summary>
     [HttpGet("offerings/my")]
-    [Authorize(Roles = "Faculty")]
+    [Authorize(Roles = "SuperAdmin,Admin,Faculty,Student")]
     public async Task<IActionResult> GetMyOfferings(CancellationToken ct)
     {
-        var facultyId = GetUserId();
-        if (facultyId == Guid.Empty) return Forbid();
+        // Final-Touches Phase 1 Stage 1.1 — keep "my offerings" available for all roles including SuperAdmin.
+        var userId = GetUserId();
+        if (userId == Guid.Empty) return Forbid();
+        var role = User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
 
-        var allowedDepts = await _facultyAssignments.GetDepartmentIdsForFacultyAsync(facultyId, ct);
-        var offerings = await _repo.GetOfferingsByFacultyAsync(facultyId, ct);
-
-        // Filter to only offerings whose course belongs to an assigned department.
-        var filtered = offerings.Where(o => allowedDepts.Contains(o.Course.DepartmentId));
-        return Ok(filtered.Select(o => new
+        if (role.Equals("SuperAdmin", StringComparison.OrdinalIgnoreCase)
+            || role.Equals("Admin", StringComparison.OrdinalIgnoreCase))
         {
-            o.Id, CourseTitle = o.Course.Title, SemesterName = o.Semester.Name,
-            o.MaxEnrollment, o.IsOpen
-        }));
+            var all = await _repo.GetAllOfferingsAsync(ct);
+            return Ok(all.Select(o => new
+            {
+                o.Id, CourseTitle = o.Course.Title, SemesterName = o.Semester.Name,
+                o.MaxEnrollment, o.IsOpen
+            }));
+        }
+
+        if (role.Equals("Faculty", StringComparison.OrdinalIgnoreCase))
+        {
+            var allowedDepts = await _facultyAssignments.GetDepartmentIdsForFacultyAsync(userId, ct);
+            var offerings = await _repo.GetOfferingsByFacultyAsync(userId, ct);
+
+            // Filter to only offerings whose course belongs to an assigned department.
+            var filtered = offerings.Where(o => allowedDepts.Contains(o.Course.DepartmentId));
+            return Ok(filtered.Select(o => new
+            {
+                o.Id, CourseTitle = o.Course.Title, SemesterName = o.Semester.Name,
+                o.MaxEnrollment, o.IsOpen
+            }));
+        }
+
+        if (role.Equals("Student", StringComparison.OrdinalIgnoreCase))
+        {
+            var studentProfileId = GetStudentProfileId();
+            if (studentProfileId != Guid.Empty)
+            {
+                var enrollments = await _enrollments.GetByStudentAsync(studentProfileId, ct);
+                var offerings = enrollments
+                    .Where(e => e.CourseOffering is not null)
+                    .Select(e => e.CourseOffering)
+                    .GroupBy(o => o!.Id)
+                    .Select(g => g.First()!);
+
+                return Ok(offerings.Select(o => new
+                {
+                    o.Id, CourseTitle = o.Course.Title, SemesterName = o.Semester.Name,
+                    o.MaxEnrollment, o.IsOpen
+                }));
+            }
+
+            // Keep portal usable if legacy student tokens do not carry studentProfileId.
+            var fallback = await _repo.GetAllOfferingsAsync(ct);
+            return Ok(fallback.Select(o => new
+            {
+                o.Id, CourseTitle = o.Course.Title, SemesterName = o.Semester.Name,
+                o.MaxEnrollment, o.IsOpen
+            }));
+        }
+
+        return Forbid();
+    }
+
+    // ── Helpers ─────────────────────────────────────────────────────────────────
+    private Guid GetUserId()
+    {
+        var raw = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        return Guid.TryParse(raw, out var id) ? id : Guid.Empty;
+    }
+
+    private Guid GetStudentProfileId()
+    {
+        var raw = User.FindFirst("studentProfileId")?.Value;
+        return Guid.TryParse(raw, out var id) ? id : Guid.Empty;
+    }
+
+    // ── DELETE /api/v1/course/offerings/{id} ───────────────────────────────────
+
+    /// <summary>Soft-deletes a course offering. SuperAdmin only.</summary>
+    [HttpDelete("offerings/{id:guid}")]
+    [Authorize(Roles = "SuperAdmin")]
+    public async Task<IActionResult> DeleteOffering(Guid id, CancellationToken ct)
+    {
+        var offering = await _repo.GetOfferingByIdAsync(id, ct);
+        if (offering is null) return NotFound();
+
+        offering.SoftDelete();
+        _repo.UpdateOffering(offering);
+        await _repo.SaveChangesAsync(ct);
+        return NoContent();
     }
 
     // ── POST /api/v1/course/offerings ─────────────────────────────────────────
@@ -234,26 +317,4 @@ public class CourseController : ControllerBase
         return NoContent();
     }
 
-    // ── DELETE /api/v1/course/offerings/{id} ───────────────────────────────────
-
-    /// <summary>Soft-deletes a course offering. SuperAdmin only.</summary>
-    [HttpDelete("offerings/{id:guid}")]
-    [Authorize(Roles = "SuperAdmin")]
-    public async Task<IActionResult> DeleteOffering(Guid id, CancellationToken ct)
-    {
-        var offering = await _repo.GetOfferingByIdAsync(id, ct);
-        if (offering is null) return NotFound();
-
-        offering.SoftDelete();
-        _repo.UpdateOffering(offering);
-        await _repo.SaveChangesAsync(ct);
-        return NoContent();
-    }
-
-    // ── Helper ─────────────────────────────────────────────────────────────────
-    private Guid GetUserId()
-    {
-        var raw = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-        return Guid.TryParse(raw, out var id) ? id : Guid.Empty;
-    }
 }

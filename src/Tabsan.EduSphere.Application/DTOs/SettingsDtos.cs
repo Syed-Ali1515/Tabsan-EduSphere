@@ -104,7 +104,11 @@ public record PortalBrandingDto(
     string UniversityName,
     string BrandInitials,
     string PortalSubtitle,
-    string FooterText
+    string FooterText,
+    string? LogoUrl,
+    string? PrivacyPolicyUrl,
+    string? FontFamily,
+    string? FontSize
 );
 
 /// <summary>Payload to update the portal branding settings.</summary>
@@ -112,5 +116,9 @@ public record SavePortalBrandingCommand(
     string UniversityName,
     string BrandInitials,
     string PortalSubtitle,
-    string FooterText
+    string FooterText,
+    string? LogoUrl = null,
+    string? PrivacyPolicyUrl = null,
+    string? FontFamily = null,
+    string? FontSize = null
 );

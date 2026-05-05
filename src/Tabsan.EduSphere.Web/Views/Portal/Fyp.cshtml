@@ -95,6 +95,23 @@ else
                                                     data-bs-target="#rejectFypModal"
                                                     data-projectid="@p.Id">Reject</button>
                                         }
+                                        @if ((p.Status == "Approved" || p.Status == "InProgress") && (User.IsInRole("Admin") || User.IsInRole("SuperAdmin")))
+                                        {
+                                            @if (Model.Faculty.Any())
+                                            {
+                                                <button class="btn btn-xs btn-outline-secondary btn-sm"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#assignSupervisorModal"
+                                                        data-projectid="@p.Id">Supervisor</button>
+                                            }
+                                            <form asp-action="CompleteFypProject" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@p.Id" />
+                                                <input type="hidden" name="departmentId" value="@Model.SelectedDepartmentId" />
+                                                <button type="submit" class="btn btn-xs btn-outline-primary btn-sm"
+                                                        onclick="return confirm('Mark project as complete?')">Complete</button>
+                                            </form>
+                                        }
                                     </td>
                                         </tr>
                                     }
@@ -203,10 +220,49 @@ else
     </div>
 </div>
 
+@* ── Assign Supervisor Modal ─────────────────────────────────────────────── *@
+@if (User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))
+{
+    <div class="modal fade" id="assignSupervisorModal" tabindex="-1">
+        <div class="modal-dialog">
+            <form asp-action="AssignFypSupervisor" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="assign_projectId" name="id" />
+                <input type="hidden" name="departmentId" value="@Model.SelectedDepartmentId" />
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Assign Supervisor</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Supervisor (Faculty) <span class="text-danger">*</span></label>
+                            <select name="supervisorUserId" class="form-select" required>
+                                <option value="">Select faculty…</option>
+                                @foreach (var f in Model.Faculty)
+                                {
+                                    <option value="@f.Id">@f.DisplayName</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Assign</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
 @section Scripts {
 <script>
 document.getElementById('rejectFypModal')?.addEventListener('show.bs.modal', function(e) {
     document.getElementById('reject_projectId').value = e.relatedTarget.dataset.projectid;
+});
+document.getElementById('assignSupervisorModal')?.addEventListener('show.bs.modal', function(e) {
+    document.getElementById('assign_projectId').value = e.relatedTarget.dataset.projectid;
 });
 </script>
 }

@@ -218,11 +218,26 @@ public static class DatabaseSeeder
 
         // ── Sub-menus of System Settings ─────────────────────────────────────
         var reportSettings      = await Upsert("report_settings",      "Report Settings",      "Configure report definitions",        1, parentId: systemSettings.Id, isSystemMenu: true);
-        var moduleSettings      = await Upsert("module_settings",      "Module Settings",      "Enable / disable feature modules",    2, parentId: systemSettings.Id, isSystemMenu: true);
         var sidebarSettings     = await Upsert("sidebar_settings",     "Sidebar Settings",     "Control sidebar visibility per role", 3, parentId: systemSettings.Id, isSystemMenu: true);
         var themeSettings       = await Upsert("theme_settings",       "Theme Settings",       "Choose the portal colour theme",      4, parentId: systemSettings.Id, isSystemMenu: false);
         var licenseUpdate       = await Upsert("license_update",       "License Update",       "Upload and review the product license", 5, parentId: systemSettings.Id, isSystemMenu: true);
         var dashboardSettings   = await Upsert("dashboard_settings",   "Dashboard Settings",   "Customise portal branding and name",  6, parentId: systemSettings.Id, isSystemMenu: true);
+
+        // Remove legacy Module Settings menu if present from older seeds.
+        var legacyModuleSettings = await db.SidebarMenuItems
+            .IgnoreQueryFilters()
+            .Include(m => m.RoleAccesses)
+            .FirstOrDefaultAsync(m => m.Key == "module_settings");
+        if (legacyModuleSettings is not null)
+        {
+            foreach (var access in legacyModuleSettings.RoleAccesses)
+                access.SetAllowed(false);
+
+            if (!legacyModuleSettings.IsDeleted)
+                legacyModuleSettings.SoftDelete();
+
+            db.SidebarMenuItems.Update(legacyModuleSettings);
+        }
 
         await db.SaveChangesAsync(); // flush new items before adding role rows
 
@@ -259,7 +274,7 @@ public static class DatabaseSeeder
         EnsureRoleAccess(resultCalculation.Id, "Student", isAllowed: false);
 
         // System Settings + sub-menus: SuperAdmin only; other roles explicitly false
-        foreach (var id in new[] { systemSettings.Id, reportSettings.Id, moduleSettings.Id, sidebarSettings.Id, licenseUpdate.Id, dashboardSettings.Id })
+        foreach (var id in new[] { systemSettings.Id, reportSettings.Id, sidebarSettings.Id, licenseUpdate.Id, dashboardSettings.Id })
         {
             EnsureRoleAccess(id, "Admin",   isAllowed: false);
             EnsureRoleAccess(id, "Faculty", isAllowed: false);

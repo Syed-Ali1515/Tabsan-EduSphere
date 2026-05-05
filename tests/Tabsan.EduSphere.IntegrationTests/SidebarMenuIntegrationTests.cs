@@ -68,7 +68,7 @@ public class SidebarMenuIntegrationTests
 
     // ── Role matrix ───────────────────────────────────────────────────────────
 
-    /// <summary>SuperAdmin should see every seeded menu item (30 keys total — all top-level and sub-menus).</summary>
+    /// <summary>SuperAdmin should see every seeded menu item (29 keys total — all top-level and sub-menus).</summary>
     [Fact]
     public async Task GetVisible_SuperAdmin_ReturnsAllMenus()
     {
@@ -84,7 +84,6 @@ public class SidebarMenuIntegrationTests
         Assert.Contains("buildings",           keys);
         Assert.Contains("rooms",               keys);
         Assert.Contains("system_settings",     keys);
-        Assert.Contains("module_settings",     keys);
         Assert.Contains("report_settings",     keys);
         Assert.Contains("sidebar_settings",    keys);
         Assert.Contains("theme_settings",      keys);
@@ -106,7 +105,7 @@ public class SidebarMenuIntegrationTests
         Assert.Contains("payments",            keys);
         Assert.Contains("enrollments",         keys);
         Assert.Contains("report_center",       keys);
-        Assert.Equal(30, keys.Count);
+        Assert.Equal(29, keys.Count);
     }
 
     /// <summary>Admin should see all menus with IsAllowed=true for Admin role (18 total).</summary>

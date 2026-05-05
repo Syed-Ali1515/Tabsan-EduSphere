@@ -102,11 +102,18 @@ public interface IEduApiClient
 
     // Departments
     Task<List<DepartmentItem>> GetDepartmentDetailsAsync(CancellationToken ct);
+    Task CreateDepartmentAsync(string name, string code, CancellationToken ct);
+    Task UpdateDepartmentAsync(Guid id, string newName, CancellationToken ct);
+    Task DeactivateDepartmentAsync(Guid id, CancellationToken ct);
 
     // Courses / Offerings
     Task<List<CourseItem>> GetCourseDetailsAsync(Guid? departmentId, CancellationToken ct);
     Task<List<CourseOfferingItem>> GetCourseOfferingsAsync(Guid? departmentId, CancellationToken ct);
     Task<List<LookupItem>> GetMyOfferingsAsync(CancellationToken ct);
+    Task CreateCourseAsync(string code, string title, int creditHours, Guid departmentId, CancellationToken ct);
+    Task CreateOfferingAsync(Guid courseId, Guid semesterId, int maxEnrollment, Guid? facultyUserId, CancellationToken ct);
+    Task DeactivateCourseAsync(Guid id, CancellationToken ct);
+    Task DeleteOfferingAsync(Guid id, CancellationToken ct);
 
     // Assignments
     Task<List<AssignmentItem>> GetMyAssignmentsAsync(CancellationToken ct);
@@ -143,6 +150,8 @@ public interface IEduApiClient
     Task<Guid> ProposeFypProjectAsync(Guid departmentId, string title, string description, CancellationToken ct);
     Task ApproveFypProjectAsync(Guid id, string? remarks, CancellationToken ct);
     Task RejectFypProjectAsync(Guid id, string remarks, CancellationToken ct);
+    Task AssignFypSupervisorAsync(Guid id, Guid supervisorUserId, CancellationToken ct);
+    Task CompleteFypProjectAsync(Guid id, CancellationToken ct);
 
     // Analytics — Final-Touches Phase 6 Stage 6.2: typed return instead of raw JSON strings
     Task<DepartmentPerformanceReport?> GetPerformanceAnalyticsAsync(CancellationToken ct);
@@ -183,6 +192,7 @@ public interface IEduApiClient
     // Portal / Dashboard Settings
     Task<PortalBrandingWebModel> GetPortalBrandingAsync(CancellationToken ct);
     Task SavePortalBrandingAsync(PortalBrandingWebModel model, CancellationToken ct);
+    Task<string?> UploadLogoAsync(Stream fileStream, string fileName, CancellationToken ct);
 }
 
 public class EduApiClient : IEduApiClient
@@ -822,26 +832,30 @@ public class EduApiClient : IEduApiClient
 
     private static StudentItem MapStudent(StudentApiDto s) => new()
     {
-        Id                 = s.Id,
+        // Final-Touches Phase 1 Stage 1.5 — semester-students endpoint returns StudentProfileId.
+        Id                 = s.StudentProfileId != Guid.Empty ? s.StudentProfileId : s.Id,
         RegistrationNumber = s.RegistrationNumber ?? "",
-        FullName           = s.FullName ?? s.UserName ?? s.Email ?? s.RegistrationNumber ?? "Student",
+        FullName           = s.FullName ?? s.StudentName ?? s.UserName ?? s.Email ?? s.RegistrationNumber ?? "Student",
         Email              = s.Email,
         DepartmentName     = s.DepartmentName ?? "",
         ProgramName        = s.ProgramName ?? "",
-        SemesterNumber     = s.SemesterNumber,
+        SemesterNumber     = s.SemesterNumber > 0 ? s.SemesterNumber : s.CurrentSemesterNumber,
         Status             = s.Status ?? "Active"
     };
 
     private sealed class StudentApiDto
     {
         public Guid    Id                 { get; set; }
+        public Guid    StudentProfileId   { get; set; }
         public string? RegistrationNumber { get; set; }
         public string? FullName           { get; set; }
+        public string? StudentName        { get; set; }
         public string? UserName           { get; set; }
         public string? Email              { get; set; }
         public string? DepartmentName     { get; set; }
         public string? ProgramName        { get; set; }
         public int     SemesterNumber     { get; set; }
+        public int     CurrentSemesterNumber { get; set; }
         public string? Status             { get; set; }
     }
 
@@ -863,6 +877,15 @@ public class EduApiClient : IEduApiClient
         public string? Code     { get; set; }
         public bool    IsActive { get; set; }
     }
+
+    public Task CreateDepartmentAsync(string name, string code, CancellationToken ct)
+        => PostAsync<object, object>("api/v1/department", new { name, code }, ct);
+
+    public Task UpdateDepartmentAsync(Guid id, string newName, CancellationToken ct)
+        => PutAsync<object, object>($"api/v1/department/{id}", new { newName }, ct);
+
+    public Task DeactivateDepartmentAsync(Guid id, CancellationToken ct)
+        => DeleteAsync($"api/v1/department/{id}", ct);
 
     // ── Courses ───────────────────────────────────────────────────────────────
 
@@ -901,6 +924,18 @@ public class EduApiClient : IEduApiClient
 
     public async Task<List<LookupItem>> GetMyOfferingsAsync(CancellationToken ct)
         => await GetAsync<List<LookupItem>>("api/v1/course/offerings/my", ct) ?? new();
+
+    public Task CreateCourseAsync(string code, string title, int creditHours, Guid departmentId, CancellationToken ct)
+        => PostAsync<object, object>("api/v1/course", new { code, title, creditHours, departmentId }, ct);
+
+    public Task CreateOfferingAsync(Guid courseId, Guid semesterId, int maxEnrollment, Guid? facultyUserId, CancellationToken ct)
+        => PostAsync<object, object>("api/v1/course/offerings", new { courseId, semesterId, maxEnrollment, facultyUserId }, ct);
+
+    public Task DeactivateCourseAsync(Guid id, CancellationToken ct)
+        => DeleteAsync($"api/v1/course/{id}", ct);
+
+    public Task DeleteOfferingAsync(Guid id, CancellationToken ct)
+        => DeleteAsync($"api/v1/course/offerings/{id}", ct);
 
     private sealed class CourseDetailDto
     {
@@ -1272,6 +1307,12 @@ public class EduApiClient : IEduApiClient
 
     public Task RejectFypProjectAsync(Guid id, string remarks, CancellationToken ct)
         => PostAsync<object, object>($"api/v1/fyp/{id}/reject", new { remarks }, ct);
+
+    public Task AssignFypSupervisorAsync(Guid id, Guid supervisorUserId, CancellationToken ct)
+        => PostAsync<object, object>($"api/v1/fyp/{id}/assign-supervisor", new { supervisorUserId }, ct);
+
+    public Task CompleteFypProjectAsync(Guid id, CancellationToken ct)
+        => PostAsync<object, object>($"api/v1/fyp/{id}/complete", new { }, ct);
 
     private sealed class FypCreateResponse { public Guid ProjectId { get; set; } }
 
@@ -1987,10 +2028,14 @@ public class EduApiClient : IEduApiClient
         var raw = await GetAsync<PortalBrandingApiDto>("api/v1/portal-settings", ct);
         return new PortalBrandingWebModel
         {
-            UniversityName = raw?.UniversityName ?? "Tabsan EduSphere",
-            BrandInitials  = raw?.BrandInitials  ?? "TE",
-            PortalSubtitle = raw?.PortalSubtitle ?? "Campus Portal",
-            FooterText     = raw?.FooterText     ?? "© 2026 Tabsan EduSphere"
+            UniversityName   = raw?.UniversityName   ?? "Tabsan EduSphere",
+            BrandInitials    = raw?.BrandInitials    ?? "TE",
+            PortalSubtitle   = raw?.PortalSubtitle   ?? "Campus Portal",
+            FooterText       = raw?.FooterText       ?? "© 2026 Tabsan EduSphere",
+            LogoUrl          = raw?.LogoUrl,
+            PrivacyPolicyUrl = raw?.PrivacyPolicyUrl,
+            FontFamily       = raw?.FontFamily,
+            FontSize         = raw?.FontSize
         };
     }
 
@@ -1998,20 +2043,41 @@ public class EduApiClient : IEduApiClient
     {
         var payload = new
         {
-            universityName = model.UniversityName,
-            brandInitials  = model.BrandInitials,
-            portalSubtitle = model.PortalSubtitle,
-            footerText     = model.FooterText
+            universityName   = model.UniversityName,
+            brandInitials    = model.BrandInitials,
+            portalSubtitle   = model.PortalSubtitle,
+            footerText       = model.FooterText,
+            logoUrl          = model.LogoUrl,
+            privacyPolicyUrl = model.PrivacyPolicyUrl,
+            fontFamily       = model.FontFamily,
+            fontSize         = model.FontSize
         };
         await PostAsync<object, object>("api/v1/portal-settings", payload, ct);
     }
 
+    public async Task<string?> UploadLogoAsync(Stream fileStream, string fileName, CancellationToken ct)
+    {
+        using var content = new MultipartFormDataContent();
+        content.Add(new StreamContent(fileStream), "file", fileName);
+        using var request  = CreateRequest(HttpMethod.Post, "api/v1/portal-settings/logo");
+        request.Content    = content;
+        using var response = await CreateClient().SendAsync(request, ct);
+        var body = await response.Content.ReadAsStringAsync(ct);
+        if (!response.IsSuccessStatusCode) return null;
+        var json = JsonSerializer.Deserialize<System.Text.Json.JsonElement>(body, _jsonOptions);
+        return json.TryGetProperty("url", out var urlProp) ? urlProp.GetString() : null;
+    }
+
     private sealed class PortalBrandingApiDto
     {
-        public string? UniversityName { get; set; }
-        public string? BrandInitials  { get; set; }
-        public string? PortalSubtitle { get; set; }
-        public string? FooterText     { get; set; }
+        public string? UniversityName   { get; set; }
+        public string? BrandInitials    { get; set; }
+        public string? PortalSubtitle   { get; set; }
+        public string? FooterText       { get; set; }
+        public string? LogoUrl          { get; set; }
+        public string? PrivacyPolicyUrl { get; set; }
+        public string? FontFamily       { get; set; }
+        public string? FontSize         { get; set; }
     }
 }
 

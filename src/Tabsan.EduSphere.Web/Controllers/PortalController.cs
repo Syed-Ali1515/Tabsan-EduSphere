@@ -788,7 +788,41 @@ public class PortalController : Controller
         if (!model.IsConnected) return View(model);
         try { model.Departments = await _api.GetDepartmentDetailsAsync(ct); }
         catch (Exception ex) { model.Message = ex.Message; }
+        model.Message ??= TempData["PortalMessage"]?.ToString();
         return View(model);
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateDepartment(string name, string code, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.CreateDepartmentAsync(name, code, ct); TempData["PortalMessage"] = $"Department '{name}' created."; }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(Departments));
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateDepartment(Guid id, string newName, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.UpdateDepartmentAsync(id, newName, ct); TempData["PortalMessage"] = $"Department renamed to '{newName}'."; }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(Departments));
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeactivateDepartment(Guid id, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.DeactivateDepartmentAsync(id, ct); TempData["PortalMessage"] = "Department deactivated."; }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(Departments));
     }
 
     // ── Courses ────────────────────────────────────────────────────────────
@@ -802,11 +836,58 @@ public class PortalController : Controller
         try
         {
             model.Departments = await _api.GetDepartmentsAsync(ct);
+            model.Semesters   = await _api.GetSemestersAsync(ct);
+            model.Faculty     = await _api.GetFacultyAsync(ct);
             model.Courses     = await _api.GetCourseDetailsAsync(departmentId, ct);
             model.Offerings   = await _api.GetCourseOfferingsAsync(departmentId, ct);
         }
         catch (Exception ex) { model.Message = ex.Message; }
+        model.Message ??= TempData["PortalMessage"]?.ToString();
         return View(model);
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateCourse(string code, string title, int creditHours, Guid departmentId, Guid? filterDepartmentId, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.CreateCourseAsync(code, title, creditHours, departmentId, ct); TempData["PortalMessage"] = $"Course '{code}' created."; }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(Courses), new { departmentId = filterDepartmentId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateOffering(Guid courseId, Guid semesterId, int maxEnrollment, Guid? facultyUserId, Guid? departmentId, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.CreateOfferingAsync(courseId, semesterId, maxEnrollment, facultyUserId == Guid.Empty ? null : facultyUserId, ct); TempData["PortalMessage"] = "Course offering created."; }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(Courses), new { departmentId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeactivateCourse(Guid id, Guid? departmentId, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.DeactivateCourseAsync(id, ct); TempData["PortalMessage"] = "Course deactivated."; }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(Courses), new { departmentId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteOffering(Guid id, Guid? departmentId, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.DeleteOfferingAsync(id, ct); TempData["PortalMessage"] = "Offering deleted."; }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(Courses), new { departmentId });
     }
 
     // ── Assignments ────────────────────────────────────────────────────────
@@ -954,6 +1035,7 @@ public class PortalController : Controller
         try
         {
             model.Departments       = await _api.GetDepartmentsAsync(ct);
+            model.Faculty           = await _api.GetFacultyAsync(ct);
             model.UpcomingMeetings  = await _api.GetUpcomingMeetingsAsync(ct);
 
             var sessionId = _api.GetSessionIdentity();
@@ -1160,6 +1242,28 @@ public class PortalController : Controller
         if (_api.IsConnected())
         {
             try { await _api.RejectFypProjectAsync(id, remarks, ct); TempData["PortalMessage"] = "Project rejected."; }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(Fyp), new { departmentId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> AssignFypSupervisor(Guid id, Guid supervisorUserId, Guid? departmentId, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.AssignFypSupervisorAsync(id, supervisorUserId, ct); TempData["PortalMessage"] = "Supervisor assigned."; }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(Fyp), new { departmentId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> CompleteFypProject(Guid id, Guid? departmentId, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.CompleteFypProjectAsync(id, ct); TempData["PortalMessage"] = "Project marked as complete."; }
             catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
         }
         return RedirectToAction(nameof(Fyp), new { departmentId });
@@ -1762,6 +1866,15 @@ public class PortalController : Controller
         }
         try
         {
+            // Handle logo file upload if provided
+            if (model.LogoFile is { Length: > 0 })
+            {
+                await using var stream = model.LogoFile.OpenReadStream();
+                var logoUrl = await _api.UploadLogoAsync(stream, model.LogoFile.FileName, ct);
+                if (logoUrl is not null)
+                    model.Branding.LogoUrl = logoUrl;
+            }
+
             await _api.SavePortalBrandingAsync(model.Branding, ct);
             TempData["Message"] = "Portal branding saved successfully.";
         }

@@ -97,7 +97,6 @@
         "buildings"         => ("Portal", "Buildings"),
         "rooms"             => ("Portal", "Rooms"),
         "report_settings"   => ("Portal", "ReportSettings"),
-        "module_settings"   => ("Portal", "ModuleSettings"),
         "result_calculation" => ("Portal", "ResultCalculation"),
         "sidebar_settings"  => ("Portal", "SidebarSettings"),
         "license_update"    => ("Portal", "LicenseUpdate"),
@@ -148,7 +147,6 @@
         "payments" => ("Finance Related", 4),
 
         "report_settings" => ("Settings", 5),
-        "module_settings" => ("Settings", 5),
         "sidebar_settings" => ("Settings", 5),
         "theme_settings" => ("Settings", 5),
         "license_update" => ("Settings", 5),
@@ -196,6 +194,19 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Tabsan.EduSphere.Web.styles.css" asp-append-version="true" />
+    @if (!string.IsNullOrEmpty(branding.FontFamily) || !string.IsNullOrEmpty(branding.FontSize))
+    {
+        <style>
+            :root {
+                @if (!string.IsNullOrEmpty(branding.FontFamily)) { <text>--portal-font-family: @branding.FontFamily;</text> }
+                @if (!string.IsNullOrEmpty(branding.FontSize))   { <text>--portal-font-size: @branding.FontSize;</text> }
+            }
+            body {
+                @if (!string.IsNullOrEmpty(branding.FontFamily)) { <text>font-family: var(--portal-font-family) !important;</text> }
+                @if (!string.IsNullOrEmpty(branding.FontSize))   { <text>font-size: var(--portal-font-size) !important;</text> }
+            }
+        </style>
+    }
 </head>
 <body>
     @if (requiresLoginRedirect)
@@ -209,13 +220,20 @@
     <a href="#main-content" class="skip-to-main visually-hidden-focusable">Skip to main content</a>
     <div class="app-shell">
         <aside class="app-sidebar" role="complementary" aria-label="Application sidebar">
-            <a class="brand-link" asp-controller="Home" asp-action="Index" aria-label="@branding.UniversityName — go to home">
-                <span class="brand-mark">@branding.BrandInitials</span>
+            <div class="brand-link" role="group" aria-label="@branding.UniversityName branding">
+                @if (!string.IsNullOrEmpty(branding.LogoUrl))
+                {
+                    <img src="@branding.LogoUrl" alt="@branding.UniversityName logo" class="brand-logo" style="height:40px;width:40px;object-fit:contain;border-radius:6px;" />
+                }
+                else
+                {
+                    <span class="brand-mark">@branding.BrandInitials</span>
+                }
                 <div>
                     <div class="brand-name">@branding.UniversityName</div>
                     <div class="brand-subtitle">@branding.PortalSubtitle</div>
                 </div>
-            </a>
+            </div>
 
             <nav class="sidebar-nav" role="navigation" aria-label="Main navigation">
                 @if (useDynamicMenus)
@@ -327,7 +345,6 @@
                     {
                         <div class="menu-label">System Settings</div>
                         <a class="menu-link" asp-controller="Portal" asp-action="ReportSettings">Report Settings</a>
-                        <a class="menu-link" asp-controller="Portal" asp-action="ModuleSettings">Module Settings</a>
                         <a class="menu-link" asp-controller="Portal" asp-action="SidebarSettings">Sidebar Settings</a>
                         <a class="menu-link" asp-controller="Portal" asp-action="LicenseUpdate">License Update</a>
                         <a class="menu-link" asp-controller="Portal" asp-action="ThemeSettings">Theme Settings</a>
@@ -370,6 +387,10 @@
 
             <footer class="app-footer">
                 <span>@branding.FooterText</span>
+                @if (!string.IsNullOrEmpty(branding.PrivacyPolicyUrl))
+                {
+                    <span class="ms-3"><a href="@branding.PrivacyPolicyUrl" target="_blank" rel="noopener noreferrer" class="text-muted small">Privacy Policy</a></span>
+                }
             </footer>
         </section>
     </div>

@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.22 (Phase 9 Complete - Documentation and Script Regeneration)  
+**Version:** 1.26 (Phase 1 Remediation Final Push — Batch 5)  
 **Status:** Approved  
 **Prepared By:** Product Team  
 **Last Updated:** 5 May 2026  
@@ -9,6 +9,47 @@
 ---
 
 ## 0. Implementation Update Log
+
+### 2026-05-05 — Phase 1 Remediation Restart (Batch 3)
+- **Stage 1.3 (Result Summary InvalidOperationException - completed)**
+  - Root cause identified in `ReportRepository.GetResultDataAsync()` query pipeline: EF Core could not translate `OrderBy` over projected `ResultReportRow` (`could not be translated`).
+  - Fixed query by moving sort to SQL-side entity fields (`orderby u.Username, c.Code`) before projection in `BuildResultQuery()`.
+  - Removed post-projection `OrderBy` calls in `GetResultDataAsync()` and `GetSemesterResultDataAsync()`.
+- **SuperAdmin always-available enforcement (reports data endpoints)**
+  - Updated `ReportController` data/export endpoints from faculty policy to explicit roles: `SuperAdmin,Admin,Faculty`.
+
+- **Validation:**
+  - Live API validation succeeded: `GET /api/v1/reports/result-summary` with SuperAdmin token returned `rows=21` and `totalRecords=21`.
+  - File diagnostics report no errors in modified files.
+
+### 2026-05-05 — Phase 1 Remediation Restart (Batch 2)
+- **Stage 1.4 (menu and scripts cleanup - completed)**
+  - Removed static `Module Settings` link from SuperAdmin sidebar in `_Layout.cshtml`.
+  - Removed `module_settings` upsert entries from runtime seeder (`DatabaseSeeder`) and both SQL seeds:
+    - `Scripts/1-MinimalSeed.sql`
+    - `Scripts/2-FullDummyData.sql`
+  - Added legacy cleanup logic to soft-delete/hide existing `module_settings` menu rows and disable their role access in both SQL seeds and runtime seeder.
+  - Updated sidebar integration test expectations to reflect removal of `module_settings` key.
+
+- **Validation:**
+  - Modified files report no diagnostics.
+  - SuperAdmin offerings access endpoint remains reachable after restart (`/api/v1/course/offerings/my`).
+
+### 2026-05-05 — Phase 1 Remediation Restart (Batch 1 In Progress)
+- **Stage 1.1 (403 access issues - in progress)**
+  - Updated `CourseController.GetMyOfferings()` role gates from Faculty-only to `SuperAdmin,Admin,Faculty,Student`.
+  - Added role-aware offering resolution so SuperAdmin/Admin can always load offering lists used by Assignments, Attendance, Results, and Quizzes pages.
+- **Stage 1.3 (report visibility - completed for this batch)**
+  - Updated `ReportRepository.GetCatalogForRoleAsync()` to return all active reports for SuperAdmin regardless of explicit role assignments.
+- **Stage 1.4 (menu cleanup - partial)**
+  - Removed `module_settings` route/group mapping in dynamic sidebar render path.
+  - Updated sidebar branding block to a non-clickable container (TE / Tabsan EduSphere / Campus Portal no longer linked).
+- **Stage 1.5 (promote error - completed for this batch)**
+  - Fixed semester student mapping in `EduApiClient` by honoring `StudentProfileId` from lifecycle payload and falling back safely.
+
+- **Validation:**
+  - Static error scan reports no code diagnostics in modified files.
+  - Full build currently blocked by running API/Web processes locking binaries (`MSB3021`/`MSB3027`), not by compile diagnostics.
 
 ### 2026-05-05 — Phase 9 Complete (Documentation and Script Regeneration)
 - **Stage 9.1 (Script Modernization - COMPLETE)**

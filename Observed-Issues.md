@@ -76,21 +76,21 @@ Status Legend: Not Started | In Progress | Blocked | Done
 
 | ID | Phase | Stage | Work Item | Priority | Owner | Status |
 |---|---|---|---|---|---|---|
-| P1-S1-01 | Phase 1 | Stage 1.1 | Fix 403 on Attendance, Results, Assignments, Quizzes, Student Attendance by correcting API authorization and role mapping. | P0 | Backend | Not Started |
-| P1-S1-02 | Phase 1 | Stage 1.1 | Add regression tests for protected endpoints across Admin, Faculty, Student roles. | P1 | QA | Not Started |
-| P1-S2-01 | Phase 1 | Stage 1.2 | Add Departments CRUD UI and API integration. | P0 | Frontend + Backend | Not Started |
-| P1-S2-02 | Phase 1 | Stage 1.2 | Add Courses and Offerings CRUD UI and API integration. | P0 | Frontend + Backend | Not Started |
-| P1-S2-03 | Phase 1 | Stage 1.2 | Add Enrollments CRUD UI and API integration. | P0 | Frontend + Backend | Not Started |
-| P1-S2-04 | Phase 1 | Stage 1.2 | Add FYP Management CRUD UI and API integration. | P1 | Frontend + Backend | Not Started |
-| P1-S3-01 | Phase 1 | Stage 1.3 | Fix System.InvalidOperationException in Result Summary and add error-safe handling. | P0 | Backend | Not Started |
-| P1-S3-02 | Phase 1 | Stage 1.3 | Ensure all report definitions are visible in Report Center by role and active state. | P1 | Backend | Not Started |
-| P1-S4-01 | Phase 1 | Stage 1.4 | Remove Module Settings from sidebar and related seed scripts. | P1 | Backend + DB | Not Started |
-| P1-S4-02 | Phase 1 | Stage 1.4 | Remove hyperlink behavior from sidebar brand header items: TE, Tabsan EduSphere, Campus Portal. | P2 | Frontend | Not Started |
-| P1-S5-01 | Phase 1 | Stage 1.5 | Fix Promote flow to pass valid student profile ID (avoid Guid.Empty). | P0 | Frontend + Backend | Not Started |
-| P1-S6-01 | Phase 1 | Stage 1.6 | Add 10 additional themes with distinct color combinations. | P2 | Frontend | Not Started |
-| P1-S6-02 | Phase 1 | Stage 1.6 | Add logo upload option in Dashboard Settings. | P1 | Frontend + Backend | Not Started |
-| P1-S6-03 | Phase 1 | Stage 1.6 | Add Privacy Policy editor/link field in Dashboard Settings. | P1 | Frontend + Backend | Not Started |
-| P1-S6-04 | Phase 1 | Stage 1.6 | Add text style options in Dashboard Settings. | P2 | Frontend | Not Started |
+| P1-S1-01 | Phase 1 | Stage 1.1 | Fix 403 on Attendance, Results, Assignments, Quizzes, Student Attendance by correcting API authorization and role mapping. | P0 | Backend | Done |
+| P1-S1-02 | Phase 1 | Stage 1.1 | Add regression tests for protected endpoints across Admin, Faculty, Student roles. | P1 | QA | Done |
+| P1-S2-01 | Phase 1 | Stage 1.2 | Add Departments CRUD UI and API integration. | P0 | Frontend + Backend | Done |
+| P1-S2-02 | Phase 1 | Stage 1.2 | Add Courses and Offerings CRUD UI and API integration. | P0 | Frontend + Backend | Done |
+| P1-S2-03 | Phase 1 | Stage 1.2 | Add Enrollments CRUD UI and API integration. | P0 | Frontend + Backend | Done |
+| P1-S2-04 | Phase 1 | Stage 1.2 | Add FYP Management CRUD UI and API integration. | P1 | Frontend + Backend | Done |
+| P1-S3-01 | Phase 1 | Stage 1.3 | Fix System.InvalidOperationException in Result Summary and add error-safe handling. | P0 | Backend | Done |
+| P1-S3-02 | Phase 1 | Stage 1.3 | Ensure all report definitions are visible in Report Center by role and active state. | P1 | Backend | Done |
+| P1-S4-01 | Phase 1 | Stage 1.4 | Remove Module Settings from sidebar and related seed scripts. | P1 | Backend + DB | Done |
+| P1-S4-02 | Phase 1 | Stage 1.4 | Remove hyperlink behavior from sidebar brand header items: TE, Tabsan EduSphere, Campus Portal. | P2 | Frontend | Done |
+| P1-S5-01 | Phase 1 | Stage 1.5 | Fix Promote flow to pass valid student profile ID (avoid Guid.Empty). | P0 | Frontend + Backend | Done |
+| P1-S6-01 | Phase 1 | Stage 1.6 | Add 10 additional themes with distinct color combinations. | P2 | Frontend | Done |
+| P1-S6-02 | Phase 1 | Stage 1.6 | Add logo upload option in Dashboard Settings. | P1 | Frontend + Backend | Done |
+| P1-S6-03 | Phase 1 | Stage 1.6 | Add Privacy Policy editor/link field in Dashboard Settings. | P1 | Frontend + Backend | Done |
+| P1-S6-04 | Phase 1 | Stage 1.6 | Add text style options in Dashboard Settings. | P2 | Frontend | Done |
 | P2-S1-01 | Phase 2 | Stage 2.1 | Implement concurrent user limit based on license user count. | P0 | Backend | Not Started |
 | P2-S1-02 | Phase 2 | Stage 2.1 | Exempt SuperAdmin from license concurrency restrictions. | P0 | Backend | Not Started |
 | P2-S2-01 | Phase 2 | Stage 2.2 | Implement All Users mode to disable concurrency cap. | P0 | Backend | Not Started |

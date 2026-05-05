@@ -36,7 +36,7 @@ public sealed class ReportController : ControllerBase
 
     /// <summary>Returns attendance summary data with optional filters.</summary>
     [HttpGet("attendance-summary")]
-    [Authorize(Policy = "Faculty")]
+    [Authorize(Roles = "SuperAdmin,Admin,Faculty")]
     public async Task<IActionResult> GetAttendanceSummary(
         [FromQuery] Guid? semesterId,
         [FromQuery] Guid? departmentId,
@@ -51,7 +51,7 @@ public sealed class ReportController : ControllerBase
 
     /// <summary>Downloads attendance summary as an Excel (.xlsx) file.</summary>
     [HttpGet("attendance-summary/export")]
-    [Authorize(Policy = "Faculty")]
+    [Authorize(Roles = "SuperAdmin,Admin,Faculty")]
     public async Task<IActionResult> ExportAttendanceSummary(
         [FromQuery] Guid? semesterId,
         [FromQuery] Guid? departmentId,
@@ -68,7 +68,7 @@ public sealed class ReportController : ControllerBase
 
     /// <summary>Returns published result data with optional filters.</summary>
     [HttpGet("result-summary")]
-    [Authorize(Policy = "Faculty")]
+    [Authorize(Roles = "SuperAdmin,Admin,Faculty")]
     public async Task<IActionResult> GetResultSummary(
         [FromQuery] Guid? semesterId,
         [FromQuery] Guid? departmentId,
@@ -83,7 +83,7 @@ public sealed class ReportController : ControllerBase
 
     /// <summary>Downloads result summary as an Excel file.</summary>
     [HttpGet("result-summary/export")]
-    [Authorize(Policy = "Faculty")]
+    [Authorize(Roles = "SuperAdmin,Admin,Faculty")]
     public async Task<IActionResult> ExportResultSummary(
         [FromQuery] Guid? semesterId,
         [FromQuery] Guid? departmentId,
@@ -100,7 +100,7 @@ public sealed class ReportController : ControllerBase
 
     /// <summary>Returns per-student GPA and CGPA data.</summary>
     [HttpGet("gpa-report")]
-    [Authorize(Policy = "Faculty")]
+    [Authorize(Roles = "SuperAdmin,Admin,Faculty")]
     public async Task<IActionResult> GetGpaReport(
         [FromQuery] Guid? departmentId,
         [FromQuery] Guid? programId,
@@ -113,7 +113,7 @@ public sealed class ReportController : ControllerBase
 
     /// <summary>Downloads GPA report as an Excel file.</summary>
     [HttpGet("gpa-report/export")]
-    [Authorize(Policy = "Faculty")]
+    [Authorize(Roles = "SuperAdmin,Admin,Faculty")]
     public async Task<IActionResult> ExportGpaReport(
         [FromQuery] Guid? departmentId,
         [FromQuery] Guid? programId,
@@ -128,7 +128,7 @@ public sealed class ReportController : ControllerBase
 
     /// <summary>Returns course offering enrollment utilisation data.</summary>
     [HttpGet("enrollment-summary")]
-    [Authorize(Policy = "Faculty")]
+    [Authorize(Roles = "SuperAdmin,Admin,Faculty")]
     public async Task<IActionResult> GetEnrollmentSummary(
         [FromQuery] Guid? semesterId,
         [FromQuery] Guid? departmentId,
@@ -143,7 +143,7 @@ public sealed class ReportController : ControllerBase
 
     /// <summary>Returns all published results for a specific semester.</summary>
     [HttpGet("semester-results")]
-    [Authorize(Policy = "Faculty")]
+    [Authorize(Roles = "SuperAdmin,Admin,Faculty")]
     public async Task<IActionResult> GetSemesterResults(
         [FromQuery] Guid semesterId,
         [FromQuery] Guid? departmentId,
@@ -194,7 +194,7 @@ public sealed class ReportController : ControllerBase
 
     /// <summary>Returns students whose attendance is below the given threshold.</summary>
     [HttpGet("low-attendance")]
-    [Authorize(Policy = "Faculty")]
+    [Authorize(Roles = "SuperAdmin,Admin,Faculty")]
     public async Task<IActionResult> GetLowAttendanceWarning(
         [FromQuery] decimal threshold = 75m,
         [FromQuery] Guid? departmentId = null,
@@ -210,7 +210,7 @@ public sealed class ReportController : ControllerBase
 
     /// <summary>Returns all FYP project rows, optionally filtered by department and status.</summary>
     [HttpGet("fyp-status")]
-    [Authorize(Policy = "Faculty")]
+    [Authorize(Roles = "SuperAdmin,Admin,Faculty")]
     public async Task<IActionResult> GetFypStatusReport(
         [FromQuery] Guid? departmentId,
         [FromQuery] string? status,

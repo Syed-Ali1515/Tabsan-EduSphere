@@ -6,6 +6,33 @@
 
 ---
 
+## Execution Updates
+
+### 2026-05-05 — Phase 1 Remediation Restart (Batch 1)
+- Re-opened Phase 1 workstream to address Observed-Issues Phase 1 items.
+- Implemented role-access remediation for offerings used by Assignments, Attendance, Results, and Quizzes page data loads.
+- Applied SuperAdmin visibility correction for Report Center catalog retrieval.
+- Applied sidebar cleanup: removed module-settings route mapping in dynamic menu and removed brand-header hyperlink behavior.
+- Applied student lifecycle mapping fix to prevent empty GUID promote requests from semester-student payload mapping.
+
+### 2026-05-05 — Phase 1 Remediation Restart (Batch 2)
+- Completed Stage 1.4 script/runtime cleanup for Module Settings removal.
+- Removed `module_settings` seeding from runtime database seeder and both SQL seed scripts.
+- Added legacy cleanup to disable role access and soft-delete existing `module_settings` menu rows.
+- Removed remaining static SuperAdmin sidebar link to Module Settings.
+- Updated sidebar integration test expected SuperAdmin menu count.
+
+### 2026-05-05 — Phase 1 Remediation Restart (Batch 3)
+- Completed Stage 1.3 Result Summary runtime exception fix.
+- Corrected report query ordering in repository to SQL-level ordering prior to projection, eliminating EF translation failure.
+- Expanded report data/export endpoint role gates to `SuperAdmin,Admin,Faculty`.
+- Validated SuperAdmin result summary endpoint response with non-empty records.
+
+### Next Execution Target
+- Continue Phase 1 remaining tasks: Stage 1.1 completion validation, Stage 1.2 CRUD surfaces, Stage 1.6 themes/branding expansion.
+
+---
+
 ## 1. Delivery Strategy
 
 - Delivery model: Phased, test-first, modular monolith

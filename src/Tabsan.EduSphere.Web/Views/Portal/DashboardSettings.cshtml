@@ -35,7 +35,7 @@ else
                     <span class="ms-auto text-muted small">Controls the name, initials and footer text shown across the portal.</span>
                 </div>
                 <div class="card-body">
-                    <form asp-action="DashboardSettings" method="post">
+                    <form asp-action="DashboardSettings" method="post" enctype="multipart/form-data">
                         @Html.AntiForgeryToken()
 
                         <div class="row g-3">
@@ -83,6 +83,65 @@ else
                                        maxlength="200"
                                        placeholder="e.g. © 2026 Tabsan EduSphere" />
                                 <div class="form-text">Shown in the page footer. Tip: include the © symbol and year.</div>
+                            </div>
+
+                            @* ── P1-S6-02: Logo Upload ── *@
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Portal Logo</label>
+                                @if (!string.IsNullOrEmpty(Model.Branding.LogoUrl))
+                                {
+                                    <div class="mb-2">
+                                        <img src="@Model.Branding.LogoUrl"
+                                             alt="Current portal logo"
+                                             class="border rounded p-1"
+                                             style="max-height:64px;max-width:200px;object-fit:contain;" />
+                                        <input type="hidden" name="Branding.LogoUrl" value="@Model.Branding.LogoUrl" />
+                                    </div>
+                                }
+                                <input type="file"
+                                       name="LogoFile"
+                                       class="form-control"
+                                       accept=".png,.jpg,.jpeg,.gif,.svg,.webp" />
+                                <div class="form-text">Optional. PNG, JPG, SVG or WebP, max 2 MB. Replaces brand initials circle in sidebar.</div>
+                            </div>
+
+                            @* ── P1-S6-03: Privacy Policy URL ── *@
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Privacy Policy URL</label>
+                                <input type="url"
+                                       name="Branding.PrivacyPolicyUrl"
+                                       class="form-control"
+                                       value="@Model.Branding.PrivacyPolicyUrl"
+                                       maxlength="500"
+                                       placeholder="https://yoursite.com/privacy" />
+                                <div class="form-text">If set, a Privacy Policy link appears in the page footer.</div>
+                            </div>
+
+                            @* ── P1-S6-04: Text Style Options ── *@
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Font Family</label>
+                                <select name="Branding.FontFamily" class="form-select">
+                                    <option value="" selected="@(string.IsNullOrEmpty(Model.Branding.FontFamily))">Default (system)</option>
+                                    <option value="'Segoe UI', sans-serif" selected="@(Model.Branding.FontFamily == "'Segoe UI', sans-serif")">Segoe UI</option>
+                                    <option value="Arial, sans-serif" selected="@(Model.Branding.FontFamily == "Arial, sans-serif")">Arial</option>
+                                    <option value="'Trebuchet MS', sans-serif" selected="@(Model.Branding.FontFamily == "'Trebuchet MS', sans-serif")">Trebuchet MS</option>
+                                    <option value="'Georgia', serif" selected="@(Model.Branding.FontFamily == "'Georgia', serif")">Georgia (Serif)</option>
+                                    <option value="'Courier New', monospace" selected="@(Model.Branding.FontFamily == "'Courier New', monospace")">Courier New (Mono)</option>
+                                </select>
+                                <div class="form-text">Base font used across the portal.</div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">Font Size</label>
+                                <select name="Branding.FontSize" class="form-select">
+                                    <option value="" selected="@(string.IsNullOrEmpty(Model.Branding.FontSize))">Default (16px)</option>
+                                    <option value="13px" selected="@(Model.Branding.FontSize == "13px")">Small (13px)</option>
+                                    <option value="14px" selected="@(Model.Branding.FontSize == "14px")">Compact (14px)</option>
+                                    <option value="16px" selected="@(Model.Branding.FontSize == "16px")">Normal (16px)</option>
+                                    <option value="18px" selected="@(Model.Branding.FontSize == "18px")">Large (18px)</option>
+                                    <option value="20px" selected="@(Model.Branding.FontSize == "20px")">Extra Large (20px)</option>
+                                </select>
+                                <div class="form-text">Base body text size.</div>
                             </div>
 
                             <div class="col-12 pt-2">

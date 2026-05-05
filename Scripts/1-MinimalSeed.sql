@@ -389,7 +389,6 @@ DECLARE @SMBuildings    UNIQUEIDENTIFIER = NEWID();
 DECLARE @SMRooms        UNIQUEIDENTIFIER = NEWID();
 DECLARE @SMSettings     UNIQUEIDENTIFIER = NEWID();
 DECLARE @SMReportSet    UNIQUEIDENTIFIER = NEWID();
-DECLARE @SMModuleSet    UNIQUEIDENTIFIER = NEWID();
 DECLARE @SMSidebarSet   UNIQUEIDENTIFIER = NEWID();
 DECLARE @SMThemeSet     UNIQUEIDENTIFIER = NEWID();
 DECLARE @SMLicUpd       UNIQUEIDENTIFIER = NEWID();
@@ -476,13 +475,6 @@ IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key] = N'report_settings'
     VALUES (@SMReportSet,N'report_settings',N'Report Settings',
             N'Control which roles can access which reports',@SMSettings,1,1,1,@Now,0);
 ELSE SELECT @SMReportSet = Id FROM sidebar_menu_items WHERE [Key] = N'report_settings';
-
-IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key] = N'module_settings')
-    INSERT INTO sidebar_menu_items
-        (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
-    VALUES (@SMModuleSet,N'module_settings',N'Module Settings',
-            N'Enable or disable optional feature modules',@SMSettings,2,1,1,@Now,0);
-ELSE SELECT @SMModuleSet = Id FROM sidebar_menu_items WHERE [Key] = N'module_settings';
 
 IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key] = N'sidebar_settings')
     INSERT INTO sidebar_menu_items
@@ -617,7 +609,6 @@ SELECT @SMBuildings   = Id FROM sidebar_menu_items WHERE [Key] = N'buildings';
 SELECT @SMRooms       = Id FROM sidebar_menu_items WHERE [Key] = N'rooms';
 SELECT @SMSettings    = Id FROM sidebar_menu_items WHERE [Key] = N'system_settings';
 SELECT @SMReportSet   = Id FROM sidebar_menu_items WHERE [Key] = N'report_settings';
-SELECT @SMModuleSet   = Id FROM sidebar_menu_items WHERE [Key] = N'module_settings';
 SELECT @SMSidebarSet  = Id FROM sidebar_menu_items WHERE [Key] = N'sidebar_settings';
 SELECT @SMThemeSet    = Id FROM sidebar_menu_items WHERE [Key] = N'theme_settings';
 SELECT @SMLicUpd      = Id FROM sidebar_menu_items WHERE [Key] = N'license_update';
@@ -658,7 +649,6 @@ INSERT INTO @SidebarRoles VALUES
     -- System Settings: SuperAdmin only
     (@SMSettings,   N'SuperAdmin', 1),
     (@SMReportSet,  N'SuperAdmin', 1),
-    (@SMModuleSet,  N'SuperAdmin', 1),
     (@SMSidebarSet, N'SuperAdmin', 1),
     -- Theme: all roles
     (@SMThemeSet,     N'SuperAdmin', 1), (@SMThemeSet,     N'Admin',    1),
@@ -709,6 +699,21 @@ WHERE NOT EXISTS (
     SELECT 1 FROM sidebar_menu_role_accesses x
     WHERE x.SidebarMenuItemId = sr.ItemId AND x.RoleName = sr.RoleName
 );
+
+-- Legacy cleanup: hide historical Module Settings menu rows.
+UPDATE sra
+SET sra.IsAllowed = 0
+FROM sidebar_menu_role_accesses sra
+INNER JOIN sidebar_menu_items smi ON smi.Id = sra.SidebarMenuItemId
+WHERE smi.[Key] = N'module_settings';
+
+UPDATE sidebar_menu_items
+SET IsActive = 0,
+        IsDeleted = 1,
+        DeletedAt = COALESCE(DeletedAt, SYSUTCDATETIME()),
+        UpdatedAt = SYSUTCDATETIME()
+WHERE [Key] = N'module_settings'
+    AND IsDeleted = 0;
 
 -- ═══════════════════════════════════════════════════════════
 -- §16  MODULE ROLE ASSIGNMENTS

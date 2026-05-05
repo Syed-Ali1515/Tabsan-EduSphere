@@ -27,9 +27,9 @@ Also update this file with:
 
 ## Current Execution Pointer
 - Plan Source: Project startup Docs/Final-Touches.md
-- Active Phase: All Phases Complete
-- Active Stage: N/A
-- Status: Phase 9 Complete ✅ — All phases (1–9) done
+- Active Phase: Phase 1 Remediation Restart
+- Active Stage: Stage 1.1 / 1.2 / 1.6 (Batch 3 complete for Stage 1.3)
+- Status: In Progress
 - Last Updated: 2026-05-05
 
 ## Completed Work
@@ -46,7 +46,7 @@ Also update this file with:
 - Phase 6: Notifications & Analytics — Stage 6.1: fixed `NotificationController` route from `api/[controller]` to `api/v1/[controller]` (resolved all notification 404s); Stage 6.2: replaced raw JSON `<pre>` dumps in Analytics view with typed `DepartmentPerformanceReport`, `DepartmentAttendanceReport`, `AssignmentStatsReport` objects; `EduApiClient` analytics methods now return typed DTOs via `GetAsync<T>`; `AnalyticsPageModel` updated to hold typed properties; `Analytics.cshtml` renders Bootstrap 5 responsive tables per section; summary cards populated from real data; build 0 errors
 
 ## Next Steps
-- Phase 9 (Documentation and Script Regeneration — see Final-Touches.md)
+- Continue Phase 1 remediation: finish Stage 1.1, Stage 1.2, and Stage 1.6 enhancements.
 
 - Phase 8 (Enrollments Completion — ✅ Complete)
 
@@ -326,3 +326,111 @@ When a phase is completed, update:
 - Final-Touches.md: Marked Phase 9 complete, filled Implementation/Validation summaries, updated Progress Tracker
 - PRD.md: Bumped to v1.22, added Phase 9 log entry
 - Command.md: Updated execution pointer + this entry
+
+---
+
+### Entry 010 — 2026-05-05 — Phase 1 Remediation Restart (Batch 1)
+**Completed:**
+- Stage 1.1: Fixed API role gate for offerings used by Assignments/Attendance/Results/Quizzes pages by expanding `GET /api/v1/course/offerings/my` to all operational roles.
+- Stage 1.1: Added role-aware behavior in `CourseController.GetMyOfferings()` so SuperAdmin/Admin can always access all offerings.
+- Stage 1.3: Fixed Report Center visibility for SuperAdmin by returning all active reports regardless of role assignment rows.
+- Stage 1.4: Removed `module_settings` from dynamic sidebar route/group mapping.
+- Stage 1.4: Removed hyperlink behavior from sidebar branding header (TE / Tabsan EduSphere / Campus Portal).
+- Stage 1.5: Fixed promote-flow identity mapping by honoring `StudentProfileId` in lifecycle semester-student payload.
+
+**Validation:**
+- File diagnostics for modified files show no code errors.
+- Full solution build is blocked by running app processes holding output DLL locks (`MSB3021`/`MSB3027`).
+
+**Moved to:** Continue Phase 1 remediation.
+
+**Docs Updated:**
+- PRD.md: Bumped to v1.23 and added this remediation log entry
+- Development Plan - ASP.NET.md: Added Phase 1 remediation restart execution note
+- Function-List.md: Added Phase 1 remediation batch 1 function updates
+- Command.md: Updated execution pointer + this entry
+
+---
+
+### Entry 011 — 2026-05-05 — Phase 1 Remediation Restart (Batch 2)
+**Completed:**
+- Stage 1.4: Removed static `Module Settings` sidebar link from SuperAdmin menu in `_Layout.cshtml`.
+- Stage 1.4: Removed `module_settings` menu creation/assignment from runtime `DatabaseSeeder`.
+- Stage 1.4: Removed `module_settings` from seed scripts `1-MinimalSeed.sql` and `2-FullDummyData.sql`.
+- Stage 1.4: Added legacy cleanup logic to disable role access and soft-delete existing `module_settings` records.
+- Stage 1.4: Updated `SidebarMenuIntegrationTests` expected SuperAdmin key count after removal.
+
+**Validation:**
+- Diagnostics check reports no errors in all modified files.
+- SuperAdmin offerings endpoint check still returns data on the running API.
+
+**Moved to:** Continue Phase 1 Stage 1.3 (`Result Summary` InvalidOperationException).
+
+**Docs Updated:**
+- Observed-Issues.md: Marked `P1-S4-01` as Done
+- PRD.md: Bumped to v1.24 and added remediation batch 2 log
+- Development Plan - ASP.NET.md: Added batch 2 execution update
+- Function-List.md: Added Stage 1.4 cleanup function/file updates
+- Command.md: Updated execution pointer + this entry
+
+---
+
+### Entry 012 — 2026-05-05 — Phase 1 Remediation Restart (Batch 3)
+**Completed:**
+- Stage 1.3: Fixed `System.InvalidOperationException` on Result Summary.
+- Root cause: EF translation failure in report query ordering (`OrderBy` on projected `ResultReportRow`).
+- Fixed `ReportRepository` by moving sorting to SQL (`orderby u.Username, c.Code`) before projection and removing post-projection ordering.
+- Updated report data/export endpoint authorization to include `SuperAdmin,Admin,Faculty` so SuperAdmin always has report functionality access.
+
+**Validation:**
+- Live API check successful: `GET /api/v1/reports/result-summary` with SuperAdmin token returned `rows=21`, `totalRecords=21`.
+- Diagnostics check reports no errors in modified files.
+
+**Moved to:** Continue Phase 1 Stage 1.2 CRUD coverage and Stage 1.6 dashboard/theme enhancements.
+
+**Docs Updated:**
+- Observed-Issues.md: Marked `P1-S3-01` as Done
+- PRD.md: Bumped to v1.25 and added remediation batch 3 log
+- Development Plan - ASP.NET.md: Added batch 3 execution update
+- Function-List.md: Added Stage 1.3 function/behavior updates
+- Command.md: Updated execution pointer + this entry
+
+---
+
+### Entry 013 — 2026-05-05 — Phase 1 Remediation (Batch 4 — Stage 1.2 CRUD)
+**Completed:**
+- P1-S2-01: Departments CRUD — added `CreateDepartment`, `UpdateDepartment`, `DeactivateDepartment` POST actions to PortalController; added `CreateDepartmentAsync`, `UpdateDepartmentAsync`, `DeactivateDepartmentAsync` to EduApiClient; rewired `Departments.cshtml` with server-side `<form asp-action>` modals for Create/Edit/Deactivate with antiforgery tokens.
+- P1-S2-02: Courses & Offerings CRUD — added `CreateCourse`, `CreateOffering`, `DeactivateCourse`, `DeleteOffering` POST actions; added matching methods to EduApiClient; updated `Courses.cshtml` with server-side forms, Deactivate/Delete buttons (SuperAdmin only); Courses GET now also loads Semesters + Faculty for dropdown population.
+- P1-S2-03: Enrollments — already complete from Phase 8 (EnrollStudent, AdminDropEnrollment, AdminEnrollStudentAsync all existed); confirmed Done.
+- P1-S2-04: FYP Management CRUD — added `AssignFypSupervisor` and `CompleteFypProject` POST actions; added `AssignFypSupervisorAsync`, `CompleteFypProjectAsync` to EduApiClient; updated `Fyp.cshtml` with Supervisor modal (faculty dropdown) and Complete button for Approved/InProgress projects; added FYP Supervisor modal with JS to wire `data-projectid`.
+- Added `Faculty` list to `FypPageModel`; added `Semesters` + `Faculty` lists to `CoursesPageModel`.
+
+**Validation:**
+- `dotnet build` on Web project: succeeded with no C# errors (only file-lock warnings from running process).
+- All modified C# files: no errors confirmed via diagnostics.
+- FypController: `[Authorize(Policy = "Admin")]` and `[Authorize(Policy = "Faculty")]` already include SuperAdmin per Program.cs policy configuration.
+
+**Moved to:** P1-S6-xx (Theme/branding enhancements) or P2-S1-01 (License concurrency).
+
+**Docs Updated:**
+- Observed-Issues.md: Marked P1-S2-01/02/03/04 as Done
+- Command.md: This entry
+
+---
+
+### Entry 014 — 2026-05-05 — Phase 1 Remediation (Batch 5 — Final Push: Regression Tests + Branding Enhancements)
+**Completed:**
+- P1-S1-01: 403 authorization fixes confirmed complete from Batch 1–3; marked Done in Observed-Issues.md.
+- P1-S1-02: Created `AuthorizationRegressionTests.cs` (30+ test methods in IntegrationTests project) covering Attendance, Assignment, Quiz, Result endpoints — 401 for unauthenticated, 403 for wrong role, pass for correct role.
+- P1-S6-01: Added 10 new themes to `wwwroot/css/site.css` and corresponding `ThemeOption` entries to `ThemeSettingsPageModel`. New themes: Neon Mint, Sakura Pink, Golden Hour, Deep Navy, Lavender Mist, Rust Canyon, Glacier Ice, Graphite Pro, Spring Blossom, Dusk Fire. Total themes: 29 (including Default).
+- P1-S6-02: Logo upload — added `POST /api/v1/portal-settings/logo` endpoint (PortalSettingsController) with 2 MB cap and whitelist (.png .jpg .jpeg .gif .svg .webp); saves to `wwwroot/portal-uploads/`; `EduApiClient.UploadLogoAsync` calls endpoint; PortalController POST handles logo file; DashboardSettings.cshtml has file input + current logo preview; sidebar now shows `<img>` if LogoUrl is set, falls back to initials circle.
+- P1-S6-03: Privacy Policy URL — added `PrivacyPolicyUrl` field to PortalBrandingDto/Service/ApiDto/WebModel; DashboardSettings.cshtml has URL input; _Layout.cshtml footer shows Privacy Policy link if set.
+- P1-S6-04: Font style options — added `FontFamily` and `FontSize` fields to PortalBrandingDto/Service/ApiDto/WebModel; DashboardSettings.cshtml has Font Family dropdown (5 options) and Font Size dropdown (5 options); _Layout.cshtml injects `<style>` block with `font-family`/`font-size` overrides when set.
+
+**Validation:**
+- `dotnet build` on Web project: `Build succeeded` — 0 errors, 4 pre-existing CS8620 nullable warnings only.
+
+**Docs Updated:**
+- Observed-Issues.md: Marked P1-S1-01, P1-S1-02, P1-S6-01, P1-S6-02, P1-S6-03, P1-S6-04 as Done
+- Command.md: This entry
+- PRD.md: Bumped to v1.26
