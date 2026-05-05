@@ -107,6 +107,7 @@ public record PortalBrandingDto(
     string FooterText,
     string? LogoUrl,
     string? PrivacyPolicyUrl,
+    string? PrivacyPolicyContent,
     string? FontFamily,
     string? FontSize
 );
@@ -119,6 +120,7 @@ public record SavePortalBrandingCommand(
     string FooterText,
     string? LogoUrl = null,
     string? PrivacyPolicyUrl = null,
+    string? PrivacyPolicyContent = null,
     string? FontFamily = null,
     string? FontSize = null
 );

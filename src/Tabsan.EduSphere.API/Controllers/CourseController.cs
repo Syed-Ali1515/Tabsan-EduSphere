@@ -91,9 +91,9 @@ public class CourseController : ControllerBase
 
     // ── DELETE /api/v1/course/{id} ─────────────────────────────────────────────
 
-    /// <summary>Soft-deactivates a course. SuperAdmin only.</summary>
+    /// <summary>Soft-deactivates a course. Admin and SuperAdmin only.</summary>
     [HttpDelete("{id:guid}")]
-    [Authorize(Roles = "SuperAdmin")]
+    [Authorize(Roles = "SuperAdmin,Admin")]
     public async Task<IActionResult> Deactivate(Guid id, CancellationToken ct)
     {
         var course = await _repo.GetByIdAsync(id, ct);
@@ -219,9 +219,9 @@ public class CourseController : ControllerBase
 
     // ── DELETE /api/v1/course/offerings/{id} ───────────────────────────────────
 
-    /// <summary>Soft-deletes a course offering. SuperAdmin only.</summary>
+    /// <summary>Soft-deletes a course offering. Admin and SuperAdmin only.</summary>
     [HttpDelete("offerings/{id:guid}")]
-    [Authorize(Roles = "SuperAdmin")]
+    [Authorize(Roles = "SuperAdmin,Admin")]
     public async Task<IActionResult> DeleteOffering(Guid id, CancellationToken ct)
     {
         var offering = await _repo.GetOfferingByIdAsync(id, ct);

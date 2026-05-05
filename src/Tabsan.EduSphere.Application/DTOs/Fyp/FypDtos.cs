@@ -8,6 +8,13 @@ public record ProposeProjectRequest(
     string Title,
     string Description);
 
+/// <summary>Request for an admin to create a project directly for a student.</summary>
+public record CreateProjectForStudentRequest(
+    Guid StudentProfileId,
+    Guid DepartmentId,
+    string Title,
+    string Description);
+
 /// <summary>Request to update the title and description of a project.</summary>
 public record UpdateProjectRequest(
     string Title,

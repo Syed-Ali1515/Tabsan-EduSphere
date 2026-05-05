@@ -178,6 +178,14 @@ public sealed class FypRepository : IFypRepository
               .ToListAsync(ct)
               .ContinueWith<IReadOnlyList<FypProject>>(t => t.Result, ct);
 
+    /// <summary>Returns all projects across all departments, optionally filtered by status.</summary>
+    public Task<IReadOnlyList<FypProject>> GetAllAsync(FypProjectStatus? status = null, CancellationToken ct = default)
+        => _db.FypProjects
+              .Where(p => status == null || p.Status == status)
+              .OrderByDescending(p => p.CreatedAt)
+              .ToListAsync(ct)
+              .ContinueWith<IReadOnlyList<FypProject>>(t => t.Result, ct);
+
     /// <summary>Returns all projects supervised by a specific faculty user.</summary>
     public Task<IReadOnlyList<FypProject>> GetBySupervisorAsync(Guid supervisorUserId, CancellationToken ct = default)
         => _db.FypProjects

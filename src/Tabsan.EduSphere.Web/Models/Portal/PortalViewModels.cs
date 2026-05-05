@@ -215,6 +215,14 @@ public class SessionIdentity
     public bool IsStudent => Roles.Contains("Student");
 }
 
+public class StudentProfileSummaryItem
+{
+    public Guid Id { get; set; }
+    public Guid DepartmentId { get; set; }
+    public string DepartmentName { get; set; } = "";
+    public int CurrentSemesterNumber { get; set; }
+}
+
 // ── Sidebar Settings ──────────────────────────────────────────────────────────
 
 public class SidebarMenuItemWebModel
@@ -515,12 +523,13 @@ public class AssignmentsPageModel
 
 public class AttendanceRecordItem
 {
-    public Guid     Id            { get; set; }
-    public string   StudentName   { get; set; } = "";
+    public Guid     Id                { get; set; }
+    public Guid     StudentProfileId  { get; set; }
+    public string   StudentName       { get; set; } = "";
     public string   RegistrationNumber { get; set; } = "";
-    public DateTime Date          { get; set; }
-    public string   Status        { get; set; } = ""; // Present / Absent / Late / Excused
-    public bool     IsCorrected   { get; set; }
+    public DateTime Date              { get; set; }
+    public string   Status            { get; set; } = ""; // Present / Absent / Late / Excused
+    public bool     IsCorrected       { get; set; }
 }
 
 public class AttendanceSummaryItem
@@ -552,6 +561,7 @@ public class ResultItem
     public Guid   Id                 { get; set; }
     // Used by the per-row Promote button in the Results table to identify the student.
     public Guid   StudentProfileId   { get; set; }
+    public string ResultType         { get; set; } = "";
     public string CourseName         { get; set; } = "";
     public string CourseCode         { get; set; } = "";
     public int?   MarksObtained      { get; set; }
@@ -648,6 +658,7 @@ public class FypPageModel
     public List<FypMeetingItem>    UpcomingMeetings { get; set; } = new();
     public List<LookupItem>        Departments      { get; set; } = new();
     public List<FacultyLookupItem> Faculty          { get; set; } = new();
+    public List<StudentItem>       Students         { get; set; } = new();
     public Guid?  SelectedDepartmentId { get; set; }
 }
 
@@ -1081,6 +1092,7 @@ public class PortalBrandingWebModel
     public string FooterText      { get; set; } = "© 2026 Tabsan EduSphere";
     public string? LogoUrl        { get; set; }
     public string? PrivacyPolicyUrl { get; set; }
+    public string? PrivacyPolicyContent { get; set; }
     public string? FontFamily     { get; set; }
     public string? FontSize       { get; set; }
 }

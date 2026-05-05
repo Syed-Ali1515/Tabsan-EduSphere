@@ -12,6 +12,7 @@ public interface IEduApiClient
     ApiConnectionModel GetConnection();
     void SaveConnection(ApiConnectionModel model);
     SessionIdentity? GetSessionIdentity();
+    Task<StudentProfileSummaryItem?> GetMyStudentProfileAsync(CancellationToken ct);
 
     Task<List<LookupItem>> GetDepartmentsAsync(CancellationToken ct);
     Task<List<LookupItem>> GetProgramsAsync(Guid? departmentId, CancellationToken ct);
@@ -120,6 +121,7 @@ public interface IEduApiClient
     Task<List<AssignmentItem>> GetAssignmentsByOfferingAsync(Guid offeringId, CancellationToken ct);
     Task<List<SubmissionItem>> GetSubmissionsForAssignmentAsync(Guid assignmentId, CancellationToken ct);
     Task<Guid> CreateAssignmentAsync(Guid courseOfferingId, string title, string? description, DateTime dueDate, decimal maxMarks, CancellationToken ct);
+    Task UpdateAssignmentAsync(Guid id, string title, string? description, DateTime dueDate, decimal maxMarks, CancellationToken ct);
     Task PublishAssignmentAsync(Guid id, CancellationToken ct);
     Task DeleteAssignmentAsync(Guid id, CancellationToken ct);
     Task GradeSubmissionAsync(Guid assignmentId, Guid studentProfileId, decimal marksAwarded, string? feedback, CancellationToken ct);
@@ -128,26 +130,32 @@ public interface IEduApiClient
     Task<List<AttendanceSummaryItem>> GetMyAttendanceSummaryAsync(CancellationToken ct);
     Task<List<AttendanceRecordItem>> GetAttendanceByOfferingAsync(Guid offeringId, CancellationToken ct);
     Task BulkMarkAttendanceAsync(Guid offeringId, DateTime date, IEnumerable<(Guid StudentProfileId, string Status)> entries, CancellationToken ct);
+    Task CorrectAttendanceAsync(Guid studentProfileId, Guid courseOfferingId, DateTime date, string newStatus, string? remarks, CancellationToken ct);
 
     // Results
     Task<List<ResultItem>> GetMyResultsAsync(CancellationToken ct);
     Task<List<ResultItem>> GetResultsByOfferingAsync(Guid offeringId, CancellationToken ct);
     Task CreateResultAsync(Guid studentProfileId, Guid courseOfferingId, string resultType, decimal marksObtained, decimal maxMarks, CancellationToken ct);
+    Task CorrectResultAsync(Guid studentProfileId, Guid courseOfferingId, string resultType, decimal newMarksObtained, decimal newMaxMarks, CancellationToken ct);
     Task PublishAllResultsAsync(Guid courseOfferingId, CancellationToken ct);
 
     // Quizzes
     Task<List<QuizItem>> GetQuizzesByOfferingAsync(Guid offeringId, CancellationToken ct);
     Task<List<QuizAttemptItem>> GetMyAttemptsAsync(CancellationToken ct);
     Task<Guid> CreateQuizAsync(Guid courseOfferingId, string title, string? instructions, int? timeLimitMinutes, int maxAttempts, CancellationToken ct);
+    Task UpdateQuizAsync(Guid id, string title, string? instructions, int? timeLimitMinutes, int maxAttempts, CancellationToken ct);
     Task PublishQuizAsync(Guid id, CancellationToken ct);
     Task DeleteQuizAsync(Guid id, CancellationToken ct);
 
     // FYP
     Task<List<FypProjectItem>> GetMyFypProjectsAsync(CancellationToken ct);
+    Task<List<FypProjectItem>> GetAllFypProjectsAsync(CancellationToken ct);
     Task<List<FypProjectItem>> GetFypByDepartmentAsync(Guid departmentId, CancellationToken ct);
     Task<List<FypProjectItem>> GetMySupervisedProjectsAsync(CancellationToken ct);
     Task<List<FypMeetingItem>> GetUpcomingMeetingsAsync(CancellationToken ct);
     Task<Guid> ProposeFypProjectAsync(Guid departmentId, string title, string description, CancellationToken ct);
+    Task<Guid> CreateFypProjectAsync(Guid studentProfileId, Guid departmentId, string title, string description, CancellationToken ct);
+    Task UpdateFypProjectAsync(Guid id, string title, string description, CancellationToken ct);
     Task ApproveFypProjectAsync(Guid id, string? remarks, CancellationToken ct);
     Task RejectFypProjectAsync(Guid id, string remarks, CancellationToken ct);
     Task AssignFypSupervisorAsync(Guid id, Guid supervisorUserId, CancellationToken ct);
@@ -259,6 +267,20 @@ public class EduApiClient : IEduApiClient
         if (string.IsNullOrWhiteSpace(raw)) return null;
         try { return JsonSerializer.Deserialize<SessionIdentity>(raw, _jsonOptions); }
         catch { return null; }
+    }
+
+    public async Task<StudentProfileSummaryItem?> GetMyStudentProfileAsync(CancellationToken ct)
+    {
+        var raw = await GetAsync<StudentProfileApiDto>("api/v1/student/profile", ct);
+        if (raw is null) return null;
+
+        return new StudentProfileSummaryItem
+        {
+            Id = raw.Id,
+            DepartmentId = raw.DepartmentId,
+            DepartmentName = raw.DeptName ?? "",
+            CurrentSemesterNumber = raw.CurrentSemesterNumber
+        };
     }
 
     // â”€â”€ Lookup GETs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -486,19 +508,41 @@ public class EduApiClient : IEduApiClient
 
             if (root.TryGetProperty("email", out var em)) identity.Email = em.GetString();
 
-            // Role claim may be a string or an array
-            if (root.TryGetProperty("role", out var roleProp))
+            // Role claim may be emitted as `role` or the standard ClaimTypes.Role URI.
+            if (TryReadRoleClaims(root, out var roles))
             {
-                if (roleProp.ValueKind == JsonValueKind.Array)
-                {
-                    foreach (var r in roleProp.EnumerateArray())
-                        if (r.GetString() is string s) identity.Roles.Add(s);
-                }
-                else if (roleProp.GetString() is string singleRole)
-                    identity.Roles.Add(singleRole);
+                identity.Roles.AddRange(roles);
             }
         }
         catch { /* ignore decode errors â€“ identity stays default */ }
+
+        static bool TryReadRoleClaims(JsonElement root, out List<string> roles)
+        {
+            roles = new List<string>();
+            if (TryAppendRoles(root, "role", roles)) return true;
+            return TryAppendRoles(root, "http://schemas.microsoft.com/ws/2008/06/identity/claims/role", roles);
+        }
+
+        static bool TryAppendRoles(JsonElement root, string propertyName, List<string> roles)
+        {
+            if (!root.TryGetProperty(propertyName, out var roleProp))
+                return false;
+
+            if (roleProp.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var r in roleProp.EnumerateArray())
+                {
+                    if (r.GetString() is string value && !string.IsNullOrWhiteSpace(value))
+                        roles.Add(value);
+                }
+            }
+            else if (roleProp.GetString() is string singleRole && !string.IsNullOrWhiteSpace(singleRole))
+            {
+                roles.Add(singleRole);
+            }
+
+            return roles.Count > 0;
+        }
 
         return identity;
     }
@@ -923,7 +967,16 @@ public class EduApiClient : IEduApiClient
     }
 
     public async Task<List<LookupItem>> GetMyOfferingsAsync(CancellationToken ct)
-        => await GetAsync<List<LookupItem>>("api/v1/course/offerings/my", ct) ?? new();
+    {
+        var raw = await GetAsync<List<MyOfferingApiDto>>("api/v1/course/offerings/my", ct) ?? new();
+        return raw.Select(o => new LookupItem
+        {
+            Id = o.Id,
+            Name = string.IsNullOrWhiteSpace(o.SemesterName)
+                ? o.CourseTitle ?? "Offering"
+                : $"{o.CourseTitle ?? "Offering"} ({o.SemesterName})"
+        }).ToList();
+    }
 
     public Task CreateCourseAsync(string code, string title, int creditHours, Guid departmentId, CancellationToken ct)
         => PostAsync<object, object>("api/v1/course", new { code, title, creditHours, departmentId }, ct);
@@ -954,6 +1007,21 @@ public class EduApiClient : IEduApiClient
         public string? FacultyName  { get; set; }
         public string? SemesterName { get; set; }
         public bool    IsActive     { get; set; }
+    }
+
+    private sealed class MyOfferingApiDto
+    {
+        public Guid Id { get; set; }
+        public string? CourseTitle { get; set; }
+        public string? SemesterName { get; set; }
+    }
+
+    private sealed class StudentProfileApiDto
+    {
+        public Guid Id { get; set; }
+        public Guid DepartmentId { get; set; }
+        public string? DeptName { get; set; }
+        public int CurrentSemesterNumber { get; set; }
     }
 
     // ── Assignments ───────────────────────────────────────────────────────────
@@ -993,6 +1061,13 @@ public class EduApiClient : IEduApiClient
         var payload = new { courseOfferingId, title, description, dueDate, maxMarks };
         return PostAsync<object, AssignmentCreateResponse>("api/v1/assignment", payload, ct)
             .ContinueWith(t => t.Result?.Id ?? Guid.Empty, ct);
+    }
+
+    public Task UpdateAssignmentAsync(Guid id, string title, string? description,
+        DateTime dueDate, decimal maxMarks, CancellationToken ct)
+    {
+        var payload = new { title, description, dueDate, maxMarks };
+        return PutAsync<object, object>($"api/v1/assignment/{id}", payload, ct);
     }
 
     public Task PublishAssignmentAsync(Guid id, CancellationToken ct)
@@ -1075,6 +1150,7 @@ public class EduApiClient : IEduApiClient
         return raw.Select(r => new AttendanceRecordItem
         {
             Id                 = r.Id,
+            StudentProfileId   = r.StudentProfileId,
             StudentName        = r.StudentName ?? "",
             RegistrationNumber = r.RegistrationNumber ?? "",
             Date               = r.Date,
@@ -1097,6 +1173,7 @@ public class EduApiClient : IEduApiClient
     private sealed class AttendanceRecordApiDto
     {
         public Guid     Id                 { get; set; }
+        public Guid     StudentProfileId   { get; set; }
         public string?  StudentName        { get; set; }
         public string?  RegistrationNumber { get; set; }
         public DateTime Date               { get; set; }
@@ -1116,6 +1193,13 @@ public class EduApiClient : IEduApiClient
             entries = entries.Select(e => new { studentProfileId = e.StudentProfileId, status = e.Status }).ToList()
         };
         return PostAsync<object, object>("api/v1/attendance/bulk", payload, ct);
+    }
+
+    public Task CorrectAttendanceAsync(Guid studentProfileId, Guid courseOfferingId, DateTime date,
+        string newStatus, string? remarks, CancellationToken ct)
+    {
+        var payload = new { studentProfileId, courseOfferingId, date, newStatus, remarks };
+        return PutAsync<object, object>("api/v1/attendance/correct", payload, ct);
     }
 
     // ── Results ───────────────────────────────────────────────────────────────
@@ -1139,6 +1223,7 @@ public class EduApiClient : IEduApiClient
     {
         Id                 = r.Id,
         StudentProfileId   = r.StudentProfileId,
+        ResultType         = r.ResultType ?? "",
         CourseName         = r.CourseName ?? "",
         CourseCode         = r.CourseCode ?? "",
         MarksObtained      = r.MarksObtained,
@@ -1154,6 +1239,7 @@ public class EduApiClient : IEduApiClient
     {
         public Guid    Id                 { get; set; }
         public Guid    StudentProfileId   { get; set; }
+        public string? ResultType         { get; set; }
         public string? CourseName         { get; set; }
         public string? CourseCode         { get; set; }
         public int?    MarksObtained      { get; set; }
@@ -1172,6 +1258,13 @@ public class EduApiClient : IEduApiClient
     {
         var payload = new { studentProfileId, courseOfferingId, resultType, marksObtained, maxMarks };
         return PostAsync<object, object>("api/v1/result", payload, ct);
+    }
+
+    public Task CorrectResultAsync(Guid studentProfileId, Guid courseOfferingId, string resultType,
+        decimal newMarksObtained, decimal newMaxMarks, CancellationToken ct)
+    {
+        var payload = new { newMarksObtained, newMaxMarks };
+        return PutAsync<object, object>($"api/v1/result/correct?studentProfileId={studentProfileId}&courseOfferingId={courseOfferingId}&resultType={Uri.EscapeDataString(resultType)}", payload, ct);
     }
 
     public Task PublishAllResultsAsync(Guid courseOfferingId, CancellationToken ct)
@@ -1250,6 +1343,21 @@ public class EduApiClient : IEduApiClient
             .ContinueWith(t => t.Result?.QuizId ?? Guid.Empty, ct);
     }
 
+    public Task UpdateQuizAsync(Guid id, string title, string? instructions,
+        int? timeLimitMinutes, int maxAttempts, CancellationToken ct)
+    {
+        var payload = new
+        {
+            title,
+            instructions,
+            timeLimitMinutes,
+            maxAttempts,
+            availableFrom = (DateTime?)null,
+            availableUntil = (DateTime?)null
+        };
+        return PutAsync<object, object>($"api/v1/quiz/{id}", payload, ct);
+    }
+
     public Task PublishQuizAsync(Guid id, CancellationToken ct)
         => PostAsync<object, object>($"api/v1/quiz/{id}/publish", new { }, ct);
 
@@ -1263,6 +1371,12 @@ public class EduApiClient : IEduApiClient
     public async Task<List<FypProjectItem>> GetMyFypProjectsAsync(CancellationToken ct)
     {
         var raw = await GetAsync<List<FypApiDto>>("api/v1/fyp/my-projects", ct) ?? new();
+        return raw.Select(MapFyp).ToList();
+    }
+
+    public async Task<List<FypProjectItem>> GetAllFypProjectsAsync(CancellationToken ct)
+    {
+        var raw = await GetAsync<List<FypApiDto>>("api/v1/fyp/all", ct) ?? new();
         return raw.Select(MapFyp).ToList();
     }
 
@@ -1301,6 +1415,16 @@ public class EduApiClient : IEduApiClient
         return PostAsync<object, FypCreateResponse>("api/v1/fyp", payload, ct)
             .ContinueWith(t => t.Result?.ProjectId ?? Guid.Empty, ct);
     }
+
+    public Task<Guid> CreateFypProjectAsync(Guid studentProfileId, Guid departmentId, string title, string description, CancellationToken ct)
+    {
+        var payload = new { studentProfileId, departmentId, title, description };
+        return PostAsync<object, FypCreateResponse>("api/v1/fyp/admin-create", payload, ct)
+            .ContinueWith(t => t.Result?.ProjectId ?? Guid.Empty, ct);
+    }
+
+    public Task UpdateFypProjectAsync(Guid id, string title, string description, CancellationToken ct)
+        => PutAsync<object, object>($"api/v1/fyp/{id}", new { title, description }, ct);
 
     public Task ApproveFypProjectAsync(Guid id, string? remarks, CancellationToken ct)
         => PostAsync<object, object>($"api/v1/fyp/{id}/approve", new { remarks }, ct);
@@ -2032,8 +2156,9 @@ public class EduApiClient : IEduApiClient
             BrandInitials    = raw?.BrandInitials    ?? "TE",
             PortalSubtitle   = raw?.PortalSubtitle   ?? "Campus Portal",
             FooterText       = raw?.FooterText       ?? "© 2026 Tabsan EduSphere",
-            LogoUrl          = raw?.LogoUrl,
+            LogoUrl          = NormalizeApiAssetUrl(raw?.LogoUrl),
             PrivacyPolicyUrl = raw?.PrivacyPolicyUrl,
+            PrivacyPolicyContent = raw?.PrivacyPolicyContent,
             FontFamily       = raw?.FontFamily,
             FontSize         = raw?.FontSize
         };
@@ -2049,6 +2174,7 @@ public class EduApiClient : IEduApiClient
             footerText       = model.FooterText,
             logoUrl          = model.LogoUrl,
             privacyPolicyUrl = model.PrivacyPolicyUrl,
+            privacyPolicyContent = model.PrivacyPolicyContent,
             fontFamily       = model.FontFamily,
             fontSize         = model.FontSize
         };
@@ -2065,7 +2191,18 @@ public class EduApiClient : IEduApiClient
         var body = await response.Content.ReadAsStringAsync(ct);
         if (!response.IsSuccessStatusCode) return null;
         var json = JsonSerializer.Deserialize<System.Text.Json.JsonElement>(body, _jsonOptions);
-        return json.TryGetProperty("url", out var urlProp) ? urlProp.GetString() : null;
+        return json.TryGetProperty("url", out var urlProp) ? NormalizeApiAssetUrl(urlProp.GetString()) : null;
+    }
+
+    private string? NormalizeApiAssetUrl(string? rawUrl)
+    {
+        if (string.IsNullOrWhiteSpace(rawUrl)) return rawUrl;
+        if (Uri.TryCreate(rawUrl, UriKind.Absolute, out _)) return rawUrl;
+
+        var baseUrl = GetConnection().ApiBaseUrl?.TrimEnd('/');
+        if (string.IsNullOrWhiteSpace(baseUrl)) return rawUrl;
+
+        return rawUrl.StartsWith('/') ? $"{baseUrl}{rawUrl}" : $"{baseUrl}/{rawUrl}";
     }
 
     private sealed class PortalBrandingApiDto
@@ -2076,6 +2213,7 @@ public class EduApiClient : IEduApiClient
         public string? FooterText       { get; set; }
         public string? LogoUrl          { get; set; }
         public string? PrivacyPolicyUrl { get; set; }
+        public string? PrivacyPolicyContent { get; set; }
         public string? FontFamily       { get; set; }
         public string? FontSize         { get; set; }
     }

@@ -21,6 +21,9 @@ public interface IFypRepository
     /// <summary>Returns all projects in a department, optionally filtered by status.</summary>
     Task<IReadOnlyList<FypProject>> GetByDepartmentAsync(Guid departmentId, FypProjectStatus? status = null, CancellationToken ct = default);
 
+    /// <summary>Returns all projects across all departments, optionally filtered by status.</summary>
+    Task<IReadOnlyList<FypProject>> GetAllAsync(FypProjectStatus? status = null, CancellationToken ct = default);
+
     /// <summary>Returns all projects supervised by a specific faculty user.</summary>
     Task<IReadOnlyList<FypProject>> GetBySupervisorAsync(Guid supervisorUserId, CancellationToken ct = default);
 

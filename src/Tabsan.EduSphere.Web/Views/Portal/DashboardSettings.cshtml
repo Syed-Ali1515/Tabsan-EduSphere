@@ -114,7 +114,17 @@ else
                                        value="@Model.Branding.PrivacyPolicyUrl"
                                        maxlength="500"
                                        placeholder="https://yoursite.com/privacy" />
-                                <div class="form-text">If set, a Privacy Policy link appears in the page footer.</div>
+                                <div class="form-text">Optional external link. If policy text is entered below, the portal uses its own Privacy page instead.</div>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Privacy Policy Text</label>
+                                <textarea name="Branding.PrivacyPolicyContent"
+                                          class="form-control"
+                                          rows="6"
+                                          maxlength="8000"
+                                          placeholder="Enter the privacy policy content shown in the portal Privacy page.">@Model.Branding.PrivacyPolicyContent</textarea>
+                                <div class="form-text">Displayed in the General → Privacy page inside the portal.</div>
                             </div>
 
                             @* ── P1-S6-04: Text Style Options ── *@

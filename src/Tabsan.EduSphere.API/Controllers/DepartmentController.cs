@@ -79,9 +79,9 @@ public class DepartmentController : ControllerBase
 
     // ── DELETE /api/v1/department/{id} (soft-delete) ──────────────────────────
 
-    /// <summary>Soft-deletes (deactivates) a department. SuperAdmin only.</summary>
+    /// <summary>Soft-deletes (deactivates) a department. Admin and SuperAdmin only.</summary>
     [HttpDelete("{id:guid}")]
-    [Authorize(Roles = "SuperAdmin")]
+    [Authorize(Roles = "SuperAdmin,Admin")]
     public async Task<IActionResult> Deactivate(Guid id, CancellationToken ct)
     {
         var dept = await _deptRepo.GetByIdAsync(id, ct);

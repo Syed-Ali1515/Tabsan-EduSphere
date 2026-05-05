@@ -335,6 +335,7 @@ public class PortalBrandingService : IPortalBrandingService
     private const string KeyFooterText      = "footer_text";
     private const string KeyLogoUrl         = "logo_url";
     private const string KeyPrivacyPolicy   = "privacy_policy_url";
+    private const string KeyPrivacyPolicyContent = "privacy_policy_content";
     private const string KeyFontFamily      = "font_family";
     private const string KeyFontSize        = "font_size";
 
@@ -352,6 +353,7 @@ public class PortalBrandingService : IPortalBrandingService
             all.GetValueOrDefault(KeyFooterText,     "© 2026 Tabsan EduSphere"),
             all.GetValueOrDefault(KeyLogoUrl,        null),
             all.GetValueOrDefault(KeyPrivacyPolicy,  null),
+            all.GetValueOrDefault(KeyPrivacyPolicyContent, null),
             all.GetValueOrDefault(KeyFontFamily,     null),
             all.GetValueOrDefault(KeyFontSize,       null)
         );
@@ -365,6 +367,7 @@ public class PortalBrandingService : IPortalBrandingService
         await _repo.UpsertPortalSettingAsync(KeyFooterText,     cmd.FooterText       ?? string.Empty, ct);
         await _repo.UpsertPortalSettingAsync(KeyLogoUrl,        cmd.LogoUrl          ?? string.Empty, ct);
         await _repo.UpsertPortalSettingAsync(KeyPrivacyPolicy,  cmd.PrivacyPolicyUrl ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(KeyPrivacyPolicyContent, cmd.PrivacyPolicyContent ?? string.Empty, ct);
         await _repo.UpsertPortalSettingAsync(KeyFontFamily,     cmd.FontFamily       ?? string.Empty, ct);
         await _repo.UpsertPortalSettingAsync(KeyFontSize,       cmd.FontSize         ?? string.Empty, ct);
         await _repo.SaveChangesAsync(ct);

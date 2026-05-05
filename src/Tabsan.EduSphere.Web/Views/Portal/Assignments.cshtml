@@ -36,7 +36,7 @@ else
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h2 class="h5 mb-0">Assignments <span class="badge bg-secondary ms-1">@Model.Assignments.Count</span></h2>
-                @if (Model.SelectedOfferingId.HasValue)
+                @if (Model.SelectedOfferingId.HasValue && (User.IsInRole("Faculty") || User.IsInRole("Admin") || User.IsInRole("SuperAdmin")))
                 {
                     <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createAssignmentModal">
                         + Create Assignment
@@ -95,22 +95,31 @@ else
                                         }
                                     </td>
                                     <td class="text-end" style="white-space:nowrap">
-                                        @if (!a.IsPublished)
+                                        @if (User.IsInRole("Faculty") || User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))
                                         {
-                                            <form asp-action="PublishAssignment" method="post" class="d-inline">
+                                            @if (!a.IsPublished)
+                                            {
+                                                <button type="button" class="btn btn-xs btn-outline-secondary btn-sm"
+                                                        data-bs-toggle="modal" data-bs-target="#editAssignmentModal"
+                                                        data-id="@a.Id" data-title="@a.Title" data-description="@a.Description"
+                                                        data-duedate="@(a.DueDate?.ToString("yyyy-MM-ddTHH:mm") ?? string.Empty)" data-maxmarks="@a.TotalMarks">
+                                                    Edit
+                                                </button>
+                                                <form asp-action="PublishAssignment" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@a.Id" />
+                                                    <input type="hidden" name="offeringId" value="@Model.SelectedOfferingId" />
+                                                    <button type="submit" class="btn btn-xs btn-outline-success btn-sm">Publish</button>
+                                                </form>
+                                            }
+                                            <form asp-action="DeleteAssignment" method="post" class="d-inline"
+                                                  onsubmit="return confirm('Delete this assignment?')">
                                                 @Html.AntiForgeryToken()
                                                 <input type="hidden" name="id" value="@a.Id" />
                                                 <input type="hidden" name="offeringId" value="@Model.SelectedOfferingId" />
-                                                <button type="submit" class="btn btn-xs btn-outline-success btn-sm">Publish</button>
+                                                <button type="submit" class="btn btn-xs btn-outline-danger btn-sm">Delete</button>
                                             </form>
                                         }
-                                        <form asp-action="DeleteAssignment" method="post" class="d-inline"
-                                              onsubmit="return confirm('Delete this assignment?')">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="id" value="@a.Id" />
-                                            <input type="hidden" name="offeringId" value="@Model.SelectedOfferingId" />
-                                            <button type="submit" class="btn btn-xs btn-outline-danger btn-sm">Delete</button>
-                                        </form>
                                     </td>
                                 </tr>
                             }
@@ -209,6 +218,47 @@ else
         </form>
     </div>
 </div>
+
+@if (Model.SelectedOfferingId.HasValue && (User.IsInRole("Faculty") || User.IsInRole("Admin") || User.IsInRole("SuperAdmin")))
+{
+    <div class="modal fade" id="editAssignmentModal" tabindex="-1">
+        <div class="modal-dialog">
+            <form asp-action="UpdateAssignment" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="edit_assignmentId" name="id" />
+                <input type="hidden" name="offeringId" value="@Model.SelectedOfferingId" />
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Edit Assignment</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Title <span class="text-danger">*</span></label>
+                            <input id="edit_assignmentTitle" name="title" class="form-control" required maxlength="200" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea id="edit_assignmentDescription" name="description" class="form-control" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Due Date <span class="text-danger">*</span></label>
+                            <input id="edit_assignmentDueDate" name="dueDate" type="datetime-local" class="form-control" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Max Marks <span class="text-danger">*</span></label>
+                            <input id="edit_assignmentMaxMarks" name="maxMarks" type="number" step="0.5" min="1" class="form-control" required />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+}
 
 @* ── Grade Submission Modal ───────────────────────────────────────────────── *@
 <div class="modal fade" id="gradeModal" tabindex="-1">

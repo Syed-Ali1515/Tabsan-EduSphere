@@ -46,6 +46,12 @@ else
                                 + Propose Project
                             </button>
                         }
+                        else if (User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))
+                        {
+                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createFypModal">
+                                + Create Project
+                            </button>
+                        }
                     </div>
                     @if (Model.Projects.Count == 0)
                     {
@@ -82,6 +88,15 @@ else
                                             <td>@p.DepartmentName</td>
                                             <td><span class="badge @badgeCls">@p.Status</span></td>
                                     <td>
+                                        @if (User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))
+                                        {
+                                            <button class="btn btn-xs btn-outline-secondary btn-sm"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#editFypModal"
+                                                    data-projectid="@p.Id" data-title="@p.Title" data-description="@p.Description">
+                                                Edit
+                                            </button>
+                                        }
                                         @if (p.Status == "Proposed" && (User.IsInRole("Admin") || User.IsInRole("SuperAdmin")))
                                         {
                                             <form asp-action="ApproveFypProject" method="post" class="d-inline">
@@ -193,6 +208,87 @@ else
     </div>
 </div>
 
+@if ((User.IsInRole("Admin") || User.IsInRole("SuperAdmin")) && Model.Students.Any())
+{
+    <div class="modal fade" id="createFypModal" tabindex="-1">
+        <div class="modal-dialog">
+            <form asp-action="CreateFypProject" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Create FYP Project</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Student <span class="text-danger">*</span></label>
+                            <select name="studentProfileId" class="form-select" required>
+                                <option value="">Select student…</option>
+                                @foreach (var s in Model.Students)
+                                {
+                                    <option value="@s.Id">@s.FullName (@s.RegistrationNumber)</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Department <span class="text-danger">*</span></label>
+                            <select name="departmentId" class="form-select" required>
+                                <option value="">Select department…</option>
+                                @foreach (var d in Model.Departments)
+                                {
+                                    <option value="@d.Id" selected="@(Model.SelectedDepartmentId == d.Id ? "selected" : null)">@d.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Title <span class="text-danger">*</span></label>
+                            <input name="title" class="form-control" required maxlength="200" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description <span class="text-danger">*</span></label>
+                            <textarea name="description" class="form-control" rows="4" required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Create Project</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editFypModal" tabindex="-1">
+        <div class="modal-dialog">
+            <form asp-action="UpdateFypProject" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="edit_fypId" name="id" />
+                <input type="hidden" name="departmentId" value="@Model.SelectedDepartmentId" />
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Edit FYP Project</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Title <span class="text-danger">*</span></label>
+                            <input id="edit_fypTitle" name="title" class="form-control" required maxlength="200" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description <span class="text-danger">*</span></label>
+                            <textarea id="edit_fypDescription" name="description" class="form-control" rows="4" required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
 @* ── Reject FYP Project Modal ────────────────────────────────────────────── *@
 <div class="modal fade" id="rejectFypModal" tabindex="-1">
     <div class="modal-dialog">
@@ -263,6 +359,12 @@ document.getElementById('rejectFypModal')?.addEventListener('show.bs.modal', fun
 });
 document.getElementById('assignSupervisorModal')?.addEventListener('show.bs.modal', function(e) {
     document.getElementById('assign_projectId').value = e.relatedTarget.dataset.projectid;
+});
+document.getElementById('editFypModal')?.addEventListener('show.bs.modal', function(e) {
+    var btn = e.relatedTarget;
+    document.getElementById('edit_fypId').value = btn.dataset.projectid;
+    document.getElementById('edit_fypTitle').value = btn.dataset.title || '';
+    document.getElementById('edit_fypDescription').value = btn.dataset.description || '';
 });
 </script>
 }

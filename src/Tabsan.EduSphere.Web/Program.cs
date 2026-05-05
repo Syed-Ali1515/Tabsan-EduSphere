@@ -1,4 +1,6 @@
 using Tabsan.EduSphere.Web.Services;
+using System.Security.Claims;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +32,60 @@ app.UseStaticFiles();
 
 app.UseRouting();
 app.UseSession();
+
+// Build a request principal from session identity so User.IsInRole works in Razor/views.
+app.Use(async (context, next) =>
+{
+    const string identityKey = "SessionIdentityJson";
+    var raw = context.Session.GetString(identityKey);
+
+    if (!string.IsNullOrWhiteSpace(raw))
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(raw);
+            var root = doc.RootElement;
+
+            var claims = new List<Claim>();
+
+            if (root.TryGetProperty("UserName", out var userNameEl) &&
+                userNameEl.GetString() is { Length: > 0 } userName)
+            {
+                claims.Add(new Claim(ClaimTypes.Name, userName));
+            }
+
+            if (root.TryGetProperty("Email", out var emailEl) &&
+                emailEl.GetString() is { Length: > 0 } email)
+            {
+                claims.Add(new Claim(ClaimTypes.Email, email));
+            }
+
+            if (root.TryGetProperty("Roles", out var rolesEl) && rolesEl.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var roleEl in rolesEl.EnumerateArray())
+                {
+                    if (roleEl.GetString() is not { Length: > 0 } role)
+                        continue;
+
+                    claims.Add(new Claim(ClaimTypes.Role, role));
+                    claims.Add(new Claim("role", role));
+                }
+            }
+
+            if (claims.Count > 0)
+            {
+                var identity = new ClaimsIdentity(claims, authenticationType: "SessionJwt");
+                context.User = new ClaimsPrincipal(identity);
+            }
+        }
+        catch
+        {
+            // Ignore malformed session identity and continue without overriding principal.
+        }
+    }
+
+    await next();
+});
 
 app.UseAuthorization();
 

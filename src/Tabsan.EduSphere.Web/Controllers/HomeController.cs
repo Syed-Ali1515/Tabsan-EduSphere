@@ -25,8 +25,22 @@ public class HomeController : Controller
         return RedirectToAction("Index", "Login");
     }
 
-    public IActionResult Privacy()
+    public async Task<IActionResult> Privacy(CancellationToken ct)
     {
+        if (_api.IsConnected())
+        {
+            try
+            {
+                var branding = await _api.GetPortalBrandingAsync(ct);
+                ViewData["PrivacyPolicyContent"] = branding.PrivacyPolicyContent;
+                ViewData["PrivacyPolicyUrl"] = branding.PrivacyPolicyUrl;
+            }
+            catch
+            {
+                // Keep privacy page available even if settings retrieval fails.
+            }
+        }
+
         return View();
     }
 

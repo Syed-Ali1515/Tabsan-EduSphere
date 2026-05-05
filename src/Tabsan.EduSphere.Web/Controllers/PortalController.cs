@@ -10,6 +10,32 @@ public class PortalController : Controller
 
     public PortalController(IEduApiClient api) => _api = api;
 
+    private async Task<List<LookupItem>> GetOfferingFilterOptionsAsync(SessionIdentity? sessionIdentity, CancellationToken ct)
+    {
+        if (sessionIdentity?.IsAdmin == true || sessionIdentity?.IsSuperAdmin == true)
+        {
+            var offerings = await _api.GetCourseOfferingsAsync(null, ct);
+            return offerings.Select(o => new LookupItem
+            {
+                Id = o.Id,
+                Name = string.IsNullOrWhiteSpace(o.CourseCode)
+                    ? $"{o.CourseTitle} ({o.SemesterName})"
+                    : $"{o.CourseCode} — {o.CourseTitle} ({o.SemesterName})"
+            }).ToList();
+        }
+
+        return await _api.GetMyOfferingsAsync(ct);
+    }
+
+    private async Task<Guid?> GetEffectiveStudentDepartmentIdAsync(CancellationToken ct)
+    {
+        var sessionIdentity = _api.GetSessionIdentity();
+        if (sessionIdentity?.IsStudent == true)
+            return (await _api.GetMyStudentProfileAsync(ct))?.DepartmentId ?? _api.GetConnection().DefaultDepartmentId;
+
+        return _api.GetConnection().DefaultDepartmentId;
+    }
+
     // ── Dashboard / Connection ──────────────────────────────────────────────
 
     [HttpGet]
@@ -151,8 +177,7 @@ public class PortalController : Controller
 
         try
         {
-            var connection = _api.GetConnection();
-            vm.DepartmentId = departmentId ?? connection.DefaultDepartmentId;
+            vm.DepartmentId = departmentId ?? await GetEffectiveStudentDepartmentIdAsync(ct);
             if (!vm.DepartmentId.HasValue)
             {
                 vm.Message = "Department is required. Set default department in Dashboard connection.";
@@ -835,9 +860,11 @@ public class PortalController : Controller
         if (!model.IsConnected) return View(model);
         try
         {
+            var sessionId = _api.GetSessionIdentity();
             model.Departments = await _api.GetDepartmentsAsync(ct);
             model.Semesters   = await _api.GetSemestersAsync(ct);
-            model.Faculty     = await _api.GetFacultyAsync(ct);
+            if (sessionId?.IsAdmin == true || sessionId?.IsSuperAdmin == true)
+                model.Faculty = await _api.GetFacultyAsync(ct);
             model.Courses     = await _api.GetCourseDetailsAsync(departmentId, ct);
             model.Offerings   = await _api.GetCourseOfferingsAsync(departmentId, ct);
         }
@@ -918,7 +945,7 @@ public class PortalController : Controller
                     model.Submissions = await _api.GetSubmissionsForAssignmentAsync(selectedAssignmentId.Value, ct);
             }
 
-            model.CourseOfferings = await _api.GetMyOfferingsAsync(ct);
+            model.CourseOfferings = await GetOfferingFilterOptionsAsync(sessionId, ct);
         }
         catch (Exception ex) { model.Message = ex.Message; }
         return View(model);
@@ -950,7 +977,7 @@ public class PortalController : Controller
                 model.Roster  = await _api.GetEnrollmentRosterAsync(offeringId.Value, ct);
             }
 
-            model.CourseOfferings = await _api.GetMyOfferingsAsync(ct);
+            model.CourseOfferings = await GetOfferingFilterOptionsAsync(sessionId, ct);
         }
         catch (Exception ex) { model.Message = ex.Message; }
         return View(model);
@@ -972,6 +999,7 @@ public class PortalController : Controller
         try
         {
             var sessionId = _api.GetSessionIdentity();
+            model.Offerings = await GetOfferingFilterOptionsAsync(sessionId, ct);
             if (sessionId?.IsStudent == true)
             {
                 model.Results = await _api.GetMyResultsAsync(ct);
@@ -980,11 +1008,6 @@ public class PortalController : Controller
             {
                 model.Results   = await _api.GetResultsByOfferingAsync(offeringId.Value, ct);
                 model.Roster    = await _api.GetEnrollmentRosterAsync(offeringId.Value, ct);
-                model.Offerings = await _api.GetMyOfferingsAsync(ct);
-            }
-            else
-            {
-                model.Offerings = await _api.GetMyOfferingsAsync(ct);
             }
         }
         catch (Exception ex) { model.Message = ex.Message; }
@@ -1007,7 +1030,7 @@ public class PortalController : Controller
         try
         {
             var sessionId = _api.GetSessionIdentity();
-            model.CourseOfferings = await _api.GetMyOfferingsAsync(ct);
+            model.CourseOfferings = await GetOfferingFilterOptionsAsync(sessionId, ct);
 
             if (offeringId.HasValue)
                 model.Quizzes = await _api.GetQuizzesByOfferingAsync(offeringId.Value, ct);
@@ -1034,17 +1057,33 @@ public class PortalController : Controller
         if (!model.IsConnected) return View(model);
         try
         {
-            model.Departments       = await _api.GetDepartmentsAsync(ct);
-            model.Faculty           = await _api.GetFacultyAsync(ct);
-            model.UpcomingMeetings  = await _api.GetUpcomingMeetingsAsync(ct);
-
             var sessionId = _api.GetSessionIdentity();
             if (sessionId?.IsStudent == true)
+            {
                 model.Projects = await _api.GetMyFypProjectsAsync(ct);
+            }
             else if (sessionId?.IsFaculty == true)
+            {
+                model.Departments = await _api.GetDepartmentsAsync(ct);
+                model.UpcomingMeetings = await _api.GetUpcomingMeetingsAsync(ct);
                 model.Projects = await _api.GetMySupervisedProjectsAsync(ct);
+            }
             else if (departmentId.HasValue)
+            {
+                model.Departments = await _api.GetDepartmentsAsync(ct);
+                model.Faculty = await _api.GetFacultyAsync(ct);
+                model.Students = await _api.GetStudentsAsync(departmentId, ct);
+                model.UpcomingMeetings = await _api.GetUpcomingMeetingsAsync(ct);
                 model.Projects = await _api.GetFypByDepartmentAsync(departmentId.Value, ct);
+            }
+            else if (sessionId?.IsAdmin == true || sessionId?.IsSuperAdmin == true)
+            {
+                model.Departments = await _api.GetDepartmentsAsync(ct);
+                model.Faculty = await _api.GetFacultyAsync(ct);
+                model.Students = await _api.GetStudentsAsync(null, ct);
+                model.UpcomingMeetings = await _api.GetUpcomingMeetingsAsync(ct);
+                model.Projects = await _api.GetAllFypProjectsAsync(ct);
+            }
         }
         catch (Exception ex) { model.Message = ex.Message; }
         return View(model);
@@ -1062,6 +1101,19 @@ public class PortalController : Controller
         if (_api.IsConnected())
         {
             try { await _api.CreateAssignmentAsync(offeringId, title, description, dueDate, maxMarks, ct); }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(Assignments), new { offeringId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateAssignment(
+        Guid id, Guid offeringId, string title, string? description,
+        DateTime dueDate, decimal maxMarks, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.UpdateAssignmentAsync(id, title, description, dueDate, maxMarks, ct); TempData["PortalMessage"] = "Assignment updated."; }
             catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
         }
         return RedirectToAction(nameof(Assignments), new { offeringId });
@@ -1124,6 +1176,19 @@ public class PortalController : Controller
         return RedirectToAction(nameof(Attendance), new { offeringId });
     }
 
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> CorrectAttendance(
+        Guid studentProfileId, Guid offeringId, DateTime date,
+        string newStatus, string? remarks, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.CorrectAttendanceAsync(studentProfileId, offeringId, date, newStatus, remarks, ct); TempData["PortalMessage"] = "Attendance corrected."; }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(Attendance), new { offeringId });
+    }
+
     // ── Result write actions ────────────────────────────────────────────────
 
     [HttpPost, ValidateAntiForgeryToken]
@@ -1164,6 +1229,19 @@ public class PortalController : Controller
     }
 
     [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> CorrectResult(
+        Guid studentProfileId, Guid offeringId, string resultType,
+        decimal newMarksObtained, decimal newMaxMarks, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.CorrectResultAsync(studentProfileId, offeringId, resultType, newMarksObtained, newMaxMarks, ct); TempData["PortalMessage"] = "Result corrected."; }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(Results), new { offeringId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> PublishAllResults(Guid offeringId, CancellationToken ct)
     {
         if (_api.IsConnected())
@@ -1184,6 +1262,19 @@ public class PortalController : Controller
         if (_api.IsConnected())
         {
             try { await _api.CreateQuizAsync(offeringId, title, instructions, timeLimitMinutes, maxAttempts, ct); }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(Quizzes), new { offeringId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateQuiz(
+        Guid id, Guid offeringId, string title, string? instructions,
+        int? timeLimitMinutes, int maxAttempts, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.UpdateQuizAsync(id, title, instructions, timeLimitMinutes, maxAttempts, ct); TempData["PortalMessage"] = "Quiz updated."; }
             catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
         }
         return RedirectToAction(nameof(Quizzes), new { offeringId });
@@ -1223,6 +1314,29 @@ public class PortalController : Controller
             catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
         }
         return RedirectToAction(nameof(Fyp));
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateFypProject(
+        Guid studentProfileId, Guid departmentId, string title, string description, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.CreateFypProjectAsync(studentProfileId, departmentId, title, description, ct); TempData["PortalMessage"] = "FYP project created."; }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(Fyp), new { departmentId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateFypProject(Guid id, Guid? departmentId, string title, string description, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.UpdateFypProjectAsync(id, title, description, ct); TempData["PortalMessage"] = "FYP project updated."; }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(Fyp), new { departmentId });
     }
 
     [HttpPost, ValidateAntiForgeryToken]
@@ -1515,14 +1629,22 @@ public class PortalController : Controller
         if (!model.IsConnected) return View(model);
         try
         {
-            model.Offerings = await _api.GetCourseOfferingsAsync(null, ct);
+            var sessionId = _api.GetSessionIdentity();
+            var isAdmin = sessionId?.IsAdmin == true || sessionId?.IsSuperAdmin == true;
+
+            model.Offerings = sessionId?.IsFaculty == true
+                ? await _api.GetCourseOfferingsAsync(null, ct).ConfigureAwait(false)
+                : await _api.GetCourseOfferingsAsync(null, ct).ConfigureAwait(false);
+
             if (isStudent)
             {
                 model.MyCourses = await _api.GetMyEnrollmentsAsync(ct);
             }
             else
             {
-                model.Students = await _api.GetStudentsAsync(null, ct);
+                if (isAdmin)
+                    model.Students = await _api.GetStudentsAsync(null, ct);
+
                 if (offeringId.HasValue)
                     model.Roster = await _api.GetEnrollmentRosterAsync(offeringId.Value, ct);
             }

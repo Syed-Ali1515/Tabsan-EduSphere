@@ -19,15 +19,18 @@ public class StudentController : ControllerBase
     private readonly IStudentRegistrationService _registrationService;
     private readonly IStudentProfileRepository _studentRepo;
     private readonly IRegistrationWhitelistRepository _whitelistRepo;
+    private readonly IFacultyAssignmentRepository _facultyAssignments;
 
     public StudentController(
         IStudentRegistrationService registrationService,
         IStudentProfileRepository studentRepo,
-        IRegistrationWhitelistRepository whitelistRepo)
+        IRegistrationWhitelistRepository whitelistRepo,
+        IFacultyAssignmentRepository facultyAssignments)
     {
         _registrationService = registrationService;
         _studentRepo = studentRepo;
         _whitelistRepo = whitelistRepo;
+        _facultyAssignments = facultyAssignments;
     }
 
     // ── POST /api/v1/student/register (public) ────────────────────────────────
@@ -70,10 +73,20 @@ public class StudentController : ControllerBase
 
     /// <summary>Returns all student profiles. Admin and SuperAdmin only.</summary>
     [HttpGet]
-    [Authorize(Roles = "SuperAdmin,Admin")]
+    [Authorize(Roles = "SuperAdmin,Admin,Faculty")]
     public async Task<IActionResult> GetAll([FromQuery] Guid? departmentId, CancellationToken ct)
     {
         var students = await _studentRepo.GetAllAsync(departmentId, ct);
+
+        if (User.IsInRole("Faculty") && !User.IsInRole("Admin") && !User.IsInRole("SuperAdmin"))
+        {
+            var allowedDepartmentIds = await _facultyAssignments.GetDepartmentIdsForFacultyAsync(GetUserId(), ct);
+            if (departmentId.HasValue && !allowedDepartmentIds.Contains(departmentId.Value))
+                return Forbid();
+
+            students = students.Where(sp => allowedDepartmentIds.Contains(sp.DepartmentId)).ToList();
+        }
+
         return Ok(students.Select(sp => new
         {
             sp.Id, sp.UserId, sp.RegistrationNumber, sp.ProgramId,

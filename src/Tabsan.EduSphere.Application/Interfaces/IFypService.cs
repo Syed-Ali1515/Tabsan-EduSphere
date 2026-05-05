@@ -13,6 +13,9 @@ public interface IFypService
     /// <summary>Submits a new FYP project proposal for the given student. Returns the project ID.</summary>
     Task<Guid> ProposeAsync(ProposeProjectRequest request, Guid studentProfileId, CancellationToken ct = default);
 
+    /// <summary>Creates a new FYP project directly for a student under admin control. Returns the project ID.</summary>
+    Task<Guid> CreateForStudentAsync(CreateProjectForStudentRequest request, CancellationToken ct = default);
+
     /// <summary>Updates a project's title and description. Returns false if not found.</summary>
     Task<bool> UpdateAsync(Guid projectId, UpdateProjectRequest request, CancellationToken ct = default);
 
@@ -35,6 +38,9 @@ public interface IFypService
 
     /// <summary>Returns projects in a department, optionally filtered by status string.</summary>
     Task<IReadOnlyList<FypProjectSummaryResponse>> GetByDepartmentAsync(Guid departmentId, string? status = null, CancellationToken ct = default);
+
+    /// <summary>Returns all projects across all departments, optionally filtered by status string.</summary>
+    Task<IReadOnlyList<FypProjectSummaryResponse>> GetAllAsync(string? status = null, CancellationToken ct = default);
 
     /// <summary>Returns projects supervised by a faculty user.</summary>
     Task<IReadOnlyList<FypProjectSummaryResponse>> GetBySupervisorAsync(Guid supervisorUserId, CancellationToken ct = default);

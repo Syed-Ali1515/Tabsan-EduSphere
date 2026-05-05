@@ -40,7 +40,7 @@ else
                     <h2 class="h5 mb-0">Available Quizzes
                         <span class="badge bg-secondary ms-1">@Model.Quizzes.Count</span>
                     </h2>
-                    @if (Model.SelectedOfferingId.HasValue)
+                    @if (Model.SelectedOfferingId.HasValue && (User.IsInRole("Faculty") || User.IsInRole("Admin") || User.IsInRole("SuperAdmin")))
                     {
                         <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createQuizModal">
                             + Create Quiz
@@ -84,6 +84,12 @@ else
                                         <div class="mt-2 d-flex gap-1 flex-wrap">
                                             @if (!q.IsPublished)
                                             {
+                                                <button type="button" class="btn btn-xs btn-outline-secondary btn-sm"
+                                                        data-bs-toggle="modal" data-bs-target="#editQuizModal"
+                                                        data-id="@q.Id" data-title="@q.Title" data-instructions="@q.Description"
+                                                        data-timelimit="@(q.TimeLimitMinutes?.ToString() ?? string.Empty)" data-maxattempts="@q.MaxAttempts">
+                                                    Edit
+                                                </button>
                                                 <form asp-action="PublishQuiz" method="post" class="d-inline">
                                                     @Html.AntiForgeryToken()
                                                     <input type="hidden" name="id" value="@q.Id" />

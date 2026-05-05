@@ -36,6 +36,17 @@ public sealed class FypController : ControllerBase
     }
 
     /// <summary>
+    /// Creates a new FYP project directly for a student. Admin and SuperAdmin only.
+    /// </summary>
+    [HttpPost("admin-create")]
+    [Authorize(Policy = "Admin")]
+    public async Task<IActionResult> CreateForStudent([FromBody] CreateProjectForStudentRequest request, CancellationToken ct)
+    {
+        var id = await _fypService.CreateForStudentAsync(request, ct);
+        return CreatedAtAction(nameof(GetDetail), new { id }, new { projectId = id });
+    }
+
+    /// <summary>
     /// Updates the title and description of a project (student or admin).
     /// </summary>
     [HttpPut("{id:guid}")]
@@ -112,6 +123,15 @@ public sealed class FypController : ControllerBase
     [Authorize(Policy = "Faculty")]
     public async Task<IActionResult> GetByDepartment(Guid departmentId, [FromQuery] string? status, CancellationToken ct)
         => Ok(await _fypService.GetByDepartmentAsync(departmentId, status, ct));
+
+    /// <summary>
+    /// Returns all projects across all departments, optionally filtered by status.
+    /// Admin and SuperAdmin only.
+    /// </summary>
+    [HttpGet("all")]
+    [Authorize(Policy = "Admin")]
+    public async Task<IActionResult> GetAll([FromQuery] string? status, CancellationToken ct)
+        => Ok(await _fypService.GetAllAsync(status, ct));
 
     /// <summary>
     /// Returns projects supervised by the current faculty user.

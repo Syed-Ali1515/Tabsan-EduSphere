@@ -1,6 +1,25 @@
 ﻿@{
     ViewData["Title"] = "Privacy Policy";
+    var privacyPolicyContent = ViewData["PrivacyPolicyContent"] as string;
+    var privacyPolicyUrl = ViewData["PrivacyPolicyUrl"] as string;
 }
 <h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+@if (!string.IsNullOrWhiteSpace(privacyPolicyContent))
+{
+    foreach (var paragraph in privacyPolicyContent.Split(new[] { "\r\n\r\n", "\n\n" }, StringSplitOptions.RemoveEmptyEntries))
+    {
+        <p>@paragraph</p>
+    }
+}
+else if (!string.IsNullOrWhiteSpace(privacyPolicyUrl))
+{
+    <p>
+        The full privacy policy is available at
+        <a href="@privacyPolicyUrl" target="_blank" rel="noopener noreferrer">@privacyPolicyUrl</a>.
+    </p>
+}
+else
+{
+    <p>Privacy policy content has not been configured yet.</p>
+}

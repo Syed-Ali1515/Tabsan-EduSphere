@@ -56,7 +56,7 @@ else
                                 <thead class="table-light">
                                     <tr>
                                         <th>Code</th><th>Title</th><th>Dept</th><th>Cr.</th>
-                                        @if (User.IsInRole("SuperAdmin")) { <th></th> }
+                                        @if (User.IsInRole("SuperAdmin") || User.IsInRole("Admin")) { <th></th> }
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -67,7 +67,7 @@ else
                                             <td>@c.Title</td>
                                             <td>@c.DepartmentName</td>
                                             <td class="text-center">@c.CreditHours</td>
-                                            @if (User.IsInRole("SuperAdmin"))
+                                            @if (User.IsInRole("SuperAdmin") || User.IsInRole("Admin"))
                                             {
                                                 <td>
                                                     <form asp-action="DeactivateCourse" method="post" class="d-inline">
@@ -110,7 +110,7 @@ else
                                 <thead class="table-light">
                                     <tr>
                                         <th>Course</th><th>Faculty</th><th>Semester</th><th>Active</th>
-                                        @if (User.IsInRole("SuperAdmin")) { <th></th> }
+                                        @if (User.IsInRole("SuperAdmin") || User.IsInRole("Admin")) { <th></th> }
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -125,7 +125,7 @@ else
                                                     @(o.IsActive ? "Yes" : "No")
                                                 </span>
                                             </td>
-                                            @if (User.IsInRole("SuperAdmin"))
+                                            @if (User.IsInRole("SuperAdmin") || User.IsInRole("Admin"))
                                             {
                                                 <td>
                                                     <form asp-action="DeleteOffering" method="post" class="d-inline">

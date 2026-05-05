@@ -387,7 +387,11 @@
 
             <footer class="app-footer">
                 <span>@branding.FooterText</span>
-                @if (!string.IsNullOrEmpty(branding.PrivacyPolicyUrl))
+                @if (!string.IsNullOrWhiteSpace(branding.PrivacyPolicyContent))
+                {
+                    <span class="ms-3"><a asp-controller="Home" asp-action="Privacy" class="text-muted small">Privacy Policy</a></span>
+                }
+                else if (!string.IsNullOrEmpty(branding.PrivacyPolicyUrl))
                 {
                     <span class="ms-3"><a href="@branding.PrivacyPolicyUrl" target="_blank" rel="noopener noreferrer" class="text-muted small">Privacy Policy</a></span>
                 }

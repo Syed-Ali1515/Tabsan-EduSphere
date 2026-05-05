@@ -32,6 +32,20 @@ public sealed class FypService : IFypService
         return project.Id;
     }
 
+    /// <summary>Creates a new FYP project directly for a student. Returns the project ID.</summary>
+    public async Task<Guid> CreateForStudentAsync(CreateProjectForStudentRequest request, CancellationToken ct = default)
+    {
+        var project = new FypProject(
+            request.StudentProfileId,
+            request.DepartmentId,
+            request.Title,
+            request.Description);
+
+        await _repo.AddAsync(project, ct);
+        await _repo.SaveChangesAsync(ct);
+        return project.Id;
+    }
+
     /// <summary>Updates a project's title and description. Returns false if not found.</summary>
     public async Task<bool> UpdateAsync(Guid projectId, UpdateProjectRequest request, CancellationToken ct = default)
     {
@@ -109,6 +123,17 @@ public sealed class FypService : IFypService
             statusEnum = parsed;
 
         var projects = await _repo.GetByDepartmentAsync(departmentId, statusEnum, ct);
+        return projects.Select(ToSummary).ToList();
+    }
+
+    /// <summary>Returns all projects across all departments, optionally filtered by status string.</summary>
+    public async Task<IReadOnlyList<FypProjectSummaryResponse>> GetAllAsync(string? status = null, CancellationToken ct = default)
+    {
+        FypProjectStatus? statusEnum = null;
+        if (status is not null && Enum.TryParse<FypProjectStatus>(status, ignoreCase: true, out var parsed))
+            statusEnum = parsed;
+
+        var projects = await _repo.GetAllAsync(statusEnum, ct);
         return projects.Select(ToSummary).ToList();
     }
 
