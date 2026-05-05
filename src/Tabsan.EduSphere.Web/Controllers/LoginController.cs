@@ -43,7 +43,7 @@ public class LoginController : Controller
             return View();
         }
 
-        var apiBase = _config["EduApi:BaseUrl"]?.TrimEnd('/') ?? "http://localhost:5181";
+        var apiBase = _config["EduApi:BaseUrl"]?.TrimEnd('/') ?? "https://localhost:7229";
 
         try
         {
