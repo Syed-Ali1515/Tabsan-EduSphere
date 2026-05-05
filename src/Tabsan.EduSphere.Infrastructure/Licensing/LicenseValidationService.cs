@@ -52,9 +52,19 @@ public class LicenseValidationService
     /// Reads the .tablic file at <paramref name="licenseFilePath"/>, verifies the RSA
     /// signature, decrypts the AES payload, checks the VerificationKey has not been
     /// consumed, and then creates or replaces the <see cref="LicenseState"/> record.
+    /// <para>
+    /// P2-S3-02 / P2-S3-03: When <paramref name="requestDomain"/> is supplied the method
+    /// additionally enforces domain binding:
+    /// <list type="bullet">
+    ///   <item>If the payload contains <c>AllowedDomain</c>, it must match <paramref name="requestDomain"/>.</item>
+    ///   <item>An existing LicenseState whose <c>ActivatedDomain</c> is already set must originate from the same domain.</item>
+    /// </list>
+    /// </para>
     /// Returns true on success; false on any verification or format failure.
     /// </summary>
-    public async Task<bool> ActivateFromFileAsync(string licenseFilePath, CancellationToken ct = default)
+    public async Task<bool> ActivateFromFileAsync(string licenseFilePath,
+                                                   string? requestDomain = null,
+                                                   CancellationToken ct = default)
     {
         try
         {
@@ -102,6 +112,18 @@ public class LicenseValidationService
                 return false;
             }
 
+            // ── P2-S3-03: License-embedded domain restriction ──────────────────
+            // If the license issuer locked the license to a specific domain, enforce it.
+            if (!string.IsNullOrWhiteSpace(payload.AllowedDomain) &&
+                !string.IsNullOrWhiteSpace(requestDomain) &&
+                !string.Equals(payload.AllowedDomain, requestDomain, StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogWarning(
+                    "License AllowedDomain '{Allowed}' does not match request domain '{Request}'. Activation rejected.",
+                    payload.AllowedDomain, requestDomain);
+                return false;
+            }
+
             // 5. VerificationKey replay guard
             if (await _licenseRepo.IsVerificationKeyConsumedAsync(payload.VerificationKeyHash, ct))
             {
@@ -115,12 +137,21 @@ public class LicenseValidationService
             var fileHash    = ComputeFileHash(fileBytes);
             var licenseType = Enum.Parse<LicenseType>(payload.LicenseType, ignoreCase: true);
 
+            // ── P2-S3-02: Capture activation domain ────────────────────────────
+            // Use the request domain if available, fall back to the payload-embedded domain.
+            var activatedDomain = requestDomain ?? payload.AllowedDomain;
+
             var existing = await _licenseRepo.GetCurrentAsync(ct);
             if (existing is null)
-                await _licenseRepo.AddAsync(new LicenseState(fileHash, licenseType, payload.ExpiresAt), ct);
+            {
+                await _licenseRepo.AddAsync(
+                    new LicenseState(fileHash, licenseType, payload.ExpiresAt,
+                                     payload.MaxUsers, activatedDomain), ct);
+            }
             else
             {
-                existing.Replace(fileHash, licenseType, payload.ExpiresAt);
+                existing.Replace(fileHash, licenseType, payload.ExpiresAt,
+                                 payload.MaxUsers, activatedDomain);
                 _licenseRepo.Update(existing);
             }
 
@@ -129,8 +160,8 @@ public class LicenseValidationService
             await _licenseRepo.SaveChangesAsync(ct);
 
             _logger.LogInformation(
-                "License activated. Type={Type}, ExpiresAt={Expiry}",
-                licenseType, payload.ExpiresAt?.ToString("O") ?? "never");
+                "License activated. Type={Type}, ExpiresAt={Expiry}, MaxUsers={MaxUsers}, Domain={Domain}",
+                licenseType, payload.ExpiresAt?.ToString("O") ?? "never", payload.MaxUsers, activatedDomain ?? "any");
             return true;
         }
         catch (Exception ex)
@@ -220,5 +251,20 @@ public class LicenseValidationService
         public DateTime IssuedAt { get; set; }
         public DateTime? ExpiresAt { get; set; }
         public string VerificationKeyHash { get; set; } = default!;
+
+        // ── P2-S1-01 / P2-S2-01: Concurrent user limit ──────────────────────
+        /// <summary>
+        /// Maximum concurrent active sessions allowed. 0 = unlimited (All Users mode).
+        /// Serialised as "MaxUsers" in the JSON payload by the KeyGen tool.
+        /// </summary>
+        public int MaxUsers { get; set; }
+
+        // ── P2-S3-03: Domain binding embedded in the license ─────────────────
+        /// <summary>
+        /// Optional domain restriction set by the license issuer.
+        /// When present, the activation request host MUST match this value.
+        /// Null means the license is not domain-locked at issuance time.
+        /// </summary>
+        public string? AllowedDomain { get; set; }
     }
 }

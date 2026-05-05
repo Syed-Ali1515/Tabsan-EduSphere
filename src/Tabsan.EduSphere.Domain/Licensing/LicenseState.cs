@@ -1,5 +1,4 @@
 using Tabsan.EduSphere.Domain.Common;
-using Tabsan.EduSphere.Domain.Licensing;
 
 namespace Tabsan.EduSphere.Domain.Licensing;
 
@@ -34,16 +33,37 @@ public class LicenseState : BaseEntity
     /// </summary>
     public DateTime? ExpiresAt { get; private set; }
 
+    // ── P2-S1-01 / P2-S2-01: Concurrency limit ──────────────────────────────
+
+    /// <summary>
+    /// Maximum number of concurrent active sessions allowed.
+    /// A value of 0 means unlimited (All Users mode — P2-S2-01).
+    /// SuperAdmin is always exempt regardless of this value (P2-S1-02).
+    /// </summary>
+    public int MaxUsers { get; private set; }
+
+    // ── P2-S3-01 / P2-S3-02: Domain binding ─────────────────────────────────
+
+    /// <summary>
+    /// The HTTP host (domain) on which this license was first activated.
+    /// Null until first activation. On subsequent activations, the incoming
+    /// request host must match this value to prevent reuse across deployments.
+    /// </summary>
+    public string? ActivatedDomain { get; private set; }
+
     private LicenseState() { }
 
     /// <summary>Creates the initial license state record after a successful upload and validation.</summary>
-    public LicenseState(string licenseHash, LicenseType licenseType, DateTime? expiresAt)
+    public LicenseState(string licenseHash, LicenseType licenseType, DateTime? expiresAt,
+                        int maxUsers = 0, string? activatedDomain = null)
     {
         LicenseHash = licenseHash;
         LicenseType = licenseType;
         Status = LicenseStatus.Active;
         ActivatedAt = DateTime.UtcNow;
         ExpiresAt = expiresAt;
+        MaxUsers = maxUsers;
+        ActivatedDomain = activatedDomain;
     }
 
     /// <summary>
@@ -71,13 +91,16 @@ public class LicenseState : BaseEntity
     /// Replaces the current license record with a newly uploaded and validated license.
     /// Used when a Super Admin uploads a renewal or upgraded license file.
     /// </summary>
-    public void Replace(string newHash, LicenseType newType, DateTime? newExpiry)
+    public void Replace(string newHash, LicenseType newType, DateTime? newExpiry,
+                        int maxUsers = 0, string? activatedDomain = null)
     {
         LicenseHash = newHash;
         LicenseType = newType;
         ExpiresAt = newExpiry;
         Status = LicenseStatus.Active;
         ActivatedAt = DateTime.UtcNow;
+        MaxUsers = maxUsers;
+        ActivatedDomain = activatedDomain;
         Touch();
     }
 }

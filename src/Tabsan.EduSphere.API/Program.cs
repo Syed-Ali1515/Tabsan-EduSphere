@@ -238,6 +238,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseSecurityHeaders();
 app.UseRateLimiter();
+// P2-S3-02: Reject requests from domains that do not match the activated license domain.
+app.UseMiddleware<LicenseDomainMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

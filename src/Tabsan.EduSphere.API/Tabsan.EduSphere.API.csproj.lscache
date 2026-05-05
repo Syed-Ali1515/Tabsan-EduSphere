@@ -86,7 +86,9 @@ Controllers/
  TeacherModificationController.cs
  ThemeController.cs
  TimetableController.cs
-Middleware/SecurityHeadersMiddleware.cs
+Middleware/
+ LicenseDomainMiddleware.cs
+ SecurityHeadersMiddleware.cs
 obj/Debug/net8.0/
  .NETCoreApp,Version=v8.0.AssemblyAttributes.cs
  Tabsan.EduSphere.API.AssemblyInfo.cs

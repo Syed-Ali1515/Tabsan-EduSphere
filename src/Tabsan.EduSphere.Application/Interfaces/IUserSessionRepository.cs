@@ -19,4 +19,13 @@ public interface IUserSessionRepository
 
     /// <summary>Commits pending changes.</summary>
     Task<int> SaveChangesAsync(CancellationToken ct = default);
+
+    // ── P2-S1-01: Concurrency limit ──────────────────────────────────────────
+
+    /// <summary>
+    /// Returns the number of sessions that are currently active across ALL users
+    /// (RevokedAt is null AND ExpiresAt is in the future).
+    /// Used to enforce the MaxUsers license limit before allowing a new login.
+    /// </summary>
+    Task<int> CountActiveSessionsAsync(CancellationToken ct = default);
 }

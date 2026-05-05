@@ -12,9 +12,10 @@ public interface IAuthService
     /// <summary>
     /// Validates credentials and, on success, creates a new session returning
     /// an access token and a refresh token.
-    /// Returns null when credentials are invalid or the account is inactive.
+    /// Returns a LoginResult with IsSuccess=false when credentials are invalid,
+    /// the account is inactive, or the license concurrency limit has been reached (P2-S1-01).
     /// </summary>
-    Task<LoginResponse?> LoginAsync(LoginRequest request, string? ipAddress, CancellationToken ct = default);
+    Task<LoginResult> LoginAsync(LoginRequest request, string? ipAddress, CancellationToken ct = default);
 
     /// <summary>
     /// Validates the presented refresh token, rotates it (old token revoked, new issued),

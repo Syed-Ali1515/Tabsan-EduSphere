@@ -23,5 +23,14 @@ public class LicenseStateConfiguration : IEntityTypeConfiguration<LicenseState>
 
         builder.Property(l => l.Status)
                .HasConversion<string>();
+
+        // P2-S1-01 / P2-S2-01: MaxUsers — 0 means unlimited.
+        builder.Property(l => l.MaxUsers)
+               .HasDefaultValue(0);
+
+        // P2-S3-01 / P2-S3-02: ActivatedDomain — null until first activation.
+        builder.Property(l => l.ActivatedDomain)
+               .HasMaxLength(253) // max valid DNS name length
+               .IsRequired(false);
     }
 }

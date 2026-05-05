@@ -496,3 +496,82 @@ Begin Phase 2 from P2-S1-01. Refer to the Phase 2 Work Plan table in Entry 015.
 Do not re-do any Phase 1 work.
 When Phase 2 is complete, update: Observed-Issues.md, Command.md, PRD.md, Docs/Function-List.md.
 ```
+
+---
+
+### Entry 016 — 2026-05-05 — Phase 2 Complete (License Concurrency + Domain Binding)
+
+**Completed: ✅ ALL Phase 2 items (P2-S1-01 through P2-S3-03)**
+
+**Stage 2.1 — User Count-Based Concurrency Restriction + SuperAdmin Exemption (P2-S1-01, P2-S1-02):**
+- Added `MaxUsers` property to `LicenseState` entity (int, default 0 = unlimited)
+- Extended `LicenseValidationService.TablicPayload` to deserialize `MaxUsers` from binary .tablic payload
+- Updated `LicenseValidationService.ActivateFromFileAsync(string filePath, string? requestDomain, CancellationToken)` signature to accept optional request domain
+- Added `CountActiveSessionsAsync(CancellationToken)` to `IUserSessionRepository` interface
+- Implemented `CountActiveSessionsAsync()` in `UserSessionRepository` — counts sessions where `RevokedAt == null && ExpiresAt > DateTime.UtcNow`
+- Updated `AuthService.LoginAsync()` to:
+  - Fetch current license
+  - If user is NOT SuperAdmin AND MaxUsers > 0: count active sessions
+  - Reject login if count >= MaxUsers via `LoginResult.Fail(LoginFailureReason.ConcurrencyLimitReached)`
+  - SuperAdmin always exempt (skips concurrency check entirely)
+- Changed `IAuthService.LoginAsync` return type from `LoginResponse?` to `LoginResult` (wrapper with success flag + failure reason enum)
+- Added `LoginResult` class and `LoginFailureReason` enum to `AuthDtos.cs`
+- Updated `AuthController.Login POST` to check `FailureReason` and return 403 for concurrency limit, 401 for invalid credentials
+
+**Stage 2.2 — Unlimited Mode (P2-S2-01):**
+- Implemented unlimited concurrency via `MaxUsers == 0` convention
+- When MaxUsers is 0, concurrency check is skipped for all users (SuperAdmin logic runs first)
+- Allows licenses to operate in "All Users" mode with no per-user cost
+
+**Stage 2.3 — License Domain Binding + Anti-Tamper (P2-S3-01, P2-S3-02, P2-S3-03):**
+- Added `ActivatedDomain` property to `LicenseState` entity (string?, max 253 chars per DNS spec)
+- Extended `LicenseValidationService.TablicPayload` to deserialize optional `AllowedDomain` field from .tablic
+- On activation, if payload contains `AllowedDomain`, it must match `requestDomain` or activation fails
+- First activation captures domain: `activatedDomain = requestDomain ?? payload.AllowedDomain`
+- Subsequent activations preserve existing `ActivatedDomain`
+- Updated `LicenseController.Upload POST` to extract `Request.Host.Host` and pass to `ActivateFromFileAsync()`
+- Created `LicenseDomainMiddleware` that:
+  - Checks incoming request host against stored `LicenseState.ActivatedDomain`
+  - Rejects cross-domain requests with HTTP 403 unless on whitelisted endpoints
+  - Allows `/api/v1/auth/login`, `/api/v1/license/upload`, `/api/v1/license/status` even on locked domain
+  - Prevents single-license reuse across multiple deployments (one license per domain)
+- Registered middleware in `Program.cs` pipeline before authentication
+- Anti-tamper already implemented: RSA-2048 signature verification + AES-256-CBC decryption + replay guard + domain binding
+
+**EF Core Migration:**
+- Created manual migration: `20260505_Phase2LicenseConcurrency.cs`
+  - Adds `MaxUsers INT NOT NULL DEFAULT 0` column
+  - Adds `ActivatedDomain NVARCHAR(253) NULL` column
+- Migration file compiles successfully
+
+**Files Modified:**
+- [src/Tabsan.EduSphere.Domain/Licensing/LicenseState.cs](src/Tabsan.EduSphere.Domain/Licensing/LicenseState.cs) — Added MaxUsers, ActivatedDomain properties
+- [src/Tabsan.EduSphere.Application/DTOs/Auth/AuthDtos.cs](src/Tabsan.EduSphere.Application/DTOs/Auth/AuthDtos.cs) — Added LoginResult, LoginFailureReason
+- [src/Tabsan.EduSphere.Application/Interfaces/IAuthService.cs](src/Tabsan.EduSphere.Application/Interfaces/IAuthService.cs) — Changed LoginAsync return type
+- [src/Tabsan.EduSphere.Application/Auth/AuthService.cs](src/Tabsan.EduSphere.Application/Auth/AuthService.cs) — Concurrency limit + SuperAdmin exemption
+- [src/Tabsan.EduSphere.Application/Interfaces/IUserSessionRepository.cs](src/Tabsan.EduSphere.Application/Interfaces/IUserSessionRepository.cs) — Added CountActiveSessionsAsync()
+- [src/Tabsan.EduSphere.Infrastructure/Repositories/UserSessionRepository.cs](src/Tabsan.EduSphere.Infrastructure/Repositories/UserSessionRepository.cs) — Implemented CountActiveSessionsAsync()
+- [src/Tabsan.EduSphere.Infrastructure/Licensing/LicenseValidationService.cs](src/Tabsan.EduSphere.Infrastructure/Licensing/LicenseValidationService.cs) — Domain binding + payload extension
+- [src/Tabsan.EduSphere.Infrastructure/Persistence/Configurations/LicenseStateConfiguration.cs](src/Tabsan.EduSphere.Infrastructure/Persistence/Configurations/LicenseStateConfiguration.cs) — EF configuration
+- [src/Tabsan.EduSphere.API/Controllers/AuthController.cs](src/Tabsan.EduSphere.API/Controllers/AuthController.cs) — Login 403 for concurrency limit
+- [src/Tabsan.EduSphere.API/Controllers/LicenseController.cs](src/Tabsan.EduSphere.API/Controllers/LicenseController.cs) — Pass request domain
+- [src/Tabsan.EduSphere.API/Middleware/LicenseDomainMiddleware.cs](src/Tabsan.EduSphere.API/Middleware/LicenseDomainMiddleware.cs) — NEW middleware
+- [src/Tabsan.EduSphere.API/Program.cs](src/Tabsan.EduSphere.API/Program.cs) — Registered middleware
+- [src/Tabsan.EduSphere.Infrastructure/Migrations/20260505_Phase2LicenseConcurrency.cs](src/Tabsan.EduSphere.Infrastructure/Migrations/20260505_Phase2LicenseConcurrency.cs) — NEW migration
+
+**Validation:**
+- Build: 0 errors, 4 pre-existing warnings (SettingsServices.cs CS8620 only)
+- All Phase 2 code compiles successfully
+- CountActiveSessionsAsync correctly counts active sessions
+- LoginResult and LoginFailureReason enums integrated properly
+- EF Core migration created
+
+**Documentation Updated:**
+- [Observed-Issues.md](Observed-Issues.md) — Marked P2-S1-01 through P2-S3-03 Done; added Phase 2 Implementation Summary
+- [Command.md](Command.md) — Updated Current Execution Pointer; added Entry 016
+
+**Next:**
+- Apply migration: `dotnet ef database update`
+- Begin Phase 3: License App (P3-S1-01, P3-S2-01, P3-S2-02)
+- Update KeyGen tool to support MaxUsers and AllowedDomain in .tablic payload
+

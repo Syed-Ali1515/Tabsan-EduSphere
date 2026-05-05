@@ -59,7 +59,9 @@ public class LicenseController : ControllerBase
             return StatusCode(500, new { message = "Failed to save the uploaded file." });
         }
 
-        var success = await _licenseService.ActivateFromFileAsync(tempFile, ct);
+        // P2-S3-02 / P2-S3-03: Pass the HTTP host so the service can enforce domain binding.
+        var requestDomain = Request.Host.Host;
+        var success = await _licenseService.ActivateFromFileAsync(tempFile, requestDomain, ct);
 
         // Clean up the temp file regardless of outcome.
         System.IO.File.Delete(tempFile);

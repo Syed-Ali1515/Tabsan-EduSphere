@@ -33,4 +33,14 @@ public class UserSessionRepository : IUserSessionRepository
     /// <summary>Commits all pending changes to the database.</summary>
     public Task<int> SaveChangesAsync(CancellationToken ct = default)
         => _db.SaveChangesAsync(ct);
+
+    // ── P2-S1-01: Concurrency limit ──────────────────────────────────────────
+
+    /// <summary>
+    /// Returns the count of sessions that are currently active (not revoked, not expired).
+    /// Used to enforce the MaxUsers license limit prior to allowing a new login.
+    /// </summary>
+    public Task<int> CountActiveSessionsAsync(CancellationToken ct = default)
+        => _db.UserSessions
+              .CountAsync(s => s.RevokedAt == null && s.ExpiresAt > DateTime.UtcNow, ct);
 }

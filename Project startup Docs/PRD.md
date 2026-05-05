@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.26 (Phase 1 Remediation Final Push — Batch 5)  
+**Version:** 1.27 (Phase 2 — License Concurrency + Domain Binding)  
 **Status:** Approved  
 **Prepared By:** Product Team  
 **Last Updated:** 5 May 2026  
@@ -9,6 +9,24 @@
 ---
 
 ## 0. Implementation Update Log
+
+### 2026-05-05 — Phase 2 Complete (License Concurrency + Domain Binding)
+- **Stage 2.1 (Concurrency User Limit + SuperAdmin Exemption - completed)**
+  - Added `MaxUsers` property to `LicenseState` domain entity; deserialized from .tablic binary payload
+  - Added `CountActiveSessionsAsync()` to session repository; counts active sessions (RevokedAt=null AND ExpiresAt>UtcNow)
+  - Updated `AuthService.LoginAsync()` to enforce concurrency limit: if MaxUsers > 0 and active session count >= MaxUsers, reject non-SuperAdmin login with HTTP 403
+  - SuperAdmin always exempt from concurrency checks; can always login
+- **Stage 2.2 (Unlimited Mode - completed)**
+  - Implemented `MaxUsers == 0` as unlimited mode; skips all concurrency checks for that license state
+- **Stage 2.3 (Domain Binding + Anti-Tamper - completed)**
+  - Added `ActivatedDomain` property to `LicenseState`; captures request domain on first activation
+  - Extended `.tablic` binary payload parsing to support optional `AllowedDomain` field from license issuer
+  - Created `LicenseDomainMiddleware` that rejects cross-domain requests with HTTP 403 unless on whitelisted endpoints (`/api/v1/auth/login`, `/api/v1/license/upload`, `/api/v1/license/status`)
+  - Prevents single license from being reused across multiple deployments; one license per domain
+  - Anti-tamper: RSA-2048 signature + AES-256-CBC encryption + replay guard via ConsumedVerificationKey table + domain binding
+- **Changed return type of IAuthService.LoginAsync** from `LoginResponse?` to `LoginResult` to differentiate failure reasons (invalid credentials vs concurrency limit reached)
+- **EF Core migration created**: `20260505_Phase2LicenseConcurrency.cs` — adds MaxUsers and ActivatedDomain columns to license_state table
+- **Build status**: 0 errors, all Phase 2 code compiles successfully
 
 ### 2026-05-05 — Phase 1 Remediation Restart (Batch 3)
 - **Stage 1.3 (Result Summary InvalidOperationException - completed)**

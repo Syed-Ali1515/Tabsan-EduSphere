@@ -18,6 +18,7 @@ public class AuthService : IAuthService
     private readonly IPasswordHasher _passwordHasher;
     private readonly IAuditService _audit;
     private readonly IPasswordHistoryRepository _passwordHistory;
+    private readonly ILicenseRepository _licenseRepo;
 
     public AuthService(
         IUserRepository userRepo,
@@ -25,7 +26,8 @@ public class AuthService : IAuthService
         ITokenService tokenService,
         IPasswordHasher passwordHasher,
         IAuditService audit,
-        IPasswordHistoryRepository passwordHistory)
+        IPasswordHistoryRepository passwordHistory,
+        ILicenseRepository licenseRepo)
     {
         _userRepo        = userRepo;
         _sessionRepo     = sessionRepo;
@@ -33,26 +35,30 @@ public class AuthService : IAuthService
         _passwordHasher  = passwordHasher;
         _audit           = audit;
         _passwordHistory = passwordHistory;
+        _licenseRepo     = licenseRepo;
     }
 
     // ── Login ──────────────────────────────────────────────────────────────────
 
     /// <summary>
     /// Looks up the user by username, verifies the password, and on success:
-    /// 1. Records the login timestamp on the user aggregate.
-    /// 2. Creates a new UserSession row with the hashed refresh token.
-    /// 3. Returns a LoginResponse containing the signed JWT and the raw refresh token.
-    /// Returns null when credentials are wrong or the account is inactive.
+    /// 1. Checks the license concurrent-user limit (P2-S1-01 / P2-S2-01).
+    /// 2. Records the login timestamp on the user aggregate.
+    /// 3. Creates a new UserSession row with the hashed refresh token.
+    /// 4. Returns a LoginResult.Ok containing the signed JWT and the raw refresh token.
+    /// Returns LoginResult.Fail when credentials are wrong, the account is inactive,
+    /// or the concurrent session limit has been reached.
+    /// SuperAdmin is always exempt from the concurrency check (P2-S1-02).
     /// </summary>
-    public async Task<LoginResponse?> LoginAsync(LoginRequest request, string? ipAddress, CancellationToken ct = default)
+    public async Task<LoginResult> LoginAsync(LoginRequest request, string? ipAddress, CancellationToken ct = default)
     {
         var user = await _userRepo.GetByUsernameAsync(request.Username, ct);
         if (user is null || !user.IsActive)
-            return null;
+            return LoginResult.Fail(LoginFailureReason.InvalidCredentials);
 
         // Check lockout before password verification
         if (user.IsCurrentlyLockedOut())
-            return null;
+            return LoginResult.Fail(LoginFailureReason.InvalidCredentials);
 
         if (!_passwordHasher.Verify(user.PasswordHash, request.Password))
         {
@@ -60,7 +66,24 @@ public class AuthService : IAuthService
             user.RecordFailedLoginAttempt(maxFailedAttempts: 5, lockoutDurationMinutes: 15);
             _userRepo.Update(user);
             await _userRepo.SaveChangesAsync(ct);
-            return null;
+            return LoginResult.Fail(LoginFailureReason.InvalidCredentials);
+        }
+
+        // ── P2-S1-01 / P2-S2-01: Concurrent user limit enforcement ────────────
+        // SuperAdmin (P2-S1-02) is always exempt so the portal is never locked out.
+        var isSuperAdmin = string.Equals(user.Role?.Name, "SuperAdmin",
+                                         StringComparison.OrdinalIgnoreCase);
+
+        if (!isSuperAdmin)
+        {
+            var license = await _licenseRepo.GetCurrentAsync(ct);
+            // MaxUsers == 0 means the license is in "All Users" / unlimited mode (P2-S2-01).
+            if (license is not null && license.MaxUsers > 0)
+            {
+                var activeSessions = await _sessionRepo.CountActiveSessionsAsync(ct);
+                if (activeSessions >= license.MaxUsers)
+                    return LoginResult.Fail(LoginFailureReason.ConcurrencyLimitReached);
+            }
         }
 
         var rawRefresh = _tokenService.GenerateRefreshToken();
@@ -78,13 +101,13 @@ public class AuthService : IAuthService
         await _audit.LogAsync(new AuditLog("Login", "User", user.Id.ToString(),
             actorUserId: user.Id, ipAddress: ipAddress), ct);
 
-        return new LoginResponse(
+        return LoginResult.Ok(new LoginResponse(
             AccessToken: _tokenService.GenerateAccessToken(user),
             RefreshToken: rawRefresh,
             AccessTokenExpiry: DateTime.UtcNow.AddMinutes(15),
             Role: user.Role?.Name ?? string.Empty,
             UserId: user.Id,
-            Username: user.Username);
+            Username: user.Username));
     }
 
     // ── Refresh ────────────────────────────────────────────────────────────────

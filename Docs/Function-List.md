@@ -2648,6 +2648,106 @@ New themes added to site.css and ThemeSettingsPageModel: `neon_mint`, `sakura_pi
 | `GetMyEnrollmentsAsync` | Method (new) | Calls `GET api/v1/enrollment/my-courses`; returns `List<MyEnrollmentItem>`. | Web/Services/EduApiClient.cs |
 | `AdminEnrollStudentAsync` | Method (new) | Posts `{StudentProfileId, CourseOfferingId}` to `POST api/v1/enrollment/admin`. | Web/Services/EduApiClient.cs |
 | `AdminDropEnrollmentAsync` | Method (new) | Calls `DELETE api/v1/enrollment/admin/{enrollmentId}`. | Web/Services/EduApiClient.cs |
+
+---
+
+## Phase 2 — License Concurrency + Domain Binding (2026-05-05)
+
+### Domain — LicenseState (Phase 2 additions)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `MaxUsers` | Property (new) | `int` — max concurrent users; 0 = unlimited. Deserialized from `.tablic` binary payload. | Domain/Licensing/LicenseState.cs |
+| `ActivatedDomain` | Property (new) | `string?` (max 253) — domain where license was first activated; persisted across renewals. Enforces one-license-per-domain binding. | Domain/Licensing/LicenseState.cs |
+| `IsUnlimited` | Computed property | Returns `true` when `MaxUsers <= 0`; used in concurrency checks. | Domain/Licensing/LicenseState.cs |
+
+### Application — AuthDtos (Phase 2 additions)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `LoginFailureReason` | Enum (new) | `InvalidCredentials`, `ConcurrencyLimitReached` — distinguishes failure types in login response. | Application/DTOs/Auth/AuthDtos.cs |
+| `LoginResult` | Class (new) | Wrapper around `LoginResponse?` with `IsSuccess` flag and optional `FailureReason`; static factory methods `Ok()` and `Fail()`. | Application/DTOs/Auth/AuthDtos.cs |
+
+### Application — IAuthService (Phase 2 changes)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `LoginAsync` | Method signature | Return type changed from `Task<LoginResponse?>` to `Task<LoginResult>` — allows distinguishing invalid credentials from concurrency limit. | Application/Interfaces/IAuthService.cs |
+
+### Application — AuthService (Phase 2 additions)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `LoginAsync` | Method | Added concurrency limit check: if user is NOT SuperAdmin AND `license?.MaxUsers > 0`, count active sessions. If count >= MaxUsers, return `LoginResult.Fail(ConcurrencyLimitReached)`. SuperAdmin always exempt. | Application/Auth/AuthService.cs |
+
+### Application — IUserSessionRepository (Phase 2 additions)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `CountActiveSessionsAsync` | Method (new) | Returns `Task<int>` — count of sessions where `RevokedAt == null AND ExpiresAt > DateTime.UtcNow`. | Application/Interfaces/IUserSessionRepository.cs |
+
+### Infrastructure — UserSessionRepository (Phase 2 additions)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `CountActiveSessionsAsync` | Method (new) | EF Core query: `_db.UserSessions.CountAsync(s => s.RevokedAt == null && s.ExpiresAt > DateTime.UtcNow, ct)`. | Infrastructure/Repositories/UserSessionRepository.cs |
+
+### Infrastructure — LicenseValidationService (Phase 2 changes)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `TablicPayload` | Inner class | Added `MaxUsers { get; set; }` and `AllowedDomain { get; set; }` properties for deserialization from `.tablic` binary. | Infrastructure/Licensing/LicenseValidationService.cs |
+| `ActivateFromFileAsync` | Method signature | Added optional `requestDomain` parameter (string?): `ActivateFromFileAsync(string filePath, string? requestDomain, CancellationToken ct)`. | Infrastructure/Licensing/LicenseValidationService.cs |
+| `ActivateFromFileAsync` | Logic | If `payload.AllowedDomain` is set, must match `requestDomain` or activation fails. On first activation, captures: `activatedDomain = requestDomain ?? payload.AllowedDomain`. | Infrastructure/Licensing/LicenseValidationService.cs |
+
+### Infrastructure — LicenseStateConfiguration (Phase 2 changes)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `MaxUsers` property fluent config | Configuration | `HasDefaultValue(0)` — new column MaxUsers INT NOT NULL DEFAULT 0. | Infrastructure/Persistence/Configurations/LicenseStateConfiguration.cs |
+| `ActivatedDomain` property fluent config | Configuration | `HasMaxLength(253).IsRequired(false)` — new column ActivatedDomain NVARCHAR(253) NULL. | Infrastructure/Persistence/Configurations/LicenseStateConfiguration.cs |
+
+### Infrastructure — Database Migration (Phase 2 additions)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `20260505_Phase2LicenseConcurrency` | Migration (new) | Manual migration file: Up() adds MaxUsers and ActivatedDomain columns; Down() drops both for rollback. Not yet applied to database. | Infrastructure/Migrations/20260505_Phase2LicenseConcurrency.cs |
+
+### API — AuthController (Phase 2 changes)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `Login POST` | Endpoint | Updated response handling: if `result.IsSuccess` is false and `FailureReason == ConcurrencyLimitReached`, return `StatusCode(403, ...)`. Otherwise return `Unauthorized(...)` for invalid credentials. | API/Controllers/AuthController.cs |
+
+### API — LicenseController (Phase 2 changes)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `Upload POST` | Endpoint | Extract `requestDomain = Request.Host.Host` and pass to `ActivateFromFileAsync(tempFile, requestDomain, ct)`. | API/Controllers/LicenseController.cs |
+
+### API — LicenseDomainMiddleware (Phase 2 additions — NEW FILE)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `LicenseDomainMiddleware` | Middleware (new) | Enforces domain binding at request level. If `LicenseState.ActivatedDomain` is set and doesn't match `Request.Host.Host`, rejects with HTTP 403 unless on whitelisted endpoints: `/api/v1/auth/login`, `/api/v1/license/upload`, `/api/v1/license/status`. Prevents cross-domain license reuse. | API/Middleware/LicenseDomainMiddleware.cs |
+
+### API — Program.cs (Phase 2 changes)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| Middleware registration | Program.cs | Added `app.UseMiddleware<LicenseDomainMiddleware>();` in pipeline before `app.UseAuthentication()`. | API/Program.cs |
+
+---
+
+**Phase 2 Completion Summary:**
+- ✅ P2-S1-01: Concurrent user limit via MaxUsers field and CountActiveSessionsAsync()
+- ✅ P2-S1-02: SuperAdmin exemption from concurrency limits
+- ✅ P2-S2-01: Unlimited mode via MaxUsers == 0 convention
+- ✅ P2-S3-01: Domain binding on first activation (ActivatedDomain captured)
+- ✅ P2-S3-02: Domain enforcement via LicenseDomainMiddleware at request level
+- ✅ P2-S3-03: Anti-tamper hardening (RSA signature + replay guard + domain binding)
+- **Build**: 0 errors, all Phase 2 code compiles successfully
+- **Next**: Apply migration (`dotnet ef database update`), Begin Phase 3 (License App with UI for MaxUsers/AllowedDomain configuration)
 | `StudentEnrollAsync` | Method (new) | Posts `{CourseOfferingId}` to `POST api/v1/enrollment`. | Web/Services/EduApiClient.cs |
 | `StudentDropEnrollmentAsync` | Method (new) | Calls `DELETE api/v1/enrollment/{offeringId}`. | Web/Services/EduApiClient.cs |
 | `MyCourseApiDto` | Private class (new) | DTO for deserializing `my-courses` response. | Web/Services/EduApiClient.cs |

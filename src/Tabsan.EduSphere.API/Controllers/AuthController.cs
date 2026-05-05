@@ -23,6 +23,7 @@ public class AuthController : ControllerBase
     /// <summary>
     /// Authenticates the user and returns a JWT access token plus a refresh token.
     /// Returns 401 Unauthorized when credentials are invalid or the account is inactive.
+    /// Returns 403 Forbidden when the license concurrent-user limit has been reached (P2-S1-01).
     /// </summary>
     [HttpPost("login")]
     [AllowAnonymous]
@@ -32,10 +33,16 @@ public class AuthController : ControllerBase
         var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
         var result = await _auth.LoginAsync(request, ip, ct);
 
-        if (result is null)
-            return Unauthorized(new { message = "Invalid credentials or account inactive." });
+        if (!result.IsSuccess)
+        {
+            // P2-S1-01: Return 403 so the client can distinguish limit-reached from bad credentials.
+            if (result.FailureReason == LoginFailureReason.ConcurrencyLimitReached)
+                return StatusCode(403, new { message = "Login limit reached. The maximum number of concurrent users allowed by the current license has been reached. Please contact your administrator." });
 
-        return Ok(result);
+            return Unauthorized(new { message = "Invalid credentials or account inactive." });
+        }
+
+        return Ok(result.Response);
     }
 
     // ── POST /api/v1/auth/refresh ──────────────────────────────────────────────

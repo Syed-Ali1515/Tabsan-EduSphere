@@ -21,3 +21,35 @@ public sealed record RefreshRequest(string RefreshToken);
 
 /// <summary>Request body for POST /api/v1/auth/change-password.</summary>
 public sealed record ChangePasswordRequest(string CurrentPassword, string NewPassword);
+
+// ── P2-S1-01: Login result with failure reason for concurrency enforcement ──
+
+/// <summary>
+/// Reason why a login attempt was rejected.
+/// Allows the controller to return different HTTP responses per scenario.
+/// </summary>
+public enum LoginFailureReason
+{
+    /// <summary>Credentials were invalid or the account is inactive/locked.</summary>
+    InvalidCredentials,
+
+    /// <summary>Login was blocked because the active session count reached the license limit (P2-S1-01).</summary>
+    ConcurrencyLimitReached
+}
+
+/// <summary>
+/// Wrapper returned by IAuthService.LoginAsync.
+/// On success, Response is populated. On failure, FailureReason indicates why.
+/// </summary>
+public sealed class LoginResult
+{
+    public bool IsSuccess { get; private init; }
+    public LoginResponse? Response { get; private init; }
+    public LoginFailureReason? FailureReason { get; private init; }
+
+    public static LoginResult Ok(LoginResponse response) =>
+        new() { IsSuccess = true, Response = response };
+
+    public static LoginResult Fail(LoginFailureReason reason) =>
+        new() { IsSuccess = false, FailureReason = reason };
+}
