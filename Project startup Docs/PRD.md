@@ -10,6 +10,21 @@
 
 ## 0. Implementation Update Log
 
+### 2026-05-06 — Issue-Fix Phase 2 Complete (Shared Portal and Settings)
+- **Stage 2.1 (Branding and Asset Rendering - completed)**
+  - Fixed `PortalSettingsController.UploadLogo` null-webroot failure by adding fallback to `ContentRootPath/wwwroot` when `WebRootPath` is not set.
+  - Fixed API static file serving for branding assets by configuring `UseStaticFiles` with an explicit `PhysicalFileProvider` rooted at API `wwwroot`.
+  - Uploaded logos are now accessible via `/portal-uploads/*` and render in the Web sidebar branding block.
+- **Stage 2.2 (Privacy Policy Editing - completed)**
+  - Verified dashboard branding settings include privacy content editor fields and persistence.
+  - Verified `Home/Privacy` renders configured privacy policy content from portal settings.
+- **Stage 2.3 (Shared Course Offering Dropdowns - completed)**
+  - Verified shared offering sources are populated in portal forms; `Select Course Offering` shows expected offering options in Assignments.
+- **Validation**
+  - `POST /api/v1/portal-settings/logo` returns `200 OK` with uploaded URL payload.
+  - `GET /portal-uploads/logo.svg` returns `200` after static file middleware fix.
+  - Live portal validation confirmed: logo rendering, privacy rendering, offering dropdown population.
+
 ### 2026-05-05 — Phase 3 Complete (License App — Generator Alignment + File Security)
 - **Stage 3.1 (Generator Alignment — completed)**
   - Added `MaxUsers` (int, 0=unlimited) and `AllowedDomain` (string?) to `IssuedKey` model in `tools/Tabsan.Lic`

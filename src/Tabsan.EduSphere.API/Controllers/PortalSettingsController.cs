@@ -64,7 +64,13 @@ public class PortalSettingsController : ControllerBase
         if (!allowed.Contains(ext))
             return BadRequest(new { message = "Allowed types: PNG, JPG, GIF, SVG, WEBP." });
 
-        var uploadsDir = Path.Combine(_env.WebRootPath, "portal-uploads");
+        var webRoot = _env.WebRootPath;
+        if (string.IsNullOrWhiteSpace(webRoot))
+        {
+            webRoot = Path.Combine(_env.ContentRootPath, "wwwroot");
+        }
+
+        var uploadsDir = Path.Combine(webRoot, "portal-uploads");
         Directory.CreateDirectory(uploadsDir);
 
         // Always write to a fixed name so only one logo exists at a time.

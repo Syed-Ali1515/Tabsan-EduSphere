@@ -3,6 +3,20 @@
 > **Maintenance rule**: Every function added to the codebase must be registered here with Name, Purpose, and Location.
 > Format: `Name | Purpose | Location`
 
+## Issue-Fix Phase 2 — Shared Portal and Settings Issues (2026-05-06)
+
+### API — PortalSettingsController
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `UploadLogo(file, ct)` | Fixed null-webroot crash by resolving fallback path (`ContentRoot/wwwroot`) before creating `portal-uploads`, so logo uploads no longer fail with 500. | `API/Controllers/PortalSettingsController.cs` |
+
+### API — Program Startup
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| Static file middleware initialization | Added explicit static-file provider rooted at API `wwwroot` (with fallback path creation) so uploaded branding assets under `/portal-uploads/*` are publicly reachable. | `API/Program.cs` |
+
 ## Final-Touches Phase 1 Remediation — Batch 1 (2026-05-05)
 
 ### API — CourseController

@@ -5,6 +5,7 @@ using System.Threading.RateLimiting;using FluentValidation;
 using FluentValidation.AspNetCore;using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Tabsan.EduSphere.Domain.Interfaces;
 using Tabsan.EduSphere.Application.Auth;
@@ -239,6 +240,17 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+// Serve uploaded branding assets (e.g., /portal-uploads/logo.png) from API wwwroot.
+var apiWebRoot = app.Environment.WebRootPath;
+if (string.IsNullOrWhiteSpace(apiWebRoot))
+{
+    apiWebRoot = Path.Combine(app.Environment.ContentRootPath, "wwwroot");
+}
+Directory.CreateDirectory(apiWebRoot);
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(apiWebRoot)
+});
 app.UseSecurityHeaders();
 app.UseRateLimiter();
 // P2-S3-02: Reject requests from domains that do not match the activated license domain.

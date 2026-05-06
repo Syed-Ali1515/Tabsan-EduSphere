@@ -81,6 +81,7 @@ Write unit/integration tests for `UserImportService` and the `ForceChangePasswor
 - Phase 1 Remediation Batches 1–5: all complete
 
 ## Next Steps
+- **Phase 3**: Start Faculty Workflow Repair (Stages 3.1 through 3.8) after confirming role-specific validations with faculty credentials.
 - **P2-S1-01**: Implement concurrent user limit enforcement based on `LicenseInfo.MaxUsers` in license file. Track active sessions in DB or in-memory. Reject login (non-SuperAdmin) when count >= MaxUsers.
 - **P2-S1-02**: Exempt SuperAdmin role from all concurrency checks — SuperAdmin can always log in regardless of user count.
 - **P2-S2-01**: Support `MaxUsers = 0` (or special sentinel like `"All"`) to mean unlimited — skip all concurrency checks for that license.
@@ -113,6 +114,24 @@ When a phase is completed, update:
 ---
 
 ## Work Log
+
+### Entry 005 — 2026-05-06 — Issue-Fix Phase 2 Complete (Shared Portal and Settings)
+**Completed:**
+- Stage 2.1 (Branding and Asset Rendering): fixed logo upload/render path end-to-end.
+  - API upload crash resolved (`WebRootPath` null fallback added in `PortalSettingsController.UploadLogo`).
+  - API static asset serving fixed using explicit `PhysicalFileProvider` rooted at API `wwwroot` in `Program.cs`.
+- Stage 2.2 (Privacy Policy Editing): verified editor and rendering flow works end-to-end.
+  - Privacy content persisted via portal settings API and rendered on `/Home/Privacy`.
+- Stage 2.3 (Shared Course Offering Dropdowns): verified offerings dropdown now returns populated options in portal pages (Assignments live-validated).
+
+**Validation:**
+- `POST /api/v1/portal-settings/logo` now returns `200 OK` with URL payload (`/portal-uploads/logo.svg`).
+- `GET /portal-uploads/logo.svg` now returns `200`.
+- Live UI: sidebar brand switched from initials to logo image.
+- Live UI: Privacy page renders configured policy text.
+- Live UI: Assignments `Select Course Offering` dropdown shows offerings list.
+
+**Moved to:** Issue-Fix Phase 3 (Faculty Workflow Repair)
 
 ### Entry 001
 - Date: 2026-05-03

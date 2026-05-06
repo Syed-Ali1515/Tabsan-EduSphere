@@ -266,3 +266,34 @@ No edit flows existed in the portal for Assignments, Quizzes, and FYP projects.
 - Re-test reporting filters and exports for SuperAdmin, Admin, Faculty, and Student roles.
 - Re-test multi-department admin assignment behavior.
 - Re-test Department -> Course -> Semester hierarchy behavior across reports and workflows.
+
+---
+
+## Phase 2 - Implementation and Validation Summary
+
+### Implementation Completed
+
+**Stage 2.1 — Branding and Asset Rendering**
+- Root cause 1: `UploadLogo` attempted `Path.Combine(_env.WebRootPath, ...)` when `WebRootPath` was null, causing upload failure (500).
+	- Fixed in `PortalSettingsController.UploadLogo` by resolving fallback web root to `Path.Combine(_env.ContentRootPath, "wwwroot")`.
+- Root cause 2: API static-file middleware was not reliably serving uploaded branding assets.
+	- Fixed in `API Program.cs` by configuring `UseStaticFiles` with explicit `PhysicalFileProvider` rooted at API web root fallback.
+
+**Stage 2.2 — Privacy Policy Editing**
+- Privacy policy editor and persistence path verified through Dashboard Settings branding model fields.
+- Privacy page rendering path (`Home/Privacy`) verified to load and display configured `PrivacyPolicyContent`.
+
+**Stage 2.3 — Shared Course Offering Dropdowns**
+- Shared offering source verified populated through portal assignment workflow.
+- `Select Course Offering` dropdown now lists offerings (no longer empty in validated portal page).
+
+### Validation
+
+| Check | Status |
+|-------|--------|
+| API compile after fixes | ✅ `dotnet build src/Tabsan.EduSphere.API/Tabsan.EduSphere.API.csproj --no-restore` succeeded |
+| `POST /api/v1/portal-settings/logo` | ✅ Returns `200 OK` with uploaded logo URL |
+| `GET /portal-uploads/logo.svg` | ✅ Returns `200` after static middleware fix |
+| Portal sidebar branding | ✅ Renders logo image (not initials fallback) |
+| Privacy page render | ✅ Displays configured privacy policy content |
+| Shared offering dropdown | ✅ Assignments page shows populated `Select Course Offering` options |
