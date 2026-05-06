@@ -32,6 +32,12 @@ public record RejectProjectRequest(
 public record AssignSupervisorRequest(
     Guid SupervisorUserId);
 
+/// <summary>Response after a faculty completion approval submission.</summary>
+public record ApproveCompletionResponse(
+    bool IsCompleted,
+    int CompletionApprovalCount,
+    int RequiredApprovalCount);
+
 // ── Panel member requests ──────────────────────────────────────────────────
 
 /// <summary>Request to add a faculty member to a project panel.</summary>
@@ -67,7 +73,11 @@ public record FypProjectSummaryResponse(
     Guid DepartmentId,
     string Title,
     string Status,
-    Guid? SupervisorUserId);
+    Guid? SupervisorUserId,
+    bool IsCompletionRequested,
+    int CompletionApprovalCount,
+    int RequiredApprovalCount,
+    IReadOnlyList<Guid> CompletionApprovedByUserIds);
 
 /// <summary>Full FYP project detail including panel members and meeting history.</summary>
 public record FypProjectDetailResponse(

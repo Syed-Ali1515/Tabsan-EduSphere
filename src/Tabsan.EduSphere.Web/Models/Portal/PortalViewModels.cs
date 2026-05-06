@@ -651,6 +651,10 @@ public class FypProjectItem
     public string? SupervisorName{ get; set; }
     public string DepartmentName { get; set; } = "";
     public int    MeetingCount   { get; set; }
+    public bool   IsCompletionRequested { get; set; }
+    public int    CompletionApprovalCount { get; set; }
+    public int    RequiredApprovalCount { get; set; }
+    public List<Guid> CompletionApprovedByUserIds { get; set; } = new();
 }
 
 public class FypMeetingItem

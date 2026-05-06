@@ -418,6 +418,25 @@ Implemented student-side assignment workflow corrections in the web portal:
 - Student sidebar FYP menu now appears only when the student's `CurrentSemesterNumber >= 8`.
 - Direct navigation to `Portal/Fyp` by students below 8th semester is blocked and redirected to Dashboard with a guidance message.
 
+### Stage 4.6 - Student FYP Completion Lifecycle (Implemented)
+
+- Added student completion-request action for in-progress FYP projects.
+- Added assigned-faculty completion-approval action.
+- FYP now auto-transitions to `Completed` when all assigned faculty approvers (supervisor + panel members) have approved.
+- Added approval-progress visibility in the FYP portal view (`approved/required`).
+- Added student results visibility for completed FYP by rendering a published `FYP` result row in `Portal/Results`.
+
+### Stage 4.6 - Validation Notes
+
+- API now exposes:
+	- `POST /api/v1/fyp/{id}/request-completion` (student)
+	- `POST /api/v1/fyp/{id}/approve-completion` (faculty)
+- Web portal now shows:
+	- `Request Completion` button for eligible student projects.
+	- `Approve Completion` button for faculty when approval is pending.
+	- `Awaiting Approval (x/y)` state for in-progress completion requests.
+- Added EF migration `Phase4FypCompletionApprovalFlow` for persisted completion-request and faculty-approval state on FYP projects.
+
 ### Auth Consistency Hardening (Runtime Validation Support)
 
 - Login flow now prefers the active portal API base URL when obtaining JWT so login token source and subsequent API calls remain aligned.

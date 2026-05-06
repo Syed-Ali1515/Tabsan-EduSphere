@@ -106,6 +106,36 @@ public sealed class FypService : IFypService
         return true;
     }
 
+    /// <summary>Student requests completion review for an in-progress project.</summary>
+    public async Task<bool> RequestCompletionAsync(Guid projectId, Guid studentProfileId, CancellationToken ct = default)
+    {
+        var project = await _repo.GetByIdAsync(projectId, ct);
+        if (project is null) return false;
+
+        project.RequestCompletion(studentProfileId);
+        _repo.Update(project);
+        await _repo.SaveChangesAsync(ct);
+        return true;
+    }
+
+    /// <summary>Assigned faculty approves completion review for a project.</summary>
+    public async Task<ApproveCompletionResponse?> ApproveCompletionAsync(Guid projectId, Guid facultyUserId, CancellationToken ct = default)
+    {
+        var project = await _repo.GetWithDetailsAsync(projectId, ct);
+        if (project is null) return null;
+
+        var requiredApprovers = BuildRequiredApproverIds(project);
+        if (requiredApprovers.Count == 0)
+            throw new InvalidOperationException("Assign supervisor or panel members before approving completion.");
+
+        var isCompleted = project.ApproveCompletion(facultyUserId, requiredApprovers);
+        _repo.Update(project);
+        await _repo.SaveChangesAsync(ct);
+
+        var approvedCount = project.GetCompletionApprovedUserIds().Count;
+        return new ApproveCompletionResponse(isCompleted, approvedCount, requiredApprovers.Count);
+    }
+
     // ── Queries ───────────────────────────────────────────────────────────────
 
     /// <summary>Returns all FYP projects for a student.</summary>
@@ -251,7 +281,11 @@ public sealed class FypService : IFypService
     /// <summary>Maps a <see cref="FypProject"/> to a <see cref="FypProjectSummaryResponse"/>.</summary>
     private static FypProjectSummaryResponse ToSummary(FypProject p) => new(
         p.Id, p.StudentProfileId, p.DepartmentId, p.Title,
-        p.Status.ToString(), p.SupervisorUserId);
+        p.Status.ToString(), p.SupervisorUserId,
+        p.IsCompletionRequested,
+        p.GetCompletionApprovedUserIds().Count,
+        BuildRequiredApproverIds(p).Count,
+        p.GetCompletionApprovedUserIds().ToList());
 
     /// <summary>Maps a <see cref="FypProject"/> (with details loaded) to a <see cref="FypProjectDetailResponse"/>.</summary>
     private static FypProjectDetailResponse ToDetail(FypProject p) => new(
@@ -264,4 +298,16 @@ public sealed class FypService : IFypService
     private static MeetingResponse ToMeetingResponse(FypMeeting m) => new(
         m.Id, m.FypProjectId, m.ScheduledAt, m.Venue, m.Agenda,
         m.Status.ToString(), m.OrganiserUserId, m.Minutes);
+
+    private static IReadOnlyList<Guid> BuildRequiredApproverIds(FypProject project)
+    {
+        var ids = new HashSet<Guid>();
+        if (project.SupervisorUserId.HasValue)
+            ids.Add(project.SupervisorUserId.Value);
+
+        foreach (var panelUserId in project.PanelMembers.Select(x => x.UserId))
+            ids.Add(panelUserId);
+
+        return ids.ToList();
+    }
 }

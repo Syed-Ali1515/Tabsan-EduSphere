@@ -165,6 +165,7 @@ public sealed class FypRepository : IFypRepository
     /// <summary>Returns all projects for a student.</summary>
     public Task<IReadOnlyList<FypProject>> GetByStudentAsync(Guid studentProfileId, CancellationToken ct = default)
         => _db.FypProjects
+              .Include(p => p.PanelMembers)
               .Where(p => p.StudentProfileId == studentProfileId)
               .OrderByDescending(p => p.CreatedAt)
               .ToListAsync(ct)
@@ -173,6 +174,7 @@ public sealed class FypRepository : IFypRepository
     /// <summary>Returns all projects in a department, optionally filtered by status.</summary>
     public Task<IReadOnlyList<FypProject>> GetByDepartmentAsync(Guid departmentId, FypProjectStatus? status = null, CancellationToken ct = default)
         => _db.FypProjects
+              .Include(p => p.PanelMembers)
               .Where(p => p.DepartmentId == departmentId && (status == null || p.Status == status))
               .OrderByDescending(p => p.CreatedAt)
               .ToListAsync(ct)
@@ -181,6 +183,7 @@ public sealed class FypRepository : IFypRepository
     /// <summary>Returns all projects across all departments, optionally filtered by status.</summary>
     public Task<IReadOnlyList<FypProject>> GetAllAsync(FypProjectStatus? status = null, CancellationToken ct = default)
         => _db.FypProjects
+              .Include(p => p.PanelMembers)
               .Where(p => status == null || p.Status == status)
               .OrderByDescending(p => p.CreatedAt)
               .ToListAsync(ct)
@@ -189,6 +192,7 @@ public sealed class FypRepository : IFypRepository
     /// <summary>Returns all projects supervised by a specific faculty user.</summary>
     public Task<IReadOnlyList<FypProject>> GetBySupervisorAsync(Guid supervisorUserId, CancellationToken ct = default)
         => _db.FypProjects
+              .Include(p => p.PanelMembers)
               .Where(p => p.SupervisorUserId == supervisorUserId)
               .OrderByDescending(p => p.UpdatedAt ?? p.CreatedAt)
               .ToListAsync(ct)

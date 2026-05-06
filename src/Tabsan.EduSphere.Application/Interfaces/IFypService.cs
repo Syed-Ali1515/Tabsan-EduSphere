@@ -31,6 +31,12 @@ public interface IFypService
     /// <summary>Marks a project as completed. Returns false if not found.</summary>
     Task<bool> CompleteAsync(Guid projectId, CancellationToken ct = default);
 
+    /// <summary>Student requests completion review for an in-progress project. Returns false if not found.</summary>
+    Task<bool> RequestCompletionAsync(Guid projectId, Guid studentProfileId, CancellationToken ct = default);
+
+    /// <summary>Assigned faculty approves completion review for a project. Returns null if project is not found.</summary>
+    Task<ApproveCompletionResponse?> ApproveCompletionAsync(Guid projectId, Guid facultyUserId, CancellationToken ct = default);
+
     // ── Queries ───────────────────────────────────────────────────────────────
 
     /// <summary>Returns all FYP projects for a student.</summary>

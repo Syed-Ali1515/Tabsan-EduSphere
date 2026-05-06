@@ -71,7 +71,7 @@ else
                                         {
                                             "InProgress" or "Approved" => "bg-success",
                                             "Proposed" => "bg-warning text-dark",
-                                            "Complete" => "bg-primary",
+                                            "Completed" or "Complete" => "bg-primary",
                                             "Rejected" => "bg-danger",
                                             _ => "bg-secondary"
                                         };
@@ -126,6 +126,39 @@ else
                                                 <button type="submit" class="btn btn-xs btn-outline-primary btn-sm"
                                                         onclick="return confirm('Mark project as complete?')">Complete</button>
                                             </form>
+                                        }
+                                        @if (User.IsInRole("Student") && p.Status == "InProgress")
+                                        {
+                                            @if (!p.IsCompletionRequested)
+                                            {
+                                                <form asp-action="RequestFypCompletion" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@p.Id" />
+                                                    <button type="submit" class="btn btn-xs btn-outline-primary btn-sm"
+                                                            onclick="return confirm('Request completion review from assigned faculty?')">
+                                                        Request Completion
+                                                    </button>
+                                                </form>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-info text-dark">
+                                                    Awaiting Approval (@p.CompletionApprovalCount/@p.RequiredApprovalCount)
+                                                </span>
+                                            }
+                                        }
+                                        @if (User.IsInRole("Faculty") && p.Status == "InProgress" && p.IsCompletionRequested)
+                                        {
+                                            <form asp-action="ApproveFypCompletion" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@p.Id" />
+                                                <button type="submit" class="btn btn-xs btn-outline-success btn-sm">
+                                                    Approve Completion
+                                                </button>
+                                            </form>
+                                            <span class="badge bg-light text-dark border">
+                                                @p.CompletionApprovalCount/@p.RequiredApprovalCount approvals
+                                            </span>
                                         }
                                     </td>
                                         </tr>

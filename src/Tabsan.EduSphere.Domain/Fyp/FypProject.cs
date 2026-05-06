@@ -1,4 +1,5 @@
 using Tabsan.EduSphere.Domain.Common;
+using System.Globalization;
 
 namespace Tabsan.EduSphere.Domain.Fyp;
 
@@ -71,6 +72,21 @@ public class FypProject : BaseEntity
     /// <summary>Optional remarks from the coordinator on approval or rejection.</summary>
     public string? CoordinatorRemarks { get; private set; }
 
+    /// <summary>True when the student has requested completion and faculty approvals are pending.</summary>
+    public bool IsCompletionRequested { get; private set; }
+
+    /// <summary>UTC timestamp when completion was requested by the student.</summary>
+    public DateTime? CompletionRequestedAt { get; private set; }
+
+    /// <summary>Student profile ID that submitted the completion request.</summary>
+    public Guid? CompletionRequestedByStudentProfileId { get; private set; }
+
+    /// <summary>
+    /// Comma-separated faculty user IDs who approved completion.
+    /// Stored as CSV to avoid a separate join table for this workflow state.
+    /// </summary>
+    public string? CompletionApprovedByUserIdsCsv { get; private set; }
+
     /// <summary>Navigation collection of panel members (supervisors, co-supervisors, examiners).</summary>
     public IReadOnlyCollection<FypPanelMember> PanelMembers { get; private set; } = new List<FypPanelMember>();
 
@@ -137,6 +153,7 @@ public class FypProject : BaseEntity
     public void Complete()
     {
         Status = FypProjectStatus.Completed;
+        IsCompletionRequested = false;
         Touch();
     }
 
@@ -150,6 +167,72 @@ public class FypProject : BaseEntity
         Title       = title;
         Description = description;
         Touch();
+    }
+
+    /// <summary>
+    /// Marks the project as awaiting faculty completion approvals.
+    /// </summary>
+    public void RequestCompletion(Guid studentProfileId)
+    {
+        if (Status != FypProjectStatus.InProgress)
+            throw new InvalidOperationException("Only in-progress projects can request completion.");
+
+        if (StudentProfileId != studentProfileId)
+            throw new InvalidOperationException("Only the project owner can request completion.");
+
+        IsCompletionRequested = true;
+        CompletionRequestedAt = DateTime.UtcNow;
+        CompletionRequestedByStudentProfileId = studentProfileId;
+        CompletionApprovedByUserIdsCsv = string.Empty;
+        Touch();
+    }
+
+    /// <summary>
+    /// Registers a faculty completion approval and auto-completes when all required approvers have approved.
+    /// Returns true when the project reached Completed state in this call.
+    /// </summary>
+    public bool ApproveCompletion(Guid facultyUserId, IReadOnlyCollection<Guid> requiredApprovers)
+    {
+        if (Status != FypProjectStatus.InProgress)
+            throw new InvalidOperationException("Only in-progress projects can be approved for completion.");
+
+        if (!IsCompletionRequested)
+            throw new InvalidOperationException("Student completion request is required before faculty approvals.");
+
+        if (!requiredApprovers.Contains(facultyUserId))
+            throw new InvalidOperationException("Only assigned faculty members can approve completion.");
+
+        var approved = ParseApprovalUserIds();
+        approved.Add(facultyUserId);
+        CompletionApprovedByUserIdsCsv = string.Join(',', approved.Select(x => x.ToString("D", CultureInfo.InvariantCulture)));
+
+        var allApproved = requiredApprovers.All(approved.Contains);
+        if (allApproved)
+        {
+            Complete();
+            return true;
+        }
+
+        Touch();
+        return false;
+    }
+
+    /// <summary>Returns faculty user IDs that already approved completion.</summary>
+    public IReadOnlyCollection<Guid> GetCompletionApprovedUserIds() => ParseApprovalUserIds();
+
+    private HashSet<Guid> ParseApprovalUserIds()
+    {
+        var ids = new HashSet<Guid>();
+        if (string.IsNullOrWhiteSpace(CompletionApprovedByUserIdsCsv))
+            return ids;
+
+        foreach (var raw in CompletionApprovedByUserIdsCsv.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            if (Guid.TryParse(raw, out var id))
+                ids.Add(id);
+        }
+
+        return ids;
     }
 }
 

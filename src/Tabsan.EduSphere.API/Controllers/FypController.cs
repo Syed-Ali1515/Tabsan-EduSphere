@@ -101,6 +101,34 @@ public sealed class FypController : ControllerBase
         return ok ? NoContent() : NotFound();
     }
 
+    /// <summary>
+    /// Student requests completion review for their own in-progress project.
+    /// </summary>
+    [HttpPost("{id:guid}/request-completion")]
+    [Authorize(Policy = "Student")]
+    public async Task<IActionResult> RequestCompletion(Guid id, CancellationToken ct)
+    {
+        var studentProfileId = GetStudentProfileId();
+        if (studentProfileId == Guid.Empty) return Forbid();
+
+        var ok = await _fypService.RequestCompletionAsync(id, studentProfileId, ct);
+        return ok ? NoContent() : NotFound();
+    }
+
+    /// <summary>
+    /// Assigned faculty approves student completion review. Project auto-completes once all approvals are collected.
+    /// </summary>
+    [HttpPost("{id:guid}/approve-completion")]
+    [Authorize(Policy = "Faculty")]
+    public async Task<IActionResult> ApproveCompletion(Guid id, CancellationToken ct)
+    {
+        var facultyUserId = GetCurrentUserId();
+        if (facultyUserId == Guid.Empty) return Forbid();
+
+        var result = await _fypService.ApproveCompletionAsync(id, facultyUserId, ct);
+        return result is null ? NotFound() : Ok(result);
+    }
+
     // ── Queries ───────────────────────────────────────────────────────────────
 
     /// <summary>

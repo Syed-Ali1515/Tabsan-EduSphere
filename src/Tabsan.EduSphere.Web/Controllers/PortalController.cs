@@ -1140,6 +1140,43 @@ public class PortalController : Controller
                 {
                     model.Results = await _api.GetMyResultsAsync(ct);
                 }
+
+                // Stage 4.6: Completed FYP should be visible in student results.
+                // Represent it as a published synthetic result row when no offering filter is active.
+                if (!offeringId.HasValue)
+                {
+                    var myProjects = await _api.GetMyFypProjectsAsync(ct);
+                    var completedFyp = myProjects.FirstOrDefault(p => string.Equals(p.Status, "Completed", StringComparison.OrdinalIgnoreCase));
+                    if (completedFyp is not null)
+                    {
+                        var shouldShowForSemester = string.IsNullOrWhiteSpace(semesterName)
+                            || semesterName.Contains("8", StringComparison.OrdinalIgnoreCase)
+                            || semesterName.Contains("final", StringComparison.OrdinalIgnoreCase);
+
+                        if (shouldShowForSemester)
+                        {
+                            var exists = model.Results.Any(r => string.Equals(r.ResultType, "FYP", StringComparison.OrdinalIgnoreCase));
+                            if (!exists)
+                            {
+                                model.Results.Add(new ResultItem
+                                {
+                                    Id = completedFyp.Id,
+                                    StudentProfileId = Guid.Empty,
+                                    ResultType = "FYP",
+                                    CourseName = completedFyp.Title,
+                                    CourseCode = "FYP",
+                                    MarksObtained = null,
+                                    TotalMarks = 0,
+                                    LetterGrade = "Completed",
+                                    IsPublished = true,
+                                    SemesterName = "Semester 8",
+                                    StudentName = completedFyp.StudentName,
+                                    RegistrationNumber = string.Empty
+                                });
+                            }
+                        }
+                    }
+                }
             }
             else if (offeringId.HasValue)
             {
@@ -1578,6 +1615,38 @@ public class PortalController : Controller
             try { await _api.CompleteFypProjectAsync(id, ct); TempData["PortalMessage"] = "Project marked as complete."; }
             catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
         }
+        return RedirectToAction(nameof(Fyp), new { departmentId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> RequestFypCompletion(Guid id, Guid? departmentId, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try
+            {
+                await _api.RequestFypCompletionAsync(id, ct);
+                TempData["PortalMessage"] = "Completion request sent to assigned faculty for approvals.";
+            }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+
+        return RedirectToAction(nameof(Fyp), new { departmentId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> ApproveFypCompletion(Guid id, Guid? departmentId, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try
+            {
+                await _api.ApproveFypCompletionAsync(id, ct);
+                TempData["PortalMessage"] = "Completion approval submitted.";
+            }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+
         return RedirectToAction(nameof(Fyp), new { departmentId });
     }
 

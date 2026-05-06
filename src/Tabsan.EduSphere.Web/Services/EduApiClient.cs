@@ -163,6 +163,8 @@ public interface IEduApiClient
     Task RejectFypProjectAsync(Guid id, string remarks, CancellationToken ct);
     Task AssignFypSupervisorAsync(Guid id, Guid supervisorUserId, CancellationToken ct);
     Task CompleteFypProjectAsync(Guid id, CancellationToken ct);
+    Task RequestFypCompletionAsync(Guid id, CancellationToken ct);
+    Task ApproveFypCompletionAsync(Guid id, CancellationToken ct);
 
     // Analytics — Final-Touches Phase 6 Stage 6.2: typed return instead of raw JSON strings
     Task<DepartmentPerformanceReport?> GetPerformanceAnalyticsAsync(CancellationToken ct);
@@ -1487,22 +1489,33 @@ public class EduApiClient : IEduApiClient
     public Task CompleteFypProjectAsync(Guid id, CancellationToken ct)
         => PostAsync<object, object>($"api/v1/fyp/{id}/complete", new { }, ct);
 
+    public Task RequestFypCompletionAsync(Guid id, CancellationToken ct)
+        => PostAsync<object, object>($"api/v1/fyp/{id}/request-completion", new { }, ct);
+
+    public Task ApproveFypCompletionAsync(Guid id, CancellationToken ct)
+        => PostAsync<object, object>($"api/v1/fyp/{id}/approve-completion", new { }, ct);
+
     private sealed class FypCreateResponse { public Guid ProjectId { get; set; } }
 
     private static FypProjectItem MapFyp(FypApiDto f) => new()
     {
-        Id             = f.Id,
+        Id             = f.ProjectId != Guid.Empty ? f.ProjectId : f.Id,
         Title          = f.Title ?? "",
         Description    = f.Description,
         Status         = f.Status ?? "",
         StudentName    = f.StudentName ?? "",
         SupervisorName = f.SupervisorName,
         DepartmentName = f.DepartmentName ?? "",
-        MeetingCount   = f.MeetingCount
+        MeetingCount   = f.MeetingCount,
+        IsCompletionRequested = f.IsCompletionRequested,
+        CompletionApprovalCount = f.CompletionApprovalCount,
+        RequiredApprovalCount = f.RequiredApprovalCount,
+        CompletionApprovedByUserIds = f.CompletionApprovedByUserIds ?? new()
     };
 
     private sealed class FypApiDto
     {
+        public Guid    ProjectId      { get; set; }
         public Guid    Id             { get; set; }
         public string? Title          { get; set; }
         public string? Description    { get; set; }
@@ -1511,6 +1524,10 @@ public class EduApiClient : IEduApiClient
         public string? SupervisorName { get; set; }
         public string? DepartmentName { get; set; }
         public int     MeetingCount   { get; set; }
+        public bool    IsCompletionRequested { get; set; }
+        public int     CompletionApprovalCount { get; set; }
+        public int     RequiredApprovalCount { get; set; }
+        public List<Guid>? CompletionApprovedByUserIds { get; set; }
     }
 
     private sealed class FypMeetingApiDto
