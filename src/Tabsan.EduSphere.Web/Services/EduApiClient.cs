@@ -1,6 +1,7 @@
 ﻿using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Tabsan.EduSphere.Application.DTOs.Analytics;
 using Tabsan.EduSphere.Web.Models.Portal;
 
@@ -118,8 +119,10 @@ public interface IEduApiClient
 
     // Assignments
     Task<List<AssignmentItem>> GetMyAssignmentsAsync(CancellationToken ct);
+    Task<List<MyAssignmentSubmissionItem>> GetMyAssignmentSubmissionsAsync(CancellationToken ct);
     Task<List<AssignmentItem>> GetAssignmentsByOfferingAsync(Guid offeringId, CancellationToken ct);
     Task<List<SubmissionItem>> GetSubmissionsForAssignmentAsync(Guid assignmentId, CancellationToken ct);
+    Task SubmitAssignmentAsync(Guid assignmentId, string? fileUrl, string? textContent, CancellationToken ct);
     Task<Guid> CreateAssignmentAsync(Guid courseOfferingId, string title, string? description, DateTime dueDate, decimal maxMarks, CancellationToken ct);
     Task UpdateAssignmentAsync(Guid id, string title, string? description, DateTime dueDate, decimal maxMarks, CancellationToken ct);
     Task PublishAssignmentAsync(Guid id, CancellationToken ct);
@@ -1028,9 +1031,33 @@ public class EduApiClient : IEduApiClient
 
     public async Task<List<AssignmentItem>> GetMyAssignmentsAsync(CancellationToken ct)
     {
-        // Student: returns assignments for enrolled courses
-        var raw = await GetAsync<List<AssignmentApiDto>>("api/v1/assignment/my-submissions", ct) ?? new();
-        return raw.Select(MapAssignment).ToList();
+        // Student endpoint returns submissions, so map it into assignment-like rows for the default view.
+        var raw = await GetAsync<List<MySubmissionApiDto>>("api/v1/assignment/my-submissions", ct) ?? new();
+        return raw.Select(s => new AssignmentItem
+        {
+            Id                  = s.AssignmentId,
+            Title               = s.AssignmentTitle ?? "",
+            Description         = null,
+            DueDate             = null,
+            TotalMarks          = 0,
+            IsPublished         = true,
+            CourseOfferingTitle = "",
+            SubmissionCount     = 0,
+            IsSubmitted         = true,
+            MarksAwarded        = s.MarksAwarded
+        }).ToList();
+    }
+
+    public async Task<List<MyAssignmentSubmissionItem>> GetMyAssignmentSubmissionsAsync(CancellationToken ct)
+    {
+        var raw = await GetAsync<List<MySubmissionApiDto>>("api/v1/assignment/my-submissions", ct) ?? new();
+        return raw.Select(s => new MyAssignmentSubmissionItem
+        {
+            AssignmentId = s.AssignmentId,
+            Status = s.Status ?? "",
+            MarksAwarded = s.MarksAwarded,
+            SubmittedAt = s.SubmittedAt
+        }).ToList();
     }
 
     public async Task<List<AssignmentItem>> GetAssignmentsByOfferingAsync(Guid offeringId, CancellationToken ct)
@@ -1045,7 +1072,7 @@ public class EduApiClient : IEduApiClient
         Title               = a.Title ?? "",
         Description         = a.Description,
         DueDate             = a.DueDate,
-        TotalMarks          = a.TotalMarks,
+        TotalMarks          = a.MaxMarks,
         IsPublished         = a.IsPublished,
         CourseOfferingTitle = a.CourseOfferingTitle ?? "",
         SubmissionCount     = a.SubmissionCount,
@@ -1101,18 +1128,25 @@ public class EduApiClient : IEduApiClient
         }).ToList();
     }
 
+    public Task SubmitAssignmentAsync(Guid assignmentId, string? fileUrl, string? textContent, CancellationToken ct)
+    {
+        var payload = new { assignmentId, fileUrl, textContent };
+        return PostAsync<object, object>("api/v1/assignment/submit", payload, ct);
+    }
+
     private sealed class AssignmentApiDto
     {
         public Guid      Id                   { get; set; }
         public string?   Title                { get; set; }
         public string?   Description          { get; set; }
         public DateTime? DueDate              { get; set; }
-        public int       TotalMarks           { get; set; }
+        [JsonPropertyName("maxMarks")]
+        public decimal   MaxMarks             { get; set; }
         public bool      IsPublished          { get; set; }
         public string?   CourseOfferingTitle  { get; set; }
         public int       SubmissionCount      { get; set; }
         public bool      IsSubmitted          { get; set; }
-        public int?      MarksAwarded         { get; set; }
+        public decimal?  MarksAwarded         { get; set; }
     }
 
     private sealed class SubmissionApiDto
@@ -1123,8 +1157,23 @@ public class EduApiClient : IEduApiClient
         public string?  Comments             { get; set; }
         public DateTime SubmittedAt          { get; set; }
         public bool     IsGraded             { get; set; }
-        public int?     MarksAwarded         { get; set; }
+        public decimal? MarksAwarded         { get; set; }
         public string?  FeedbackFromFaculty  { get; set; }
+    }
+
+    private sealed class MySubmissionApiDto
+    {
+        public Guid      Id               { get; set; }
+        public Guid      AssignmentId     { get; set; }
+        public string?   AssignmentTitle  { get; set; }
+        public Guid      StudentProfileId { get; set; }
+        public string?   FileUrl          { get; set; }
+        public string?   TextContent      { get; set; }
+        public DateTime  SubmittedAt      { get; set; }
+        public string?   Status           { get; set; }
+        public decimal?  MarksAwarded     { get; set; }
+        public string?   Feedback         { get; set; }
+        public DateTime? GradedAt         { get; set; }
     }
 
     // ── Attendance ────────────────────────────────────────────────────────────
@@ -1242,7 +1291,7 @@ public class EduApiClient : IEduApiClient
         public string? ResultType         { get; set; }
         public string? CourseName         { get; set; }
         public string? CourseCode         { get; set; }
-        public int?    MarksObtained      { get; set; }
+        public decimal? MarksObtained     { get; set; }
         public int     TotalMarks         { get; set; }
         public string? LetterGrade        { get; set; }
         public bool    IsPublished        { get; set; }
@@ -1329,7 +1378,7 @@ public class EduApiClient : IEduApiClient
         public DateTime  StartedAt   { get; set; }
         public DateTime? SubmittedAt { get; set; }
         public string?   Status      { get; set; }
-        public int?      TotalScore  { get; set; }
+        public decimal?  TotalScore  { get; set; }
         public int       MaxScore    { get; set; }
     }
 
@@ -2153,10 +2202,9 @@ public class EduApiClient : IEduApiClient
         return new PortalBrandingWebModel
         {
             UniversityName   = raw?.UniversityName   ?? "Tabsan EduSphere",
-            BrandInitials    = raw?.BrandInitials    ?? "TE",
             PortalSubtitle   = raw?.PortalSubtitle   ?? "Campus Portal",
             FooterText       = raw?.FooterText       ?? "© 2026 Tabsan EduSphere",
-            LogoUrl          = NormalizeApiAssetUrl(raw?.LogoUrl),
+            LogoImage        = raw?.LogoImage,
             PrivacyPolicyUrl = raw?.PrivacyPolicyUrl,
             PrivacyPolicyContent = raw?.PrivacyPolicyContent,
             FontFamily       = raw?.FontFamily,
@@ -2169,10 +2217,9 @@ public class EduApiClient : IEduApiClient
         var payload = new
         {
             universityName   = model.UniversityName,
-            brandInitials    = model.BrandInitials,
             portalSubtitle   = model.PortalSubtitle,
             footerText       = model.FooterText,
-            logoUrl          = model.LogoUrl,
+            logoImage        = model.LogoImage,
             privacyPolicyUrl = model.PrivacyPolicyUrl,
             privacyPolicyContent = model.PrivacyPolicyContent,
             fontFamily       = model.FontFamily,
@@ -2208,10 +2255,9 @@ public class EduApiClient : IEduApiClient
     private sealed class PortalBrandingApiDto
     {
         public string? UniversityName   { get; set; }
-        public string? BrandInitials    { get; set; }
         public string? PortalSubtitle   { get; set; }
         public string? FooterText       { get; set; }
-        public string? LogoUrl          { get; set; }
+        public string? LogoImage        { get; set; }
         public string? PrivacyPolicyUrl { get; set; }
         public string? PrivacyPolicyContent { get; set; }
         public string? FontFamily       { get; set; }

@@ -330,10 +330,11 @@ public class SidebarMenuService : ISidebarMenuService
 public class PortalBrandingService : IPortalBrandingService
 {
     private const string KeyUniversityName  = "university_name";
-    private const string KeyBrandInitials   = "brand_initials";
     private const string KeyPortalSubtitle  = "portal_subtitle";
     private const string KeyFooterText      = "footer_text";
-    private const string KeyLogoUrl         = "logo_url";
+    private const string KeyLogoImage       = "logo_image";
+    private const string KeyLegacyLogoUrl   = "logo_url";
+    private const string KeyLegacyInitials  = "brand_initials";
     private const string KeyPrivacyPolicy   = "privacy_policy_url";
     private const string KeyPrivacyPolicyContent = "privacy_policy_content";
     private const string KeyFontFamily      = "font_family";
@@ -348,10 +349,9 @@ public class PortalBrandingService : IPortalBrandingService
         var all = await _repo.GetAllPortalSettingsAsync(ct);
         return new PortalBrandingDto(
             all.GetValueOrDefault(KeyUniversityName, "Tabsan EduSphere"),
-            all.GetValueOrDefault(KeyBrandInitials,  "TE"),
             all.GetValueOrDefault(KeyPortalSubtitle, "Campus Portal"),
             all.GetValueOrDefault(KeyFooterText,     "© 2026 Tabsan EduSphere"),
-            all.GetValueOrDefault(KeyLogoUrl,        null),
+            all.GetValueOrDefault(KeyLogoImage,      null),
             all.GetValueOrDefault(KeyPrivacyPolicy,  null),
             all.GetValueOrDefault(KeyPrivacyPolicyContent, null),
             all.GetValueOrDefault(KeyFontFamily,     null),
@@ -362,14 +362,15 @@ public class PortalBrandingService : IPortalBrandingService
     public async Task SaveAsync(SavePortalBrandingCommand cmd, CancellationToken ct = default)
     {
         await _repo.UpsertPortalSettingAsync(KeyUniversityName, cmd.UniversityName   ?? string.Empty, ct);
-        await _repo.UpsertPortalSettingAsync(KeyBrandInitials,  cmd.BrandInitials    ?? string.Empty, ct);
         await _repo.UpsertPortalSettingAsync(KeyPortalSubtitle, cmd.PortalSubtitle   ?? string.Empty, ct);
         await _repo.UpsertPortalSettingAsync(KeyFooterText,     cmd.FooterText       ?? string.Empty, ct);
-        await _repo.UpsertPortalSettingAsync(KeyLogoUrl,        cmd.LogoUrl          ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(KeyLogoImage,      cmd.LogoImage        ?? string.Empty, ct);
         await _repo.UpsertPortalSettingAsync(KeyPrivacyPolicy,  cmd.PrivacyPolicyUrl ?? string.Empty, ct);
         await _repo.UpsertPortalSettingAsync(KeyPrivacyPolicyContent, cmd.PrivacyPolicyContent ?? string.Empty, ct);
         await _repo.UpsertPortalSettingAsync(KeyFontFamily,     cmd.FontFamily       ?? string.Empty, ct);
         await _repo.UpsertPortalSettingAsync(KeyFontSize,       cmd.FontSize         ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(KeyLegacyInitials, string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(KeyLegacyLogoUrl,  string.Empty, ct);
         await _repo.SaveChangesAsync(ct);
     }
 }

@@ -15,12 +15,10 @@ namespace Tabsan.EduSphere.API.Controllers;
 public class PortalSettingsController : ControllerBase
 {
     private readonly IPortalBrandingService _service;
-    private readonly IWebHostEnvironment _env;
 
-    public PortalSettingsController(IPortalBrandingService service, IWebHostEnvironment env)
+    public PortalSettingsController(IPortalBrandingService service)
     {
         _service = service;
-        _env     = env;
     }
 
     /// <summary>Returns the current portal branding values.</summary>
@@ -44,8 +42,8 @@ public class PortalSettingsController : ControllerBase
     }
 
     /// <summary>
-    /// Uploads a logo image (PNG/JPG/SVG/GIF ≤ 2 MB) and stores it in wwwroot/portal-uploads/.
-    /// Returns the relative URL of the saved file.  SuperAdmin only.
+    /// Uploads a logo image (PNG/JPG/SVG/GIF ≤ 2 MB) and returns a data URI string.
+    /// The caller stores this value in portal_settings for DB-backed branding. SuperAdmin only.
     /// </summary>
     [HttpPost("logo")]
     [Authorize(Roles = "SuperAdmin")]
@@ -64,22 +62,23 @@ public class PortalSettingsController : ControllerBase
         if (!allowed.Contains(ext))
             return BadRequest(new { message = "Allowed types: PNG, JPG, GIF, SVG, WEBP." });
 
-        var webRoot = _env.WebRootPath;
-        if (string.IsNullOrWhiteSpace(webRoot))
+        await using var read = file.OpenReadStream();
+        await using var ms = new MemoryStream();
+        await read.CopyToAsync(ms, ct);
+
+        var mime = ext switch
         {
-            webRoot = Path.Combine(_env.ContentRootPath, "wwwroot");
-        }
+            ".png"  => "image/png",
+            ".jpg"  => "image/jpeg",
+            ".jpeg" => "image/jpeg",
+            ".gif"  => "image/gif",
+            ".svg"  => "image/svg+xml",
+            ".webp" => "image/webp",
+            _ => "application/octet-stream"
+        };
 
-        var uploadsDir = Path.Combine(webRoot, "portal-uploads");
-        Directory.CreateDirectory(uploadsDir);
-
-        // Always write to a fixed name so only one logo exists at a time.
-        var fileName   = $"logo{ext}";
-        var filePath   = Path.Combine(uploadsDir, fileName);
-        await using var stream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
-        await file.CopyToAsync(stream, ct);
-
-        var relativeUrl = $"/portal-uploads/{fileName}";
-        return Ok(new { url = relativeUrl });
+        var b64 = Convert.ToBase64String(ms.ToArray());
+        var dataUri = $"data:{mime};base64,{b64}";
+        return Ok(new { url = dataUri });
     }
 }

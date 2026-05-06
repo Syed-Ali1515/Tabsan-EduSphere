@@ -487,13 +487,13 @@ public class AssignmentItem
     public string    Title                { get; set; } = "";
     public string?   Description          { get; set; }
     public DateTime? DueDate              { get; set; }
-    public int       TotalMarks           { get; set; }
+    public decimal   TotalMarks           { get; set; }
     public bool      IsPublished          { get; set; }
     public string    CourseOfferingTitle  { get; set; } = "";
     public int       SubmissionCount      { get; set; }
     // For student view
     public bool      IsSubmitted          { get; set; }
-    public int?      MarksAwarded         { get; set; }
+    public decimal?  MarksAwarded         { get; set; }
 }
 
 public class SubmissionItem
@@ -504,8 +504,16 @@ public class SubmissionItem
     public string?  Comments             { get; set; }
     public DateTime SubmittedAt          { get; set; }
     public bool     IsGraded             { get; set; }
-    public int?     MarksAwarded         { get; set; }
+    public decimal? MarksAwarded         { get; set; }
     public string?  FeedbackFromFaculty  { get; set; }
+}
+
+public class MyAssignmentSubmissionItem
+{
+    public Guid      AssignmentId   { get; set; }
+    public string    Status         { get; set; } = "";
+    public decimal?  MarksAwarded   { get; set; }
+    public DateTime  SubmittedAt    { get; set; }
 }
 
 public class AssignmentsPageModel
@@ -564,7 +572,7 @@ public class ResultItem
     public string ResultType         { get; set; } = "";
     public string CourseName         { get; set; } = "";
     public string CourseCode         { get; set; } = "";
-    public int?   MarksObtained      { get; set; }
+    public decimal? MarksObtained    { get; set; }
     public int    TotalMarks         { get; set; }
     public string? LetterGrade       { get; set; }
     public bool   IsPublished        { get; set; }
@@ -611,7 +619,7 @@ public class QuizAttemptItem
     public DateTime  StartedAt    { get; set; }
     public DateTime? SubmittedAt  { get; set; }
     public string    Status       { get; set; } = "";
-    public int?      TotalScore   { get; set; }
+    public decimal?  TotalScore   { get; set; }
     public int       MaxScore     { get; set; }
 }
 
@@ -1087,10 +1095,9 @@ public class ReportFypStatusPageModel
 public class PortalBrandingWebModel
 {
     public string UniversityName  { get; set; } = "Tabsan EduSphere";
-    public string BrandInitials   { get; set; } = "TE";
     public string PortalSubtitle  { get; set; } = "Campus Portal";
     public string FooterText      { get; set; } = "© 2026 Tabsan EduSphere";
-    public string? LogoUrl        { get; set; }
+    public string? LogoImage      { get; set; }
     public string? PrivacyPolicyUrl { get; set; }
     public string? PrivacyPolicyContent { get; set; }
     public string? FontFamily     { get; set; }

@@ -936,7 +936,24 @@ public class PortalController : Controller
             var sessionId = _api.GetSessionIdentity();
             if (sessionId?.IsStudent == true)
             {
-                model.Assignments = await _api.GetMyAssignmentsAsync(ct);
+                model.Assignments = offeringId.HasValue
+                    ? await _api.GetAssignmentsByOfferingAsync(offeringId.Value, ct)
+                    : await _api.GetMyAssignmentsAsync(ct);
+
+                var mySubmissions = await _api.GetMyAssignmentSubmissionsAsync(ct);
+                var submissionByAssignment = mySubmissions
+                    .OrderByDescending(s => s.SubmittedAt)
+                    .GroupBy(s => s.AssignmentId)
+                    .ToDictionary(g => g.Key, g => g.First());
+
+                foreach (var assignment in model.Assignments)
+                {
+                    if (submissionByAssignment.TryGetValue(assignment.Id, out var submission))
+                    {
+                        assignment.IsSubmitted = true;
+                        assignment.MarksAwarded = submission.MarksAwarded;
+                    }
+                }
             }
             else if (offeringId.HasValue)
             {
@@ -1092,6 +1109,46 @@ public class PortalController : Controller
     // ── Analytics ──────────────────────────────────────────────────────────
 
     // ── Assignment write actions ────────────────────────────────────────────
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> SubmitAssignment(
+        Guid assignmentId, Guid? offeringId, string? textContent, IFormFile? submissionFile, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try
+            {
+                string? fileUrl = null;
+
+                if (submissionFile is { Length: > 0 })
+                {
+                    var uploadsRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "assignment-submissions");
+                    Directory.CreateDirectory(uploadsRoot);
+
+                    var extension = Path.GetExtension(submissionFile.FileName);
+                    var fileName = $"{Guid.NewGuid()}{extension}";
+                    var physicalPath = Path.Combine(uploadsRoot, fileName);
+
+                    await using var stream = System.IO.File.Create(physicalPath);
+                    await submissionFile.CopyToAsync(stream, ct);
+
+                    fileUrl = $"/uploads/assignment-submissions/{fileName}";
+                }
+
+                if (string.IsNullOrWhiteSpace(fileUrl) && string.IsNullOrWhiteSpace(textContent))
+                {
+                    TempData["PortalMessage"] = "Attach a file or add submission text before submitting.";
+                    return RedirectToAction(nameof(Assignments), new { offeringId });
+                }
+
+                await _api.SubmitAssignmentAsync(assignmentId, fileUrl, textContent, ct);
+                TempData["PortalMessage"] = "Assignment submitted for faculty review.";
+            }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+
+        return RedirectToAction(nameof(Assignments), new { offeringId });
+    }
 
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> CreateAssignment(
@@ -1994,7 +2051,7 @@ public class PortalController : Controller
                 await using var stream = model.LogoFile.OpenReadStream();
                 var logoUrl = await _api.UploadLogoAsync(stream, model.LogoFile.FileName, ct);
                 if (logoUrl is not null)
-                    model.Branding.LogoUrl = logoUrl;
+                    model.Branding.LogoImage = logoUrl;
             }
 
             await _api.SavePortalBrandingAsync(model.Branding, ct);

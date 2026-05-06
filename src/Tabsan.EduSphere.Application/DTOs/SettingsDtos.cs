@@ -102,10 +102,9 @@ public record SetSidebarMenuStatusCommand(bool IsActive);
 /// <summary>The full set of branding values for the portal dashboard.</summary>
 public record PortalBrandingDto(
     string UniversityName,
-    string BrandInitials,
     string PortalSubtitle,
     string FooterText,
-    string? LogoUrl,
+    string? LogoImage,
     string? PrivacyPolicyUrl,
     string? PrivacyPolicyContent,
     string? FontFamily,
@@ -115,10 +114,9 @@ public record PortalBrandingDto(
 /// <summary>Payload to update the portal branding settings.</summary>
 public record SavePortalBrandingCommand(
     string UniversityName,
-    string BrandInitials,
     string PortalSubtitle,
     string FooterText,
-    string? LogoUrl = null,
+    string? LogoImage = null,
     string? PrivacyPolicyUrl = null,
     string? PrivacyPolicyContent = null,
     string? FontFamily = null,

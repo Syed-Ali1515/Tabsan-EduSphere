@@ -221,13 +221,13 @@
     <div class="app-shell">
         <aside class="app-sidebar" role="complementary" aria-label="Application sidebar">
             <div class="brand-link" role="group" aria-label="@branding.UniversityName branding">
-                @if (!string.IsNullOrEmpty(branding.LogoUrl))
+                @if (!string.IsNullOrEmpty(branding.LogoImage))
                 {
-                    <img src="@branding.LogoUrl" alt="@branding.UniversityName logo" class="brand-logo" style="height:40px;width:40px;object-fit:contain;border-radius:6px;" />
+                    <img src="@branding.LogoImage" alt="@branding.UniversityName logo" class="brand-logo" style="height:40px;width:40px;object-fit:contain;border-radius:6px;" />
                 }
                 else
                 {
-                    <span class="brand-mark">@branding.BrandInitials</span>
+                    <span class="brand-mark"><i class="bi bi-image"></i></span>
                 }
                 <div>
                     <div class="brand-name">@branding.UniversityName</div>

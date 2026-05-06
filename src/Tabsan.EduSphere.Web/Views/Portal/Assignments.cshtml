@@ -120,6 +120,19 @@ else
                                                 <button type="submit" class="btn btn-xs btn-outline-danger btn-sm">Delete</button>
                                             </form>
                                         }
+                                        else if (User.IsInRole("Student"))
+                                        {
+                                            @if (!a.IsSubmitted && a.IsPublished)
+                                            {
+                                                <button type="button" class="btn btn-xs btn-outline-primary btn-sm"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#submitAssignmentModal"
+                                                        data-assignmentid="@a.Id"
+                                                        data-assignmenttitle="@a.Title">
+                                                    Submit
+                                                </button>
+                                            }
+                                        }
                                     </td>
                                 </tr>
                             }
@@ -292,6 +305,41 @@ else
     </div>
 </div>
 
+@if (User.IsInRole("Student"))
+{
+    <div class="modal fade" id="submitAssignmentModal" tabindex="-1">
+        <div class="modal-dialog">
+            <form asp-action="SubmitAssignment" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="submit_assignmentId" name="assignmentId" />
+                <input type="hidden" name="offeringId" value="@Model.SelectedOfferingId" />
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Submit Assignment</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-muted mb-3" id="submit_assignmentTitle"></p>
+                        <div class="mb-3">
+                            <label class="form-label">Upload File</label>
+                            <input type="file" class="form-control" name="submissionFile" />
+                            <div class="form-text">Accepted: any document your faculty expects.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Notes / Text Submission</label>
+                            <textarea class="form-control" name="textContent" rows="4" placeholder="Optional notes, summary, or submission text"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Submit for Review</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
 @section Scripts {
 <script>
 document.getElementById('gradeModal')?.addEventListener('show.bs.modal', function (e) {
@@ -300,6 +348,12 @@ document.getElementById('gradeModal')?.addEventListener('show.bs.modal', functio
     document.getElementById('grade_studentProfileId').value = btn.dataset.studentid;
     document.getElementById('grade_marks').value    = btn.dataset.marks;
     document.getElementById('grade_feedback').value = btn.dataset.feedback ?? '';
+});
+
+document.getElementById('submitAssignmentModal')?.addEventListener('show.bs.modal', function (e) {
+    var btn = e.relatedTarget;
+    document.getElementById('submit_assignmentId').value = btn.dataset.assignmentid;
+    document.getElementById('submit_assignmentTitle').textContent = btn.dataset.assignmenttitle || '';
 });
 </script>
 }

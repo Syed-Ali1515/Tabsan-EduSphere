@@ -198,6 +198,48 @@ This file tracks the reported portal issues as phased work items so they can be 
 - Fix shared course offering dropdown data sources and mappings.
 - Fix shared branding and privacy policy configuration issues.
 
+## Phase 9 - Document Library and Upload Module
+
+### Stage 9.1 - Sidebar Menu and Navigation
+- Add a new top-level sidebar menu item: Upload Document.
+- Add two sub-menu items under Upload Document:
+	- Document Type
+	- Upload Document
+
+### Stage 9.2 - Document Type Management
+- In Document Type, Faculty, Admin, and SuperAdmin can create document types.
+- Supported examples include Book, Notes, Final Year Thesis, and similar types.
+- Document types must be reusable in Upload Document as a dropdown list.
+
+### Stage 9.3 - Document Upload and Metadata Entry
+- In Upload Document, Faculty, Admin, and SuperAdmin can upload documents for students.
+- Users can also delete uploaded documents.
+- Upload form must capture:
+	- Document Name
+	- Department
+	- Type (dropdown from Document Type)
+	- Course
+	- Subject
+- Upload form must support two content input modes:
+	- File upload (document/pdf/image)
+	- External link input (OneDrive, Google Drive, and similar links)
+- Save action must persist document metadata and content reference so students can access it.
+
+### Stage 9.4 - Role Permissions and Access Rules
+- Faculty can only upload and delete documents.
+- Admin can create document types and upload/delete documents.
+- SuperAdmin can create document types and upload/delete documents.
+- Students cannot create, edit, upload, or delete documents.
+
+### Stage 9.5 - Student Discovery, Filters, and Download
+- Students can view and download documents based on their enrolled courses.
+- Student document view must include course and subject filters.
+- If a document is stored as an external link, students can click the link or copy it.
+
+### Stage 9.6 - Grouping and Presentation
+- Student-facing document listings must be grouped by Document Type.
+- Grouping should work for both uploaded files and link-based documents.
+
 ---
 
 ## Phase 1 - Implementation and Validation Summary
@@ -297,3 +339,52 @@ No edit flows existed in the portal for Assignments, Quizzes, and FYP projects.
 | Portal sidebar branding | ✅ Renders logo image (not initials fallback) |
 | Privacy page render | ✅ Displays configured privacy policy content |
 | Shared offering dropdown | ✅ Assignments page shows populated `Select Course Offering` options |
+
+---
+
+## Phase 3 - Implementation and Validation Summary
+
+### Validation Outcome
+
+Re-tested all faculty workflows with a valid faculty account (`dr.ahmed`) against the running portal and API.
+
+| Stage | Validation Result |
+|-------|-------------------|
+| Stage 3.1 — Faculty Courses and Offerings Access | ✅ No `403` reproduced on `Portal/Courses`; offerings and course list load for faculty. |
+| Stage 3.2 — Faculty Assignment Workflow | ✅ Faculty sees populated course offering dropdown and can open assignment workflow. |
+| Stage 3.3 — Faculty Enrollment Workflow | ✅ No `403` reproduced on `Portal/Enrollments`. |
+| Stage 3.4 — Faculty Student Directory Access | ✅ No `403` reproduced on `Portal/Students`. |
+| Stage 3.5 — Faculty Attendance Workflow | ✅ Attendance page loads for faculty with offering context available. |
+| Stage 3.6 — Faculty Results Workflow | ✅ Results page loads for faculty with offering context available. |
+| Stage 3.7 — Faculty Quiz Workflow | ✅ Quizzes page loads for faculty with offering context available. |
+| Stage 3.8 — Faculty FYP Workflow | ✅ No `403` reproduced on `Portal/Fyp`. |
+
+### Notes
+
+- The originally reported Phase 3 `403` symptoms were not reproducible after the earlier role/claim and shared-offering fixes.
+- Validation used existing DB users (`dr.ahmed`) from the active seed state.
+
+---
+
+## Phase 4 - Progress Update
+
+### Stage 4.1 - Student Assignment Submission Flow
+
+Implemented student-side assignment workflow corrections in the web portal:
+
+- Fixed student assignment data mapping to use correct API contracts for submissions and assignment marks.
+- Added student submit action in `Assignments` UI with modal input:
+	- optional file upload
+	- optional text submission notes
+- Added backend call path from web portal to `POST /api/v1/assignment/submit`.
+- Added submission-state merge so student assignment rows correctly show `Submitted` and awarded marks when available.
+
+### Stage 4.4 and 4.5 Supporting Fix
+
+- Fixed student JSON deserialization failures on Assignments/Results/Quizzes by aligning score fields to decimal values (`marksAwarded`, `marksObtained`, `totalScore`).
+
+### Validation Snapshot
+
+- Student pages now render without JSON conversion errors.
+- Student assignment list now shows real assignment title, real assignment ID navigation, and correct max marks.
+- Submit flow is wired end-to-end in UI and controller; API business rules (publish/due-date/duplicate checks) are now surfaced as actionable portal messages.

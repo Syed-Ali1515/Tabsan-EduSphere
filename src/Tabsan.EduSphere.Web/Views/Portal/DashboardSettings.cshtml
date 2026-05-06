@@ -32,14 +32,14 @@ else
                 <div class="card-header d-flex align-items-center gap-2">
                     <i class="bi bi-building text-primary"></i>
                     <strong>Portal Branding</strong>
-                    <span class="ms-auto text-muted small">Controls the name, initials and footer text shown across the portal.</span>
+                    <span class="ms-auto text-muted small">Controls the name, logo and footer text shown across the portal.</span>
                 </div>
                 <div class="card-body">
                     <form asp-action="DashboardSettings" method="post" enctype="multipart/form-data">
                         @Html.AntiForgeryToken()
 
                         <div class="row g-3">
-                            <div class="col-md-6">
+                            <div class="col-md-8">
                                 <label class="form-label fw-semibold">University / Institution Name</label>
                                 <input type="text"
                                        name="Branding.UniversityName"
@@ -49,18 +49,6 @@ else
                                        required
                                        placeholder="e.g. Tabsan EduSphere" />
                                 <div class="form-text">Displayed in the sidebar brand area and page titles.</div>
-                            </div>
-
-                            <div class="col-md-2">
-                                <label class="form-label fw-semibold">Brand Initials</label>
-                                <input type="text"
-                                       name="Branding.BrandInitials"
-                                       class="form-control"
-                                       value="@Model.Branding.BrandInitials"
-                                       maxlength="4"
-                                       required
-                                       placeholder="e.g. TE" />
-                                <div class="form-text">2–4 letters shown in the brand icon circle.</div>
                             </div>
 
                             <div class="col-md-4">
@@ -88,21 +76,21 @@ else
                             @* ── P1-S6-02: Logo Upload ── *@
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Portal Logo</label>
-                                @if (!string.IsNullOrEmpty(Model.Branding.LogoUrl))
+                                @if (!string.IsNullOrEmpty(Model.Branding.LogoImage))
                                 {
                                     <div class="mb-2">
-                                        <img src="@Model.Branding.LogoUrl"
+                                        <img src="@Model.Branding.LogoImage"
                                              alt="Current portal logo"
                                              class="border rounded p-1"
                                              style="max-height:64px;max-width:200px;object-fit:contain;" />
-                                        <input type="hidden" name="Branding.LogoUrl" value="@Model.Branding.LogoUrl" />
+                                        <input type="hidden" name="Branding.LogoImage" value="@Model.Branding.LogoImage" />
                                     </div>
                                 }
                                 <input type="file"
                                        name="LogoFile"
                                        class="form-control"
                                        accept=".png,.jpg,.jpeg,.gif,.svg,.webp" />
-                                <div class="form-text">Optional. PNG, JPG, SVG or WebP, max 2 MB. Replaces brand initials circle in sidebar.</div>
+                                <div class="form-text">Optional. PNG, JPG, SVG or WebP, max 2 MB. Saved in database settings and shown in sidebar branding.</div>
                             </div>
 
                             @* ── P1-S6-03: Privacy Policy URL ── *@
@@ -173,9 +161,9 @@ else
                 <div class="card-body">
                     <p class="mb-1 fw-semibold"><i class="bi bi-eye me-1"></i> Live Preview</p>
                     <div class="d-flex align-items-center gap-3 p-2 border rounded bg-white">
-                        <div class="brand-icon-preview d-flex align-items-center justify-content-center rounded fw-bold text-white"
+                            <div class="brand-icon-preview d-flex align-items-center justify-content-center rounded fw-bold text-white"
                              id="prevIcon"
-                             style="width:48px;height:48px;background:var(--bs-primary);font-size:1rem;">TE</div>
+                                style="width:48px;height:48px;background:var(--bs-primary);font-size:1rem;">Logo</div>
                         <div>
                             <div class="fw-bold" id="prevName">Tabsan EduSphere</div>
                             <div class="text-muted small" id="prevSub">Campus Portal</div>
@@ -201,7 +189,6 @@ else
                 preview.textContent = this.value || fallback;
             });
         }
-        bind('Branding.BrandInitials',   'prevIcon', 'TE');
         bind('Branding.UniversityName',  'prevName', 'Tabsan EduSphere');
         bind('Branding.PortalSubtitle',  'prevSub',  'Campus Portal');
         bind('Branding.FooterText',      'prevFooter', '© 2026 Tabsan EduSphere');
