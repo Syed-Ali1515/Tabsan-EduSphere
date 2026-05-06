@@ -10,9 +10,12 @@ namespace Tabsan.EduSphere.Web.Services;
 public interface IEduApiClient
 {
     bool IsConnected();
+    bool IsForcePasswordChangeRequired();
+    void SetForcePasswordChangeRequired(bool required);
     ApiConnectionModel GetConnection();
     void SaveConnection(ApiConnectionModel model);
     SessionIdentity? GetSessionIdentity();
+    Task ForceChangePasswordAsync(string newPassword, CancellationToken ct);
     Task<StudentProfileSummaryItem?> GetMyStudentProfileAsync(CancellationToken ct);
 
     Task<List<LookupItem>> GetDepartmentsAsync(CancellationToken ct);
@@ -233,6 +236,7 @@ public class EduApiClient : IEduApiClient
     private const string ApiTokenKey  = "ApiAccessToken";
     private const string DepartmentKey = "DefaultDepartmentId";
     private const string IdentityKey  = "SessionIdentityJson";
+    private const string ForcePasswordChangeKey = "ForcePasswordChangeRequired";
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IHttpContextAccessor _httpContextAccessor;
@@ -250,6 +254,22 @@ public class EduApiClient : IEduApiClient
     {
         var c = GetConnection();
         return !string.IsNullOrWhiteSpace(c.ApiBaseUrl) && !string.IsNullOrWhiteSpace(c.AccessToken);
+    }
+
+    public bool IsForcePasswordChangeRequired()
+    {
+        var raw = GetSession().GetString(ForcePasswordChangeKey);
+        return bool.TryParse(raw, out var required) && required;
+    }
+
+    public void SetForcePasswordChangeRequired(bool required)
+    {
+        var session = GetSession();
+        session.SetString(ForcePasswordChangeKey, required.ToString());
+
+        var identity = GetSessionIdentity() ?? new SessionIdentity();
+        identity.MustChangePassword = required;
+        session.SetString(IdentityKey, JsonSerializer.Serialize(identity, _jsonOptions));
     }
 
     public ApiConnectionModel GetConnection()
@@ -283,6 +303,7 @@ public class EduApiClient : IEduApiClient
         var identity = DecodeJwtIdentity(model.AccessToken.Trim());
         var json = JsonSerializer.Serialize(identity, _jsonOptions);
         session.SetString(IdentityKey, json);
+        session.Remove(ForcePasswordChangeKey);
     }
 
     public SessionIdentity? GetSessionIdentity()
@@ -306,6 +327,9 @@ public class EduApiClient : IEduApiClient
             CurrentSemesterNumber = raw.CurrentSemesterNumber
         };
     }
+
+    public Task ForceChangePasswordAsync(string newPassword, CancellationToken ct)
+        => PostAsync<object, object>("api/v1/auth/force-change-password", new { newPassword }, ct);
 
     // â”€â”€ Lookup GETs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 

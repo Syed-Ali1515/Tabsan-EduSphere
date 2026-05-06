@@ -43,6 +43,29 @@ For **every completed phase**:
 - `dotnet build Tabsan.EduSphere.sln` passed.
 - Focused integration tests for new flow were added; execution currently blocked by pre-existing migration setup issue in integration environment (`license_state` duplicate `ActivatedDomain` column).
 
+---
+
+## Issue-Fix Phase 4 Option A/C - Web User Import + Forced Password Change
+**Status:** ✅ Complete
+
+### Completion Mark
+- [x] User Import portal page and CSV upload flow available and validated.
+- [x] Forced password change page/action implemented and enforced from login flow.
+- [x] Integration tests added for import authorization and force-change-password end-to-end behavior.
+
+### Implementation Summary
+- Confirmed/kept User Import portal implementation (`UserImport` + `ImportUsersCsv`) with summary output.
+- Added forced password change session flow in Web:
+  - login captures `MustChangePassword` and sets session flag
+  - portal action guard redirects to force-change page until reset is completed
+  - force-change page posts to API `POST /api/v1/auth/force-change-password`
+  - success clears session flag and unlocks normal portal navigation
+- Added integration test file: `UserImportAndForceChangeIntegrationTests.cs`.
+
+### Validation Summary
+- Focused tests passed: `UserImportAndForceChangeIntegrationTests` (`2/2`).
+- Full integration suite passed: `Tabsan.EduSphere.IntegrationTests` (`70/70`).
+
 ### Stage 1.1 - Fix Session/Sidebar Reset Bug
 - [x] Fix issue where opening Buildings causes sidebar to reset to legacy menu and forces re-login.
 - [x] Ensure sidebar remains dynamic and role-driven across all portal pages.

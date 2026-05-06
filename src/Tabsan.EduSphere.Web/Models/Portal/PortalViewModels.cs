@@ -208,11 +208,18 @@ public class SessionIdentity
     public string? UserName { get; set; }
     public string? Email { get; set; }
     public List<string> Roles { get; set; } = new();
+    public bool MustChangePassword { get; set; }
 
     public bool IsAdmin => Roles.Contains("Admin") || Roles.Contains("SuperAdmin");
     public bool IsSuperAdmin => Roles.Contains("SuperAdmin");
     public bool IsFaculty => Roles.Contains("Faculty");
     public bool IsStudent => Roles.Contains("Student");
+}
+
+public class ForceChangePasswordPageModel
+{
+    public bool IsConnected { get; set; }
+    public string? Message { get; set; }
 }
 
 public class StudentProfileSummaryItem

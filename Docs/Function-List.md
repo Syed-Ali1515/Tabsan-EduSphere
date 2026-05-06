@@ -3,6 +3,37 @@
 > **Maintenance rule**: Every function added to the codebase must be registered here with Name, Purpose, and Location.
 > Format: `Name | Purpose | Location`
 
+## Issue-Fix Phase 4 — Web User Import + Forced Password Change (2026-05-06)
+
+### Web — Login / Portal Flow
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `LoginController.Index(username, password, returnUrl, ct)` | Reads `MustChangePassword` from login response, stores session flag, and redirects to forced password change page when required. | `Web/Controllers/LoginController.cs` |
+| `PortalController.OnActionExecuting(context)` | Enforces forced-password-change redirect for all portal actions except the force-change page itself when session flag is set. | `Web/Controllers/PortalController.cs` |
+| `PortalController.ForceChangePassword()` | Renders forced password change form for authenticated users flagged for first-login password reset. | `Web/Controllers/PortalController.cs` |
+| `PortalController.ForceChangePassword(newPassword, confirmPassword, ct)` | Validates input, calls force-change API endpoint, clears session flag, and redirects to dashboard on success. | `Web/Controllers/PortalController.cs` |
+
+### Web — API Client and Session Identity
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `IEduApiClient.IsForcePasswordChangeRequired()` | Exposes whether forced password change is currently required in session state. | `Web/Services/EduApiClient.cs` |
+| `IEduApiClient.SetForcePasswordChangeRequired(required)` | Persists/updates forced password change requirement in session and identity cache. | `Web/Services/EduApiClient.cs` |
+| `IEduApiClient.ForceChangePasswordAsync(newPassword, ct)` | Calls `POST /api/v1/auth/force-change-password` from portal flow. | `Web/Services/EduApiClient.cs` |
+| `EduApiClient.IsForcePasswordChangeRequired()` | Reads forced password change session flag. | `Web/Services/EduApiClient.cs` |
+| `EduApiClient.SetForcePasswordChangeRequired(required)` | Writes forced password change session flag and mirrors value into session identity JSON. | `Web/Services/EduApiClient.cs` |
+| `EduApiClient.ForceChangePasswordAsync(newPassword, ct)` | Sends password update payload to force-change API endpoint. | `Web/Services/EduApiClient.cs` |
+| `SessionIdentity.MustChangePassword` | Carries first-login password reset requirement in session identity. | `Web/Models/Portal/PortalViewModels.cs` |
+| `ForceChangePasswordPageModel` | View model backing forced password change page messaging and connection state. | `Web/Models/Portal/PortalViewModels.cs` |
+
+### Integration Tests
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `UserImportCsv_StudentRole_ReturnsForbidden()` | Verifies student role cannot call CSV import endpoint. | `tests/Tabsan.EduSphere.IntegrationTests/UserImportAndForceChangeIntegrationTests.cs` |
+| `UserImportCsv_Then_ForceChangePassword_WorksEndToEnd()` | Validates import-created account must change password on first login and that old password becomes invalid after change. | `tests/Tabsan.EduSphere.IntegrationTests/UserImportAndForceChangeIntegrationTests.cs` |
+
 ## Issue-Fix Phase 6 — Admin Multi-Department Assignment (Backend) (2026-05-06)
 
 ### Domain — AdminDepartmentAssignment

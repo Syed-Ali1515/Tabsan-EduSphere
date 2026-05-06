@@ -83,6 +83,11 @@ public class LoginController : Controller
                 DefaultDepartmentId = existingConnection.DefaultDepartmentId
             });
 
+            _api.SetForcePasswordChangeRequired(result.MustChangePassword);
+
+            if (result.MustChangePassword)
+                return RedirectToAction("ForceChangePassword", "Portal");
+
             var redirect = Url.IsLocalUrl(returnUrl) ? returnUrl : Url.Action("Dashboard", "Portal")!;
             return Redirect(redirect);
         }
@@ -110,5 +115,6 @@ public class LoginController : Controller
         DateTime AccessTokenExpiry,
         string Role,
         System.Guid UserId,
-        string Username);
+        string Username,
+        bool MustChangePassword);
 }

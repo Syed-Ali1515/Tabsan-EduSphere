@@ -10,6 +10,22 @@
 
 ## 0. Implementation Update Log
 
+### 2026-05-06 — Issue-Fix Phase 4 Option A/C Complete (Web UI Import + Forced Password Change)
+- Added/validated portal user import flow:
+  - User Import page + CSV upload form + import summary rendering
+  - CSV upload wired to `POST /api/v1/user-import/csv`
+- Added first-login forced password change UX flow in Web:
+  - login reads `MustChangePassword` and redirects to `Portal/ForceChangePassword`
+  - portal action guard redirects all other portal routes until password is changed
+  - forced change form posts to `POST /api/v1/auth/force-change-password`
+  - session flag is cleared after successful password update
+- Added integration tests covering:
+  - user-import authorization guard (student forbidden)
+  - end-to-end import -> first login requires password change -> password reset behavior
+- Validation:
+  - Focused integration tests passed (`2/2`)
+  - Full integration suite passed (`70/70`)
+
 ### 2026-05-06 — Issue-Fix Phase 6 Delivery (Admin Multi-Department Assignment)
 - **Stage 6.2 (Backend rules implementation - completed)**
   - Added `AdminDepartmentAssignment` domain entity to support many departments per Admin.

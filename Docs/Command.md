@@ -49,9 +49,9 @@ git push
 
 ## Current Execution Pointer
 - Plan Source: Observed-Issues.md (Phase 4 items P4-S1-01 through P4-S3-01)
-- Active Phase: **Issue-Fix Phase 6 — Admin Multi-Department Assignment**
-- Active Stage: **Issue-Fix Phase 6.1 — Admin User Management + Assignment UX extension (completed)**
-- Status: **Completed — Dedicated SuperAdmin admin-user management, assignment UX polish, and integration tests added.**
+- Active Phase: **Issue-Fix Phase 4 — Web UI Import + Forced Password Change**
+- Active Stage: **Phase 4 Option A/C implementation (completed)**
+- Status: **Completed — User Import portal UI, forced password change portal flow, and integration tests validated.**
 - Last Updated: 2026-05-06
 
 ---
@@ -74,21 +74,24 @@ This applies:
 
 ### Step 2: Decide what comes next
 
-All items in Observed-Issues.md are now **Done** (Phases 1–4). Options:
+All items in Observed-Issues.md are now **Done** (Phases 1–6). Options:
 
-**Option A — Add Web UI for Phase 4 (recommended)**
-The `POST /api/v1/user-import/csv` API endpoint is complete, but there is no admin portal page yet.
-Work needed:
-- Add `ImportUsersAsync(IFormFile)` to `EduApiClient` in `Tabsan.EduSphere.Web`
-- Add an "Import Users" page/action to `PortalController`
-- Add a Razor view with a file upload form and import result display
-- Add a "Force Change Password" page that fires on login when `MustChangePassword == true`
+**Option A — Add Web UI for Phase 4**
+- Status: Completed.
+- Implemented:
+  - User import page + upload result display in portal
+  - Web login handling of `MustChangePassword`
+  - Forced password change page + action + session enforcement redirect
 
 **Option B — Define new phases**
 Open `Observed-Issues.md` and add new Phase 5 items, then tell the assistant to begin.
 
 **Option C — Integration tests for Phase 4**
-Write unit/integration tests for `UserImportService` and the `ForceChangePasswordAsync` flow.
+- Status: Partially completed.
+- Added integration tests for:
+  - `POST /api/v1/user-import/csv` authorization
+  - End-to-end import + first-login forced password change flow
+- Remaining (optional): dedicated unit tests for `UserImportService` internals.
 
 ---
 
@@ -137,6 +140,25 @@ When a phase is completed, update:
 ---
 
 ## Work Log
+
+### Entry 022 — 2026-05-06 — Issue-Fix Phase 4 Option A/C Delivery (Web Import + Forced Password Change)
+**Completed:**
+- Confirmed User Import web page and CSV upload flow are wired through portal (`UserImport` + `ImportUsersCsv`).
+- Added forced password change portal flow:
+  - `LoginController` now reads `MustChangePassword` from login response and redirects to `Portal/ForceChangePassword`.
+  - `EduApiClient` now tracks `ForcePasswordChangeRequired` session flag and exposes `ForceChangePasswordAsync`.
+  - `PortalController` enforces redirect to forced-password page until password is updated.
+  - Added new Razor page: `Views/Portal/ForceChangePassword.cshtml`.
+- Added integration tests in `UserImportAndForceChangeIntegrationTests` for:
+  - Student cannot import CSV (`403`)
+  - Import user -> first login (`MustChangePassword=true`) -> force-change-password -> old password rejected -> new password accepted.
+
+**Validation:**
+- Focused tests: passed (`2/2`).
+- Full integration suite: passed (`70/70`).
+
+**Moved to:**
+- Ready for Option B (define new phases) or remaining optional unit-test hardening.
 
 ### Entry 021 — 2026-05-06 — Issue-Fix Phase 6.1 Extended Delivery (Dedicated Admin User Management)
 **Completed:**

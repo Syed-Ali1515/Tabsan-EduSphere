@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Tabsan.EduSphere.Web.Models.Portal;
 using Tabsan.EduSphere.Web.Services;
 
@@ -9,6 +10,69 @@ public class PortalController : Controller
     private readonly IEduApiClient _api;
 
     public PortalController(IEduApiClient api) => _api = api;
+
+    public override void OnActionExecuting(ActionExecutingContext context)
+    {
+        var action = context.RouteData.Values["action"]?.ToString();
+        var isForceChangeAction = string.Equals(action, nameof(ForceChangePassword), StringComparison.OrdinalIgnoreCase);
+
+        if (!isForceChangeAction && _api.IsConnected() && _api.IsForcePasswordChangeRequired())
+        {
+            context.Result = RedirectToAction(nameof(ForceChangePassword));
+            return;
+        }
+
+        base.OnActionExecuting(context);
+    }
+
+    [HttpGet]
+    public IActionResult ForceChangePassword()
+    {
+        ViewData["Title"] = "Force Change Password";
+        if (!_api.IsConnected())
+            return RedirectToAction("Index", "Login");
+
+        if (!_api.IsForcePasswordChangeRequired())
+            return RedirectToAction(nameof(Dashboard));
+
+        return View(new ForceChangePasswordPageModel { IsConnected = true });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ForceChangePassword(string newPassword, string confirmPassword, CancellationToken ct)
+    {
+        ViewData["Title"] = "Force Change Password";
+        var model = new ForceChangePasswordPageModel { IsConnected = _api.IsConnected() };
+
+        if (!model.IsConnected)
+            return RedirectToAction("Index", "Login");
+
+        if (string.IsNullOrWhiteSpace(newPassword))
+        {
+            model.Message = "New password is required.";
+            return View(model);
+        }
+
+        if (!string.Equals(newPassword, confirmPassword, StringComparison.Ordinal))
+        {
+            model.Message = "Password confirmation does not match.";
+            return View(model);
+        }
+
+        try
+        {
+            await _api.ForceChangePasswordAsync(newPassword, ct);
+            _api.SetForcePasswordChangeRequired(false);
+            TempData["PortalMessage"] = "Password changed successfully.";
+            return RedirectToAction(nameof(Dashboard));
+        }
+        catch (Exception ex)
+        {
+            model.Message = ex.Message;
+            return View(model);
+        }
+    }
 
     private async Task<List<LookupItem>> GetOfferingFilterOptionsAsync(SessionIdentity? sessionIdentity, CancellationToken ct)
     {

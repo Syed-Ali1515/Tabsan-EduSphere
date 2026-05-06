@@ -135,6 +135,21 @@ This file tracks the reported portal issues as phased work items so they can be 
 - When all assigned faculty members approve, the FYP should be marked completed.
 - The student should then be able to see the FYP result inside Results.
 
+### Phase 4 Progress Update - 2026-05-06 (Option A/C Web Completion)
+- Delivered and validated Web-side CSV import portal flow:
+	- `Portal/UserImport` upload and result display
+	- API wiring to `POST /api/v1/user-import/csv`
+- Delivered and validated forced password change first-login flow:
+	- login redirect when `MustChangePassword=true`
+	- dedicated `Portal/ForceChangePassword` page and submit action
+	- portal-wide guard redirect until password is updated
+- Added integration tests for:
+	- user import authorization (`Student -> 403`)
+	- import + first-login force-change-password end-to-end behavior
+- Validation:
+	- focused tests passed (`2/2`)
+	- full integration suite passed (`70/70`)
+
 ## Phase 5 - Reporting and Export Center
 
 ### Stage 5.1 - New Reports Coverage
