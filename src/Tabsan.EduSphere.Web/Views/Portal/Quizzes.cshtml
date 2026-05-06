@@ -17,6 +17,19 @@ else
         <div class="card border-0 shadow-sm mb-3">
             <div class="card-body">
                 <form method="get" asp-action="Quizzes" class="row g-2 align-items-end">
+                    @if (User.IsInRole("Student") && Model.SemesterOptions.Count > 0)
+                    {
+                        <div class="col-md-4">
+                            <label class="form-label">Select Semester</label>
+                            <select name="semesterName" class="form-select" onchange="this.form.submit()">
+                                <option value="">All Semesters</option>
+                                @foreach (var s in Model.SemesterOptions)
+                                {
+                                    <option value="@s.Name" selected="@(string.Equals(Model.SelectedSemesterName, s.Name, StringComparison.OrdinalIgnoreCase) ? "selected" : null)">@s.Name</option>
+                                }
+                            </select>
+                        </div>
+                    }
                     <div class="col-md-5">
                         <label class="form-label">Select Course Offering</label>
                         <select name="offeringId" class="form-select" onchange="this.form.submit()">
@@ -69,14 +82,18 @@ else
                                             <span>🔁 @q.MaxAttempts attempts</span>
                                         }
                                     </div>
-                                    @if (q.AvailableTo.HasValue && q.AvailableTo < DateTime.Now)
+                                    @if (q.AvailableFrom.HasValue && q.AvailableFrom > DateTime.Now)
                                     {
-                                        <span class="badge bg-secondary mt-2">Closed</span>
+                                        <span class="badge bg-info text-dark mt-2">Upcoming</span>
+                                    }
+                                    else if (q.AvailableTo.HasValue && q.AvailableTo < DateTime.Now)
+                                    {
+                                        <span class="badge bg-secondary mt-2">Completed</span>
                                     }
                                     else
                                     {
                                         <span class="badge @(q.IsPublished ? "bg-success" : "bg-warning text-dark") mt-2">
-                                            @(q.IsPublished ? "Open" : "Draft")
+                                            @(q.IsPublished ? "Pending" : "Draft")
                                         </span>
                                     }
                                     @if (User.IsInRole("Faculty") || User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))

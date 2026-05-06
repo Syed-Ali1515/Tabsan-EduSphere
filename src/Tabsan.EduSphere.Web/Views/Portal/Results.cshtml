@@ -17,6 +17,19 @@ else
         <div class="card border-0 shadow-sm mb-3">
             <div class="card-body">
                 <form method="get" asp-action="Results" class="row g-2 align-items-end">
+                    @if (User.IsInRole("Student") && Model.SemesterOptions.Count > 0)
+                    {
+                        <div class="col-md-4">
+                            <label class="form-label">Select Semester</label>
+                            <select name="semesterName" class="form-select" onchange="this.form.submit()">
+                                <option value="">All Semesters</option>
+                                @foreach (var s in Model.SemesterOptions)
+                                {
+                                    <option value="@s.Name" selected="@(string.Equals(Model.SelectedSemesterName, s.Name, StringComparison.OrdinalIgnoreCase) ? "selected" : null)">@s.Name</option>
+                                }
+                            </select>
+                        </div>
+                    }
                     <div class="col-md-5">
                         <label class="form-label">Select Course Offering</label>
                         <select name="offeringId" class="form-select" onchange="this.form.submit()">

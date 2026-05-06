@@ -389,6 +389,23 @@ Implemented student-side assignment workflow corrections in the web portal:
 - Student assignment list now shows real assignment title, real assignment ID navigation, and correct max marks.
 - Submit flow is wired end-to-end in UI and controller; API business rules (publish/due-date/duplicate checks) are now surfaced as actionable portal messages.
 
+### Stage 4.3, 4.4, 4.5 - Semester-Scoped Student Views (Implemented)
+
+- Added student semester filter support to:
+	- `Portal/Assignments`
+	- `Portal/Results`
+	- `Portal/Quizzes`
+- Student pages now surface `Select Semester` and persist semester selection in route/query and follow-up actions.
+- Offering dropdowns are now semester-scoped for student workflows.
+- Results semester view now gracefully falls back to student-safe result endpoints when offering-level calls are role-restricted.
+- Quizzes status badges now distinguish `Upcoming`, `Pending`, and `Completed` states based on availability windows.
+
+### Stage 4.3, 4.4, 4.5 - Validation Notes
+
+- Semester selector appears and functions on Assignments/Results/Quizzes for student account validation.
+- Student results semester navigation no longer throws `403` after fallback hardening.
+- Current DB seed for tested student still has sparse assignment/quiz data for selected semesters, so UI behavior validates while content volume remains data-dependent.
+
 ### Stage 4.6 - FYP Menu Gating (Implemented)
 
 - Student sidebar FYP menu now appears only when the student's `CurrentSemesterNumber >= 8`.

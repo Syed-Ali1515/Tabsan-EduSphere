@@ -27,6 +27,47 @@ public class PortalController : Controller
         return await _api.GetMyOfferingsAsync(ct);
     }
 
+    private static List<LookupItem> BuildSemesterOptions(IEnumerable<LookupItem> offerings)
+    {
+        return offerings
+            .Select(o => ExtractSemesterName(o.Name))
+            .Where(s => !string.IsNullOrWhiteSpace(s))
+            .Select(s => s!)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(s => s)
+            .Select(s => new LookupItem { Id = Guid.Empty, Name = s })
+            .ToList();
+    }
+
+    private static List<LookupItem> FilterOfferingsBySemester(IEnumerable<LookupItem> offerings, string? semesterName)
+    {
+        if (string.IsNullOrWhiteSpace(semesterName))
+        {
+            return offerings.ToList();
+        }
+
+        return offerings
+            .Where(o => string.Equals(ExtractSemesterName(o.Name), semesterName, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
+    private static string? ExtractSemesterName(string? offeringDisplayName)
+    {
+        if (string.IsNullOrWhiteSpace(offeringDisplayName))
+        {
+            return null;
+        }
+
+        var start = offeringDisplayName.LastIndexOf(" (", StringComparison.Ordinal);
+        if (start < 0 || !offeringDisplayName.EndsWith(")", StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        var value = offeringDisplayName.Substring(start + 2, offeringDisplayName.Length - start - 3);
+        return string.IsNullOrWhiteSpace(value) ? null : value;
+    }
+
     private async Task<Guid?> GetEffectiveStudentDepartmentIdAsync(CancellationToken ct)
     {
         var sessionIdentity = _api.GetSessionIdentity();
@@ -920,13 +961,14 @@ public class PortalController : Controller
     // ── Assignments ────────────────────────────────────────────────────────
 
     [HttpGet]
-    public async Task<IActionResult> Assignments(Guid? offeringId, Guid? selectedAssignmentId, CancellationToken ct)
+    public async Task<IActionResult> Assignments(Guid? offeringId, string? semesterName, Guid? selectedAssignmentId, CancellationToken ct)
     {
         ViewData["Title"] = "Assignments";
         var model = new AssignmentsPageModel
         {
             IsConnected          = _api.IsConnected(),
             SelectedOfferingId   = offeringId,
+            SelectedSemesterName = semesterName,
             SelectedAssignmentId = selectedAssignmentId,
             Message              = TempData["PortalMessage"]?.ToString()
         };
@@ -936,9 +978,29 @@ public class PortalController : Controller
             var sessionId = _api.GetSessionIdentity();
             if (sessionId?.IsStudent == true)
             {
-                model.Assignments = offeringId.HasValue
-                    ? await _api.GetAssignmentsByOfferingAsync(offeringId.Value, ct)
-                    : await _api.GetMyAssignmentsAsync(ct);
+                var allOfferings = await GetOfferingFilterOptionsAsync(sessionId, ct);
+                model.SemesterOptions = BuildSemesterOptions(allOfferings);
+                model.CourseOfferings = FilterOfferingsBySemester(allOfferings, semesterName);
+
+                if (offeringId.HasValue)
+                {
+                    model.Assignments = await _api.GetAssignmentsByOfferingAsync(offeringId.Value, ct);
+                }
+                else if (!string.IsNullOrWhiteSpace(semesterName))
+                {
+                    var assignmentBatches = await Task.WhenAll(
+                        model.CourseOfferings.Select(o => _api.GetAssignmentsByOfferingAsync(o.Id, ct)));
+
+                    model.Assignments = assignmentBatches
+                        .SelectMany(a => a)
+                        .GroupBy(a => a.Id)
+                        .Select(g => g.First())
+                        .ToList();
+                }
+                else
+                {
+                    model.Assignments = await _api.GetMyAssignmentsAsync(ct);
+                }
 
                 var mySubmissions = await _api.GetMyAssignmentSubmissionsAsync(ct);
                 var submissionByAssignment = mySubmissions
@@ -960,9 +1022,15 @@ public class PortalController : Controller
                 model.Assignments = await _api.GetAssignmentsByOfferingAsync(offeringId.Value, ct);
                 if (selectedAssignmentId.HasValue)
                     model.Submissions = await _api.GetSubmissionsForAssignmentAsync(selectedAssignmentId.Value, ct);
-            }
 
-            model.CourseOfferings = await GetOfferingFilterOptionsAsync(sessionId, ct);
+                model.CourseOfferings = await GetOfferingFilterOptionsAsync(sessionId, ct);
+                model.SemesterOptions = BuildSemesterOptions(model.CourseOfferings);
+            }
+            else
+            {
+                model.CourseOfferings = await GetOfferingFilterOptionsAsync(sessionId, ct);
+                model.SemesterOptions = BuildSemesterOptions(model.CourseOfferings);
+            }
         }
         catch (Exception ex) { model.Message = ex.Message; }
         return View(model);
@@ -1003,23 +1071,63 @@ public class PortalController : Controller
     // ── Results ────────────────────────────────────────────────────────────
 
     [HttpGet]
-    public async Task<IActionResult> Results(Guid? offeringId, CancellationToken ct)
+    public async Task<IActionResult> Results(Guid? offeringId, string? semesterName, CancellationToken ct)
     {
         ViewData["Title"] = "Results";
         var model = new ResultsPageModel
         {
             IsConnected      = _api.IsConnected(),
             SelectedOfferingId = offeringId,
+            SelectedSemesterName = semesterName,
             Message          = TempData["PortalMessage"]?.ToString()
         };
         if (!model.IsConnected) return View(model);
         try
         {
             var sessionId = _api.GetSessionIdentity();
-            model.Offerings = await GetOfferingFilterOptionsAsync(sessionId, ct);
+            var allOfferings = await GetOfferingFilterOptionsAsync(sessionId, ct);
+            model.SemesterOptions = BuildSemesterOptions(allOfferings);
+            model.Offerings = FilterOfferingsBySemester(allOfferings, semesterName);
             if (sessionId?.IsStudent == true)
             {
-                model.Results = await _api.GetMyResultsAsync(ct);
+                if (offeringId.HasValue)
+                {
+                    model.Results = await _api.GetResultsByOfferingAsync(offeringId.Value, ct);
+                }
+                else if (!string.IsNullOrWhiteSpace(semesterName))
+                {
+                    var scopedResults = new List<ResultItem>();
+                    foreach (var offering in model.Offerings)
+                    {
+                        try
+                        {
+                            var rows = await _api.GetResultsByOfferingAsync(offering.Id, ct);
+                            scopedResults.AddRange(rows);
+                        }
+                        catch
+                        {
+                            // Some offering endpoints can be role-scoped; skip and continue.
+                        }
+                    }
+
+                    model.Results = scopedResults
+                        .GroupBy(r => r.Id)
+                        .Select(g => g.First())
+                        .ToList();
+
+                    if (model.Results.Count == 0)
+                    {
+                        model.Results = await _api.GetMyResultsAsync(ct);
+                        model.Results = model.Results
+                            .Where(r => string.Equals(r.SemesterName, semesterName, StringComparison.OrdinalIgnoreCase)
+                                        || string.IsNullOrWhiteSpace(r.SemesterName))
+                            .ToList();
+                    }
+                }
+                else
+                {
+                    model.Results = await _api.GetMyResultsAsync(ct);
+                }
             }
             else if (offeringId.HasValue)
             {
@@ -1034,23 +1142,37 @@ public class PortalController : Controller
     // ── Quizzes ────────────────────────────────────────────────────────────
 
     [HttpGet]
-    public async Task<IActionResult> Quizzes(Guid? offeringId, CancellationToken ct)
+    public async Task<IActionResult> Quizzes(Guid? offeringId, string? semesterName, CancellationToken ct)
     {
         ViewData["Title"] = "Quizzes";
         var model = new QuizzesPageModel
         {
             IsConnected      = _api.IsConnected(),
             SelectedOfferingId = offeringId,
+            SelectedSemesterName = semesterName,
             Message          = TempData["PortalMessage"]?.ToString()
         };
         if (!model.IsConnected) return View(model);
         try
         {
             var sessionId = _api.GetSessionIdentity();
-            model.CourseOfferings = await GetOfferingFilterOptionsAsync(sessionId, ct);
+            var allOfferings = await GetOfferingFilterOptionsAsync(sessionId, ct);
+            model.SemesterOptions = BuildSemesterOptions(allOfferings);
+            model.CourseOfferings = FilterOfferingsBySemester(allOfferings, semesterName);
 
             if (offeringId.HasValue)
                 model.Quizzes = await _api.GetQuizzesByOfferingAsync(offeringId.Value, ct);
+            else if (sessionId?.IsStudent == true && !string.IsNullOrWhiteSpace(semesterName))
+            {
+                var quizBatches = await Task.WhenAll(
+                    model.CourseOfferings.Select(o => _api.GetQuizzesByOfferingAsync(o.Id, ct)));
+
+                model.Quizzes = quizBatches
+                    .SelectMany(q => q)
+                    .GroupBy(q => q.Id)
+                    .Select(g => g.First())
+                    .ToList();
+            }
 
             if (sessionId?.IsStudent == true)
                 model.MyAttempts = await _api.GetMyAttemptsAsync(ct);
@@ -1119,7 +1241,7 @@ public class PortalController : Controller
 
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> SubmitAssignment(
-        Guid assignmentId, Guid? offeringId, string? textContent, IFormFile? submissionFile, CancellationToken ct)
+        Guid assignmentId, Guid? offeringId, string? semesterName, string? textContent, IFormFile? submissionFile, CancellationToken ct)
     {
         if (_api.IsConnected())
         {
@@ -1145,7 +1267,7 @@ public class PortalController : Controller
                 if (string.IsNullOrWhiteSpace(fileUrl) && string.IsNullOrWhiteSpace(textContent))
                 {
                     TempData["PortalMessage"] = "Attach a file or add submission text before submitting.";
-                    return RedirectToAction(nameof(Assignments), new { offeringId });
+                    return RedirectToAction(nameof(Assignments), new { offeringId, semesterName });
                 }
 
                 await _api.SubmitAssignmentAsync(assignmentId, fileUrl, textContent, ct);
@@ -1154,7 +1276,7 @@ public class PortalController : Controller
             catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
         }
 
-        return RedirectToAction(nameof(Assignments), new { offeringId });
+        return RedirectToAction(nameof(Assignments), new { offeringId, semesterName });
     }
 
     [HttpPost, ValidateAntiForgeryToken]

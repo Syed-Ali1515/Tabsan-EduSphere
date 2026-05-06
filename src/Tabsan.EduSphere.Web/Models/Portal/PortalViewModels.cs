@@ -523,8 +523,10 @@ public class AssignmentsPageModel
     public List<AssignmentItem>  Assignments     { get; set; } = new();
     public List<SubmissionItem>  Submissions     { get; set; } = new();
     public List<LookupItem>      CourseOfferings { get; set; } = new();
+    public List<LookupItem>      SemesterOptions { get; set; } = new();
     public Guid?  SelectedAssignmentId  { get; set; }
     public Guid?  SelectedOfferingId   { get; set; }
+    public string? SelectedSemesterName { get; set; }
 }
 
 // ── Attendance ────────────────────────────────────────────────────────────────
@@ -587,9 +589,11 @@ public class ResultsPageModel
     public string? Message    { get; set; }
     public List<ResultItem>              Results  { get; set; } = new();
     public List<LookupItem>              Offerings { get; set; } = new();
+    public List<LookupItem>              SemesterOptions { get; set; } = new();
     public List<EnrollmentRosterItem>    Roster    { get; set; } = new();
     public double? Cgpa       { get; set; }
     public Guid?  SelectedOfferingId { get; set; }
+    public string? SelectedSemesterName { get; set; }
 }
 
 // ── Quizzes ───────────────────────────────────────────────────────────────────
@@ -630,7 +634,9 @@ public class QuizzesPageModel
     public List<QuizItem>        Quizzes        { get; set; } = new();
     public List<QuizAttemptItem> MyAttempts     { get; set; } = new();
     public List<LookupItem>      CourseOfferings { get; set; } = new();
+    public List<LookupItem>      SemesterOptions { get; set; } = new();
     public Guid?  SelectedOfferingId { get; set; }
+    public string? SelectedSemesterName { get; set; }
 }
 
 // ── FYP ───────────────────────────────────────────────────────────────────────
