@@ -911,6 +911,74 @@ public class ReportResultsPageModel
     public ResultSummaryWebModel?   Report      { get; set; }
 }
 
+public class AssignmentSummaryRowItem
+{
+    public string   RegistrationNumber { get; set; } = "";
+    public string   StudentName        { get; set; } = "";
+    public string   CourseCode         { get; set; } = "";
+    public string   CourseTitle        { get; set; } = "";
+    public string   AssignmentTitle    { get; set; } = "";
+    public DateTime DueDate            { get; set; }
+    public DateTime SubmittedAt        { get; set; }
+    public string   Status             { get; set; } = "";
+    public decimal? MarksAwarded       { get; set; }
+}
+
+public class AssignmentSummaryWebModel
+{
+    public int                            TotalSubmissions { get; set; }
+    public DateTime                       GeneratedAt      { get; set; }
+    public List<AssignmentSummaryRowItem> Rows             { get; set; } = new();
+}
+
+public class ReportAssignmentsPageModel
+{
+    public bool   IsConnected  { get; set; }
+    public string? Message     { get; set; }
+    public Guid?  SemesterId   { get; set; }
+    public Guid?  DepartmentId { get; set; }
+    public Guid?  OfferingId   { get; set; }
+    public Guid?  StudentId    { get; set; }
+    public List<LookupItem>         Semesters   { get; set; } = new();
+    public List<LookupItem>         Departments { get; set; } = new();
+    public List<CourseOfferingItem> Offerings   { get; set; } = new();
+    public AssignmentSummaryWebModel? Report    { get; set; }
+}
+
+public class QuizSummaryRowItem
+{
+    public string   RegistrationNumber { get; set; } = "";
+    public string   StudentName        { get; set; } = "";
+    public string   CourseCode         { get; set; } = "";
+    public string   CourseTitle        { get; set; } = "";
+    public string   QuizTitle          { get; set; } = "";
+    public DateTime StartedAt          { get; set; }
+    public DateTime? FinishedAt        { get; set; }
+    public string   AttemptStatus      { get; set; } = "";
+    public decimal? TotalScore         { get; set; }
+}
+
+public class QuizSummaryWebModel
+{
+    public int                      TotalAttempts { get; set; }
+    public DateTime                 GeneratedAt   { get; set; }
+    public List<QuizSummaryRowItem> Rows          { get; set; } = new();
+}
+
+public class ReportQuizzesPageModel
+{
+    public bool   IsConnected  { get; set; }
+    public string? Message     { get; set; }
+    public Guid?  SemesterId   { get; set; }
+    public Guid?  DepartmentId { get; set; }
+    public Guid?  OfferingId   { get; set; }
+    public Guid?  StudentId    { get; set; }
+    public List<LookupItem>         Semesters   { get; set; } = new();
+    public List<LookupItem>         Departments { get; set; } = new();
+    public List<CourseOfferingItem> Offerings   { get; set; } = new();
+    public QuizSummaryWebModel?     Report      { get; set; }
+}
+
 public class GpaReportRowItem
 {
     public string  RegistrationNumber { get; set; } = "";

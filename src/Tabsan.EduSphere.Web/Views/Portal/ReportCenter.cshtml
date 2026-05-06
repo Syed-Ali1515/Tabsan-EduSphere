@@ -38,6 +38,8 @@
                 {
                     "attendance_summary" or "attendance-report" => ("bi-calendar-check",   Url.Action("ReportAttendance",       "Portal")),
                     "result_summary"     or "results-report"    => ("bi-clipboard-data",   Url.Action("ReportResults",          "Portal")),
+                    "assignment_summary" or "assignment-report" or "assignment-summary" => ("bi-journal-check",    Url.Action("ReportAssignments",      "Portal")),
+                    "quiz_summary"       or "quiz-report"       or "quiz-summary"       => ("bi-patch-question",   Url.Action("ReportQuizzes",          "Portal")),
                     "gpa_report"                                => ("bi-graph-up",          Url.Action("ReportGpa",              "Portal")),
                     "enrollment_summary"                        => ("bi-people",            Url.Action("ReportEnrollment",       "Portal")),
                     "dept-summary"       or "department_summary"=> ("bi-building",          Url.Action("ReportEnrollment",       "Portal")),

@@ -106,6 +106,76 @@ public sealed class ReportRepository : IReportRepository
             .ToListAsync(ct);
     }
 
+    public async Task<IList<AssignmentReportRow>> GetAssignmentDataAsync(
+        Guid? semesterId,
+        Guid? courseOfferingId,
+        Guid? studentProfileId,
+        CancellationToken ct = default)
+    {
+        return await (
+            from s   in _db.AssignmentSubmissions
+            join a   in _db.Assignments      on s.AssignmentId      equals a.Id
+            join sp  in _db.StudentProfiles  on s.StudentProfileId  equals sp.Id
+            join u   in _db.Users            on sp.UserId           equals u.Id
+            join co  in _db.CourseOfferings  on a.CourseOfferingId  equals co.Id
+            join c   in _db.Courses          on co.CourseId         equals c.Id
+            join dep in _db.Departments      on c.DepartmentId      equals dep.Id
+            where (semesterId       == null || co.SemesterId      == semesterId)
+               && (courseOfferingId == null || a.CourseOfferingId == courseOfferingId)
+               && (studentProfileId == null || s.StudentProfileId == studentProfileId)
+            orderby s.SubmittedAt descending
+            select new AssignmentReportRow(
+                s.StudentProfileId,
+                sp.RegistrationNumber,
+                u.Username,
+                dep.Id,
+                c.Code,
+                c.Title,
+                a.Title,
+                a.DueDate,
+                s.SubmittedAt,
+                s.Status.ToString(),
+                s.MarksAwarded,
+                co.SemesterId,
+                dep.Name)
+        ).ToListAsync(ct);
+    }
+
+    public async Task<IList<QuizReportRow>> GetQuizDataAsync(
+        Guid? semesterId,
+        Guid? courseOfferingId,
+        Guid? studentProfileId,
+        CancellationToken ct = default)
+    {
+        return await (
+            from a   in _db.QuizAttempts
+            join q   in _db.Quizzes          on a.QuizId            equals q.Id
+            join sp  in _db.StudentProfiles  on a.StudentProfileId  equals sp.Id
+            join u   in _db.Users            on sp.UserId           equals u.Id
+            join co  in _db.CourseOfferings  on q.CourseOfferingId  equals co.Id
+            join c   in _db.Courses          on co.CourseId         equals c.Id
+            join dep in _db.Departments      on c.DepartmentId      equals dep.Id
+            where (semesterId       == null || co.SemesterId      == semesterId)
+               && (courseOfferingId == null || q.CourseOfferingId == courseOfferingId)
+               && (studentProfileId == null || a.StudentProfileId == studentProfileId)
+            orderby a.StartedAt descending
+            select new QuizReportRow(
+                a.StudentProfileId,
+                sp.RegistrationNumber,
+                u.Username,
+                dep.Id,
+                c.Code,
+                c.Title,
+                q.Title,
+                a.StartedAt,
+                a.FinishedAt,
+                a.Status.ToString(),
+                a.TotalScore,
+                co.SemesterId,
+                dep.Name)
+        ).ToListAsync(ct);
+    }
+
     public async Task<IList<ResultReportRow>> GetSemesterResultDataAsync(
         Guid semesterId,
         Guid? departmentId,

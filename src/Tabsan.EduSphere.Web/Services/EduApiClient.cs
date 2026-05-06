@@ -80,11 +80,15 @@ public interface IEduApiClient
     Task<List<ReportCatalogItem>> GetReportCatalogAsync(CancellationToken ct);
     Task<AttendanceSummaryWebModel?> GetAttendanceSummaryReportAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
     Task<ResultSummaryWebModel?> GetResultSummaryReportAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
+    Task<AssignmentSummaryWebModel?> GetAssignmentSummaryReportAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
+    Task<QuizSummaryWebModel?> GetQuizSummaryReportAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
     Task<GpaReportWebModel?> GetGpaReportAsync(Guid? departmentId, Guid? programId, CancellationToken ct);
     Task<EnrollmentSummaryWebModel?> GetEnrollmentSummaryReportAsync(Guid? semesterId, Guid? departmentId, CancellationToken ct);
     Task<SemesterResultsWebModel?> GetSemesterResultsReportAsync(Guid semesterId, Guid? departmentId, CancellationToken ct);
     Task<byte[]> ExportAttendanceSummaryAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
     Task<byte[]> ExportResultSummaryAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
+    Task<byte[]> ExportAssignmentSummaryAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
+    Task<byte[]> ExportQuizSummaryAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
     Task<byte[]> ExportGpaReportAsync(Guid? departmentId, Guid? programId, CancellationToken ct);
 
     // Stage 4.2: Additional Reports
@@ -1843,6 +1847,56 @@ public class EduApiClient : IEduApiClient
         };
     }
 
+    public async Task<AssignmentSummaryWebModel?> GetAssignmentSummaryReportAsync(
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+    {
+        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId);
+        var raw = await GetAsync<AssignmentSummaryApiDto>($"api/v1/reports/assignment-summary{qs}", ct);
+        if (raw is null) return null;
+        return new AssignmentSummaryWebModel
+        {
+            TotalSubmissions = raw.TotalSubmissions,
+            GeneratedAt      = raw.GeneratedAt,
+            Rows = raw.Rows?.Select(r => new AssignmentSummaryRowItem
+            {
+                RegistrationNumber = r.RegistrationNumber ?? "",
+                StudentName        = r.StudentName ?? "",
+                CourseCode         = r.CourseCode ?? "",
+                CourseTitle        = r.CourseTitle ?? "",
+                AssignmentTitle    = r.AssignmentTitle ?? "",
+                DueDate            = r.DueDate,
+                SubmittedAt        = r.SubmittedAt,
+                Status             = r.Status ?? "",
+                MarksAwarded       = r.MarksAwarded
+            }).ToList() ?? new()
+        };
+    }
+
+    public async Task<QuizSummaryWebModel?> GetQuizSummaryReportAsync(
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+    {
+        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId);
+        var raw = await GetAsync<QuizSummaryApiDto>($"api/v1/reports/quiz-summary{qs}", ct);
+        if (raw is null) return null;
+        return new QuizSummaryWebModel
+        {
+            TotalAttempts = raw.TotalAttempts,
+            GeneratedAt   = raw.GeneratedAt,
+            Rows = raw.Rows?.Select(r => new QuizSummaryRowItem
+            {
+                RegistrationNumber = r.RegistrationNumber ?? "",
+                StudentName        = r.StudentName ?? "",
+                CourseCode         = r.CourseCode ?? "",
+                CourseTitle        = r.CourseTitle ?? "",
+                QuizTitle          = r.QuizTitle ?? "",
+                StartedAt          = r.StartedAt,
+                FinishedAt         = r.FinishedAt,
+                AttemptStatus      = r.AttemptStatus ?? "",
+                TotalScore         = r.TotalScore
+            }).ToList() ?? new()
+        };
+    }
+
     public async Task<GpaReportWebModel?> GetGpaReportAsync(
         Guid? departmentId, Guid? programId, CancellationToken ct)
     {
@@ -1947,6 +2001,20 @@ public class EduApiClient : IEduApiClient
     {
         var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId);
         return GetBytesAsync($"api/v1/reports/result-summary/export{qs}", ct);
+    }
+
+    public Task<byte[]> ExportAssignmentSummaryAsync(
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+    {
+        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId);
+        return GetBytesAsync($"api/v1/reports/assignment-summary/export{qs}", ct);
+    }
+
+    public Task<byte[]> ExportQuizSummaryAsync(
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+    {
+        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId);
+        return GetBytesAsync($"api/v1/reports/quiz-summary/export{qs}", ct);
     }
 
     // GPA report uses department + program filters only (no per-offering or per-student scope).
@@ -2097,6 +2165,42 @@ public class EduApiClient : IEduApiClient
         public decimal   MaxMarks           { get; set; }
         public decimal   Percentage         { get; set; }
         public DateTime? PublishedAt        { get; set; }
+    }
+    private sealed class AssignmentSummaryApiDto
+    {
+        public int      TotalSubmissions { get; set; }
+        public DateTime GeneratedAt      { get; set; }
+        public List<AssignmentSummaryRowApiDto>? Rows { get; set; }
+    }
+    private sealed class AssignmentSummaryRowApiDto
+    {
+        public string?   RegistrationNumber { get; set; }
+        public string?   StudentName        { get; set; }
+        public string?   CourseCode         { get; set; }
+        public string?   CourseTitle        { get; set; }
+        public string?   AssignmentTitle    { get; set; }
+        public DateTime  DueDate            { get; set; }
+        public DateTime  SubmittedAt        { get; set; }
+        public string?   Status             { get; set; }
+        public decimal?  MarksAwarded       { get; set; }
+    }
+    private sealed class QuizSummaryApiDto
+    {
+        public int      TotalAttempts { get; set; }
+        public DateTime GeneratedAt   { get; set; }
+        public List<QuizSummaryRowApiDto>? Rows { get; set; }
+    }
+    private sealed class QuizSummaryRowApiDto
+    {
+        public string?   RegistrationNumber { get; set; }
+        public string?   StudentName        { get; set; }
+        public string?   CourseCode         { get; set; }
+        public string?   CourseTitle        { get; set; }
+        public string?   QuizTitle          { get; set; }
+        public DateTime  StartedAt          { get; set; }
+        public DateTime? FinishedAt         { get; set; }
+        public string?   AttemptStatus      { get; set; }
+        public decimal?  TotalScore         { get; set; }
     }
     private sealed class GpaReportApiDto
     {

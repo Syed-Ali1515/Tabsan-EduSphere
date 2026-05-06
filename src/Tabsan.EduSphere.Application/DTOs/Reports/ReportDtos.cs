@@ -61,6 +61,56 @@ public record ResultSummaryReportResponse(
     int TotalRecords,
     DateTime GeneratedAt);
 
+// ── Assignment Summary ───────────────────────────────────────────────────────
+
+public record AssignmentSummaryRequest(
+    Guid? SemesterId,
+    Guid? DepartmentId,
+    Guid? CourseOfferingId,
+    Guid? StudentProfileId);
+
+public record AssignmentSummaryRow(
+    Guid StudentProfileId,
+    string RegistrationNumber,
+    string StudentName,
+    string CourseCode,
+    string CourseTitle,
+    string AssignmentTitle,
+    DateTime DueDate,
+    DateTime SubmittedAt,
+    string Status,
+    decimal? MarksAwarded);
+
+public record AssignmentSummaryReportResponse(
+    IReadOnlyList<AssignmentSummaryRow> Rows,
+    int TotalSubmissions,
+    DateTime GeneratedAt);
+
+// ── Quiz Summary ─────────────────────────────────────────────────────────────
+
+public record QuizSummaryRequest(
+    Guid? SemesterId,
+    Guid? DepartmentId,
+    Guid? CourseOfferingId,
+    Guid? StudentProfileId);
+
+public record QuizSummaryRow(
+    Guid StudentProfileId,
+    string RegistrationNumber,
+    string StudentName,
+    string CourseCode,
+    string CourseTitle,
+    string QuizTitle,
+    DateTime StartedAt,
+    DateTime? FinishedAt,
+    string AttemptStatus,
+    decimal? TotalScore);
+
+public record QuizSummaryReportResponse(
+    IReadOnlyList<QuizSummaryRow> Rows,
+    int TotalAttempts,
+    DateTime GeneratedAt);
+
 // ── GPA Report ─────────────────────────────────────────────────────────────────
 
 public record GpaReportRequest(Guid? DepartmentId, Guid? ProgramId);

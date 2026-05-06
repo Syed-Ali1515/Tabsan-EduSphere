@@ -2038,6 +2038,58 @@ public class PortalController : Controller
     }
 
     [HttpGet]
+    public async Task<IActionResult> ReportAssignments(
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+    {
+        ViewData["Title"] = "Assignment Summary Report";
+        var model = new ReportAssignmentsPageModel
+        {
+            IsConnected  = _api.IsConnected(),
+            SemesterId   = semesterId,
+            DepartmentId = departmentId,
+            OfferingId   = offeringId,
+            StudentId    = studentId
+        };
+        if (!model.IsConnected) return View(model);
+        try
+        {
+            model.Semesters   = await _api.GetSemestersAsync(ct);
+            model.Departments = await _api.GetDepartmentsAsync(ct);
+            model.Offerings   = await _api.GetCourseOfferingsAsync(null, ct);
+            if (semesterId.HasValue || departmentId.HasValue || offeringId.HasValue || studentId.HasValue)
+                model.Report = await _api.GetAssignmentSummaryReportAsync(semesterId, departmentId, offeringId, studentId, ct);
+        }
+        catch (Exception ex) { model.Message = ex.Message; }
+        return View(model);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ReportQuizzes(
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+    {
+        ViewData["Title"] = "Quiz Summary Report";
+        var model = new ReportQuizzesPageModel
+        {
+            IsConnected  = _api.IsConnected(),
+            SemesterId   = semesterId,
+            DepartmentId = departmentId,
+            OfferingId   = offeringId,
+            StudentId    = studentId
+        };
+        if (!model.IsConnected) return View(model);
+        try
+        {
+            model.Semesters   = await _api.GetSemestersAsync(ct);
+            model.Departments = await _api.GetDepartmentsAsync(ct);
+            model.Offerings   = await _api.GetCourseOfferingsAsync(null, ct);
+            if (semesterId.HasValue || departmentId.HasValue || offeringId.HasValue || studentId.HasValue)
+                model.Report = await _api.GetQuizSummaryReportAsync(semesterId, departmentId, offeringId, studentId, ct);
+        }
+        catch (Exception ex) { model.Message = ex.Message; }
+        return View(model);
+    }
+
+    [HttpGet]
     public async Task<IActionResult> ReportGpa(Guid? departmentId, Guid? programId, CancellationToken ct)
     {
         ViewData["Title"] = "GPA & CGPA Report";
@@ -2135,6 +2187,34 @@ public class PortalController : Controller
         }
         catch (Exception ex) { TempData["PortalMessage"] = $"Export failed: {ex.Message}"; }
         return RedirectToAction(nameof(ReportResults), new { semesterId, departmentId, offeringId, studentId });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ExportAssignmentSummary(
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(ReportAssignments));
+        try
+        {
+            var bytes = await _api.ExportAssignmentSummaryAsync(semesterId, departmentId, offeringId, studentId, ct);
+            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "assignment-summary.xlsx");
+        }
+        catch (Exception ex) { TempData["PortalMessage"] = $"Export failed: {ex.Message}"; }
+        return RedirectToAction(nameof(ReportAssignments), new { semesterId, departmentId, offeringId, studentId });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ExportQuizSummary(
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(ReportQuizzes));
+        try
+        {
+            var bytes = await _api.ExportQuizSummaryAsync(semesterId, departmentId, offeringId, studentId, ct);
+            return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "quiz-summary.xlsx");
+        }
+        catch (Exception ex) { TempData["PortalMessage"] = $"Export failed: {ex.Message}"; }
+        return RedirectToAction(nameof(ReportQuizzes), new { semesterId, departmentId, offeringId, studentId });
     }
 
     [HttpGet]

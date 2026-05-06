@@ -33,6 +33,24 @@ public interface IReportRepository
         CancellationToken ct = default);
 
     /// <summary>
+    /// Returns assignment submission rows, optionally filtered by semester, offering, or student.
+    /// </summary>
+    Task<IList<AssignmentReportRow>> GetAssignmentDataAsync(
+        Guid? semesterId,
+        Guid? courseOfferingId,
+        Guid? studentProfileId,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// Returns quiz attempt rows, optionally filtered by semester, offering, or student.
+    /// </summary>
+    Task<IList<QuizReportRow>> GetQuizDataAsync(
+        Guid? semesterId,
+        Guid? courseOfferingId,
+        Guid? studentProfileId,
+        CancellationToken ct = default);
+
+    /// <summary>
     /// Returns student profile GPA rows, optionally filtered by department or program.
     /// </summary>
     Task<IList<GpaReportRow>> GetGpaDataAsync(
@@ -107,6 +125,36 @@ public sealed record ResultReportRow(
     decimal MaxMarks,
     decimal Percentage,
     DateTime? PublishedAt,
+    Guid SemesterId,
+    string DepartmentName);
+
+public sealed record AssignmentReportRow(
+    Guid StudentProfileId,
+    string RegistrationNumber,
+    string StudentName,
+    Guid DepartmentId,
+    string CourseCode,
+    string CourseTitle,
+    string AssignmentTitle,
+    DateTime DueDate,
+    DateTime SubmittedAt,
+    string Status,
+    decimal? MarksAwarded,
+    Guid SemesterId,
+    string DepartmentName);
+
+public sealed record QuizReportRow(
+    Guid StudentProfileId,
+    string RegistrationNumber,
+    string StudentName,
+    Guid DepartmentId,
+    string CourseCode,
+    string CourseTitle,
+    string QuizTitle,
+    DateTime StartedAt,
+    DateTime? FinishedAt,
+    string AttemptStatus,
+    decimal? TotalScore,
     Guid SemesterId,
     string DepartmentName);
 

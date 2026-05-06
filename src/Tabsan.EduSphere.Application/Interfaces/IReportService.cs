@@ -12,6 +12,8 @@ public interface IReportService
 
     Task<AttendanceSummaryReportResponse> GetAttendanceSummaryAsync(AttendanceSummaryRequest request, CancellationToken ct = default);
     Task<ResultSummaryReportResponse>     GetResultSummaryAsync(ResultSummaryRequest request, CancellationToken ct = default);
+    Task<AssignmentSummaryReportResponse> GetAssignmentSummaryAsync(AssignmentSummaryRequest request, CancellationToken ct = default);
+    Task<QuizSummaryReportResponse>       GetQuizSummaryAsync(QuizSummaryRequest request, CancellationToken ct = default);
     Task<GpaReportResponse>               GetGpaReportAsync(GpaReportRequest request, CancellationToken ct = default);
     Task<EnrollmentSummaryReportResponse> GetEnrollmentSummaryAsync(EnrollmentSummaryRequest request, CancellationToken ct = default);
     Task<SemesterResultsReportResponse>   GetSemesterResultsAsync(SemesterResultsRequest request, CancellationToken ct = default);
@@ -21,6 +23,12 @@ public interface IReportService
 
     /// <summary>Returns an Excel workbook (.xlsx) byte array for the result summary report.</summary>
     Task<byte[]> ExportResultSummaryExcelAsync(ResultSummaryRequest request, CancellationToken ct = default);
+
+    /// <summary>Returns an Excel workbook (.xlsx) byte array for the assignment summary report.</summary>
+    Task<byte[]> ExportAssignmentSummaryExcelAsync(AssignmentSummaryRequest request, CancellationToken ct = default);
+
+    /// <summary>Returns an Excel workbook (.xlsx) byte array for the quiz summary report.</summary>
+    Task<byte[]> ExportQuizSummaryExcelAsync(QuizSummaryRequest request, CancellationToken ct = default);
 
     /// <summary>Returns an Excel workbook (.xlsx) byte array for the GPA report.</summary>
     Task<byte[]> ExportGpaReportExcelAsync(GpaReportRequest request, CancellationToken ct = default);

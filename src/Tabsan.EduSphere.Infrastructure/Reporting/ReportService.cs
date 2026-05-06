@@ -66,6 +66,50 @@ public sealed class ReportService : IReportService
         return new ResultSummaryReportResponse(rows, rows.Count, DateTime.UtcNow);
     }
 
+    // ── Assignment Summary ───────────────────────────────────────────────────
+
+    public async Task<AssignmentSummaryReportResponse> GetAssignmentSummaryAsync(
+        AssignmentSummaryRequest request, CancellationToken ct = default)
+    {
+        var raw = await _repo.GetAssignmentDataAsync(
+            request.SemesterId, request.CourseOfferingId, request.StudentProfileId, ct);
+
+        if (request.DepartmentId.HasValue)
+        {
+            raw = raw.Where(r => r.DepartmentId == request.DepartmentId.Value)
+                     .ToList();
+        }
+
+        var rows = raw.Select(r => new AssignmentSummaryRow(
+            r.StudentProfileId, r.RegistrationNumber, r.StudentName,
+            r.CourseCode, r.CourseTitle, r.AssignmentTitle,
+            r.DueDate, r.SubmittedAt, r.Status, r.MarksAwarded)).ToList();
+
+        return new AssignmentSummaryReportResponse(rows, rows.Count, DateTime.UtcNow);
+    }
+
+    // ── Quiz Summary ─────────────────────────────────────────────────────────
+
+    public async Task<QuizSummaryReportResponse> GetQuizSummaryAsync(
+        QuizSummaryRequest request, CancellationToken ct = default)
+    {
+        var raw = await _repo.GetQuizDataAsync(
+            request.SemesterId, request.CourseOfferingId, request.StudentProfileId, ct);
+
+        if (request.DepartmentId.HasValue)
+        {
+            raw = raw.Where(r => r.DepartmentId == request.DepartmentId.Value)
+                     .ToList();
+        }
+
+        var rows = raw.Select(r => new QuizSummaryRow(
+            r.StudentProfileId, r.RegistrationNumber, r.StudentName,
+            r.CourseCode, r.CourseTitle, r.QuizTitle,
+            r.StartedAt, r.FinishedAt, r.AttemptStatus, r.TotalScore)).ToList();
+
+        return new QuizSummaryReportResponse(rows, rows.Count, DateTime.UtcNow);
+    }
+
     // ── GPA Report ─────────────────────────────────────────────────────────────
 
     public async Task<GpaReportResponse> GetGpaReportAsync(
@@ -142,6 +186,35 @@ public sealed class ReportService : IReportService
             r.PublishedAt.HasValue ? r.PublishedAt.Value.ToString("yyyy-MM-dd") : "-"
         }).ToList();
         return BuildExcelBytes("Result Summary", headers, rows);
+    }
+
+    public async Task<byte[]> ExportAssignmentSummaryExcelAsync(
+        AssignmentSummaryRequest request, CancellationToken ct = default)
+    {
+        var report = await GetAssignmentSummaryAsync(request, ct);
+        var headers = new[] { "Reg No", "Student", "Course Code", "Course Title", "Assignment", "Due Date", "Submitted At", "Status", "Marks Awarded" };
+        var rows = report.Rows.Select(r => new object[]
+        {
+            r.RegistrationNumber, r.StudentName, r.CourseCode, r.CourseTitle,
+            r.AssignmentTitle, r.DueDate.ToString("yyyy-MM-dd"), r.SubmittedAt.ToString("yyyy-MM-dd HH:mm"),
+            r.Status, r.MarksAwarded.HasValue ? (object)r.MarksAwarded.Value : "-"
+        }).ToList();
+        return BuildExcelBytes("Assignment Summary", headers, rows);
+    }
+
+    public async Task<byte[]> ExportQuizSummaryExcelAsync(
+        QuizSummaryRequest request, CancellationToken ct = default)
+    {
+        var report = await GetQuizSummaryAsync(request, ct);
+        var headers = new[] { "Reg No", "Student", "Course Code", "Course Title", "Quiz", "Started At", "Finished At", "Attempt Status", "Total Score" };
+        var rows = report.Rows.Select(r => new object[]
+        {
+            r.RegistrationNumber, r.StudentName, r.CourseCode, r.CourseTitle,
+            r.QuizTitle, r.StartedAt.ToString("yyyy-MM-dd HH:mm"),
+            r.FinishedAt.HasValue ? r.FinishedAt.Value.ToString("yyyy-MM-dd HH:mm") : "-",
+            r.AttemptStatus, r.TotalScore.HasValue ? (object)r.TotalScore.Value : "-"
+        }).ToList();
+        return BuildExcelBytes("Quiz Summary", headers, rows);
     }
 
     public async Task<byte[]> ExportGpaReportExcelAsync(

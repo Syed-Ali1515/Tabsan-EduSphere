@@ -441,3 +441,31 @@ Implemented student-side assignment workflow corrections in the web portal:
 
 - Login flow now prefers the active portal API base URL when obtaining JWT so login token source and subsequent API calls remain aligned.
 - This removes intermittent student-page `401` regressions caused by mismatched API base resolution across login and portal request paths.
+
+## Phase 5 - Progress Update
+
+### Stage 5.1 - Assignment and Quiz Reports (Implemented)
+
+- Added assignment summary report APIs:
+	- `GET /api/v1/reports/assignment-summary`
+	- `GET /api/v1/reports/assignment-summary/export`
+- Added quiz summary report APIs:
+	- `GET /api/v1/reports/quiz-summary`
+	- `GET /api/v1/reports/quiz-summary/export`
+- Added application/domain report contracts and repository queries for assignment submissions and quiz attempts.
+- Added portal report pages:
+	- `Portal/ReportAssignments`
+	- `Portal/ReportQuizzes`
+- Added report center key mappings for `assignment_summary`/`assignment-report` and `quiz_summary`/`quiz-report`.
+- Added Excel export proxy actions in web portal for assignment and quiz reports.
+
+### Stage 5.1 - Validation Notes
+
+- Full solution build succeeds after report additions.
+- New report pages load and use shared report filters (semester, department, offering, student).
+- Export actions for new assignment/quiz reports return `.xlsx` files through the same binary proxy flow used by existing reports.
+
+### Stage 5.2 - Export Actions (Current Status)
+
+- CSV and PDF export formats are still pending implementation.
+- Current report export support remains Excel (`.xlsx`) only.
