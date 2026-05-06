@@ -439,11 +439,32 @@ public class DepartmentItem
     public bool   IsActive { get; set; }
 }
 
+public class AdminUserLookupItem
+{
+    public Guid Id { get; set; }
+    public string UserName { get; set; } = "";
+    public string? Email { get; set; }
+    public bool IsActive { get; set; }
+}
+
 public class DepartmentsPageModel
 {
     public bool   IsConnected { get; set; }
     public string? Message    { get; set; }
     public List<DepartmentItem> Departments { get; set; } = new();
+    public List<AdminUserLookupItem> AdminUsers { get; set; } = new();
+    public Guid? SelectedAdminUserId { get; set; }
+    public List<Guid> AssignedDepartmentIds { get; set; } = new();
+}
+
+public class AdminUsersPageModel
+{
+    public bool IsConnected { get; set; }
+    public string? Message { get; set; }
+    public List<AdminUserLookupItem> AdminUsers { get; set; } = new();
+    public List<DepartmentItem> Departments { get; set; } = new();
+    public Guid? SelectedAdminUserId { get; set; }
+    public List<Guid> AssignedDepartmentIds { get; set; } = new();
 }
 
 // ── Courses ───────────────────────────────────────────────────────────────────

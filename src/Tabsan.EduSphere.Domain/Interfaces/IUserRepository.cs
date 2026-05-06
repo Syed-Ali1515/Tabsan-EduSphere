@@ -31,6 +31,9 @@ public interface IUserRepository
     /// <summary>Returns all active users assigned to any of the provided role names.</summary>
     Task<IList<User>> GetActiveUsersByRolesAsync(IReadOnlyList<string> roleNames, CancellationToken ct = default);
 
+    /// <summary>Returns users assigned to any of the provided role names, optionally including inactive accounts.</summary>
+    Task<IList<User>> GetUsersByRolesAsync(IReadOnlyList<string> roleNames, bool includeInactive = false, CancellationToken ct = default);
+
     /// <summary>Returns the role matching the given name (case-insensitive), or null if not found.</summary>
     Task<Role?> GetRoleByNameAsync(string roleName, CancellationToken ct = default);
 

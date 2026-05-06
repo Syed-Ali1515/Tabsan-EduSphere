@@ -18,15 +18,18 @@ public class CourseController : ControllerBase
 {
     private readonly ICourseRepository _repo;
     private readonly IFacultyAssignmentRepository _facultyAssignments;
+    private readonly IAdminAssignmentRepository _adminAssignments;
     private readonly IEnrollmentRepository _enrollments;
 
     public CourseController(
         ICourseRepository repo,
         IFacultyAssignmentRepository facultyAssignments,
+        IAdminAssignmentRepository adminAssignments,
         IEnrollmentRepository enrollments)
     {
         _repo = repo;
         _facultyAssignments = facultyAssignments;
+        _adminAssignments = adminAssignments;
         _enrollments = enrollments;
     }
 
@@ -43,6 +46,15 @@ public class CourseController : ControllerBase
         if (User.IsInRole("Faculty") && !User.IsInRole("Admin") && !User.IsInRole("SuperAdmin"))
         {
             var allowedDepartmentIds = await _facultyAssignments.GetDepartmentIdsForFacultyAsync(GetUserId(), ct);
+            if (departmentId.HasValue && !allowedDepartmentIds.Contains(departmentId.Value))
+                return Forbid();
+
+            courses = courses.Where(c => allowedDepartmentIds.Contains(c.DepartmentId)).ToList();
+        }
+
+        if (User.IsInRole("Admin") && !User.IsInRole("SuperAdmin"))
+        {
+            var allowedDepartmentIds = await _adminAssignments.GetDepartmentIdsForAdminAsync(GetUserId(), ct);
             if (departmentId.HasValue && !allowedDepartmentIds.Contains(departmentId.Value))
                 return Forbid();
 
@@ -146,6 +158,17 @@ public class CourseController : ControllerBase
                 .ToList();
         }
 
+        if (User.IsInRole("Admin") && !User.IsInRole("SuperAdmin"))
+        {
+            var allowedDepartmentIds = await _adminAssignments.GetDepartmentIdsForAdminAsync(GetUserId(), ct);
+            if (departmentId.HasValue && !allowedDepartmentIds.Contains(departmentId.Value))
+                return Forbid();
+
+            offerings = offerings
+                .Where(o => allowedDepartmentIds.Contains(o.Course.DepartmentId))
+                .ToList();
+        }
+
         return Ok(offerings.Select(o => new
         {
             o.Id, o.CourseId, CourseCode = o.Course.Code, CourseTitle = o.Course.Title,
@@ -175,6 +198,13 @@ public class CourseController : ControllerBase
             || role.Equals("Admin", StringComparison.OrdinalIgnoreCase))
         {
             var all = await _repo.GetAllOfferingsAsync(ct);
+
+            if (role.Equals("Admin", StringComparison.OrdinalIgnoreCase))
+            {
+                var allowedDepartmentIds = await _adminAssignments.GetDepartmentIdsForAdminAsync(userId, ct);
+                all = all.Where(o => allowedDepartmentIds.Contains(o.Course.DepartmentId)).ToList();
+            }
+
             return Ok(all.Select(o => new
             {
                 o.Id, CourseTitle = o.Course.Title, SemesterName = o.Semester.Name,

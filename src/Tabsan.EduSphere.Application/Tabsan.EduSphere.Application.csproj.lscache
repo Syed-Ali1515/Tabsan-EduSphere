@@ -72,7 +72,9 @@ DTOs/
   AssignmentDtos.cs
   ResultCalculationDtos.cs
  Attendance/AttendanceDtos.cs
- Auth/AuthDtos.cs
+ Auth/
+  AdminUserManagementDtos.cs
+  AuthDtos.cs
  CsvImportDtos.cs
  Fyp/FypDtos.cs
  Notifications/NotificationDtos.cs

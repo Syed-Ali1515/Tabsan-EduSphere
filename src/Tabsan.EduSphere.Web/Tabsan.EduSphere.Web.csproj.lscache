@@ -456,6 +456,7 @@ Views/Home/
 Views/
  Login/Index.cshtml
  Portal/
+  AdminUsers.cshtml
   AiChat.cshtml
   Analytics.cshtml
   Assignments.cshtml
@@ -472,12 +473,14 @@ Views/
   Notifications.cshtml
   Payments.cshtml
   Quizzes.cshtml
+  ReportAssignments.cshtml
   ReportAttendance.cshtml
   ReportCenter.cshtml
   ReportEnrollment.cshtml
   ReportFypStatus.cshtml
   ReportGpa.cshtml
   ReportLowAttendance.cshtml
+  ReportQuizzes.cshtml
   ReportResults.cshtml
   ReportSemesterResults.cshtml
   ReportSettings.cshtml
@@ -507,6 +510,7 @@ Views/Home/
 Views/
  Login/Index.cshtml
  Portal/
+  AdminUsers.cshtml
   AiChat.cshtml
   Analytics.cshtml
   Assignments.cshtml
@@ -523,12 +527,14 @@ Views/
   Notifications.cshtml
   Payments.cshtml
   Quizzes.cshtml
+  ReportAssignments.cshtml
   ReportAttendance.cshtml
   ReportCenter.cshtml
   ReportEnrollment.cshtml
   ReportFypStatus.cshtml
   ReportGpa.cshtml
   ReportLowAttendance.cshtml
+  ReportQuizzes.cshtml
   ReportResults.cshtml
   ReportSemesterResults.cshtml
   ReportSettings.cshtml

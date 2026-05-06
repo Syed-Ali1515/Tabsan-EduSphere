@@ -103,3 +103,21 @@ public class FacultyDepartmentAssignmentConfiguration : IEntityTypeConfiguration
                .OnDelete(DeleteBehavior.Restrict);
     }
 }
+
+/// <summary>EF Core configuration for AdminDepartmentAssignment.</summary>
+public class AdminDepartmentAssignmentConfiguration : IEntityTypeConfiguration<AdminDepartmentAssignment>
+{
+       public void Configure(EntityTypeBuilder<AdminDepartmentAssignment> builder)
+       {
+              builder.ToTable("admin_department_assignments");
+              builder.HasKey(a => a.Id);
+
+              builder.HasIndex(a => new { a.AdminUserId, a.DepartmentId })
+                        .HasDatabaseName("IX_admin_dept_assignments_admin_dept");
+
+              builder.HasOne(a => a.Department)
+                        .WithMany()
+                        .HasForeignKey(a => a.DepartmentId)
+                        .OnDelete(DeleteBehavior.Restrict);
+       }
+}

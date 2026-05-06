@@ -18,6 +18,31 @@ For **every completed phase**:
 ## Phase 1 - Navigation, Session Stability, Sidebar Structure
 **Status:** ✅ Complete
 
+---
+
+## Issue-Fix Phase 6.1 - Dedicated Admin User Management Extension
+**Status:** ✅ Complete
+
+### Completion Mark
+- [x] Added dedicated SuperAdmin Admin Users management page.
+- [x] Added Admin create/update API endpoints.
+- [x] Added inline multi-department assignment sync workflow for Admin users.
+- [x] Added search/filter and select-all/clear UX controls for assignment operations.
+
+### Implementation Summary
+- New API controller `AdminUserController` added with SuperAdmin-only endpoints for listing, creating, and updating Admin users.
+- User repository enhanced with `GetUsersByRolesAsync(..., includeInactive)` to support management use-cases.
+- Web layer now includes:
+  - `PortalController.AdminUsers` page flow
+  - create/update actions for Admin users
+  - shared assignment sync helper
+  - new `Views/Portal/AdminUsers.cshtml`
+- Existing Departments assignment panel retained and linked to dedicated Admin Users page.
+
+### Validation Summary
+- `dotnet build Tabsan.EduSphere.sln` passed.
+- Focused integration tests for new flow were added; execution currently blocked by pre-existing migration setup issue in integration environment (`license_state` duplicate `ActivatedDomain` column).
+
 ### Stage 1.1 - Fix Session/Sidebar Reset Bug
 - [x] Fix issue where opening Buildings causes sidebar to reset to legacy menu and forces re-login.
 - [x] Ensure sidebar remains dynamic and role-driven across all portal pages.

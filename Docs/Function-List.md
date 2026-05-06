@@ -3,6 +3,146 @@
 > **Maintenance rule**: Every function added to the codebase must be registered here with Name, Purpose, and Location.
 > Format: `Name | Purpose | Location`
 
+## Issue-Fix Phase 6 — Admin Multi-Department Assignment (Backend) (2026-05-06)
+
+### Domain — AdminDepartmentAssignment
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `AdminDepartmentAssignment(adminUserId, departmentId)` | Creates an active admin-to-department assignment row. | `Domain/Academic/AdminDepartmentAssignment.cs` |
+| `Remove()` | Soft-revokes an assignment while preserving audit history. | `Domain/Academic/AdminDepartmentAssignment.cs` |
+
+### Domain Interface / Infrastructure Repository
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetByAdminAsync(adminUserId, ct)` | Returns active departments assigned to a specific admin. | `Domain/Interfaces/IAdminAssignmentRepository.cs`, `Infrastructure/Repositories/AcademicSupportRepositories.cs` |
+| `GetByDepartmentAsync(departmentId, ct)` | Returns active admin assignments for a department. | `Domain/Interfaces/IAdminAssignmentRepository.cs`, `Infrastructure/Repositories/AcademicSupportRepositories.cs` |
+| `GetAsync(adminUserId, departmentId, ct)` | Returns a single active assignment pair if present. | `Domain/Interfaces/IAdminAssignmentRepository.cs`, `Infrastructure/Repositories/AcademicSupportRepositories.cs` |
+| `GetDepartmentIdsForAdminAsync(adminUserId, ct)` | Returns only assigned department IDs for Admin role filtering logic. | `Domain/Interfaces/IAdminAssignmentRepository.cs`, `Infrastructure/Repositories/AcademicSupportRepositories.cs` |
+| `AddAsync(assignment, ct)` | Queues new admin assignment insert. | `Domain/Interfaces/IAdminAssignmentRepository.cs`, `Infrastructure/Repositories/AcademicSupportRepositories.cs` |
+| `Update(assignment)` | Marks assignment as modified (revocation). | `Domain/Interfaces/IAdminAssignmentRepository.cs`, `Infrastructure/Repositories/AcademicSupportRepositories.cs` |
+| `SaveChangesAsync(ct)` | Commits pending assignment mutations. | `Domain/Interfaces/IAdminAssignmentRepository.cs`, `Infrastructure/Repositories/AcademicSupportRepositories.cs` |
+
+### API — DepartmentController (Phase 6 assignment management)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `AssignAdminToDepartment(request, ct)` | SuperAdmin endpoint to assign an Admin user to a department. | `API/Controllers/DepartmentController.cs` |
+| `RemoveAdminFromDepartment(request, ct)` | SuperAdmin endpoint to revoke an Admin user's department access. | `API/Controllers/DepartmentController.cs` |
+| `GetAdminDepartmentAssignments(adminUserId, ct)` | SuperAdmin endpoint to list current assignments for an Admin user. | `API/Controllers/DepartmentController.cs` |
+| `GetAdminUsers(ct)` | SuperAdmin endpoint to list active Admin users for assignment UI selection. | `API/Controllers/DepartmentController.cs` |
+| `DepartmentController.GetAll(ct)` (admin scope) | Filters departments to only admin-assigned departments for non-SuperAdmin admins. | `API/Controllers/DepartmentController.cs` |
+
+### API — AdminUserController (Phase 6 Stage 6.1 extension)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetAll(ct)` | SuperAdmin endpoint to list Admin users (active and inactive) for dedicated management page. | `API/Controllers/AdminUserController.cs` |
+| `Create(request, ct)` | SuperAdmin endpoint to create Admin users with hashed credentials. | `API/Controllers/AdminUserController.cs` |
+| `Update(id, request, ct)` | SuperAdmin endpoint to update Admin email, active state, and optional password reset. | `API/Controllers/AdminUserController.cs` |
+
+### Web — IEduApiClient / EduApiClient (Phase 6 Stage 6.1)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetAdminUsersAsync(ct)` | Fetches active Admin users for SuperAdmin assignment UI. | `Web/Services/EduApiClient.cs` |
+| `CreateAdminUserAsync(username, email, password, ct)` | Creates an Admin user from portal management UI. | `Web/Services/EduApiClient.cs` |
+| `UpdateAdminUserAsync(userId, email, isActive, newPassword, ct)` | Updates Admin account state and optional password from portal management UI. | `Web/Services/EduApiClient.cs` |
+| `GetAdminDepartmentIdsAsync(adminUserId, ct)` | Loads currently assigned department IDs for a selected Admin user. | `Web/Services/EduApiClient.cs` |
+| `AssignAdminToDepartmentAsync(adminUserId, departmentId, ct)` | Assigns an Admin user to a department from portal UI workflows. | `Web/Services/EduApiClient.cs` |
+| `RemoveAdminFromDepartmentAsync(adminUserId, departmentId, ct)` | Revokes an Admin user department assignment from portal UI workflows. | `Web/Services/EduApiClient.cs` |
+| `DeleteWithBodyAsync(path, payload, ct)` | Sends DELETE requests with JSON payload for APIs that require request-body deletes. | `Web/Services/EduApiClient.cs` |
+
+### Web — PortalController / Departments ViewModel (Phase 6 Stage 6.1)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `Departments(selectedAdminUserId, ct)` | Loads departments plus SuperAdmin admin-assignment UI state (admins + selected assignments). | `Web/Controllers/PortalController.cs` |
+| `UpdateAdminDepartmentAssignments(adminUserId, departmentIds, ct)` | Diffs selected vs current assignments and applies add/remove operations. | `Web/Controllers/PortalController.cs` |
+| `AdminUsers(selectedAdminUserId, ct)` | Loads dedicated Admin user management page state (admins, departments, assignments). | `Web/Controllers/PortalController.cs` |
+| `CreateAdminUser(username, email, password, departmentIds, ct)` | Creates Admin user and applies initial multi-department assignments. | `Web/Controllers/PortalController.cs` |
+| `UpdateAdminUser(userId, email, isActive, newPassword, departmentIds, ct)` | Updates Admin account details and synchronizes multi-department assignments. | `Web/Controllers/PortalController.cs` |
+| `SyncAdminDepartmentAssignmentsAsync(adminUserId, departmentIds, ct)` | Shared helper to reconcile selected and persisted admin-department assignments. | `Web/Controllers/PortalController.cs` |
+| `AdminUserLookupItem` | Carries admin identity data for assignment selection controls. | `Web/Models/Portal/PortalViewModels.cs` |
+| `DepartmentsPageModel.AdminUsers/SelectedAdminUserId/AssignedDepartmentIds` | Stores assignment-management UI state for departments page. | `Web/Models/Portal/PortalViewModels.cs` |
+| `AdminUsersPageModel` | Stores dedicated Admin user management page state and assignment selections. | `Web/Models/Portal/PortalViewModels.cs` |
+
+### API — CourseController / ReportController (Stage 5.4 closure)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `CourseController.GetAll(departmentId, ct)` (admin scope) | Limits admin course list to assigned departments. | `API/Controllers/CourseController.cs` |
+| `CourseController.GetOfferings(semesterId, departmentId, ct)` (admin scope) | Limits admin offering list to assigned departments. | `API/Controllers/CourseController.cs` |
+| `CourseController.GetMyOfferings(ct)` (admin scope) | Limits admin "my offerings" list to assigned departments. | `API/Controllers/CourseController.cs` |
+| `EnforceAdminDepartmentScopeAsync(departmentId, courseOfferingId, ct)` | Enforces admin assigned-department + offering ownership-by-department guards across reporting endpoints. | `API/Controllers/ReportController.cs` |
+
+## Issue-Fix Phase 5 — Reporting and Export Center (2026-05-06)
+
+### Infrastructure — ReportService (Stage 5.2)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `ExportAttendanceSummaryCsvAsync(request, ct)` | Generates attendance summary CSV export bytes. | `Infrastructure/Reporting/ReportService.cs` |
+| `ExportAttendanceSummaryPdfAsync(request, ct)` | Generates attendance summary PDF export bytes via QuestPDF. | `Infrastructure/Reporting/ReportService.cs` |
+| `ExportResultSummaryCsvAsync(request, ct)` | Generates result summary CSV export bytes. | `Infrastructure/Reporting/ReportService.cs` |
+| `ExportResultSummaryPdfAsync(request, ct)` | Generates result summary PDF export bytes via QuestPDF. | `Infrastructure/Reporting/ReportService.cs` |
+| `ExportAssignmentSummaryCsvAsync(request, ct)` | Generates assignment summary CSV export bytes. | `Infrastructure/Reporting/ReportService.cs` |
+| `ExportAssignmentSummaryPdfAsync(request, ct)` | Generates assignment summary PDF export bytes via QuestPDF. | `Infrastructure/Reporting/ReportService.cs` |
+| `ExportQuizSummaryCsvAsync(request, ct)` | Generates quiz summary CSV export bytes. | `Infrastructure/Reporting/ReportService.cs` |
+| `ExportQuizSummaryPdfAsync(request, ct)` | Generates quiz summary PDF export bytes via QuestPDF. | `Infrastructure/Reporting/ReportService.cs` |
+| `BuildCsvBytes(headers, rows)` | Shared CSV builder for report exports with header + row serialization. | `Infrastructure/Reporting/ReportService.cs` |
+| `EscapeCsvCell(value)` | Escapes CSV cells for commas, quotes, and line breaks. | `Infrastructure/Reporting/ReportService.cs` |
+| `BuildPdfBytes(title, headers, rows)` | Shared PDF table builder for report exports. | `Infrastructure/Reporting/ReportService.cs` |
+
+### API — ReportController (Stage 5.2 + 5.5)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `ExportAttendanceSummaryCsv(...)` | Exposes attendance CSV export endpoint. | `API/Controllers/ReportController.cs` |
+| `ExportAttendanceSummaryPdf(...)` | Exposes attendance PDF export endpoint. | `API/Controllers/ReportController.cs` |
+| `ExportResultSummaryCsv(...)` | Exposes result CSV export endpoint. | `API/Controllers/ReportController.cs` |
+| `ExportResultSummaryPdf(...)` | Exposes result PDF export endpoint. | `API/Controllers/ReportController.cs` |
+| `ExportAssignmentSummaryCsv(...)` | Exposes assignment CSV export endpoint. | `API/Controllers/ReportController.cs` |
+| `ExportAssignmentSummaryPdf(...)` | Exposes assignment PDF export endpoint. | `API/Controllers/ReportController.cs` |
+| `ExportQuizSummaryCsv(...)` | Exposes quiz CSV export endpoint. | `API/Controllers/ReportController.cs` |
+| `ExportQuizSummaryPdf(...)` | Exposes quiz PDF export endpoint. | `API/Controllers/ReportController.cs` |
+| `EnforceFacultyOfferingScopeAsync(courseOfferingId, ct)` | Blocks faculty report access unless selected offering is owned by requesting faculty user. | `API/Controllers/ReportController.cs` |
+| `GetCurrentUserId()` | Resolves current user id for offering ownership enforcement. | `API/Controllers/ReportController.cs` |
+
+### API — DepartmentController / CourseController (Stage 5.5)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `DepartmentController.GetAll(ct)` | Restricts faculty department list to assigned departments only. | `API/Controllers/DepartmentController.cs` |
+| `CourseController.GetAll(departmentId, ct)` | Restricts faculty course list to assigned department scope. | `API/Controllers/CourseController.cs` |
+| `CourseController.GetOfferings(semesterId, departmentId, ct)` | Restricts faculty offerings list to faculty-owned offerings within assigned departments. | `API/Controllers/CourseController.cs` |
+
+### Web — PortalController / EduApiClient (Stage 5.2 + 5.5)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `ExportAttendanceSummaryCsv(...)` | Proxies attendance CSV downloads from portal to API. | `Web/Controllers/PortalController.cs` |
+| `ExportAttendanceSummaryPdf(...)` | Proxies attendance PDF downloads from portal to API. | `Web/Controllers/PortalController.cs` |
+| `ExportResultSummaryCsv(...)` | Proxies result CSV downloads from portal to API. | `Web/Controllers/PortalController.cs` |
+| `ExportResultSummaryPdf(...)` | Proxies result PDF downloads from portal to API. | `Web/Controllers/PortalController.cs` |
+| `ExportAssignmentSummaryCsv(...)` | Proxies assignment CSV downloads from portal to API. | `Web/Controllers/PortalController.cs` |
+| `ExportAssignmentSummaryPdf(...)` | Proxies assignment PDF downloads from portal to API. | `Web/Controllers/PortalController.cs` |
+| `ExportQuizSummaryCsv(...)` | Proxies quiz CSV downloads from portal to API. | `Web/Controllers/PortalController.cs` |
+| `ExportQuizSummaryPdf(...)` | Proxies quiz PDF downloads from portal to API. | `Web/Controllers/PortalController.cs` |
+| `ReportAttendance(...)` (faculty guard) | Shows guidance when faculty runs report query without selecting offering. | `Web/Controllers/PortalController.cs` |
+| `ReportResults(...)` (faculty guard) | Shows guidance when faculty runs report query without selecting offering. | `Web/Controllers/PortalController.cs` |
+| `ReportAssignments(...)` (faculty guard) | Shows guidance when faculty runs report query without selecting offering. | `Web/Controllers/PortalController.cs` |
+| `ReportQuizzes(...)` (faculty guard) | Shows guidance when faculty runs report query without selecting offering. | `Web/Controllers/PortalController.cs` |
+| `ExportAttendanceSummaryCsvAsync(...)` | Calls attendance CSV API export endpoint. | `Web/Services/EduApiClient.cs` |
+| `ExportAttendanceSummaryPdfAsync(...)` | Calls attendance PDF API export endpoint. | `Web/Services/EduApiClient.cs` |
+| `ExportResultSummaryCsvAsync(...)` | Calls result CSV API export endpoint. | `Web/Services/EduApiClient.cs` |
+| `ExportResultSummaryPdfAsync(...)` | Calls result PDF API export endpoint. | `Web/Services/EduApiClient.cs` |
+| `ExportAssignmentSummaryCsvAsync(...)` | Calls assignment CSV API export endpoint. | `Web/Services/EduApiClient.cs` |
+| `ExportAssignmentSummaryPdfAsync(...)` | Calls assignment PDF API export endpoint. | `Web/Services/EduApiClient.cs` |
+| `ExportQuizSummaryCsvAsync(...)` | Calls quiz CSV API export endpoint. | `Web/Services/EduApiClient.cs` |
+| `ExportQuizSummaryPdfAsync(...)` | Calls quiz PDF API export endpoint. | `Web/Services/EduApiClient.cs` |
+
 ## Issue-Fix Phase 2 — Shared Portal and Settings Issues (2026-05-06)
 
 ### API — PortalSettingsController

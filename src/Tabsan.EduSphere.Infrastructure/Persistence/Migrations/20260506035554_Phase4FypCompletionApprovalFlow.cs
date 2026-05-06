@@ -11,19 +11,19 @@ namespace Tabsan.EduSphere.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "ActivatedDomain",
-                table: "license_state",
-                type: "nvarchar(253)",
-                maxLength: 253,
-                nullable: true);
+            migrationBuilder.Sql(@"
+IF COL_LENGTH('license_state', 'ActivatedDomain') IS NULL
+BEGIN
+    ALTER TABLE [license_state] ADD [ActivatedDomain] nvarchar(253) NULL;
+END
+");
 
-            migrationBuilder.AddColumn<int>(
-                name: "MaxUsers",
-                table: "license_state",
-                type: "int",
-                nullable: false,
-                defaultValue: 0);
+            migrationBuilder.Sql(@"
+IF COL_LENGTH('license_state', 'MaxUsers') IS NULL
+BEGIN
+    ALTER TABLE [license_state] ADD [MaxUsers] int NOT NULL CONSTRAINT [DF_license_state_MaxUsers] DEFAULT (0);
+END
+");
 
             migrationBuilder.AddColumn<string>(
                 name: "CompletionApprovedByUserIdsCsv",
@@ -54,13 +54,29 @@ namespace Tabsan.EduSphere.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "ActivatedDomain",
-                table: "license_state");
+            migrationBuilder.Sql(@"
+IF COL_LENGTH('license_state', 'ActivatedDomain') IS NOT NULL
+BEGIN
+    ALTER TABLE [license_state] DROP COLUMN [ActivatedDomain];
+END
+");
 
-            migrationBuilder.DropColumn(
-                name: "MaxUsers",
-                table: "license_state");
+            migrationBuilder.Sql(@"
+IF COL_LENGTH('license_state', 'MaxUsers') IS NOT NULL
+BEGIN
+    DECLARE @dfName nvarchar(128);
+    SELECT @dfName = dc.name
+    FROM sys.default_constraints dc
+    INNER JOIN sys.columns c ON c.default_object_id = dc.object_id
+    INNER JOIN sys.tables t ON t.object_id = c.object_id
+    WHERE t.name = 'license_state' AND c.name = 'MaxUsers';
+
+    IF @dfName IS NOT NULL
+        EXEC('ALTER TABLE [license_state] DROP CONSTRAINT [' + @dfName + ']');
+
+    ALTER TABLE [license_state] DROP COLUMN [MaxUsers];
+END
+");
 
             migrationBuilder.DropColumn(
                 name: "CompletionApprovedByUserIdsCsv",

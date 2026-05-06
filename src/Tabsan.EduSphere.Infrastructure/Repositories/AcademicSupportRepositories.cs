@@ -179,3 +179,48 @@ public class FacultyAssignmentRepository : IFacultyAssignmentRepository
     /// <summary>Commits pending changes.</summary>
     public Task<int> SaveChangesAsync(CancellationToken ct = default) => _db.SaveChangesAsync(ct);
 }
+
+/// <summary>EF Core implementation of IAdminAssignmentRepository.</summary>
+public class AdminAssignmentRepository : IAdminAssignmentRepository
+{
+    private readonly ApplicationDbContext _db;
+    public AdminAssignmentRepository(ApplicationDbContext db) => _db = db;
+
+    /// <summary>Returns all active department assignments for the given admin user.</summary>
+    public async Task<IReadOnlyList<AdminDepartmentAssignment>> GetByAdminAsync(Guid adminUserId, CancellationToken ct = default)
+        => await _db.AdminDepartmentAssignments
+                    .Include(a => a.Department)
+                    .Where(a => a.AdminUserId == adminUserId && a.RemovedAt == null)
+                    .ToListAsync(ct);
+
+    /// <summary>Returns all active admin assignments for the given department.</summary>
+    public async Task<IReadOnlyList<AdminDepartmentAssignment>> GetByDepartmentAsync(Guid departmentId, CancellationToken ct = default)
+        => await _db.AdminDepartmentAssignments
+                    .Where(a => a.DepartmentId == departmentId && a.RemovedAt == null)
+                    .ToListAsync(ct);
+
+    /// <summary>Returns the active assignment for the given admin + department pair, or null.</summary>
+    public Task<AdminDepartmentAssignment?> GetAsync(Guid adminUserId, Guid departmentId, CancellationToken ct = default)
+        => _db.AdminDepartmentAssignments
+              .FirstOrDefaultAsync(a => a.AdminUserId == adminUserId &&
+                                        a.DepartmentId == departmentId &&
+                                        a.RemovedAt == null, ct);
+
+    /// <summary>Returns the list of department IDs the admin user is actively assigned to.</summary>
+    public async Task<IReadOnlyList<Guid>> GetDepartmentIdsForAdminAsync(Guid adminUserId, CancellationToken ct = default)
+        => await _db.AdminDepartmentAssignments
+                    .Where(a => a.AdminUserId == adminUserId && a.RemovedAt == null)
+                    .Select(a => a.DepartmentId)
+                    .ToListAsync(ct);
+
+    /// <summary>Queues the assignment for insertion.</summary>
+    public async Task AddAsync(AdminDepartmentAssignment assignment, CancellationToken ct = default)
+        => await _db.AdminDepartmentAssignments.AddAsync(assignment, ct);
+
+    /// <summary>Marks the assignment as modified.</summary>
+    public void Update(AdminDepartmentAssignment assignment)
+        => _db.AdminDepartmentAssignments.Update(assignment);
+
+    /// <summary>Commits pending changes.</summary>
+    public Task<int> SaveChangesAsync(CancellationToken ct = default) => _db.SaveChangesAsync(ct);
+}

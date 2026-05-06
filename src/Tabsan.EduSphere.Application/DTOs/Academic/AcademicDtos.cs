@@ -70,6 +70,12 @@ public sealed record StudentSelfRegisterRequest(
 /// <summary>Request body for assigning a faculty member to a department.</summary>
 public sealed record AssignFacultyToDepartmentRequest(Guid FacultyUserId, Guid DepartmentId);
 
+/// <summary>Request body for assigning an admin user to a department.</summary>
+public sealed record AssignAdminToDepartmentRequest(Guid AdminUserId, Guid DepartmentId);
+
+/// <summary>Request body for revoking an admin user's access to a department.</summary>
+public sealed record RemoveAdminFromDepartmentRequest(Guid AdminUserId, Guid DepartmentId);
+
 // ── Whitelist DTOs ────────────────────────────────────────────────────────────
 
 /// <summary>Single whitelist entry — used for both single add and bulk import.</summary>

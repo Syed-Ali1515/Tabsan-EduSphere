@@ -859,12 +859,29 @@ public class PortalController : Controller
     // ── Departments ────────────────────────────────────────────────────────
 
     [HttpGet]
-    public async Task<IActionResult> Departments(CancellationToken ct)
+    public async Task<IActionResult> Departments(Guid? selectedAdminUserId, CancellationToken ct)
     {
         ViewData["Title"] = "Departments";
         var model = new DepartmentsPageModel { IsConnected = _api.IsConnected() };
         if (!model.IsConnected) return View(model);
-        try { model.Departments = await _api.GetDepartmentDetailsAsync(ct); }
+        try
+        {
+            model.Departments = await _api.GetDepartmentDetailsAsync(ct);
+
+            var identity = _api.GetSessionIdentity();
+            if (identity?.IsSuperAdmin == true)
+            {
+                model.AdminUsers = (await _api.GetAdminUsersAsync(ct)).Where(a => a.IsActive).ToList();
+                if (model.AdminUsers.Count > 0)
+                {
+                    model.SelectedAdminUserId = selectedAdminUserId.HasValue && model.AdminUsers.Any(a => a.Id == selectedAdminUserId.Value)
+                        ? selectedAdminUserId
+                        : model.AdminUsers[0].Id;
+
+                    model.AssignedDepartmentIds = await _api.GetAdminDepartmentIdsAsync(model.SelectedAdminUserId.Value, ct);
+                }
+            }
+        }
         catch (Exception ex) { model.Message = ex.Message; }
         model.Message ??= TempData["PortalMessage"]?.ToString();
         return View(model);
@@ -901,6 +918,147 @@ public class PortalController : Controller
             catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
         }
         return RedirectToAction(nameof(Departments));
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateAdminDepartmentAssignments(Guid adminUserId, Guid[] departmentIds, CancellationToken ct)
+    {
+        if (!_api.IsConnected())
+            return RedirectToAction(nameof(Departments));
+
+        var identity = _api.GetSessionIdentity();
+        if (identity?.IsSuperAdmin != true)
+        {
+            TempData["PortalMessage"] = "Only SuperAdmin can update admin department assignments.";
+            return RedirectToAction(nameof(Departments));
+        }
+
+        if (adminUserId == Guid.Empty)
+        {
+            TempData["PortalMessage"] = "Select an Admin user first.";
+            return RedirectToAction(nameof(Departments));
+        }
+
+        try
+        {
+            await SyncAdminDepartmentAssignmentsAsync(adminUserId, departmentIds, ct);
+
+            TempData["PortalMessage"] = "Admin department assignments updated.";
+        }
+        catch (Exception ex)
+        {
+            TempData["PortalMessage"] = $"Error: {ex.Message}";
+        }
+
+        return RedirectToAction(nameof(Departments), new { selectedAdminUserId = adminUserId });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> AdminUsers(Guid? selectedAdminUserId, CancellationToken ct)
+    {
+        ViewData["Title"] = "Admin Users";
+        var model = new AdminUsersPageModel { IsConnected = _api.IsConnected() };
+        if (!model.IsConnected) return View(model);
+
+        var identity = _api.GetSessionIdentity();
+        if (identity?.IsSuperAdmin != true)
+        {
+            TempData["PortalMessage"] = "Only SuperAdmin can manage Admin users.";
+            return RedirectToAction(nameof(Dashboard));
+        }
+
+        try
+        {
+            model.AdminUsers = await _api.GetAdminUsersAsync(ct);
+            model.Departments = await _api.GetDepartmentDetailsAsync(ct);
+            if (model.AdminUsers.Count > 0)
+            {
+                model.SelectedAdminUserId = selectedAdminUserId.HasValue && model.AdminUsers.Any(a => a.Id == selectedAdminUserId.Value)
+                    ? selectedAdminUserId
+                    : model.AdminUsers[0].Id;
+
+                model.AssignedDepartmentIds = await _api.GetAdminDepartmentIdsAsync(model.SelectedAdminUserId.Value, ct);
+            }
+        }
+        catch (Exception ex)
+        {
+            model.Message = ex.Message;
+        }
+
+        model.Message ??= TempData["PortalMessage"]?.ToString();
+        return View(model);
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateAdminUser(string username, string? email, string password, Guid[] departmentIds, CancellationToken ct)
+    {
+        if (!_api.IsConnected())
+            return RedirectToAction(nameof(AdminUsers));
+
+        var identity = _api.GetSessionIdentity();
+        if (identity?.IsSuperAdmin != true)
+        {
+            TempData["PortalMessage"] = "Only SuperAdmin can create Admin users.";
+            return RedirectToAction(nameof(AdminUsers));
+        }
+
+        try
+        {
+            var createdId = await _api.CreateAdminUserAsync(username, email, password, ct);
+            await SyncAdminDepartmentAssignmentsAsync(createdId, departmentIds, ct);
+            TempData["PortalMessage"] = $"Admin user '{username}' created.";
+            return RedirectToAction(nameof(AdminUsers), new { selectedAdminUserId = createdId });
+        }
+        catch (Exception ex)
+        {
+            TempData["PortalMessage"] = $"Error: {ex.Message}";
+            return RedirectToAction(nameof(AdminUsers));
+        }
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateAdminUser(Guid userId, string? email, bool isActive, string? newPassword, Guid[] departmentIds, CancellationToken ct)
+    {
+        if (!_api.IsConnected())
+            return RedirectToAction(nameof(AdminUsers));
+
+        var identity = _api.GetSessionIdentity();
+        if (identity?.IsSuperAdmin != true)
+        {
+            TempData["PortalMessage"] = "Only SuperAdmin can update Admin users.";
+            return RedirectToAction(nameof(AdminUsers));
+        }
+
+        if (userId == Guid.Empty)
+        {
+            TempData["PortalMessage"] = "Select an Admin user first.";
+            return RedirectToAction(nameof(AdminUsers));
+        }
+
+        try
+        {
+            await _api.UpdateAdminUserAsync(userId, email, isActive, newPassword, ct);
+            await SyncAdminDepartmentAssignmentsAsync(userId, departmentIds, ct);
+            TempData["PortalMessage"] = "Admin user updated.";
+        }
+        catch (Exception ex)
+        {
+            TempData["PortalMessage"] = $"Error: {ex.Message}";
+        }
+
+        return RedirectToAction(nameof(AdminUsers), new { selectedAdminUserId = userId });
+    }
+
+    private async Task SyncAdminDepartmentAssignmentsAsync(Guid adminUserId, IEnumerable<Guid>? departmentIds, CancellationToken ct)
+    {
+        var selected = departmentIds?.Where(x => x != Guid.Empty).Distinct().ToHashSet() ?? new HashSet<Guid>();
+        var current = (await _api.GetAdminDepartmentIdsAsync(adminUserId, ct)).ToHashSet();
+
+        foreach (var departmentId in selected.Except(current))
+            await _api.AssignAdminToDepartmentAsync(adminUserId, departmentId, ct);
+
+        foreach (var departmentId in current.Except(selected))
+            await _api.RemoveAdminFromDepartmentAsync(adminUserId, departmentId, ct);
     }
 
     // ── Courses ────────────────────────────────────────────────────────────

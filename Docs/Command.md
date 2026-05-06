@@ -8,16 +8,38 @@ Before starting any work, the assistant must:
 3. Continue from the exact Current Execution Pointer below.
 
 ## Non-Negotiable Rule Per Completed Phase
-After each completed phase, update all three files:
+After each completed phase, update all required tracking files:
 1. Docs/Function-List.md
-2. Project startup Docs/PRD.md
-3. Project startup Docs/Final-Touches.md
+2. Docs/Command.md
+3. Project startup Docs/PRD.md
+4. Docs/Issue-Fix-Phases.md
+5. Project startup Docs/Final-Touches.md
+
+After documentation is updated, complete mandatory Git sync in this exact order:
+1. Commit all current changes
+2. Pull latest remote changes (rebase preferred)
+3. Push committed changes to remote
 
 Also update this file with:
 - completed work
 - validation summary
 - next steps
 - pending extras
+
+**Always-on documentation sync (requested workflow):**
+- Keep `Docs/Function-List.md`, `Docs/Command.md`, `Project startup Docs/PRD.md`, and `Docs/Issue-Fix-Phases.md` updated continuously as work progresses, not only at phase-end.
+
+**Always-on Git sync (requested workflow):**
+- Before ending any work session, always run full sync: commit all changes, pull from remote, then push to remote.
+- Do not leave local-only completed work.
+- Use this command sequence:
+
+```powershell
+git add -A
+git commit -m "<phase/stage summary>"
+git pull --rebase
+git push
+```
 
 **Code quality rules (enforced from Phase 5 onward):**
 - Add a `// Final-Touches Phase X Stage X.X — <description>` comment above every block of code added or changed for that phase.
@@ -27,9 +49,9 @@ Also update this file with:
 
 ## Current Execution Pointer
 - Plan Source: Observed-Issues.md (Phase 4 items P4-S1-01 through P4-S3-01)
-- Active Phase: **Phase 4 — CSV User Import — COMPLETE**
-- Active Stage: N/A
-- Status: **Done — All Observed-Issues phases complete. See "Resuming at Home" below for exact next steps.**
+- Active Phase: **Issue-Fix Phase 6 — Admin Multi-Department Assignment**
+- Active Stage: **Issue-Fix Phase 6.1 — Admin User Management + Assignment UX extension (completed)**
+- Status: **Completed — Dedicated SuperAdmin admin-user management, assignment UX polish, and integration tests added.**
 - Last Updated: 2026-05-06
 
 ---
@@ -48,6 +70,7 @@ dotnet ef database update --project src/Tabsan.EduSphere.Infrastructure --startu
 This applies:
 1. `20260505_Phase2LicenseConcurrency` — adds `MaxUsers` + `ActivatedDomain` to `license_state`
 2. `20260506_Phase4UserImport` — adds `MustChangePassword` to `users`
+3. `20260506044806_20260506_Phase6AdminDepartmentAssignments` — adds `admin_department_assignments`
 
 ### Step 2: Decide what comes next
 
@@ -114,6 +137,81 @@ When a phase is completed, update:
 ---
 
 ## Work Log
+
+### Entry 021 — 2026-05-06 — Issue-Fix Phase 6.1 Extended Delivery (Dedicated Admin User Management)
+**Completed:**
+- Added dedicated SuperAdmin API for Admin account management:
+  - `GET /api/v1/admin-user`
+  - `POST /api/v1/admin-user`
+  - `PUT /api/v1/admin-user/{id}`
+- Added repository support to fetch users by role with optional inactive inclusion.
+- Added dedicated portal page:
+  - `Portal/AdminUsers`
+  - create Admin user + initial department assignment
+  - update Admin email/status/password + assignment sync
+  - search Admin selector and select-all/clear assignment UX controls
+- Kept Departments page assignment panel and added quick navigation to the dedicated Admin Users page.
+- Added focused integration tests for:
+  - admin-user endpoint access control
+  - admin create/update + assignment round-trip flow
+
+**Validation:**
+- `dotnet build Tabsan.EduSphere.sln` succeeded.
+- Focused integration tests failed due pre-existing migration/seeding issue in test environment:
+  - duplicate `ActivatedDomain` column in `license_state` migration path during DB setup.
+
+**Moved to:**
+- Ready for next issue-fix phase after test DB migration chain cleanup.
+
+### Entry 020 — 2026-05-06 — Issue-Fix Phase 6.1 UI Delivered (Admin Department Assignment)
+**Completed:**
+- Added SuperAdmin-only Admin user listing endpoint:
+  - `GET /api/v1/department/admin-users`
+- Added Web API client methods for assignment UI flows:
+  - `GetAdminUsersAsync`
+  - `GetAdminDepartmentIdsAsync`
+  - `AssignAdminToDepartmentAsync`
+  - `RemoveAdminFromDepartmentAsync`
+  - internal helper `DeleteWithBodyAsync` for DELETE-with-payload API calls
+- Extended portal department page model for assignment management state:
+  - admin list
+  - selected admin id
+  - assigned department id list
+- Updated `PortalController.Departments` to load assignment state for SuperAdmin.
+- Added `PortalController.UpdateAdminDepartmentAssignments` to diff and apply add/remove assignment operations.
+- Updated `Views/Portal/Departments.cshtml` with SuperAdmin assignment UI:
+  - Admin selector dropdown
+  - Active department checkbox list
+  - Save Assignments action
+
+**Validation:**
+- `dotnet build Tabsan.EduSphere.sln` succeeded after implementation.
+
+**Moved to:**
+- Phase 6 complete for backend + assignment management UI. Ready for next planned issue-fix phase.
+
+### Entry 019 — 2026-05-06 — Issue-Fix Phase 6 Backend Delivered (Admin Multi-Department Assignment)
+**Completed:**
+- Added domain model + persistence for admin multi-department assignment:
+  - `AdminDepartmentAssignment` entity
+  - `IAdminAssignmentRepository` and `AdminAssignmentRepository`
+  - EF mapping and migration `20260506044806_20260506_Phase6AdminDepartmentAssignments`
+- Added SuperAdmin management endpoints for admin department scope in Department API:
+  - `POST /api/v1/department/admin-assignment`
+  - `DELETE /api/v1/department/admin-assignment`
+  - `GET /api/v1/department/admin-assignment/{adminUserId}`
+- Enforced Admin assignment scope in:
+  - Department list responses
+  - Course catalog and offerings responses
+  - Report Center data and export endpoints (department/offering guard)
+- This unblocks and closes Stage 5.4 backend dependency.
+
+**Validation:**
+- `dotnet build Tabsan.EduSphere.sln` succeeded after implementation.
+- Migration creation completed successfully with EF Core tooling.
+
+**Moved to:**
+- Phase 6.1 UI integration (SuperAdmin create/update Admin with multi-department checkbox list)
 
 ### Entry 005 — 2026-05-06 — Issue-Fix Phase 2 Complete (Shared Portal and Settings)
 **Completed:**

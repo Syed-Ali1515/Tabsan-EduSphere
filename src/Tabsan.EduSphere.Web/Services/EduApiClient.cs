@@ -119,6 +119,12 @@ public interface IEduApiClient
     Task CreateDepartmentAsync(string name, string code, CancellationToken ct);
     Task UpdateDepartmentAsync(Guid id, string newName, CancellationToken ct);
     Task DeactivateDepartmentAsync(Guid id, CancellationToken ct);
+    Task<List<AdminUserLookupItem>> GetAdminUsersAsync(CancellationToken ct);
+    Task<Guid> CreateAdminUserAsync(string username, string? email, string password, CancellationToken ct);
+    Task UpdateAdminUserAsync(Guid userId, string? email, bool isActive, string? newPassword, CancellationToken ct);
+    Task<List<Guid>> GetAdminDepartmentIdsAsync(Guid adminUserId, CancellationToken ct);
+    Task AssignAdminToDepartmentAsync(Guid adminUserId, Guid departmentId, CancellationToken ct);
+    Task RemoveAdminFromDepartmentAsync(Guid adminUserId, Guid departmentId, CancellationToken ct);
 
     // Courses / Offerings
     Task<List<CourseItem>> GetCourseDetailsAsync(Guid? departmentId, CancellationToken ct);
@@ -455,6 +461,16 @@ public class EduApiClient : IEduApiClient
     private async Task DeleteAsync(string path, CancellationToken ct)
     {
         using var request  = CreateRequest(HttpMethod.Delete, path);
+        using var response = await CreateClient().SendAsync(request, ct);
+        var body = await response.Content.ReadAsStringAsync(ct);
+        if (!response.IsSuccessStatusCode) throw BuildException(response.StatusCode, body);
+    }
+
+    private async Task DeleteWithBodyAsync(string path, object payload, CancellationToken ct)
+    {
+        var json = JsonSerializer.Serialize(payload, _jsonOptions);
+        using var request = CreateRequest(HttpMethod.Delete, path);
+        request.Content = new StringContent(json, Encoding.UTF8, "application/json");
         using var response = await CreateClient().SendAsync(request, ct);
         var body = await response.Content.ReadAsStringAsync(ct);
         if (!response.IsSuccessStatusCode) throw BuildException(response.StatusCode, body);
@@ -939,6 +955,20 @@ public class EduApiClient : IEduApiClient
         public bool    IsActive { get; set; }
     }
 
+    private sealed class AdminUserApiDto
+    {
+        public Guid Id { get; set; }
+        public string? Username { get; set; }
+        public string? Email { get; set; }
+        public bool IsActive { get; set; }
+    }
+
+    private sealed class AdminDepartmentAssignmentApiDto
+    {
+        public Guid AdminUserId { get; set; }
+        public Guid DepartmentId { get; set; }
+    }
+
     public Task CreateDepartmentAsync(string name, string code, CancellationToken ct)
         => PostAsync<object, object>("api/v1/department", new { name, code }, ct);
 
@@ -947,6 +977,40 @@ public class EduApiClient : IEduApiClient
 
     public Task DeactivateDepartmentAsync(Guid id, CancellationToken ct)
         => DeleteAsync($"api/v1/department/{id}", ct);
+
+    public async Task<List<AdminUserLookupItem>> GetAdminUsersAsync(CancellationToken ct)
+    {
+        var raw = await GetAsync<List<AdminUserApiDto>>("api/v1/admin-user", ct) ?? new();
+        return raw.Select(a => new AdminUserLookupItem
+        {
+            Id = a.Id,
+            UserName = a.Username ?? string.Empty,
+            Email = a.Email,
+            IsActive = a.IsActive
+        }).ToList();
+    }
+
+    public async Task<Guid> CreateAdminUserAsync(string username, string? email, string password, CancellationToken ct)
+    {
+        var created = await PostAsync<object, AdminUserApiDto>("api/v1/admin-user", new { username, email, password }, ct)
+            ?? throw new InvalidOperationException("Admin create API returned no body.");
+        return created.Id;
+    }
+
+    public Task UpdateAdminUserAsync(Guid userId, string? email, bool isActive, string? newPassword, CancellationToken ct)
+        => PutAsync<object, object>($"api/v1/admin-user/{userId}", new { email, isActive, newPassword }, ct);
+
+    public async Task<List<Guid>> GetAdminDepartmentIdsAsync(Guid adminUserId, CancellationToken ct)
+    {
+        var raw = await GetAsync<List<AdminDepartmentAssignmentApiDto>>($"api/v1/department/admin-assignment/{adminUserId}", ct) ?? new();
+        return raw.Select(x => x.DepartmentId).Distinct().ToList();
+    }
+
+    public Task AssignAdminToDepartmentAsync(Guid adminUserId, Guid departmentId, CancellationToken ct)
+        => PostAsync<object, object>("api/v1/department/admin-assignment", new { adminUserId, departmentId }, ct);
+
+    public Task RemoveAdminFromDepartmentAsync(Guid adminUserId, Guid departmentId, CancellationToken ct)
+        => DeleteWithBodyAsync("api/v1/department/admin-assignment", new { adminUserId, departmentId }, ct);
 
     // ── Courses ───────────────────────────────────────────────────────────────
 

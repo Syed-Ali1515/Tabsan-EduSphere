@@ -96,6 +96,7 @@ builder.Services.AddScoped<IEnrollmentRepository, EnrollmentRepository>();
 builder.Services.AddScoped<IStudentProfileRepository, StudentProfileRepository>();
 builder.Services.AddScoped<IRegistrationWhitelistRepository, RegistrationWhitelistRepository>();
 builder.Services.AddScoped<IFacultyAssignmentRepository, FacultyAssignmentRepository>();
+builder.Services.AddScoped<IAdminAssignmentRepository, AdminAssignmentRepository>();
 
 // ── Application services ────────────────────────────────────────────────────────
 builder.Services.AddScoped<IAuthService, AuthService>();

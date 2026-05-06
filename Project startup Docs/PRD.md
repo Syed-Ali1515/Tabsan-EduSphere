@@ -10,6 +10,69 @@
 
 ## 0. Implementation Update Log
 
+### 2026-05-06 — Issue-Fix Phase 6 Delivery (Admin Multi-Department Assignment)
+- **Stage 6.2 (Backend rules implementation - completed)**
+  - Added `AdminDepartmentAssignment` domain entity to support many departments per Admin.
+  - Added repository contract + EF implementation for admin assignment lifecycle.
+  - Added EF migration: `20260506044806_20260506_Phase6AdminDepartmentAssignments`.
+  - Added SuperAdmin-only assignment management APIs:
+    - `POST /api/v1/department/admin-assignment`
+    - `DELETE /api/v1/department/admin-assignment`
+    - `GET /api/v1/department/admin-assignment/{adminUserId}`
+  - Enforced assigned-department constraints for Admin role in:
+    - Department list filters,
+    - Course and offering filters,
+    - Reporting data/export endpoints.
+- **Stage 5.4 dependency closure (backend)**
+  - Admin reporting scope is now bounded by assigned departments and offering department checks.
+- **Stage 6.1 (UI - completed)**
+  - Added SuperAdmin-only Admin assignment management panel on Departments page.
+  - Added Admin selector + active department checkbox list + save action.
+  - Added API endpoint for assignment UI user source:
+    - `GET /api/v1/department/admin-users`
+  - Added Web client/controller wiring to load and apply assignment diffs.
+- **Validation**
+  - `dotnet build Tabsan.EduSphere.sln` passed after backend + UI updates.
+
+### 2026-05-06 — Issue-Fix Phase 6.1 Extended Delivery (Dedicated Admin User Management)
+- Added SuperAdmin-only Admin account management API:
+  - `GET /api/v1/admin-user`
+  - `POST /api/v1/admin-user`
+  - `PUT /api/v1/admin-user/{id}`
+- Added dedicated SuperAdmin Admin Users portal page:
+  - create Admin + initial department assignments
+  - update Admin email/status/password + assignment synchronization
+  - search/filter admin selector
+  - select-all/clear controls for department checkboxes
+- Departments page now includes quick-link to dedicated Admin Users management page.
+- Added focused integration tests for admin-user access rules and admin create/update/assignment round-trip.
+- Validation:
+  - `dotnet build Tabsan.EduSphere.sln` succeeded.
+  - Focused integration tests are currently blocked by an existing test-migration issue (`license_state.ActivatedDomain` duplicate column during test DB setup), not by these code changes.
+
+### 2026-05-06 — Issue-Fix Phase 5 Progress (Reporting & Export Center)
+- **Stage 5.2 (Export Actions - completed)**
+  - Added CSV and PDF export support for attendance, results, assignments, and quizzes.
+  - Added API endpoints:
+    - `/api/v1/reports/attendance-summary/export/csv|pdf`
+    - `/api/v1/reports/result-summary/export/csv|pdf`
+    - `/api/v1/reports/assignment-summary/export/csv|pdf`
+    - `/api/v1/reports/quiz-summary/export/csv|pdf`
+  - Added matching Web portal proxy actions and UI export buttons (Excel/CSV/PDF) in all four report pages.
+- **Stage 5.3 (SuperAdmin reporting scope - completed)**
+  - SuperAdmin retains unrestricted report catalog/data/export scope across all departments and offerings.
+- **Stage 5.5 (Faculty reporting scope - completed)**
+  - Department list and course/offering filter sources are now faculty-scoped.
+  - Faculty report data/export calls now require selected offering ownership validation.
+- **Stage 5.4 (Admin reporting scope - partial)**
+  - Full admin assigned-department/course enforcement deferred until Phase 6 multi-department admin assignment model is implemented.
+- **Validation**
+  - `dotnet build Tabsan.EduSphere.sln` succeeded after Stage 5.2 and scope hardening changes.
+
+### 2026-05-06 — Issue-Fix Phase 6 Kickoff (Admin Multi-Department Assignment)
+- Phase 6.1/6.2 implementation queued as immediate continuation.
+- Target outcome: allow assigning multiple departments to Admin and use those assignments to finalize Stage 5.4 scope enforcement.
+
 ### 2026-05-06 — Issue-Fix Phase 2 Complete (Shared Portal and Settings)
 - **Stage 2.1 (Branding and Asset Rendering - completed)**
   - Fixed `PortalSettingsController.UploadLogo` null-webroot failure by adding fallback to `ContentRootPath/wwwroot` when `WebRootPath` is not set.

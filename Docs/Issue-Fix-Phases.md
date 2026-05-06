@@ -177,6 +177,58 @@ This file tracks the reported portal issues as phased work items so they can be 
 - Supported examples include IT, Business, Education, Languages, and similar departments.
 - Assigned departments should control the admin's accessible data and filters throughout the portal.
 
+### Phase 6 Progress Update - 2026-05-06 (Backend Delivery)
+- Implemented a new admin-to-department assignment model in backend:
+	- domain entity: `AdminDepartmentAssignment`
+	- repository contract + EF implementation
+	- EF configuration + migration: `20260506044806_20260506_Phase6AdminDepartmentAssignments`
+- Added SuperAdmin-only management endpoints in Department API:
+	- `POST /api/v1/department/admin-assignment`
+	- `DELETE /api/v1/department/admin-assignment`
+	- `GET /api/v1/department/admin-assignment/{adminUserId}`
+- Applied Admin scope enforcement using assigned departments in:
+	- Department list filtering,
+	- Course list and offering filters,
+	- Report data + export endpoints (department and offering constrained).
+- Validation:
+	- `dotnet build Tabsan.EduSphere.sln` succeeded after changes.
+
+### Stage 5.4 Status Update - 2026-05-06
+- Stage 5.4 backend scope enforcement is now implemented via Phase 6 assignment model.
+- Remaining optional enhancement:
+	- add/create-edit UI checkbox list for SuperAdmin to assign multiple departments during Admin user creation/update flow.
+
+### Phase 6 Progress Update - 2026-05-06 (Stage 6.1 UI Delivery)
+- Delivered SuperAdmin assignment-management UI in Departments portal page:
+	- Admin selector dropdown
+	- active department checkbox list
+	- save action to apply assignment changes
+- Added supporting API endpoint:
+	- `GET /api/v1/department/admin-users`
+- Added portal-side integration:
+	- `IEduApiClient` + `EduApiClient` methods for list/get/assign/remove admin-department mappings
+	- `PortalController` load + update actions for assignment workflow
+	- `DepartmentsPageModel` assignment state fields
+- Validation:
+	- `dotnet build Tabsan.EduSphere.sln` succeeded.
+
+### Phase 6 Progress Update - 2026-05-06 (Stage 6.1 Dedicated Admin Management Extension)
+- Added dedicated SuperAdmin Admin Users page with end-to-end management workflow:
+	- create Admin account
+	- update Admin account (email, active/inactive, optional password reset)
+	- manage multi-department assignments inline
+- Added supporting SuperAdmin Admin user API:
+	- `GET /api/v1/admin-user`
+	- `POST /api/v1/admin-user`
+	- `PUT /api/v1/admin-user/{id}`
+- Added UX polish:
+	- searchable admin selector
+	- select-all / clear controls for assignment checkbox groups
+	- quick navigation from Departments assignment panel to Admin Users page
+- Validation:
+	- `dotnet build Tabsan.EduSphere.sln` succeeded.
+	- focused integration tests currently blocked by pre-existing test DB migration error (duplicate `ActivatedDomain` column in `license_state` migration path).
+
 ## Phase 7 - Academic Hierarchy Alignment
 
 ### Stage 7.1 - University Structure Definition
@@ -562,3 +614,16 @@ Implemented student-side assignment workflow corrections in the web portal:
 
 - Full solution build succeeds after role-scope hardening updates.
 - Faculty cannot request report data for unassigned/unowned offerings (API now returns `Forbid`/validation error as appropriate).
+
+## Phase 6 - Progress Update
+
+### Stage 6.1 and 6.2 - Multi-Department Admin Assignment (Kickoff)
+
+- Phase 6 implementation has been queued as the immediate next step after reporting scope hardening.
+- Documentation-first checkpoint completed before code changes, per requested working flow.
+- Continuous documentation sync now enforced for: `Docs/Function-List.md`, `Docs/Command.md`, `Project startup Docs/PRD.md`, and `Docs/Issue-Fix-Phases.md`.
+- Planned implementation scope:
+	- allow SuperAdmin to assign multiple departments to an Admin at creation/update time,
+	- persist and manage multi-department admin assignments,
+	- use assigned departments to constrain Admin-accessible reporting filters and data.
+- Stage 5.4 completion depends on this Phase 6 delivery and will be finalized right after these changes are implemented.

@@ -18,15 +18,21 @@ public class DepartmentController : ControllerBase
 {
     private readonly IDepartmentRepository _deptRepo;
     private readonly IFacultyAssignmentRepository _facultyAssignments;
+    private readonly IAdminAssignmentRepository _adminAssignments;
+    private readonly IUserRepository _users;
     private readonly IAuditService _audit;
 
     public DepartmentController(
         IDepartmentRepository deptRepo,
         IFacultyAssignmentRepository facultyAssignments,
+        IAdminAssignmentRepository adminAssignments,
+        IUserRepository users,
         IAuditService audit)
     {
         _deptRepo = deptRepo;
         _facultyAssignments = facultyAssignments;
+        _adminAssignments = adminAssignments;
+        _users = users;
         _audit = audit;
     }
 
@@ -41,6 +47,12 @@ public class DepartmentController : ControllerBase
         if (User.IsInRole("Faculty") && !User.IsInRole("Admin") && !User.IsInRole("SuperAdmin"))
         {
             var allowedDepartmentIds = await _facultyAssignments.GetDepartmentIdsForFacultyAsync(GetUserId(), ct);
+            depts = depts.Where(d => allowedDepartmentIds.Contains(d.Id)).ToList();
+        }
+
+        if (User.IsInRole("Admin") && !User.IsInRole("SuperAdmin"))
+        {
+            var allowedDepartmentIds = await _adminAssignments.GetDepartmentIdsForAdminAsync(GetUserId(), ct);
             depts = depts.Where(d => allowedDepartmentIds.Contains(d.Id)).ToList();
         }
 
@@ -103,6 +115,81 @@ public class DepartmentController : ControllerBase
         _deptRepo.Update(dept);
         await _deptRepo.SaveChangesAsync(ct);
         return NoContent();
+    }
+
+    // ── POST /api/v1/department/admin-assignment ────────────────────────────
+
+    /// <summary>Assigns an Admin user to a department. SuperAdmin only.</summary>
+    [HttpPost("admin-assignment")]
+    [Authorize(Roles = "SuperAdmin")]
+    public async Task<IActionResult> AssignAdminToDepartment([FromBody] AssignAdminToDepartmentRequest request, CancellationToken ct)
+    {
+        if (request.AdminUserId == Guid.Empty || request.DepartmentId == Guid.Empty)
+            return BadRequest("AdminUserId and DepartmentId are required.");
+
+        var adminUser = await _users.GetByIdAsync(request.AdminUserId, ct);
+        if (adminUser is null)
+            return NotFound("Admin user not found.");
+
+        if (!string.Equals(adminUser.Role?.Name, "Admin", StringComparison.OrdinalIgnoreCase))
+            return BadRequest("Only users with Admin role can be assigned.");
+
+        var dept = await _deptRepo.GetByIdAsync(request.DepartmentId, ct);
+        if (dept is null)
+            return NotFound("Department not found.");
+
+        var existing = await _adminAssignments.GetAsync(request.AdminUserId, request.DepartmentId, ct);
+        if (existing is not null)
+            return NoContent();
+
+        await _adminAssignments.AddAsync(new AdminDepartmentAssignment(request.AdminUserId, request.DepartmentId), ct);
+        await _adminAssignments.SaveChangesAsync(ct);
+        return NoContent();
+    }
+
+    // ── DELETE /api/v1/department/admin-assignment ──────────────────────────
+
+    /// <summary>Revokes an Admin user's department assignment. SuperAdmin only.</summary>
+    [HttpDelete("admin-assignment")]
+    [Authorize(Roles = "SuperAdmin")]
+    public async Task<IActionResult> RemoveAdminFromDepartment([FromBody] RemoveAdminFromDepartmentRequest request, CancellationToken ct)
+    {
+        if (request.AdminUserId == Guid.Empty || request.DepartmentId == Guid.Empty)
+            return BadRequest("AdminUserId and DepartmentId are required.");
+
+        var existing = await _adminAssignments.GetAsync(request.AdminUserId, request.DepartmentId, ct);
+        if (existing is null)
+            return NotFound("Assignment not found.");
+
+        existing.Remove();
+        _adminAssignments.Update(existing);
+        await _adminAssignments.SaveChangesAsync(ct);
+        return NoContent();
+    }
+
+    // ── GET /api/v1/department/admin-assignment/{adminUserId} ───────────────
+
+    /// <summary>Lists active department assignments for an Admin user. SuperAdmin only.</summary>
+    [HttpGet("admin-assignment/{adminUserId:guid}")]
+    [Authorize(Roles = "SuperAdmin")]
+    public async Task<IActionResult> GetAdminDepartmentAssignments(Guid adminUserId, CancellationToken ct)
+    {
+        if (adminUserId == Guid.Empty)
+            return BadRequest("adminUserId is required.");
+
+        var assignments = await _adminAssignments.GetByAdminAsync(adminUserId, ct);
+        return Ok(assignments.Select(a => new { a.AdminUserId, a.DepartmentId, DepartmentName = a.Department.Name, a.AssignedAt }));
+    }
+
+    // ── GET /api/v1/department/admin-users ──────────────────────────────────
+
+    /// <summary>Returns active users in Admin role for department assignment management. SuperAdmin only.</summary>
+    [HttpGet("admin-users")]
+    [Authorize(Roles = "SuperAdmin")]
+    public async Task<IActionResult> GetAdminUsers(CancellationToken ct)
+    {
+        var users = await _users.GetActiveUsersByRolesAsync(new[] { "Admin" }, ct);
+        return Ok(users.Select(u => new { u.Id, u.Username, u.Email }));
     }
 
     // ── Helper ─────────────────────────────────────────────────────────────────

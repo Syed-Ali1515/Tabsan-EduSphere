@@ -58,6 +58,12 @@ public class UserRepository : IUserRepository
     /// <summary>Returns active users that belong to any role in <paramref name="roleNames"/>.</summary>
     public async Task<IList<User>> GetActiveUsersByRolesAsync(IReadOnlyList<string> roleNames, CancellationToken ct = default)
     {
+        return await GetUsersByRolesAsync(roleNames, includeInactive: false, ct);
+    }
+
+    /// <summary>Returns users in the provided roles, optionally including inactive accounts.</summary>
+    public async Task<IList<User>> GetUsersByRolesAsync(IReadOnlyList<string> roleNames, bool includeInactive = false, CancellationToken ct = default)
+    {
         if (roleNames.Count == 0)
             return new List<User>();
 
@@ -70,9 +76,14 @@ public class UserRepository : IUserRepository
         if (normalized.Count == 0)
             return new List<User>();
 
-        return await _db.Users
+        var query = _db.Users
             .Include(u => u.Role)
-            .Where(u => u.IsActive && normalized.Contains(u.Role.Name))
+            .Where(u => normalized.Contains(u.Role.Name));
+
+        if (!includeInactive)
+            query = query.Where(u => u.IsActive);
+
+        return await query
             .OrderBy(u => u.Username)
             .ToListAsync(ct);
     }

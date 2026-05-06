@@ -83,6 +83,9 @@ public class ApplicationDbContext : DbContext
     /// <summary>Faculty ↔ department access assignments.</summary>
     public DbSet<FacultyDepartmentAssignment> FacultyDepartmentAssignments => Set<FacultyDepartmentAssignment>();
 
+    /// <summary>Admin ↔ department access assignments.</summary>
+    public DbSet<AdminDepartmentAssignment> AdminDepartmentAssignments => Set<AdminDepartmentAssignment>();
+
     // ── Phase 3: Assignments and Results ───────────────────────────────────────
     /// <summary>Faculty-created assignments for course offerings.</summary>
     public DbSet<Assignment> Assignments => Set<Assignment>();
