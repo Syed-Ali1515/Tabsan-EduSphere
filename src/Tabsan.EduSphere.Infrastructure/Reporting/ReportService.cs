@@ -1,4 +1,8 @@
 using ClosedXML.Excel;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
+using System.Text;
 using Tabsan.EduSphere.Application.DTOs.Reports;
 using Tabsan.EduSphere.Application.Interfaces;
 using Tabsan.EduSphere.Domain.Interfaces;
@@ -13,7 +17,11 @@ public sealed class ReportService : IReportService
 {
     private readonly IReportRepository _repo;
 
-    public ReportService(IReportRepository repo) => _repo = repo;
+    public ReportService(IReportRepository repo)
+    {
+        _repo = repo;
+        QuestPDF.Settings.License = LicenseType.Community;
+    }
 
     // ── Catalog ────────────────────────────────────────────────────────────────
 
@@ -174,6 +182,42 @@ public sealed class ReportService : IReportService
         return BuildExcelBytes("Attendance Summary", headers, rows);
     }
 
+    public async Task<byte[]> ExportAttendanceSummaryCsvAsync(
+        AttendanceSummaryRequest request, CancellationToken ct = default)
+    {
+        var report = await GetAttendanceSummaryAsync(request, ct);
+        var headers = new[] { "Reg No", "Student", "Course Code", "Course Title", "Total Sessions", "Attended", "Attendance %" };
+        var rows = report.Rows.Select(r => new[]
+        {
+            r.RegistrationNumber,
+            r.StudentName,
+            r.CourseCode,
+            r.CourseTitle,
+            r.TotalSessions.ToString(),
+            r.AttendedSessions.ToString(),
+            r.AttendancePercentage.ToString("F2")
+        });
+        return BuildCsvBytes(headers, rows);
+    }
+
+    public async Task<byte[]> ExportAttendanceSummaryPdfAsync(
+        AttendanceSummaryRequest request, CancellationToken ct = default)
+    {
+        var report = await GetAttendanceSummaryAsync(request, ct);
+        var headers = new[] { "Reg No", "Student", "Course Code", "Course Title", "Total", "Attended", "Attendance %" };
+        var rows = report.Rows.Select(r => new[]
+        {
+            r.RegistrationNumber,
+            r.StudentName,
+            r.CourseCode,
+            r.CourseTitle,
+            r.TotalSessions.ToString(),
+            r.AttendedSessions.ToString(),
+            r.AttendancePercentage.ToString("F2")
+        }).ToList();
+        return BuildPdfBytes("Attendance Summary", headers, rows);
+    }
+
     public async Task<byte[]> ExportResultSummaryExcelAsync(
         ResultSummaryRequest request, CancellationToken ct = default)
     {
@@ -186,6 +230,46 @@ public sealed class ReportService : IReportService
             r.PublishedAt.HasValue ? r.PublishedAt.Value.ToString("yyyy-MM-dd") : "-"
         }).ToList();
         return BuildExcelBytes("Result Summary", headers, rows);
+    }
+
+    public async Task<byte[]> ExportResultSummaryCsvAsync(
+        ResultSummaryRequest request, CancellationToken ct = default)
+    {
+        var report = await GetResultSummaryAsync(request, ct);
+        var headers = new[] { "Reg No", "Student", "Course Code", "Course Title", "Component", "Marks", "Max Marks", "Percentage", "Published" };
+        var rows = report.Rows.Select(r => new[]
+        {
+            r.RegistrationNumber,
+            r.StudentName,
+            r.CourseCode,
+            r.CourseTitle,
+            r.ResultType,
+            r.MarksObtained.ToString("F2"),
+            r.MaxMarks.ToString("F2"),
+            r.Percentage.ToString("F2"),
+            r.PublishedAt.HasValue ? r.PublishedAt.Value.ToString("yyyy-MM-dd") : "-"
+        });
+        return BuildCsvBytes(headers, rows);
+    }
+
+    public async Task<byte[]> ExportResultSummaryPdfAsync(
+        ResultSummaryRequest request, CancellationToken ct = default)
+    {
+        var report = await GetResultSummaryAsync(request, ct);
+        var headers = new[] { "Reg No", "Student", "Course", "Title", "Type", "Marks", "Max", "%", "Published" };
+        var rows = report.Rows.Select(r => new[]
+        {
+            r.RegistrationNumber,
+            r.StudentName,
+            r.CourseCode,
+            r.CourseTitle,
+            r.ResultType,
+            r.MarksObtained.ToString("F2"),
+            r.MaxMarks.ToString("F2"),
+            r.Percentage.ToString("F2"),
+            r.PublishedAt.HasValue ? r.PublishedAt.Value.ToString("yyyy-MM-dd") : "-"
+        }).ToList();
+        return BuildPdfBytes("Result Summary", headers, rows);
     }
 
     public async Task<byte[]> ExportAssignmentSummaryExcelAsync(
@@ -202,6 +286,46 @@ public sealed class ReportService : IReportService
         return BuildExcelBytes("Assignment Summary", headers, rows);
     }
 
+    public async Task<byte[]> ExportAssignmentSummaryCsvAsync(
+        AssignmentSummaryRequest request, CancellationToken ct = default)
+    {
+        var report = await GetAssignmentSummaryAsync(request, ct);
+        var headers = new[] { "Reg No", "Student", "Course Code", "Course Title", "Assignment", "Due Date", "Submitted At", "Status", "Marks Awarded" };
+        var rows = report.Rows.Select(r => new[]
+        {
+            r.RegistrationNumber,
+            r.StudentName,
+            r.CourseCode,
+            r.CourseTitle,
+            r.AssignmentTitle,
+            r.DueDate.ToString("yyyy-MM-dd"),
+            r.SubmittedAt.ToString("yyyy-MM-dd HH:mm"),
+            r.Status,
+            r.MarksAwarded.HasValue ? r.MarksAwarded.Value.ToString("F2") : "-"
+        });
+        return BuildCsvBytes(headers, rows);
+    }
+
+    public async Task<byte[]> ExportAssignmentSummaryPdfAsync(
+        AssignmentSummaryRequest request, CancellationToken ct = default)
+    {
+        var report = await GetAssignmentSummaryAsync(request, ct);
+        var headers = new[] { "Reg No", "Student", "Course", "Title", "Assignment", "Due", "Submitted", "Status", "Marks" };
+        var rows = report.Rows.Select(r => new[]
+        {
+            r.RegistrationNumber,
+            r.StudentName,
+            r.CourseCode,
+            r.CourseTitle,
+            r.AssignmentTitle,
+            r.DueDate.ToString("yyyy-MM-dd"),
+            r.SubmittedAt.ToString("yyyy-MM-dd HH:mm"),
+            r.Status,
+            r.MarksAwarded.HasValue ? r.MarksAwarded.Value.ToString("F2") : "-"
+        }).ToList();
+        return BuildPdfBytes("Assignment Summary", headers, rows);
+    }
+
     public async Task<byte[]> ExportQuizSummaryExcelAsync(
         QuizSummaryRequest request, CancellationToken ct = default)
     {
@@ -215,6 +339,46 @@ public sealed class ReportService : IReportService
             r.AttemptStatus, r.TotalScore.HasValue ? (object)r.TotalScore.Value : "-"
         }).ToList();
         return BuildExcelBytes("Quiz Summary", headers, rows);
+    }
+
+    public async Task<byte[]> ExportQuizSummaryCsvAsync(
+        QuizSummaryRequest request, CancellationToken ct = default)
+    {
+        var report = await GetQuizSummaryAsync(request, ct);
+        var headers = new[] { "Reg No", "Student", "Course Code", "Course Title", "Quiz", "Started At", "Finished At", "Attempt Status", "Total Score" };
+        var rows = report.Rows.Select(r => new[]
+        {
+            r.RegistrationNumber,
+            r.StudentName,
+            r.CourseCode,
+            r.CourseTitle,
+            r.QuizTitle,
+            r.StartedAt.ToString("yyyy-MM-dd HH:mm"),
+            r.FinishedAt.HasValue ? r.FinishedAt.Value.ToString("yyyy-MM-dd HH:mm") : "-",
+            r.AttemptStatus,
+            r.TotalScore.HasValue ? r.TotalScore.Value.ToString("F2") : "-"
+        });
+        return BuildCsvBytes(headers, rows);
+    }
+
+    public async Task<byte[]> ExportQuizSummaryPdfAsync(
+        QuizSummaryRequest request, CancellationToken ct = default)
+    {
+        var report = await GetQuizSummaryAsync(request, ct);
+        var headers = new[] { "Reg No", "Student", "Course", "Title", "Quiz", "Started", "Finished", "Status", "Score" };
+        var rows = report.Rows.Select(r => new[]
+        {
+            r.RegistrationNumber,
+            r.StudentName,
+            r.CourseCode,
+            r.CourseTitle,
+            r.QuizTitle,
+            r.StartedAt.ToString("yyyy-MM-dd HH:mm"),
+            r.FinishedAt.HasValue ? r.FinishedAt.Value.ToString("yyyy-MM-dd HH:mm") : "-",
+            r.AttemptStatus,
+            r.TotalScore.HasValue ? r.TotalScore.Value.ToString("F2") : "-"
+        }).ToList();
+        return BuildPdfBytes("Quiz Summary", headers, rows);
     }
 
     public async Task<byte[]> ExportGpaReportExcelAsync(
@@ -322,5 +486,69 @@ public sealed class ReportService : IReportService
         using var ms = new MemoryStream();
         wb.SaveAs(ms);
         return ms.ToArray();
+    }
+
+    private static byte[] BuildCsvBytes(string[] headers, IEnumerable<string[]> rows)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine(string.Join(",", headers.Select(EscapeCsvCell)));
+
+        foreach (var row in rows)
+            sb.AppendLine(string.Join(",", row.Select(EscapeCsvCell)));
+
+        return Encoding.UTF8.GetBytes(sb.ToString());
+    }
+
+    private static string EscapeCsvCell(string? value)
+    {
+        var cell = value ?? string.Empty;
+        if (cell.Contains('"') || cell.Contains(',') || cell.Contains('\n') || cell.Contains('\r'))
+            return $"\"{cell.Replace("\"", "\"\"")}\"";
+
+        return cell;
+    }
+
+    private static byte[] BuildPdfBytes(string title, string[] headers, IList<string[]> rows)
+    {
+        var doc = Document.Create(container =>
+        {
+            container.Page(page =>
+            {
+                page.Size(PageSizes.A4.Landscape());
+                page.Margin(20);
+                page.DefaultTextStyle(x => x.FontSize(9));
+
+                page.Header()
+                    .Text($"{title} - Generated {DateTime.UtcNow:yyyy-MM-dd HH:mm} UTC")
+                    .SemiBold()
+                    .FontSize(12);
+
+                page.Content().Table(table =>
+                {
+                    table.ColumnsDefinition(columns =>
+                    {
+                        for (var i = 0; i < headers.Length; i++)
+                            columns.RelativeColumn();
+                    });
+
+                    foreach (var header in headers)
+                    {
+                        table.Cell().Background(Colors.Grey.Lighten2).Padding(4)
+                            .Text(header).SemiBold();
+                    }
+
+                    foreach (var row in rows)
+                    {
+                        foreach (var cell in row)
+                        {
+                            table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3)
+                                .Padding(3).Text(cell ?? "-");
+                        }
+                    }
+                });
+            });
+        });
+
+        return doc.GeneratePdf();
     }
 }

@@ -240,6 +240,64 @@ This file tracks the reported portal issues as phased work items so they can be 
 - Student-facing document listings must be grouped by Document Type.
 - Grouping should work for both uploaded files and link-based documents.
 
+## Phase 10 - Result Entry and Student Result Experience
+
+### Stage 10.1 - Teacher Result Entry Cascade Filters
+- Teacher result entry must start with filters for Department, Course, Subject, and Result Type.
+- Teacher should only see departments, courses, subjects, and result types assigned to that teacher.
+- Selecting Department must automatically refresh the Course list for that department.
+- Selecting Course must automatically refresh the Subject list for that course and department scope.
+- Result Type list must be generated from data configured in the Result Calculation menu.
+- Supported result types include Assignment, Quizzes, Mid-terms, Finals, and FYP.
+
+### Stage 10.2 - Teacher Result Entry Grid and Save Flow
+- After filter selection, the result entry grid must render student rows for the selected scope.
+- Grid columns must include User-Name, Name, Subject Name, Type, and Marks.
+- Teacher must be able to enter marks per student and save results.
+- Once saved, GPA calculation must run using configured result-calculation rules.
+- Calculated GPA must become visible to students in the Results menu.
+
+### Stage 10.3 - Student Results Filters and Views
+- Student Results menu must provide filters for Semester, Subject, and Result Type.
+- Selecting Semester must automatically refresh the Subject filter list for that semester.
+- Student can run filters by any combination: all filters, semester only, or all semesters.
+- Filtered result table must include Semester, Subject, Result Type, Marks, and GPA columns.
+
+### Stage 10.4 - CGPA and Semester-Completion Rules
+- If the student runs results without any filter, show CGPA section above the result table.
+- CGPA must be based on completed semesters only.
+- CGPA must not update while the current semester is in progress.
+- During in-progress semesters, show subject-wise GPA for entered results based on configured rules.
+
+## Phase 11 - Events Creation, Visibility, and Notifications
+
+### Stage 11.1 - Sidebar Navigation and Role Access
+- Add a new sidebar top-level menu: Events.
+- Add sub-menus under Events: Create Events and View Events.
+- Create Events must be accessible to Admin and SuperAdmin only.
+- View Events must be accessible to all roles.
+
+### Stage 11.2 - Create Event Form and Defaults
+- Create Event form must include Name of Event, Department target, Start Date-Time, End Date-Time, Location, and Description.
+- Department target must support all departments plus an ALL option for institution-wide events.
+- Department selector should support multi-select (checkbox dropdown or equivalent best-practice control).
+- Description input must be a resizable text area.
+- New events must default to Active status when created.
+
+### Stage 11.3 - Create Event Management Table
+- Created events must appear in a table within the Create Events section.
+- Table actions must include status transitions to Cancelled and Completed.
+- Admin and SuperAdmin must be able to edit existing events.
+
+### Stage 11.4 - View Events Filters
+- View Events must provide status filters for Active, Cancelled, and All events.
+- All roles should be able to browse event listings based on their visibility scope.
+
+### Stage 11.5 - Department-Scoped Event Notifications
+- After event creation, send notifications to users in selected departments.
+- If ALL is selected, send notifications to all users.
+- Notification payload should include event name, schedule, location, and status context.
+
 ---
 
 ## Phase 1 - Implementation and Validation Summary
@@ -465,7 +523,19 @@ Implemented student-side assignment workflow corrections in the web portal:
 - New report pages load and use shared report filters (semester, department, offering, student).
 - Export actions for new assignment/quiz reports return `.xlsx` files through the same binary proxy flow used by existing reports.
 
-### Stage 5.2 - Export Actions (Current Status)
+### Stage 5.2 - Export Actions (Implemented)
 
-- CSV and PDF export formats are still pending implementation.
-- Current report export support remains Excel (`.xlsx`) only.
+- Added CSV and PDF export APIs for all required report types:
+	- Attendance: `GET /api/v1/reports/attendance-summary/export/csv`, `GET /api/v1/reports/attendance-summary/export/pdf`
+	- Results: `GET /api/v1/reports/result-summary/export/csv`, `GET /api/v1/reports/result-summary/export/pdf`
+	- Assignments: `GET /api/v1/reports/assignment-summary/export/csv`, `GET /api/v1/reports/assignment-summary/export/pdf`
+	- Quizzes: `GET /api/v1/reports/quiz-summary/export/csv`, `GET /api/v1/reports/quiz-summary/export/pdf`
+- Added web portal proxy actions for each CSV/PDF export endpoint.
+- Updated report pages (Attendance, Results, Assignments, Quizzes) to show separate export buttons for Excel, CSV, and PDF.
+- Existing Excel export flow remains unchanged for backward compatibility.
+
+### Stage 5.2 - Validation Notes
+
+- Full solution build succeeds after CSV/PDF export additions.
+- CSV export now returns `text/csv` files for attendance, results, assignments, and quizzes.
+- PDF export now returns `application/pdf` files for attendance, results, assignments, and quizzes.

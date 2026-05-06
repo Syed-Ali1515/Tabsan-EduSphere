@@ -2176,6 +2176,34 @@ public class PortalController : Controller
     }
 
     [HttpGet]
+    public async Task<IActionResult> ExportAttendanceSummaryCsv(
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(ReportAttendance));
+        try
+        {
+            var bytes = await _api.ExportAttendanceSummaryCsvAsync(semesterId, departmentId, offeringId, studentId, ct);
+            return File(bytes, "text/csv", "attendance-summary.csv");
+        }
+        catch (Exception ex) { TempData["PortalMessage"] = $"Export CSV failed: {ex.Message}"; }
+        return RedirectToAction(nameof(ReportAttendance), new { semesterId, departmentId, offeringId, studentId });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ExportAttendanceSummaryPdf(
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(ReportAttendance));
+        try
+        {
+            var bytes = await _api.ExportAttendanceSummaryPdfAsync(semesterId, departmentId, offeringId, studentId, ct);
+            return File(bytes, "application/pdf", "attendance-summary.pdf");
+        }
+        catch (Exception ex) { TempData["PortalMessage"] = $"Export PDF failed: {ex.Message}"; }
+        return RedirectToAction(nameof(ReportAttendance), new { semesterId, departmentId, offeringId, studentId });
+    }
+
+    [HttpGet]
     public async Task<IActionResult> ExportResultSummary(
         Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
     {
@@ -2186,6 +2214,34 @@ public class PortalController : Controller
             return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "result-summary.xlsx");
         }
         catch (Exception ex) { TempData["PortalMessage"] = $"Export failed: {ex.Message}"; }
+        return RedirectToAction(nameof(ReportResults), new { semesterId, departmentId, offeringId, studentId });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ExportResultSummaryCsv(
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(ReportResults));
+        try
+        {
+            var bytes = await _api.ExportResultSummaryCsvAsync(semesterId, departmentId, offeringId, studentId, ct);
+            return File(bytes, "text/csv", "result-summary.csv");
+        }
+        catch (Exception ex) { TempData["PortalMessage"] = $"Export CSV failed: {ex.Message}"; }
+        return RedirectToAction(nameof(ReportResults), new { semesterId, departmentId, offeringId, studentId });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ExportResultSummaryPdf(
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(ReportResults));
+        try
+        {
+            var bytes = await _api.ExportResultSummaryPdfAsync(semesterId, departmentId, offeringId, studentId, ct);
+            return File(bytes, "application/pdf", "result-summary.pdf");
+        }
+        catch (Exception ex) { TempData["PortalMessage"] = $"Export PDF failed: {ex.Message}"; }
         return RedirectToAction(nameof(ReportResults), new { semesterId, departmentId, offeringId, studentId });
     }
 
@@ -2204,6 +2260,34 @@ public class PortalController : Controller
     }
 
     [HttpGet]
+    public async Task<IActionResult> ExportAssignmentSummaryCsv(
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(ReportAssignments));
+        try
+        {
+            var bytes = await _api.ExportAssignmentSummaryCsvAsync(semesterId, departmentId, offeringId, studentId, ct);
+            return File(bytes, "text/csv", "assignment-summary.csv");
+        }
+        catch (Exception ex) { TempData["PortalMessage"] = $"Export CSV failed: {ex.Message}"; }
+        return RedirectToAction(nameof(ReportAssignments), new { semesterId, departmentId, offeringId, studentId });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ExportAssignmentSummaryPdf(
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(ReportAssignments));
+        try
+        {
+            var bytes = await _api.ExportAssignmentSummaryPdfAsync(semesterId, departmentId, offeringId, studentId, ct);
+            return File(bytes, "application/pdf", "assignment-summary.pdf");
+        }
+        catch (Exception ex) { TempData["PortalMessage"] = $"Export PDF failed: {ex.Message}"; }
+        return RedirectToAction(nameof(ReportAssignments), new { semesterId, departmentId, offeringId, studentId });
+    }
+
+    [HttpGet]
     public async Task<IActionResult> ExportQuizSummary(
         Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
     {
@@ -2214,6 +2298,34 @@ public class PortalController : Controller
             return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "quiz-summary.xlsx");
         }
         catch (Exception ex) { TempData["PortalMessage"] = $"Export failed: {ex.Message}"; }
+        return RedirectToAction(nameof(ReportQuizzes), new { semesterId, departmentId, offeringId, studentId });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ExportQuizSummaryCsv(
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(ReportQuizzes));
+        try
+        {
+            var bytes = await _api.ExportQuizSummaryCsvAsync(semesterId, departmentId, offeringId, studentId, ct);
+            return File(bytes, "text/csv", "quiz-summary.csv");
+        }
+        catch (Exception ex) { TempData["PortalMessage"] = $"Export CSV failed: {ex.Message}"; }
+        return RedirectToAction(nameof(ReportQuizzes), new { semesterId, departmentId, offeringId, studentId });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ExportQuizSummaryPdf(
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(ReportQuizzes));
+        try
+        {
+            var bytes = await _api.ExportQuizSummaryPdfAsync(semesterId, departmentId, offeringId, studentId, ct);
+            return File(bytes, "application/pdf", "quiz-summary.pdf");
+        }
+        catch (Exception ex) { TempData["PortalMessage"] = $"Export PDF failed: {ex.Message}"; }
         return RedirectToAction(nameof(ReportQuizzes), new { semesterId, departmentId, offeringId, studentId });
     }
 

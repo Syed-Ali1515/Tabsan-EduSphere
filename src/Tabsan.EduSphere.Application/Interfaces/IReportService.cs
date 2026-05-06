@@ -21,14 +21,38 @@ public interface IReportService
     /// <summary>Returns an Excel workbook (.xlsx) byte array for the attendance summary report.</summary>
     Task<byte[]> ExportAttendanceSummaryExcelAsync(AttendanceSummaryRequest request, CancellationToken ct = default);
 
+    /// <summary>Returns a CSV byte array for the attendance summary report.</summary>
+    Task<byte[]> ExportAttendanceSummaryCsvAsync(AttendanceSummaryRequest request, CancellationToken ct = default);
+
+    /// <summary>Returns a PDF byte array for the attendance summary report.</summary>
+    Task<byte[]> ExportAttendanceSummaryPdfAsync(AttendanceSummaryRequest request, CancellationToken ct = default);
+
     /// <summary>Returns an Excel workbook (.xlsx) byte array for the result summary report.</summary>
     Task<byte[]> ExportResultSummaryExcelAsync(ResultSummaryRequest request, CancellationToken ct = default);
+
+    /// <summary>Returns a CSV byte array for the result summary report.</summary>
+    Task<byte[]> ExportResultSummaryCsvAsync(ResultSummaryRequest request, CancellationToken ct = default);
+
+    /// <summary>Returns a PDF byte array for the result summary report.</summary>
+    Task<byte[]> ExportResultSummaryPdfAsync(ResultSummaryRequest request, CancellationToken ct = default);
 
     /// <summary>Returns an Excel workbook (.xlsx) byte array for the assignment summary report.</summary>
     Task<byte[]> ExportAssignmentSummaryExcelAsync(AssignmentSummaryRequest request, CancellationToken ct = default);
 
+    /// <summary>Returns a CSV byte array for the assignment summary report.</summary>
+    Task<byte[]> ExportAssignmentSummaryCsvAsync(AssignmentSummaryRequest request, CancellationToken ct = default);
+
+    /// <summary>Returns a PDF byte array for the assignment summary report.</summary>
+    Task<byte[]> ExportAssignmentSummaryPdfAsync(AssignmentSummaryRequest request, CancellationToken ct = default);
+
     /// <summary>Returns an Excel workbook (.xlsx) byte array for the quiz summary report.</summary>
     Task<byte[]> ExportQuizSummaryExcelAsync(QuizSummaryRequest request, CancellationToken ct = default);
+
+    /// <summary>Returns a CSV byte array for the quiz summary report.</summary>
+    Task<byte[]> ExportQuizSummaryCsvAsync(QuizSummaryRequest request, CancellationToken ct = default);
+
+    /// <summary>Returns a PDF byte array for the quiz summary report.</summary>
+    Task<byte[]> ExportQuizSummaryPdfAsync(QuizSummaryRequest request, CancellationToken ct = default);
 
     /// <summary>Returns an Excel workbook (.xlsx) byte array for the GPA report.</summary>
     Task<byte[]> ExportGpaReportExcelAsync(GpaReportRequest request, CancellationToken ct = default);

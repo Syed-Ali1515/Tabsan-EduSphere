@@ -64,6 +64,36 @@ public sealed class ReportController : ControllerBase
         return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "attendance-summary.xlsx");
     }
 
+    /// <summary>Downloads attendance summary as CSV.</summary>
+    [HttpGet("attendance-summary/export/csv")]
+    [Authorize(Roles = "SuperAdmin,Admin,Faculty")]
+    public async Task<IActionResult> ExportAttendanceSummaryCsv(
+        [FromQuery] Guid? semesterId,
+        [FromQuery] Guid? departmentId,
+        [FromQuery] Guid? courseOfferingId,
+        [FromQuery] Guid? studentProfileId,
+        CancellationToken ct)
+    {
+        var request = new AttendanceSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
+        var bytes = await _reports.ExportAttendanceSummaryCsvAsync(request, ct);
+        return File(bytes, "text/csv", "attendance-summary.csv");
+    }
+
+    /// <summary>Downloads attendance summary as PDF.</summary>
+    [HttpGet("attendance-summary/export/pdf")]
+    [Authorize(Roles = "SuperAdmin,Admin,Faculty")]
+    public async Task<IActionResult> ExportAttendanceSummaryPdf(
+        [FromQuery] Guid? semesterId,
+        [FromQuery] Guid? departmentId,
+        [FromQuery] Guid? courseOfferingId,
+        [FromQuery] Guid? studentProfileId,
+        CancellationToken ct)
+    {
+        var request = new AttendanceSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
+        var bytes = await _reports.ExportAttendanceSummaryPdfAsync(request, ct);
+        return File(bytes, "application/pdf", "attendance-summary.pdf");
+    }
+
     // ── Result Summary ─────────────────────────────────────────────────────────
 
     /// <summary>Returns published result data with optional filters.</summary>
@@ -94,6 +124,36 @@ public sealed class ReportController : ControllerBase
         var request = new ResultSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
         var bytes = await _reports.ExportResultSummaryExcelAsync(request, ct);
         return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "result-summary.xlsx");
+    }
+
+    /// <summary>Downloads result summary as CSV.</summary>
+    [HttpGet("result-summary/export/csv")]
+    [Authorize(Roles = "SuperAdmin,Admin,Faculty")]
+    public async Task<IActionResult> ExportResultSummaryCsv(
+        [FromQuery] Guid? semesterId,
+        [FromQuery] Guid? departmentId,
+        [FromQuery] Guid? courseOfferingId,
+        [FromQuery] Guid? studentProfileId,
+        CancellationToken ct)
+    {
+        var request = new ResultSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
+        var bytes = await _reports.ExportResultSummaryCsvAsync(request, ct);
+        return File(bytes, "text/csv", "result-summary.csv");
+    }
+
+    /// <summary>Downloads result summary as PDF.</summary>
+    [HttpGet("result-summary/export/pdf")]
+    [Authorize(Roles = "SuperAdmin,Admin,Faculty")]
+    public async Task<IActionResult> ExportResultSummaryPdf(
+        [FromQuery] Guid? semesterId,
+        [FromQuery] Guid? departmentId,
+        [FromQuery] Guid? courseOfferingId,
+        [FromQuery] Guid? studentProfileId,
+        CancellationToken ct)
+    {
+        var request = new ResultSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
+        var bytes = await _reports.ExportResultSummaryPdfAsync(request, ct);
+        return File(bytes, "application/pdf", "result-summary.pdf");
     }
 
     // ── Assignment Summary ───────────────────────────────────────────────────
@@ -128,6 +188,36 @@ public sealed class ReportController : ControllerBase
         return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "assignment-summary.xlsx");
     }
 
+    /// <summary>Downloads assignment summary as CSV.</summary>
+    [HttpGet("assignment-summary/export/csv")]
+    [Authorize(Roles = "SuperAdmin,Admin,Faculty")]
+    public async Task<IActionResult> ExportAssignmentSummaryCsv(
+        [FromQuery] Guid? semesterId,
+        [FromQuery] Guid? departmentId,
+        [FromQuery] Guid? courseOfferingId,
+        [FromQuery] Guid? studentProfileId,
+        CancellationToken ct)
+    {
+        var request = new AssignmentSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
+        var bytes = await _reports.ExportAssignmentSummaryCsvAsync(request, ct);
+        return File(bytes, "text/csv", "assignment-summary.csv");
+    }
+
+    /// <summary>Downloads assignment summary as PDF.</summary>
+    [HttpGet("assignment-summary/export/pdf")]
+    [Authorize(Roles = "SuperAdmin,Admin,Faculty")]
+    public async Task<IActionResult> ExportAssignmentSummaryPdf(
+        [FromQuery] Guid? semesterId,
+        [FromQuery] Guid? departmentId,
+        [FromQuery] Guid? courseOfferingId,
+        [FromQuery] Guid? studentProfileId,
+        CancellationToken ct)
+    {
+        var request = new AssignmentSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
+        var bytes = await _reports.ExportAssignmentSummaryPdfAsync(request, ct);
+        return File(bytes, "application/pdf", "assignment-summary.pdf");
+    }
+
     // ── Quiz Summary ─────────────────────────────────────────────────────────
 
     /// <summary>Returns quiz attempt data with optional filters.</summary>
@@ -158,6 +248,36 @@ public sealed class ReportController : ControllerBase
         var request = new QuizSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
         var bytes = await _reports.ExportQuizSummaryExcelAsync(request, ct);
         return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "quiz-summary.xlsx");
+    }
+
+    /// <summary>Downloads quiz summary as CSV.</summary>
+    [HttpGet("quiz-summary/export/csv")]
+    [Authorize(Roles = "SuperAdmin,Admin,Faculty")]
+    public async Task<IActionResult> ExportQuizSummaryCsv(
+        [FromQuery] Guid? semesterId,
+        [FromQuery] Guid? departmentId,
+        [FromQuery] Guid? courseOfferingId,
+        [FromQuery] Guid? studentProfileId,
+        CancellationToken ct)
+    {
+        var request = new QuizSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
+        var bytes = await _reports.ExportQuizSummaryCsvAsync(request, ct);
+        return File(bytes, "text/csv", "quiz-summary.csv");
+    }
+
+    /// <summary>Downloads quiz summary as PDF.</summary>
+    [HttpGet("quiz-summary/export/pdf")]
+    [Authorize(Roles = "SuperAdmin,Admin,Faculty")]
+    public async Task<IActionResult> ExportQuizSummaryPdf(
+        [FromQuery] Guid? semesterId,
+        [FromQuery] Guid? departmentId,
+        [FromQuery] Guid? courseOfferingId,
+        [FromQuery] Guid? studentProfileId,
+        CancellationToken ct)
+    {
+        var request = new QuizSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
+        var bytes = await _reports.ExportQuizSummaryPdfAsync(request, ct);
+        return File(bytes, "application/pdf", "quiz-summary.pdf");
     }
 
     // ── GPA Report ─────────────────────────────────────────────────────────────

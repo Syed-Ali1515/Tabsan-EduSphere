@@ -87,8 +87,16 @@ public interface IEduApiClient
     Task<SemesterResultsWebModel?> GetSemesterResultsReportAsync(Guid semesterId, Guid? departmentId, CancellationToken ct);
     Task<byte[]> ExportAttendanceSummaryAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
     Task<byte[]> ExportResultSummaryAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
+    Task<byte[]> ExportAttendanceSummaryCsvAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
+    Task<byte[]> ExportAttendanceSummaryPdfAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
+    Task<byte[]> ExportResultSummaryCsvAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
+    Task<byte[]> ExportResultSummaryPdfAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
     Task<byte[]> ExportAssignmentSummaryAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
     Task<byte[]> ExportQuizSummaryAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
+    Task<byte[]> ExportAssignmentSummaryCsvAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
+    Task<byte[]> ExportAssignmentSummaryPdfAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
+    Task<byte[]> ExportQuizSummaryCsvAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
+    Task<byte[]> ExportQuizSummaryPdfAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
     Task<byte[]> ExportGpaReportAsync(Guid? departmentId, Guid? programId, CancellationToken ct);
 
     // Stage 4.2: Additional Reports
@@ -1996,11 +2004,39 @@ public class EduApiClient : IEduApiClient
         return GetBytesAsync($"api/v1/reports/attendance-summary/export{qs}", ct);
     }
 
+    public Task<byte[]> ExportAttendanceSummaryCsvAsync(
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+    {
+        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId);
+        return GetBytesAsync($"api/v1/reports/attendance-summary/export/csv{qs}", ct);
+    }
+
+    public Task<byte[]> ExportAttendanceSummaryPdfAsync(
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+    {
+        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId);
+        return GetBytesAsync($"api/v1/reports/attendance-summary/export/pdf{qs}", ct);
+    }
+
     public Task<byte[]> ExportResultSummaryAsync(
         Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
     {
         var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId);
         return GetBytesAsync($"api/v1/reports/result-summary/export{qs}", ct);
+    }
+
+    public Task<byte[]> ExportResultSummaryCsvAsync(
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+    {
+        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId);
+        return GetBytesAsync($"api/v1/reports/result-summary/export/csv{qs}", ct);
+    }
+
+    public Task<byte[]> ExportResultSummaryPdfAsync(
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+    {
+        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId);
+        return GetBytesAsync($"api/v1/reports/result-summary/export/pdf{qs}", ct);
     }
 
     public Task<byte[]> ExportAssignmentSummaryAsync(
@@ -2010,11 +2046,39 @@ public class EduApiClient : IEduApiClient
         return GetBytesAsync($"api/v1/reports/assignment-summary/export{qs}", ct);
     }
 
+    public Task<byte[]> ExportAssignmentSummaryCsvAsync(
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+    {
+        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId);
+        return GetBytesAsync($"api/v1/reports/assignment-summary/export/csv{qs}", ct);
+    }
+
+    public Task<byte[]> ExportAssignmentSummaryPdfAsync(
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+    {
+        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId);
+        return GetBytesAsync($"api/v1/reports/assignment-summary/export/pdf{qs}", ct);
+    }
+
     public Task<byte[]> ExportQuizSummaryAsync(
         Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
     {
         var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId);
         return GetBytesAsync($"api/v1/reports/quiz-summary/export{qs}", ct);
+    }
+
+    public Task<byte[]> ExportQuizSummaryCsvAsync(
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+    {
+        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId);
+        return GetBytesAsync($"api/v1/reports/quiz-summary/export/csv{qs}", ct);
+    }
+
+    public Task<byte[]> ExportQuizSummaryPdfAsync(
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+    {
+        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId);
+        return GetBytesAsync($"api/v1/reports/quiz-summary/export/pdf{qs}", ct);
     }
 
     // GPA report uses department + program filters only (no per-offering or per-student scope).
