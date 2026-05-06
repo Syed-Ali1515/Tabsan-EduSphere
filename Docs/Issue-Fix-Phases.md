@@ -100,6 +100,20 @@ This file tracks the reported portal issues as phased work items so they can be 
 - FYP Management shows `API request failed with status 403` for faculty.
 - Faculty cannot create FYP records for students.
 
+### Phase 3 Progress Update - 2026-05-07 (Full Phase 3 Delivery)
+All 8 stages of Phase 3 Faculty Workflow Repair are now resolved:
+- **Stage 3.1 (Courses/Offerings 403)**: `CourseController.GetAll` and `GetOfferings` — replaced `Forbid()` with `Ok(Array.Empty<object>())` when departmentId is outside faculty's allowed list.
+- **Stage 3.2 (Assignments empty dropdown)**: `CourseController.GetMyOfferings` for Faculty — changed from `GetOfferingsByFacultyAsync(userId)` (only offerings with explicit FacultyUserId match) to load all offerings filtered by faculty's assigned departments.
+- **Stage 3.3 (Enrollments 403)**: Same root cause as 3.1 fixed in `CourseController`; `PortalController.Enrollments` cleaned up duplicated branch.
+- **Stage 3.4 (Students 403)**: `StudentController.GetAll` — removed `Forbid()` when departmentId is outside faculty's list; now silently scopes to allowed departments.
+- **Stage 3.5 (Attendance empty dropdown)**: Covered by Stage 3.2 fix (same `GetMyOfferings` endpoint).
+- **Stage 3.6 (Results empty dropdown)**: Covered by Stage 3.2 fix.
+- **Stage 3.7 (Quizzes empty dropdown)**: Covered by Stage 3.2 fix.
+- **Stage 3.8 (FYP 403 / can't create)**: `FypController.admin-create` policy changed from `"Admin"` to `"Faculty"`; `PortalController.Fyp()` faculty branch loads students; `Fyp.cshtml` shows "Create Project" button and createFypModal for Faculty role.
+- Validation:
+  - `dotnet build Tabsan.EduSphere.sln` — 0 errors.
+  - All 78 tests passed (70 integration + 7 unit + 1 contract).
+
 ## Phase 4 - Student Workflow Repair
 
 ### Stage 4.1 - Student Assignment Submission Flow

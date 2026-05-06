@@ -46,8 +46,9 @@ else
                                 + Propose Project
                             </button>
                         }
-                        else if (User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))
+                        else if (User.IsInRole("Admin") || User.IsInRole("SuperAdmin") || User.IsInRole("Faculty"))
                         {
+                            @* Issue-Fix Phase 3 Stage 3.8 — Faculty can create FYP for their dept students. *@
                             <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#createFypModal">
                                 + Create Project
                             </button>
@@ -241,7 +242,8 @@ else
     </div>
 </div>
 
-@if ((User.IsInRole("Admin") || User.IsInRole("SuperAdmin")) && Model.Students.Any())
+@* Issue-Fix Phase 3 Stage 3.8 — Faculty can also create FYP records for their department students. *@
+@if ((User.IsInRole("Admin") || User.IsInRole("SuperAdmin") || User.IsInRole("Faculty")) && Model.Students.Any())
 {
     <div class="modal fade" id="createFypModal" tabindex="-1">
         <div class="modal-dialog">

@@ -3,6 +3,41 @@
 > **Maintenance rule**: Every function added to the codebase must be registered here with Name, Purpose, and Location.
 > Format: `Name | Purpose | Location`
 
+## Issue-Fix Phase 3 — Faculty Workflow Repair (2026-05-07)
+
+### API — CourseController (Phase 3)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetAll(departmentId, ct)` Faculty branch | Stage 3.1/3.3 — Returns empty list instead of 403 when requested departmentId is outside faculty's assigned departments. | `API/Controllers/CourseController.cs` |
+| `GetOfferings(departmentId, semesterId, ct)` Faculty branch | Stage 3.1 — Returns empty list instead of 403; shows ALL offerings in faculty's assigned departments (not filtered by FacultyUserId). | `API/Controllers/CourseController.cs` |
+| `GetMyOfferings(ct)` Faculty branch | Stage 3.2/3.5/3.6/3.7 — Changed from `GetOfferingsByFacultyAsync(userId)` to all offerings filtered by faculty's assigned dept IDs, fixing empty Assignments/Attendance/Results/Quizzes dropdowns. | `API/Controllers/CourseController.cs` |
+
+### API — StudentController (Phase 3)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetAll(departmentId, ct)` Faculty branch | Stage 3.4 — Removed `Forbid()` when departmentId is outside faculty's assigned list; silently scopes results to allowed departments. | `API/Controllers/StudentController.cs` |
+
+### API — FypController (Phase 3)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `AdminCreate(request, ct)` | Stage 3.8 — Policy changed from `"Admin"` to `"Faculty"` so Faculty can create FYP records for their students. | `API/Controllers/FypController.cs` |
+
+### Web — PortalController (Phase 3)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `Fyp(departmentId, ct)` Faculty branch | Stage 3.8 — Faculty branch now loads `model.Students` (dept-scoped) so faculty can create FYP records for students. | `Web/Controllers/PortalController.cs` |
+| `Enrollments(offeringId, ct)` | Stage 3.3 — Removed dead duplicate Faculty branch; uses `GetCourseOfferingsAsync(null)` for all roles. | `Web/Controllers/PortalController.cs` |
+
+### Web — Views (Phase 3)
+
+| View | Change | Location |
+|---|---|---|
+| `Fyp.cshtml` | Stage 3.8 — `createFypModal` condition and "Create Project" button extended to include `Faculty` role. | `Web/Views/Portal/Fyp.cshtml` |
+
 ## Issue-Fix Phase 4 — Web User Import + Forced Password Change (2026-05-06)
 
 ### Web — Login / Portal Flow

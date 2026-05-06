@@ -48,11 +48,11 @@ git push
 ---
 
 ## Current Execution Pointer
-- Plan Source: Observed-Issues.md (Phase 4 items P4-S1-01 through P4-S3-01)
-- Active Phase: **Issue-Fix Phase 4 — Web UI Import + Forced Password Change**
-- Active Stage: **Phase 4 Option A/C implementation (completed)**
-- Status: **Completed — User Import portal UI, forced password change portal flow, and integration tests validated.**
-- Last Updated: 2026-05-06
+- Plan Source: Issue-Fix-Phases.md
+- Active Phase: **Issue-Fix Phase 3 — Faculty Workflow Repair**
+- Active Stage: **All 8 stages completed**
+- Status: **Completed — 0 build errors; 78/78 tests passed (70 integration + 7 unit + 1 contract).**
+- Last Updated: 2026-05-07
 
 ---
 
@@ -96,6 +96,13 @@ Open `Observed-Issues.md` and add new Phase 5 items, then tell the assistant to 
 ---
 
 ## Completed Work
+- **Issue-Fix Phase 3 — Faculty Workflow Repair (ALL 8 stages Done)** ✅ (2026-05-07)
+  - Stage 3.1: CourseController.GetAll + GetOfferings — replaced Forbid() with Ok(empty) for out-of-scope dept requests
+  - Stage 3.2/3.5/3.6/3.7: CourseController.GetMyOfferings — changed from FacultyUserId filter to dept-scope filter; fixes all empty dropdowns
+  - Stage 3.3: Enrollments 403 fixed via same CourseController changes; cleaned up dead branch in PortalController
+  - Stage 3.4: StudentController.GetAll — removed Forbid(); silently scopes to allowed departments
+  - Stage 3.8: FypController.admin-create policy → "Faculty"; PortalController.Fyp() loads students for faculty; Fyp.cshtml shows Create button for Faculty
+  - Validation: 0 build errors, 78/78 tests passed
 - **Phase 1 Remediation — ALL 15 items Done (P1-S1-01 through P1-S6-04)** ✅
   - Stage 1.1: 403 auth fixes on Attendance/Assignments/Quizzes/Results; 30+ regression tests in AuthorizationRegressionTests.cs
   - Stage 1.2: Departments, Courses+Offerings, Enrollments, FYP Management CRUD fully implemented

@@ -36,10 +36,11 @@ public sealed class FypController : ControllerBase
     }
 
     /// <summary>
-    /// Creates a new FYP project directly for a student. Admin and SuperAdmin only.
+    /// Creates a new FYP project directly for a student. Admin, SuperAdmin, and Faculty.
     /// </summary>
+    // Issue-Fix Phase 3 Stage 3.8 — Allow Faculty to create FYP records for their students.
     [HttpPost("admin-create")]
-    [Authorize(Policy = "Admin")]
+    [Authorize(Policy = "Faculty")]
     public async Task<IActionResult> CreateForStudent([FromBody] CreateProjectForStudentRequest request, CancellationToken ct)
     {
         var id = await _fypService.CreateForStudentAsync(request, ct);

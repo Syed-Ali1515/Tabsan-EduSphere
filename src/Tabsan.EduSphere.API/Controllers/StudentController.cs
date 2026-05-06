@@ -78,12 +78,11 @@ public class StudentController : ControllerBase
     {
         var students = await _studentRepo.GetAllAsync(departmentId, ct);
 
+        // Issue-Fix Phase 3 Stage 3.4 — Replace Forbid with scoped filter; faculty sees only their assigned-dept students.
         if (User.IsInRole("Faculty") && !User.IsInRole("Admin") && !User.IsInRole("SuperAdmin"))
         {
             var allowedDepartmentIds = await _facultyAssignments.GetDepartmentIdsForFacultyAsync(GetUserId(), ct);
-            if (departmentId.HasValue && !allowedDepartmentIds.Contains(departmentId.Value))
-                return Forbid();
-
+            // If an explicit dept is requested that's outside allowed list, scope to allowed only (no 403).
             students = students.Where(sp => allowedDepartmentIds.Contains(sp.DepartmentId)).ToList();
         }
 

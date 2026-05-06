@@ -43,11 +43,12 @@ public class CourseController : ControllerBase
     {
         var courses = await _repo.GetAllAsync(departmentId, ct);
 
+        // Issue-Fix Phase 3 Stage 3.1 — Replace Forbid with empty result; faculty sees only their assigned-dept courses.
         if (User.IsInRole("Faculty") && !User.IsInRole("Admin") && !User.IsInRole("SuperAdmin"))
         {
             var allowedDepartmentIds = await _facultyAssignments.GetDepartmentIdsForFacultyAsync(GetUserId(), ct);
             if (departmentId.HasValue && !allowedDepartmentIds.Contains(departmentId.Value))
-                return Forbid();
+                return Ok(Array.Empty<object>()); // Not in assigned depts — return empty instead of 403.
 
             courses = courses.Where(c => allowedDepartmentIds.Contains(c.DepartmentId)).ToList();
         }
@@ -145,16 +146,17 @@ public class CourseController : ControllerBase
         else
             offerings = await _repo.GetAllOfferingsAsync(ct);
 
+        // Issue-Fix Phase 3 Stage 3.1 — Replace Forbid with empty result; faculty sees all offerings in their depts.
         if (User.IsInRole("Faculty") && !User.IsInRole("Admin") && !User.IsInRole("SuperAdmin"))
         {
             var userId = GetUserId();
             var allowedDepartmentIds = await _facultyAssignments.GetDepartmentIdsForFacultyAsync(userId, ct);
 
             if (departmentId.HasValue && !allowedDepartmentIds.Contains(departmentId.Value))
-                return Forbid();
+                return Ok(Array.Empty<object>()); // Not in assigned depts — return empty instead of 403.
 
             offerings = offerings
-                .Where(o => o.FacultyUserId == userId && allowedDepartmentIds.Contains(o.Course.DepartmentId))
+                .Where(o => allowedDepartmentIds.Contains(o.Course.DepartmentId))
                 .ToList();
         }
 
@@ -212,13 +214,14 @@ public class CourseController : ControllerBase
             }));
         }
 
+        // Issue-Fix Phase 3 Stage 3.2 — Return ALL active offerings in faculty's assigned depts (not just FacultyUserId-matched).
+        // This ensures the dropdown on Assignments, Attendance, Results, and Quizzes pages is populated.
         if (role.Equals("Faculty", StringComparison.OrdinalIgnoreCase))
         {
             var allowedDepts = await _facultyAssignments.GetDepartmentIdsForFacultyAsync(userId, ct);
-            var offerings = await _repo.GetOfferingsByFacultyAsync(userId, ct);
+            var allOfferings = await _repo.GetAllOfferingsAsync(ct);
 
-            // Filter to only offerings whose course belongs to an assigned department.
-            var filtered = offerings.Where(o => allowedDepts.Contains(o.Course.DepartmentId));
+            var filtered = allOfferings.Where(o => allowedDepts.Contains(o.Course.DepartmentId));
             return Ok(filtered.Select(o => new
             {
                 o.Id, CourseTitle = o.Course.Title, SemesterName = o.Semester.Name,

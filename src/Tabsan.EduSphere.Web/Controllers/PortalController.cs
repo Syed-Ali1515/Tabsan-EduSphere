@@ -1539,11 +1539,17 @@ public class PortalController : Controller
 
                 model.Projects = await _api.GetMyFypProjectsAsync(ct);
             }
+            // Issue-Fix Phase 3 Stage 3.8 — Faculty FYP workflow: load supervised projects + student list for FYP creation.
             else if (sessionId?.IsFaculty == true)
             {
                 model.Departments = await _api.GetDepartmentsAsync(ct);
                 model.UpcomingMeetings = await _api.GetUpcomingMeetingsAsync(ct);
                 model.Projects = await _api.GetMySupervisedProjectsAsync(ct);
+
+                // Load students so faculty can create an FYP record for a student.
+                var deptToLoad = departmentId ?? model.Departments.FirstOrDefault()?.Id;
+                if (deptToLoad.HasValue)
+                    model.Students = await _api.GetStudentsAsync(deptToLoad, ct);
             }
             else if (departmentId.HasValue)
             {
@@ -2163,6 +2169,7 @@ public class PortalController : Controller
     // ── Enrollments ────────────────────────────────────────────────────────
 
     // Final-Touches Phase 8 Stage 8.1+8.2 — student sees own courses; admin sees offering roster + students list
+    // Issue-Fix Phase 3 Stage 3.3 — Faculty: load offerings via GetMyOfferings (dept-scoped) + show roster when offering selected.
     [HttpGet]
     public async Task<IActionResult> Enrollments(Guid? offeringId, CancellationToken ct)
     {
@@ -2181,9 +2188,8 @@ public class PortalController : Controller
             var sessionId = _api.GetSessionIdentity();
             var isAdmin = sessionId?.IsAdmin == true || sessionId?.IsSuperAdmin == true;
 
-            model.Offerings = sessionId?.IsFaculty == true
-                ? await _api.GetCourseOfferingsAsync(null, ct).ConfigureAwait(false)
-                : await _api.GetCourseOfferingsAsync(null, ct).ConfigureAwait(false);
+            // Issue-Fix Phase 3 Stage 3.3 — Use GetCourseOfferingsAsync for all roles; API filters by dept for Faculty.
+            model.Offerings = await _api.GetCourseOfferingsAsync(null, ct);
 
             if (isStudent)
             {

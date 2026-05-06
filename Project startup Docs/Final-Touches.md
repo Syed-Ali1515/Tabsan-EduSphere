@@ -15,6 +15,23 @@ For **every completed phase**:
 
 ---
 
+## Issue-Fix Phase 3 — Faculty Workflow Repair
+**Status:** ✅ Complete (2026-05-07)
+
+**Stages completed:**
+- 3.1 — Faculty Courses/Offerings 403: replaced `Forbid()` with empty-list response in `CourseController.GetAll` and `GetOfferings`
+- 3.2 — Faculty Assignments empty dropdown: `GetMyOfferings` now filters all offerings by faculty's assigned dept IDs
+- 3.3 — Faculty Enrollments 403: same API fix; `PortalController.Enrollments` dead branch removed
+- 3.4 — Faculty Students 403: `StudentController.GetAll` no longer returns 403, silently scopes by dept
+- 3.5/3.6/3.7 — Attendance/Results/Quizzes empty dropdowns: covered by Stage 3.2 fix
+- 3.8 — Faculty FYP 403 / can't create: `FypController.admin-create` policy → `"Faculty"`; portal Fyp action loads students for faculty; Fyp view shows Create button for Faculty role
+
+**Validation:**
+- `dotnet build` — 0 errors
+- 78/78 tests passed (70 integration + 7 unit + 1 contract)
+
+---
+
 ## Phase 1 - Navigation, Session Stability, Sidebar Structure
 **Status:** ✅ Complete
 

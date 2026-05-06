@@ -10,6 +10,16 @@
 
 ## 0. Implementation Update Log
 
+### 2026-05-07 — Issue-Fix Phase 3 Complete (Faculty Workflow Repair)
+- Resolved all 8 Faculty workflow issues (403 errors and empty dropdowns):
+  - `CourseController.GetAll` + `GetOfferings`: `Forbid()` → empty-list for out-of-scope dept requests
+  - `CourseController.GetMyOfferings` for Faculty: changed from `FacultyUserId` filter to dept-assignment scope filter; fixes Assignments/Attendance/Results/Quizzes dropdowns
+  - `StudentController.GetAll` for Faculty: removed `Forbid()`, silently scopes to allowed departments
+  - `FypController.admin-create`: policy changed from `"Admin"` to `"Faculty"`
+  - `PortalController.Fyp()` Faculty branch: loads students for FYP creation workflow
+  - `Fyp.cshtml`: "Create Project" button + `createFypModal` now render for Faculty role
+- Validation: 0 build errors; 78/78 tests passed
+
 ### 2026-05-06 — Issue-Fix Phase 4 Option A/C Complete (Web UI Import + Forced Password Change)
 - Added/validated portal user import flow:
   - User Import page + CSV upload form + import summary rendering
