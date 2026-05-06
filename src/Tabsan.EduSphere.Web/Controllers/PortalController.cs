@@ -856,6 +856,66 @@ public class PortalController : Controller
         return View(model);
     }
 
+    // ── User Import ───────────────────────────────────────────────────────
+
+    [HttpGet]
+    public IActionResult UserImport()
+    {
+        ViewData["Title"] = "User Import";
+        var model = new UserImportPageModel { IsConnected = _api.IsConnected() };
+        if (!model.IsConnected) return View(model);
+
+        var identity = _api.GetSessionIdentity();
+        var canImport = identity?.IsAdmin == true || identity?.IsSuperAdmin == true;
+        if (!canImport)
+            model.Message = "Only Admin or SuperAdmin can import users.";
+
+        return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ImportUsersCsv(IFormFile? csvFile, CancellationToken ct)
+    {
+        ViewData["Title"] = "User Import";
+        var model = new UserImportPageModel { IsConnected = _api.IsConnected() };
+        if (!model.IsConnected)
+            return View("UserImport", model);
+
+        var identity = _api.GetSessionIdentity();
+        var canImport = identity?.IsAdmin == true || identity?.IsSuperAdmin == true;
+        if (!canImport)
+        {
+            model.Message = "Only Admin or SuperAdmin can import users.";
+            return View("UserImport", model);
+        }
+
+        if (csvFile is null || csvFile.Length == 0)
+        {
+            model.Message = "Please choose a non-empty CSV file.";
+            return View("UserImport", model);
+        }
+
+        if (!csvFile.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+        {
+            model.Message = "Invalid file type. Only .csv files are accepted.";
+            return View("UserImport", model);
+        }
+
+        try
+        {
+            using var stream = csvFile.OpenReadStream();
+            model.Result = await _api.ImportUsersCsvAsync(stream, csvFile.FileName, ct);
+            model.Message = "CSV import completed.";
+        }
+        catch (Exception ex)
+        {
+            model.Message = $"Import failed: {ex.Message}";
+        }
+
+        return View("UserImport", model);
+    }
+
     // ── Departments ────────────────────────────────────────────────────────
 
     [HttpGet]

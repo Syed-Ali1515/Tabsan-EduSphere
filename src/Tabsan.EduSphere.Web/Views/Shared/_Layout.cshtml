@@ -117,6 +117,7 @@
         "theme_settings"    => ("Portal", "ThemeSettings"),
         "notifications"     => ("Portal", "Notifications"),
         "students"          => ("Portal", "Students"),
+        "user_import"       => ("Portal", "UserImport"),
         "departments"       => ("Portal", "Departments"),
         "admin_users"       => ("Portal", "AdminUsers"),
         "courses"           => ("Portal", "Courses"),
@@ -153,6 +154,7 @@
 
         "timetable_student" => ("Student Related", 3),
         "students" => ("Student Related", 3),
+        "user_import" => ("Faculty Related", 2),
         "attendance" => ("Student Related", 3),
         "results" => ("Student Related", 3),
         "quizzes" => ("Student Related", 3),
@@ -338,6 +340,7 @@
                         @if (showAdminLinks)
                         {
                             <a class="menu-link" asp-controller="Portal" asp-action="Students">Students</a>
+                            <a class="menu-link" asp-controller="Portal" asp-action="UserImport">User Import</a>
                             <a class="menu-link" asp-controller="Portal" asp-action="Departments">Departments</a>
                         }
                         <a class="menu-link" asp-controller="Portal" asp-action="Courses">Courses</a>

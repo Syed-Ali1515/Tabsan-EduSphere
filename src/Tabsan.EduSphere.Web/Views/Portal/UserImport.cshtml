@@ -1,0 +1,83 @@
+@model Tabsan.EduSphere.Web.Models.Portal.UserImportPageModel
+@{
+    ViewData["Title"] = "User Import";
+}
+
+<div class="row g-4">
+    @if (!Model.IsConnected)
+    {
+        <div class="col-12">
+            <div class="alert alert-warning mb-0">Not connected to the API. Configure connection on Dashboard first.</div>
+        </div>
+    }
+    else
+    {
+        <div class="col-12 col-lg-7">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Import Users From CSV</h2>
+                    <p class="text-muted small mb-3">
+                        Required columns: Username, Email, FullName, Role, DepartmentId(optional).<br />
+                        Imported accounts use Username as initial password and are forced to change password on first login.
+                    </p>
+
+                    <form asp-action="ImportUsersCsv" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <div class="mb-3">
+                            <label class="form-label" for="csvFile">CSV File</label>
+                            <input class="form-control" type="file" id="csvFile" name="csvFile" accept=".csv" required />
+                        </div>
+                        <button type="submit" class="btn btn-primary">Upload and Import</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-5">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">CSV Header Example</h2>
+                    <pre class="bg-light rounded p-3 mb-0" style="white-space:pre-wrap;">Username,Email,FullName,Role,DepartmentId
+admin1,admin1@tabsan.local,Admin One,Admin,
+faculty1,faculty1@tabsan.local,Faculty One,Faculty,0f8fad5b-d9cb-469f-a165-70867728950e
+student1,student1@tabsan.local,Student One,Student,0f8fad5b-d9cb-469f-a165-70867728950e</pre>
+                </div>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Model.Message))
+        {
+            <div class="col-12">
+                <div class="alert alert-info">@Model.Message</div>
+            </div>
+        }
+
+        @if (Model.Result is not null)
+        {
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h2 class="h5 mb-3">Import Summary</h2>
+                        <div class="row g-2 mb-3">
+                            <div class="col-6 col-md-3"><div class="border rounded p-2"><strong>Total</strong><div>@Model.Result.TotalRows</div></div></div>
+                            <div class="col-6 col-md-3"><div class="border rounded p-2"><strong>Imported</strong><div>@Model.Result.Imported</div></div></div>
+                            <div class="col-6 col-md-3"><div class="border rounded p-2"><strong>Duplicates</strong><div>@Model.Result.Duplicates</div></div></div>
+                            <div class="col-6 col-md-3"><div class="border rounded p-2"><strong>Errors</strong><div>@Model.Result.Errors</div></div></div>
+                        </div>
+
+                        @if (Model.Result.ErrorDetails.Count > 0)
+                        {
+                            <h3 class="h6">Error Details</h3>
+                            <ul class="mb-0">
+                                @foreach (var error in Model.Result.ErrorDetails)
+                                {
+                                    <li>@error</li>
+                                }
+                            </ul>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>

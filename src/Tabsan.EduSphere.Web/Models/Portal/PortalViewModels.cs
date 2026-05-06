@@ -467,6 +467,22 @@ public class AdminUsersPageModel
     public List<Guid> AssignedDepartmentIds { get; set; } = new();
 }
 
+public class UserImportResultItem
+{
+    public int TotalRows { get; set; }
+    public int Imported { get; set; }
+    public int Duplicates { get; set; }
+    public int Errors { get; set; }
+    public List<string> ErrorDetails { get; set; } = new();
+}
+
+public class UserImportPageModel
+{
+    public bool IsConnected { get; set; }
+    public string? Message { get; set; }
+    public UserImportResultItem? Result { get; set; }
+}
+
 // ── Courses ───────────────────────────────────────────────────────────────────
 
 public class CourseItem

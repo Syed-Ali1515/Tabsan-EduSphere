@@ -119,6 +119,7 @@ public interface IEduApiClient
     Task CreateDepartmentAsync(string name, string code, CancellationToken ct);
     Task UpdateDepartmentAsync(Guid id, string newName, CancellationToken ct);
     Task DeactivateDepartmentAsync(Guid id, CancellationToken ct);
+    Task<UserImportResultItem> ImportUsersCsvAsync(Stream fileStream, string fileName, CancellationToken ct);
     Task<List<AdminUserLookupItem>> GetAdminUsersAsync(CancellationToken ct);
     Task<Guid> CreateAdminUserAsync(string username, string? email, string password, CancellationToken ct);
     Task UpdateAdminUserAsync(Guid userId, string? email, bool isActive, string? newPassword, CancellationToken ct);
@@ -969,6 +970,15 @@ public class EduApiClient : IEduApiClient
         public Guid DepartmentId { get; set; }
     }
 
+    private sealed class UserImportResultApiDto
+    {
+        public int TotalRows { get; set; }
+        public int Imported { get; set; }
+        public int Duplicates { get; set; }
+        public int Errors { get; set; }
+        public List<string>? ErrorDetails { get; set; }
+    }
+
     public Task CreateDepartmentAsync(string name, string code, CancellationToken ct)
         => PostAsync<object, object>("api/v1/department", new { name, code }, ct);
 
@@ -977,6 +987,32 @@ public class EduApiClient : IEduApiClient
 
     public Task DeactivateDepartmentAsync(Guid id, CancellationToken ct)
         => DeleteAsync($"api/v1/department/{id}", ct);
+
+    public async Task<UserImportResultItem> ImportUsersCsvAsync(Stream fileStream, string fileName, CancellationToken ct)
+    {
+        using var content = new MultipartFormDataContent();
+        content.Add(new StreamContent(fileStream), "file", fileName);
+
+        using var request = CreateRequest(HttpMethod.Post, "api/v1/user-import/csv");
+        request.Content = content;
+
+        using var response = await CreateClient().SendAsync(request, ct);
+        var body = await response.Content.ReadAsStringAsync(ct);
+        if (!response.IsSuccessStatusCode) throw BuildException(response.StatusCode, body);
+
+        var raw = string.IsNullOrWhiteSpace(body)
+            ? null
+            : JsonSerializer.Deserialize<UserImportResultApiDto>(body, _jsonOptions);
+
+        return new UserImportResultItem
+        {
+            TotalRows = raw?.TotalRows ?? 0,
+            Imported = raw?.Imported ?? 0,
+            Duplicates = raw?.Duplicates ?? 0,
+            Errors = raw?.Errors ?? 0,
+            ErrorDetails = raw?.ErrorDetails ?? new List<string>()
+        };
+    }
 
     public async Task<List<AdminUserLookupItem>> GetAdminUsersAsync(CancellationToken ct)
     {
