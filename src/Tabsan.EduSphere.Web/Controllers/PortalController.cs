@@ -1077,6 +1077,13 @@ public class PortalController : Controller
             var sessionId = _api.GetSessionIdentity();
             if (sessionId?.IsStudent == true)
             {
+                var profile = await _api.GetMyStudentProfileAsync(ct);
+                if ((profile?.CurrentSemesterNumber ?? 0) < 8)
+                {
+                    TempData["PortalMessage"] = "FYP becomes available from semester 8.";
+                    return RedirectToAction(nameof(Dashboard));
+                }
+
                 model.Projects = await _api.GetMyFypProjectsAsync(ct);
             }
             else if (sessionId?.IsFaculty == true)

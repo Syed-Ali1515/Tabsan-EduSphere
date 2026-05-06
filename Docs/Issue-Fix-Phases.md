@@ -388,3 +388,13 @@ Implemented student-side assignment workflow corrections in the web portal:
 - Student pages now render without JSON conversion errors.
 - Student assignment list now shows real assignment title, real assignment ID navigation, and correct max marks.
 - Submit flow is wired end-to-end in UI and controller; API business rules (publish/due-date/duplicate checks) are now surfaced as actionable portal messages.
+
+### Stage 4.6 - FYP Menu Gating (Implemented)
+
+- Student sidebar FYP menu now appears only when the student's `CurrentSemesterNumber >= 8`.
+- Direct navigation to `Portal/Fyp` by students below 8th semester is blocked and redirected to Dashboard with a guidance message.
+
+### Auth Consistency Hardening (Runtime Validation Support)
+
+- Login flow now prefers the active portal API base URL when obtaining JWT so login token source and subsequent API calls remain aligned.
+- This removes intermittent student-page `401` regressions caused by mismatched API base resolution across login and portal request paths.

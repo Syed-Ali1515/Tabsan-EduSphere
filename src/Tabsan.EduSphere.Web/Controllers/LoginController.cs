@@ -43,7 +43,10 @@ public class LoginController : Controller
             return View();
         }
 
-        var apiBase = _config["EduApi:BaseUrl"]?.TrimEnd('/') ?? "http://localhost:5181";
+        var existingConnection = _api.GetConnection();
+        var apiBase = (string.IsNullOrWhiteSpace(existingConnection.ApiBaseUrl)
+            ? (_config["EduApi:BaseUrl"] ?? "http://localhost:5181")
+            : existingConnection.ApiBaseUrl).TrimEnd('/');
 
         try
         {
@@ -76,7 +79,8 @@ public class LoginController : Controller
             _api.SaveConnection(new ApiConnectionModel
             {
                 ApiBaseUrl  = apiBase,
-                AccessToken = result.AccessToken
+                AccessToken = result.AccessToken,
+                DefaultDepartmentId = existingConnection.DefaultDepartmentId
             });
 
             var redirect = Url.IsLocalUrl(returnUrl) ? returnUrl : Url.Action("Dashboard", "Portal")!;

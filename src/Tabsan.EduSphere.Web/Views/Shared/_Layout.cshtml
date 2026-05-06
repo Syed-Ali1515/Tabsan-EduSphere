@@ -26,6 +26,20 @@
     var showStudentLinks    = isStudent    || noRoles;
     var showSuperAdminLinks = isSuperAdmin || noRoles;
 
+    var studentSemesterNumber = 0;
+    if (isConnected && isStudent)
+    {
+        try
+        {
+            studentSemesterNumber = (await EduApi.GetMyStudentProfileAsync(CancellationToken.None))?.CurrentSemesterNumber ?? 0;
+        }
+        catch
+        {
+            studentSemesterNumber = 0;
+        }
+    }
+    var canStudentSeeFyp = !isStudent || studentSemesterNumber >= 8;
+
     // Display name for header
     var displayName = sessionId?.UserName ?? (aspNetAuth ? principal!.Identity!.Name : null) ?? "Guest";
 
@@ -248,6 +262,11 @@
                         {
                             foreach (var sub in subMenus)
                             {
+                                if (isStudent && !canStudentSeeFyp && sub.Key.Equals("fyp", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    continue;
+                                }
+
                                 var subRoute = ResolveRoute(sub.Key);
                                 if (subRoute is null) { continue; }
                                 var subGroup = ResolveGroup(sub.Key);
@@ -256,6 +275,11 @@
                         }
                         else
                         {
+                            if (isStudent && !canStudentSeeFyp && top.Key.Equals("fyp", StringComparison.OrdinalIgnoreCase))
+                            {
+                                continue;
+                            }
+
                             var topRoute = ResolveRoute(top.Key);
                             if (topRoute is null) { continue; }
                             var topGroup = ResolveGroup(top.Key);
@@ -323,7 +347,10 @@
                     <a class="menu-link" asp-controller="Portal" asp-action="Attendance">Attendance</a>
                     <a class="menu-link" asp-controller="Portal" asp-action="Results">Results</a>
                     <a class="menu-link" asp-controller="Portal" asp-action="Quizzes">Quizzes</a>
-                    <a class="menu-link" asp-controller="Portal" asp-action="Fyp">FYP</a>
+                    @if (canStudentSeeFyp)
+                    {
+                        <a class="menu-link" asp-controller="Portal" asp-action="Fyp">FYP</a>
+                    }
 
                     @if (showAdminLinks || showFacultyLinks)
                     {
