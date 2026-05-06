@@ -539,3 +539,26 @@ Implemented student-side assignment workflow corrections in the web portal:
 - Full solution build succeeds after CSV/PDF export additions.
 - CSV export now returns `text/csv` files for attendance, results, assignments, and quizzes.
 - PDF export now returns `application/pdf` files for attendance, results, assignments, and quizzes.
+
+### Stage 5.3 - SuperAdmin Reporting Scope (Implemented)
+
+- SuperAdmin continues to receive full report catalog visibility and unrestricted report filter data.
+- SuperAdmin report endpoints remain unrestricted across departments and courses.
+
+### Stage 5.4 - Admin Reporting Scope (Partial)
+
+- Current behavior allows Admin to view report data across departments/courses (same as SuperAdmin).
+- Full "assigned departments and assigned courses only" enforcement remains dependent on Phase 6 multi-department admin assignment data model.
+
+### Stage 5.5 - Faculty Reporting Scope (Implemented)
+
+- Department and course/offering filter APIs now return faculty-scoped data only:
+	- Department list is restricted to faculty department assignments.
+	- Course and offering list endpoints are restricted to faculty-owned offerings within assigned departments.
+- Report data and export endpoints now enforce faculty scope by requiring a selected course offering owned by the requesting faculty user.
+- Portal report pages now surface a guidance message when faculty attempts to run reports without selecting an offering.
+
+### Stage 5 Scope Validation Notes
+
+- Full solution build succeeds after role-scope hardening updates.
+- Faculty cannot request report data for unassigned/unowned offerings (API now returns `Forbid`/validation error as appropriate).

@@ -2001,10 +2001,16 @@ public class PortalController : Controller
         if (!model.IsConnected) return View(model);
         try
         {
+            var identity = _api.GetSessionIdentity();
+            var isFacultyOnly = identity?.IsFaculty == true && !identity.IsAdmin && !identity.IsSuperAdmin;
             model.Semesters    = await _api.GetSemestersAsync(ct);
             model.Departments  = await _api.GetDepartmentsAsync(ct);
             model.Offerings    = await _api.GetCourseOfferingsAsync(null, ct);
-            if (semesterId.HasValue || departmentId.HasValue || offeringId.HasValue || studentId.HasValue)
+            if (isFacultyOnly && !offeringId.HasValue && (semesterId.HasValue || departmentId.HasValue || studentId.HasValue))
+            {
+                model.Message = "Faculty must select a course offering before generating report data.";
+            }
+            else if (semesterId.HasValue || departmentId.HasValue || offeringId.HasValue || studentId.HasValue)
                 model.Report = await _api.GetAttendanceSummaryReportAsync(semesterId, departmentId, offeringId, studentId, ct);
         }
         catch (Exception ex) { model.Message = ex.Message; }
@@ -2027,10 +2033,16 @@ public class PortalController : Controller
         if (!model.IsConnected) return View(model);
         try
         {
+            var identity = _api.GetSessionIdentity();
+            var isFacultyOnly = identity?.IsFaculty == true && !identity.IsAdmin && !identity.IsSuperAdmin;
             model.Semesters   = await _api.GetSemestersAsync(ct);
             model.Departments = await _api.GetDepartmentsAsync(ct);
             model.Offerings   = await _api.GetCourseOfferingsAsync(null, ct);
-            if (semesterId.HasValue || departmentId.HasValue || offeringId.HasValue || studentId.HasValue)
+            if (isFacultyOnly && !offeringId.HasValue && (semesterId.HasValue || departmentId.HasValue || studentId.HasValue))
+            {
+                model.Message = "Faculty must select a course offering before generating report data.";
+            }
+            else if (semesterId.HasValue || departmentId.HasValue || offeringId.HasValue || studentId.HasValue)
                 model.Report = await _api.GetResultSummaryReportAsync(semesterId, departmentId, offeringId, studentId, ct);
         }
         catch (Exception ex) { model.Message = ex.Message; }
@@ -2053,10 +2065,16 @@ public class PortalController : Controller
         if (!model.IsConnected) return View(model);
         try
         {
+            var identity = _api.GetSessionIdentity();
+            var isFacultyOnly = identity?.IsFaculty == true && !identity.IsAdmin && !identity.IsSuperAdmin;
             model.Semesters   = await _api.GetSemestersAsync(ct);
             model.Departments = await _api.GetDepartmentsAsync(ct);
             model.Offerings   = await _api.GetCourseOfferingsAsync(null, ct);
-            if (semesterId.HasValue || departmentId.HasValue || offeringId.HasValue || studentId.HasValue)
+            if (isFacultyOnly && !offeringId.HasValue && (semesterId.HasValue || departmentId.HasValue || studentId.HasValue))
+            {
+                model.Message = "Faculty must select a course offering before generating report data.";
+            }
+            else if (semesterId.HasValue || departmentId.HasValue || offeringId.HasValue || studentId.HasValue)
                 model.Report = await _api.GetAssignmentSummaryReportAsync(semesterId, departmentId, offeringId, studentId, ct);
         }
         catch (Exception ex) { model.Message = ex.Message; }
@@ -2079,10 +2097,16 @@ public class PortalController : Controller
         if (!model.IsConnected) return View(model);
         try
         {
+            var identity = _api.GetSessionIdentity();
+            var isFacultyOnly = identity?.IsFaculty == true && !identity.IsAdmin && !identity.IsSuperAdmin;
             model.Semesters   = await _api.GetSemestersAsync(ct);
             model.Departments = await _api.GetDepartmentsAsync(ct);
             model.Offerings   = await _api.GetCourseOfferingsAsync(null, ct);
-            if (semesterId.HasValue || departmentId.HasValue || offeringId.HasValue || studentId.HasValue)
+            if (isFacultyOnly && !offeringId.HasValue && (semesterId.HasValue || departmentId.HasValue || studentId.HasValue))
+            {
+                model.Message = "Faculty must select a course offering before generating report data.";
+            }
+            else if (semesterId.HasValue || departmentId.HasValue || offeringId.HasValue || studentId.HasValue)
                 model.Report = await _api.GetQuizSummaryReportAsync(semesterId, departmentId, offeringId, studentId, ct);
         }
         catch (Exception ex) { model.Message = ex.Message; }

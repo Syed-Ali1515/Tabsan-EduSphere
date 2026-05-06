@@ -39,6 +39,16 @@ public class CourseController : ControllerBase
     public async Task<IActionResult> GetAll([FromQuery] Guid? departmentId, CancellationToken ct)
     {
         var courses = await _repo.GetAllAsync(departmentId, ct);
+
+        if (User.IsInRole("Faculty") && !User.IsInRole("Admin") && !User.IsInRole("SuperAdmin"))
+        {
+            var allowedDepartmentIds = await _facultyAssignments.GetDepartmentIdsForFacultyAsync(GetUserId(), ct);
+            if (departmentId.HasValue && !allowedDepartmentIds.Contains(departmentId.Value))
+                return Forbid();
+
+            courses = courses.Where(c => allowedDepartmentIds.Contains(c.DepartmentId)).ToList();
+        }
+
         return Ok(courses.Select(c => new
         {
             c.Id, c.Title, c.Code, c.CreditHours, c.DepartmentId,
@@ -122,6 +132,19 @@ public class CourseController : ControllerBase
             offerings = await _repo.GetOfferingsBySemesterAsync(semesterId.Value, ct);
         else
             offerings = await _repo.GetAllOfferingsAsync(ct);
+
+        if (User.IsInRole("Faculty") && !User.IsInRole("Admin") && !User.IsInRole("SuperAdmin"))
+        {
+            var userId = GetUserId();
+            var allowedDepartmentIds = await _facultyAssignments.GetDepartmentIdsForFacultyAsync(userId, ct);
+
+            if (departmentId.HasValue && !allowedDepartmentIds.Contains(departmentId.Value))
+                return Forbid();
+
+            offerings = offerings
+                .Where(o => o.FacultyUserId == userId && allowedDepartmentIds.Contains(o.Course.DepartmentId))
+                .ToList();
+        }
 
         return Ok(offerings.Select(o => new
         {

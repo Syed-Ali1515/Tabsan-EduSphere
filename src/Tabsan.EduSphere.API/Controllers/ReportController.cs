@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Tabsan.EduSphere.Application.DTOs.Reports;
 using Tabsan.EduSphere.Application.Interfaces;
+using Tabsan.EduSphere.Domain.Interfaces;
 
 namespace Tabsan.EduSphere.API.Controllers;
 
@@ -17,8 +18,13 @@ namespace Tabsan.EduSphere.API.Controllers;
 public sealed class ReportController : ControllerBase
 {
     private readonly IReportService _reports;
+    private readonly ICourseRepository _courses;
 
-    public ReportController(IReportService reports) => _reports = reports;
+    public ReportController(IReportService reports, ICourseRepository courses)
+    {
+        _reports = reports;
+        _courses = courses;
+    }
 
     // ── Catalog ────────────────────────────────────────────────────────────────
 
@@ -44,6 +50,9 @@ public sealed class ReportController : ControllerBase
         [FromQuery] Guid? studentProfileId,
         CancellationToken ct)
     {
+        var scoped = await EnforceFacultyOfferingScopeAsync(courseOfferingId, ct);
+        if (scoped is not null) return scoped;
+
         var request = new AttendanceSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
         var result = await _reports.GetAttendanceSummaryAsync(request, ct);
         return Ok(result);
@@ -59,6 +68,9 @@ public sealed class ReportController : ControllerBase
         [FromQuery] Guid? studentProfileId,
         CancellationToken ct)
     {
+        var scoped = await EnforceFacultyOfferingScopeAsync(courseOfferingId, ct);
+        if (scoped is not null) return scoped;
+
         var request = new AttendanceSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
         var bytes = await _reports.ExportAttendanceSummaryExcelAsync(request, ct);
         return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "attendance-summary.xlsx");
@@ -74,6 +86,9 @@ public sealed class ReportController : ControllerBase
         [FromQuery] Guid? studentProfileId,
         CancellationToken ct)
     {
+        var scoped = await EnforceFacultyOfferingScopeAsync(courseOfferingId, ct);
+        if (scoped is not null) return scoped;
+
         var request = new AttendanceSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
         var bytes = await _reports.ExportAttendanceSummaryCsvAsync(request, ct);
         return File(bytes, "text/csv", "attendance-summary.csv");
@@ -89,6 +104,9 @@ public sealed class ReportController : ControllerBase
         [FromQuery] Guid? studentProfileId,
         CancellationToken ct)
     {
+        var scoped = await EnforceFacultyOfferingScopeAsync(courseOfferingId, ct);
+        if (scoped is not null) return scoped;
+
         var request = new AttendanceSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
         var bytes = await _reports.ExportAttendanceSummaryPdfAsync(request, ct);
         return File(bytes, "application/pdf", "attendance-summary.pdf");
@@ -106,6 +124,9 @@ public sealed class ReportController : ControllerBase
         [FromQuery] Guid? studentProfileId,
         CancellationToken ct)
     {
+        var scoped = await EnforceFacultyOfferingScopeAsync(courseOfferingId, ct);
+        if (scoped is not null) return scoped;
+
         var request = new ResultSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
         var result = await _reports.GetResultSummaryAsync(request, ct);
         return Ok(result);
@@ -121,6 +142,9 @@ public sealed class ReportController : ControllerBase
         [FromQuery] Guid? studentProfileId,
         CancellationToken ct)
     {
+        var scoped = await EnforceFacultyOfferingScopeAsync(courseOfferingId, ct);
+        if (scoped is not null) return scoped;
+
         var request = new ResultSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
         var bytes = await _reports.ExportResultSummaryExcelAsync(request, ct);
         return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "result-summary.xlsx");
@@ -136,6 +160,9 @@ public sealed class ReportController : ControllerBase
         [FromQuery] Guid? studentProfileId,
         CancellationToken ct)
     {
+        var scoped = await EnforceFacultyOfferingScopeAsync(courseOfferingId, ct);
+        if (scoped is not null) return scoped;
+
         var request = new ResultSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
         var bytes = await _reports.ExportResultSummaryCsvAsync(request, ct);
         return File(bytes, "text/csv", "result-summary.csv");
@@ -151,6 +178,9 @@ public sealed class ReportController : ControllerBase
         [FromQuery] Guid? studentProfileId,
         CancellationToken ct)
     {
+        var scoped = await EnforceFacultyOfferingScopeAsync(courseOfferingId, ct);
+        if (scoped is not null) return scoped;
+
         var request = new ResultSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
         var bytes = await _reports.ExportResultSummaryPdfAsync(request, ct);
         return File(bytes, "application/pdf", "result-summary.pdf");
@@ -168,6 +198,9 @@ public sealed class ReportController : ControllerBase
         [FromQuery] Guid? studentProfileId,
         CancellationToken ct)
     {
+        var scoped = await EnforceFacultyOfferingScopeAsync(courseOfferingId, ct);
+        if (scoped is not null) return scoped;
+
         var request = new AssignmentSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
         var result = await _reports.GetAssignmentSummaryAsync(request, ct);
         return Ok(result);
@@ -183,6 +216,9 @@ public sealed class ReportController : ControllerBase
         [FromQuery] Guid? studentProfileId,
         CancellationToken ct)
     {
+        var scoped = await EnforceFacultyOfferingScopeAsync(courseOfferingId, ct);
+        if (scoped is not null) return scoped;
+
         var request = new AssignmentSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
         var bytes = await _reports.ExportAssignmentSummaryExcelAsync(request, ct);
         return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "assignment-summary.xlsx");
@@ -198,6 +234,9 @@ public sealed class ReportController : ControllerBase
         [FromQuery] Guid? studentProfileId,
         CancellationToken ct)
     {
+        var scoped = await EnforceFacultyOfferingScopeAsync(courseOfferingId, ct);
+        if (scoped is not null) return scoped;
+
         var request = new AssignmentSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
         var bytes = await _reports.ExportAssignmentSummaryCsvAsync(request, ct);
         return File(bytes, "text/csv", "assignment-summary.csv");
@@ -213,6 +252,9 @@ public sealed class ReportController : ControllerBase
         [FromQuery] Guid? studentProfileId,
         CancellationToken ct)
     {
+        var scoped = await EnforceFacultyOfferingScopeAsync(courseOfferingId, ct);
+        if (scoped is not null) return scoped;
+
         var request = new AssignmentSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
         var bytes = await _reports.ExportAssignmentSummaryPdfAsync(request, ct);
         return File(bytes, "application/pdf", "assignment-summary.pdf");
@@ -230,6 +272,9 @@ public sealed class ReportController : ControllerBase
         [FromQuery] Guid? studentProfileId,
         CancellationToken ct)
     {
+        var scoped = await EnforceFacultyOfferingScopeAsync(courseOfferingId, ct);
+        if (scoped is not null) return scoped;
+
         var request = new QuizSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
         var result = await _reports.GetQuizSummaryAsync(request, ct);
         return Ok(result);
@@ -245,6 +290,9 @@ public sealed class ReportController : ControllerBase
         [FromQuery] Guid? studentProfileId,
         CancellationToken ct)
     {
+        var scoped = await EnforceFacultyOfferingScopeAsync(courseOfferingId, ct);
+        if (scoped is not null) return scoped;
+
         var request = new QuizSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
         var bytes = await _reports.ExportQuizSummaryExcelAsync(request, ct);
         return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "quiz-summary.xlsx");
@@ -260,6 +308,9 @@ public sealed class ReportController : ControllerBase
         [FromQuery] Guid? studentProfileId,
         CancellationToken ct)
     {
+        var scoped = await EnforceFacultyOfferingScopeAsync(courseOfferingId, ct);
+        if (scoped is not null) return scoped;
+
         var request = new QuizSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
         var bytes = await _reports.ExportQuizSummaryCsvAsync(request, ct);
         return File(bytes, "text/csv", "quiz-summary.csv");
@@ -275,6 +326,9 @@ public sealed class ReportController : ControllerBase
         [FromQuery] Guid? studentProfileId,
         CancellationToken ct)
     {
+        var scoped = await EnforceFacultyOfferingScopeAsync(courseOfferingId, ct);
+        if (scoped is not null) return scoped;
+
         var request = new QuizSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
         var bytes = await _reports.ExportQuizSummaryPdfAsync(request, ct);
         return File(bytes, "application/pdf", "quiz-summary.pdf");
@@ -409,4 +463,28 @@ public sealed class ReportController : ControllerBase
 
     private string? GetCurrentUserRole() =>
         User.FindFirstValue(ClaimTypes.Role);
+
+    private Guid GetCurrentUserId()
+    {
+        var raw = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return Guid.TryParse(raw, out var id) ? id : Guid.Empty;
+    }
+
+    private async Task<IActionResult?> EnforceFacultyOfferingScopeAsync(Guid? courseOfferingId, CancellationToken ct)
+    {
+        if (!User.IsInRole("Faculty") || User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))
+            return null;
+
+        if (!courseOfferingId.HasValue || courseOfferingId.Value == Guid.Empty)
+            return BadRequest("Faculty must select a course offering for report generation.");
+
+        var offering = await _courses.GetOfferingByIdAsync(courseOfferingId.Value, ct);
+        if (offering is null) return NotFound("Course offering not found.");
+
+        var userId = GetCurrentUserId();
+        if (userId == Guid.Empty || offering.FacultyUserId != userId)
+            return Forbid();
+
+        return null;
+    }
 }

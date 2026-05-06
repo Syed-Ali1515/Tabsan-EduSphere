@@ -17,11 +17,16 @@ namespace Tabsan.EduSphere.API.Controllers;
 public class DepartmentController : ControllerBase
 {
     private readonly IDepartmentRepository _deptRepo;
+    private readonly IFacultyAssignmentRepository _facultyAssignments;
     private readonly IAuditService _audit;
 
-    public DepartmentController(IDepartmentRepository deptRepo, IAuditService audit)
+    public DepartmentController(
+        IDepartmentRepository deptRepo,
+        IFacultyAssignmentRepository facultyAssignments,
+        IAuditService audit)
     {
         _deptRepo = deptRepo;
+        _facultyAssignments = facultyAssignments;
         _audit = audit;
     }
 
@@ -32,6 +37,13 @@ public class DepartmentController : ControllerBase
     public async Task<IActionResult> GetAll(CancellationToken ct)
     {
         var depts = await _deptRepo.GetAllAsync(ct);
+
+        if (User.IsInRole("Faculty") && !User.IsInRole("Admin") && !User.IsInRole("SuperAdmin"))
+        {
+            var allowedDepartmentIds = await _facultyAssignments.GetDepartmentIdsForFacultyAsync(GetUserId(), ct);
+            depts = depts.Where(d => allowedDepartmentIds.Contains(d.Id)).ToList();
+        }
+
         return Ok(depts.Select(d => new { d.Id, d.Name, d.Code, d.IsActive }));
     }
 
