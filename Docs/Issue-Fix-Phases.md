@@ -379,6 +379,12 @@ Implemented student-side assignment workflow corrections in the web portal:
 - Added backend call path from web portal to `POST /api/v1/assignment/submit`.
 - Added submission-state merge so student assignment rows correctly show `Submitted` and awarded marks when available.
 
+### Stage 4.2 - Student Timetable Department Resolution (Implemented)
+
+- Hardened student timetable department auto-resolution to always attempt department lookup from the authenticated student profile first.
+- Added safe fallback to the dashboard default department only when profile-derived department is unavailable.
+- Added `Guid.Empty` guard so invalid department identifiers are not used for timetable fetch requests.
+
 ### Stage 4.4 and 4.5 Supporting Fix
 
 - Fixed student JSON deserialization failures on Assignments/Results/Quizzes by aligning score fields to decimal values (`marksAwarded`, `marksObtained`, `totalScore`).
@@ -388,6 +394,7 @@ Implemented student-side assignment workflow corrections in the web portal:
 - Student pages now render without JSON conversion errors.
 - Student assignment list now shows real assignment title, real assignment ID navigation, and correct max marks.
 - Submit flow is wired end-to-end in UI and controller; API business rules (publish/due-date/duplicate checks) are now surfaced as actionable portal messages.
+- Student timetable no longer depends on JWT role-decoding success to resolve department scope.
 
 ### Stage 4.3, 4.4, 4.5 - Semester-Scoped Student Views (Implemented)
 

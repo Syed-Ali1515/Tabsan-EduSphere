@@ -70,11 +70,23 @@ public class PortalController : Controller
 
     private async Task<Guid?> GetEffectiveStudentDepartmentIdAsync(CancellationToken ct)
     {
-        var sessionIdentity = _api.GetSessionIdentity();
-        if (sessionIdentity?.IsStudent == true)
-            return (await _api.GetMyStudentProfileAsync(ct))?.DepartmentId ?? _api.GetConnection().DefaultDepartmentId;
+        Guid? profileDepartmentId = null;
+        try
+        {
+            var profile = await _api.GetMyStudentProfileAsync(ct);
+            if (profile is not null && profile.DepartmentId != Guid.Empty)
+                profileDepartmentId = profile.DepartmentId;
+        }
+        catch
+        {
+            // Keep timetable usable even if profile endpoint is temporarily unavailable.
+        }
 
-        return _api.GetConnection().DefaultDepartmentId;
+        if (profileDepartmentId.HasValue)
+            return profileDepartmentId;
+
+        var fallback = _api.GetConnection().DefaultDepartmentId;
+        return fallback.HasValue && fallback.Value != Guid.Empty ? fallback : null;
     }
 
     // ── Dashboard / Connection ──────────────────────────────────────────────
