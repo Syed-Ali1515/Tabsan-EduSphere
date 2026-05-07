@@ -1,8 +1,8 @@
 # Tabsan EduSphere Development Plan (ASP.NET)
 
-**Version:** 1.3  
-**Date:** 7 May 2026  
-**Based On:** PRD v1.32, Modules v1.3, Database Schema v1.2
+**Version:** 1.4  
+**Date:** 8 May 2026  
+**Based On:** PRD v1.33, Modules v1.3, Database Schema v1.2
 
 ---
 
@@ -30,6 +30,19 @@
 
 ### Next Execution Target
 - Continue Phase 1 remaining tasks: Stage 1.1 completion validation, Stage 1.2 CRUD surfaces, Stage 1.6 themes/branding expansion.
+
+### 2026-05-08 — Phase 13 Global Search Complete (commit 00b7b64)
+- **Stage 13.1 — Cross-Entity Search API:**
+  - `ISearchRepository` (Application/Interfaces) + `SearchRepository` (Infrastructure): EF LINQ join queries against `StudentProfiles`, `Users`, `Courses`, `CourseOfferings`, `Semesters`, `Departments`, `Enrollments`. No new migration.
+  - `ISearchService` + `SearchService`: role-scoped orchestration (SuperAdmin → all; Admin → assigned depts; Faculty → own dept + offerings; Student → enrolled offerings).
+  - `SearchController`: `GET /api/v1/search?q={term}&limit={n}` — all authenticated roles; extracts callerId + role from JWT claims; validates q ≥ 2 chars; clamps limit 1–50.
+  - `SearchDTOs`: `SearchRequest`, `SearchResultItem`, `SearchResponse` records.
+- **Stage 13.2 — Portal Search Bar:**
+  - Global search `<input>` in `_Layout.cshtml` header (visible all pages when connected).
+  - Vanilla JS typeahead: debounced 300 ms fetch to `/Portal/SearchTypeahead`; renders top 5 + "See all" link.
+  - Full results page `Search.cshtml`: Bootstrap nav-tabs per category with `_SearchResultsList.cshtml` partial.
+  - `PortalController` — `Search()` + `SearchTypeahead()` actions.
+- Validation: **0 build errors; 78/78 tests passed**
 
 ### 2026-05-07 — Phase 12 Academic Calendar System Complete (commit 6e89af1)
 - **Stage 12.1 — Semester Timeline View:**

@@ -27,19 +27,29 @@
 
 ---
 
-## Phase 13 — Global Search
+## Phase 13 — Global Search ✅ Implemented (commit `00b7b64`)
 **Complexity:** Low | **Dependencies:** None
 
-### Stage 13.1 — Cross-Entity Search API
+### Stage 13.1 — Cross-Entity Search API ✅
 - New `GET /api/v1/search?q={term}&limit={n}` endpoint accessible to all authenticated roles.
 - Searches across: students (name, roll number), courses (code, title), course offerings, faculty (name), departments.
 - Results are role-scoped: Admin sees only their assigned-department data; Faculty sees their dept + own offerings; Students see their own enrolled data.
 - Returns a typed result list: `{ type, id, label, subLabel, url }`.
+- **Files:** `SearchController.cs`, `ISearchService.cs`, `SearchService.cs`, `ISearchRepository.cs` (Application), `SearchRepository.cs`, `SearchDTOs.cs`
 
-### Stage 13.2 — Portal Search Bar
-- Global search input in the portal header (all pages, all roles).
-- Typeahead shows top 5 results inline; pressing Enter opens a full results page with category tabs.
-- Each result links directly to the relevant portal page (student profile, course detail, etc.).
+### Stage 13.2 — Portal Search Bar ✅
+- Global search input in the portal header (`_Layout.cshtml`) — visible on all pages when connected.
+- Typeahead dropdown shows top 5 results inline (JS fetch to `/Portal/SearchTypeahead`).
+- Pressing Enter or clicking Search opens full results page (`Search.cshtml`) with Bootstrap category tabs.
+- Each result links directly to the relevant portal page.
+- **Files:** `_Layout.cshtml`, `PortalController.cs`, `PortalViewModels.cs`, `Search.cshtml`, `_SearchResultsList.cshtml`
+
+### Implementation & Validation Summary
+- Build: 0 errors, 0 warnings
+- Tests: 78/78 passed
+- `ISearchRepository` placed in Application layer (depends on Application DTOs)
+- No new EF migration required (queries existing tables)
+- Role-scoped results: SuperAdmin → all; Admin → assigned depts; Faculty → own dept + offerings; Student → enrolled offerings only
 
 ---
 

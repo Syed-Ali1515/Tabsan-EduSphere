@@ -1,14 +1,30 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.32 (Phase 12 Academic Calendar System — Fully Complete)  
+**Version:** 1.33 (Phase 13 Global Search — Fully Complete)  
 **Status:** Approved  
 **Prepared By:** Product Team  
-**Last Updated:** 7 May 2026  
+**Last Updated:** 8 May 2026  
 
 ---
 
 ## 0. Implementation Update Log
+
+### 2026-05-08 — Phase 13 Global Search Complete (commit 00b7b64)
+- **Stage 13.1 — Cross-Entity Search API:**
+  - `GET /api/v1/search?q={term}&limit={n}` — authenticated all-roles endpoint; limit clamped 1–50.
+  - Role-scoped results: SuperAdmin → all entities; Admin → assigned-department entities; Faculty → own department + own offerings; Student → enrolled offerings only.
+  - `ISearchRepository` + `SearchRepository`: EF Core LINQ join queries (no stored procedures, no FTS, no new migration); placed in Application layer.
+  - `ISearchService` + `SearchService`: role orchestration, de-duplication by (Type, Id), limit enforcement.
+  - `SearchController`: extracts `callerId` + `role` from JWT claims; validates `q` ≥ 2 chars.
+  - `SearchDTOs`: `SearchRequest`, `SearchResultItem`, `SearchResponse` records.
+- **Stage 13.2 — Portal Search Bar:**
+  - Global search `<input>` added to `_Layout.cshtml` header — visible on all pages when connected.
+  - Typeahead dropdown: vanilla JS `fetch` to `/Portal/SearchTypeahead?q=...`; debounced 300 ms; renders top 5 inline; "See all results…" link.
+  - Full results page `Search.cshtml`: re-search form, total-hit summary, Bootstrap nav-tabs per category (Student / Course / CourseOffering / Faculty / Department).
+  - `_SearchResultsList.cshtml` partial: list-group with type badges and direct portal links.
+  - `PortalController` — `Search()` + `SearchTypeahead()` actions added.
+- **Build:** 0 errors · **Tests:** 78/78 passed
 
 ### 2026-05-07 — Phase 12 Academic Calendar System Complete (commits 6e89af1, 5758a71)
 - **Stage 12.1 — Semester Timeline View:**

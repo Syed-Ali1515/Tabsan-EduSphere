@@ -49,11 +49,11 @@ git push
 
 ## Current Execution Pointer
 - Plan Source: Docs/Enhancements.md
-- Active Phase: **Phase 12 — Academic Calendar System — FULLY COMPLETE ✅**
-- Active Stage: **Stages 12.1 + 12.2 done — Calendar view + Deadline CRUD + DeadlineReminderJob**
-- Status: **0 build errors; 78/78 tests passed (commit 6e89af1)**
-- Last Updated: 2026-05-07
-- Next: Phase 13 — Global Search (planned, not started)
+- Active Phase: **Phase 13 — Global Search — FULLY COMPLETE ✅**
+- Active Stage: **Stages 13.1 + 13.2 done — Search API + Portal search bar + typeahead**
+- Status: **0 build errors; 78/78 tests passed (commit 00b7b64)**
+- Last Updated: 2026-05-08
+- Next: Phase 14 — Helpdesk / Support Ticketing System
 
 ---
 
@@ -97,6 +97,11 @@ Database is fully synchronized with codebase.
 - Migration: `20260507_Phase12AcademicCalendar`
 - Validation: **0 build errors; 78/78 tests passed**
 
+✅ **Phase 13 — Global Search (Stages 13.1–13.2) — 2026-05-08 (commit 00b7b64)**
+- Stage 13.1: `GET /api/v1/search?q={term}&limit={n}` — role-scoped cross-entity search; `ISearchRepository` + `SearchRepository` (EF LINQ joins); `ISearchService` + `SearchService`; `SearchController`; `SearchDTOs` records; no new migration
+- Stage 13.2: Global search bar in portal header (`_Layout.cshtml`); typeahead dropdown (JS fetch); full results page (`Search.cshtml`) with Bootstrap category tabs; `_SearchResultsList.cshtml` partial; `PortalController` actions `Search` + `SearchTypeahead`
+- Validation: **0 build errors; 78/78 tests passed**
+
 ---
 
 ## Completed Work
@@ -133,8 +138,9 @@ Database is fully synchronized with codebase.
 
 ## Next Steps
 - **Phase 12 — Academic Calendar System — COMPLETE ✅** (commit 6e89af1, 2026-05-07)
-- **Phase 13 — Global Search** — next planned phase (Docs/Enhancements.md for full spec)
-- Continue through Phases 14–21 per Docs/Enhancements.md priority order
+- **Phase 13 — Global Search — COMPLETE ✅** (commit 00b7b64, 2026-05-08)
+- **Phase 14 — Helpdesk / Support Ticketing System** — next planned phase (Docs/Enhancements.md for full spec)
+- Continue through Phases 15–21 per Docs/Enhancements.md priority order
 
 ## Pending Extra Tasks (Cross-Phase)
 - Keep Report Center menu visible by role and working links.
