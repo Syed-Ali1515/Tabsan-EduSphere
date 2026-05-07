@@ -1,8 +1,8 @@
 # Tabsan EduSphere Development Plan (ASP.NET)
 
-**Version:** 1.2  
-**Date:** 2 May 2026  
-**Based On:** PRD v1.11, Modules v1.3, Database Schema v1.1
+**Version:** 1.3  
+**Date:** 7 May 2026  
+**Based On:** PRD v1.32, Modules v1.3, Database Schema v1.2
 
 ---
 
@@ -30,6 +30,20 @@
 
 ### Next Execution Target
 - Continue Phase 1 remaining tasks: Stage 1.1 completion validation, Stage 1.2 CRUD surfaces, Stage 1.6 themes/branding expansion.
+
+### 2026-05-07 — Phase 12 Academic Calendar System Complete (commit 6e89af1)
+- **Stage 12.1 — Semester Timeline View:**
+  - `AcademicCalendar` portal page (all roles): semester dropdown filter, days-remaining badges, link to manage page for Admin/SuperAdmin.
+- **Stage 12.2 — Key Deadlines Management:**
+  - New domain entity `AcademicDeadline` (`AuditableEntity`): `SemesterId`, `Title`, `Description`, `DeadlineDate`, `ReminderDaysBefore`, `IsActive`, `LastReminderSentAt`.
+  - `IAcademicDeadlineRepository` + `AcademicDeadlineRepository` (EF Core, table `academic_deadlines`, soft-delete filter).
+  - `IAcademicCalendarService` + `AcademicCalendarService` (CRUD + reminder dispatch).
+  - EF migration `20260507_Phase12AcademicCalendar`.
+  - `CalendarController` at `api/v1/calendar/deadlines` — reads open to all auth roles; writes restricted to Admin/SuperAdmin.
+  - `AcademicDeadlines.cshtml` portal CRUD page with create/edit modals; `AcademicCalendar.cshtml` read-only calendar view.
+  - `DeadlineReminderJob` (`BackgroundService`): runs daily, calls `DispatchPendingRemindersAsync`, dispatches `NotificationType.System` notifications to all active users.
+  - `IEduApiClient` + `EduApiClient` extended with 5 calendar methods; `PortalController` extended with 5 new actions.
+- Validation: **0 build errors; 78/78 tests passed**
 
 ---
 

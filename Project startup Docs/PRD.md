@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.31 (Stage 5.4 Admin Reporting Scope — Fully Complete)  
+**Version:** 1.32 (Phase 12 Academic Calendar System — Fully Complete)  
 **Status:** Approved  
 **Prepared By:** Product Team  
 **Last Updated:** 7 May 2026  
@@ -9,6 +9,21 @@
 ---
 
 ## 0. Implementation Update Log
+
+### 2026-05-07 — Phase 12 Academic Calendar System Complete (commits 6e89af1, 5758a71)
+- **Stage 12.1 — Semester Timeline View:**
+  - `AcademicCalendar` portal page visible to all authenticated roles (Student, Faculty, Admin, SuperAdmin).
+  - Semester filter dropdown; days-remaining color badges (green ≥8 days, yellow 4–7, red 1–3, grey = passed).
+  - Admin/SuperAdmin link to Manage Deadlines management page.
+- **Stage 12.2 — Key Deadlines Management:**
+  - New `AcademicDeadline` domain entity (`SemesterId`, `Title`, `Description`, `DeadlineDate`, `ReminderDaysBefore`, `IsActive`, `LastReminderSentAt`); extends `AuditableEntity`.
+  - `IAcademicDeadlineRepository` + `AcademicDeadlineRepository` (EF Core, table `academic_deadlines`, soft-delete query filter, FK to `semesters` with cascade delete).
+  - `IAcademicCalendarService` + `AcademicCalendarService`: full CRUD and `DispatchPendingRemindersAsync` (fan-out to all active users).
+  - `CalendarController` (`GET /api/v1/calendar/deadlines`, `GET /api/v1/calendar/deadlines/by-semester/{id}`, `GET /api/v1/calendar/deadlines/{id}`, `POST`, `PUT`, `DELETE`) — read endpoints open to all authenticated roles; write endpoints restricted to Admin/SuperAdmin.
+  - `AcademicDeadlines.cshtml` portal page with inline create/edit modals (Admin/SuperAdmin only).
+  - `DeadlineReminderJob`: `BackgroundService` checking daily; dispatches `NotificationType.System` notifications to all active users when `DeadlineDate - ReminderDaysBefore <= today`.
+  - EF migration `20260507_Phase12AcademicCalendar`.
+- Validation: **0 build errors; 78/78 tests passed; commits 6e89af1 + 5758a71**
 
 ### 2026-05-07 — Stage 5.4 Admin Reporting Scope Portal UX Complete (commit ee9fb57)
 - Added `isAdminOnly` guidance guards to all 9 report portal page actions in `Web/PortalController.cs`.

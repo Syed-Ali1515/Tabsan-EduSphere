@@ -397,6 +397,33 @@ Full traceability.
 
 ---
 
+## 18. Academic Calendar (Phase 12)
+
+### academic_deadlines
+Named academic deadlines and key dates attached to a semester. Used by the Academic Calendar portal page and the `DeadlineReminderJob` background service.
+
+- id (UUID, PK)
+- semester_id (FK → semesters.id, cascade delete)
+- title (nvarchar 200, required)
+- description (nvarchar 1000, nullable)
+- deadline_date (datetime2)
+- reminder_days_before (int, default 3 — 0 means day-of reminder only)
+- is_active (bool, default true)
+- last_reminder_sent_at (datetime2, nullable — set by DeadlineReminderJob when notification is dispatched)
+- is_deleted (bool — soft delete via global query filter)
+- deleted_at (datetime2, nullable)
+- created_at (datetime2)
+- updated_at (datetime2)
+- row_version (rowversion / timestamp — optimistic concurrency)
+
+**Indexes:**
+- `IX_academic_deadlines_semester` on `semester_id`
+- `IX_academic_deadlines_date_active` on `(deadline_date, is_active)`
+
+**EF Migration:** `20260507_Phase12AcademicCalendar`
+
+---
+
 ## 18. Design Guarantees
 
 - License contains **no university identity**

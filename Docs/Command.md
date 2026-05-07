@@ -48,12 +48,12 @@ git push
 ---
 
 ## Current Execution Pointer
-- Plan Source: Docs/Refactoring-Hosting-Security.md
-- Active Phase: **Refactoring-Hosting-Security — FULLY COMPLETE ✅**
-- Active Stage: **All items done — Serilog, UserSecretsId, FileUploadValidator wired**
-- Status: **0 build errors; 69/69 tests passed (commit 5e80bc9)**
+- Plan Source: Docs/Enhancements.md
+- Active Phase: **Phase 12 — Academic Calendar System — FULLY COMPLETE ✅**
+- Active Stage: **Stages 12.1 + 12.2 done — Calendar view + Deadline CRUD + DeadlineReminderJob**
+- Status: **0 build errors; 78/78 tests passed (commit 6e89af1)**
 - Last Updated: 2026-05-07
-- Next: No pending phases — system is production-ready
+- Next: Phase 13 — Global Search (planned, not started)
 
 ---
 
@@ -64,6 +64,7 @@ git push
 2. `20260506_Phase4UserImport` — adds `MustChangePassword` to `users` ✅
 3. `20260507103000_PortalBrandingLogoValueMaxLength` — alters `portal_settings.Value` to `nvarchar(max)` ✅
 4. `20260506044806_Phase6AdminDepartmentAssignments` — adds `admin_department_assignments` table ✅
+5. `20260507_Phase12AcademicCalendar` — adds `academic_deadlines` table ✅
 
 Database is fully synchronized with codebase.
 
@@ -89,6 +90,12 @@ Database is fully synchronized with codebase.
 - Backend: `AdminDepartmentAssignment` entity, repository, migration, API endpoints
 - UI: Departments page assignment panel; dedicated AdminUsers portal page
 - Admin create/update with multi-department checkbox list and assignment sync
+
+✅ **Phase 12 — Academic Calendar System (Stages 12.1–12.2) — 2026-05-07 (commit 6e89af1)**
+- Stage 12.1: `AcademicCalendar` portal page (all roles) with semester filter, days-remaining color badges
+- Stage 12.2: `AcademicDeadline` entity + EF config (`academic_deadlines`); `IAcademicDeadlineRepository` + impl; `IAcademicCalendarService` + impl; `CalendarController` (GET all-auth, POST/PUT/DELETE Admin+SuperAdmin); `AcademicDeadlines` portal CRUD page (Admin+SuperAdmin); `DeadlineReminderJob` background service dispatching `NotificationType.System` notifications daily
+- Migration: `20260507_Phase12AcademicCalendar`
+- Validation: **0 build errors; 78/78 tests passed**
 
 ---
 
@@ -125,9 +132,9 @@ Database is fully synchronized with codebase.
 - Phase 1 Remediation Batches 1–5: all complete
 
 ## Next Steps
-- **All Issue-Fix Phases (1–6) and Refactoring-Hosting-Security items are complete.** No pending stages.
-- **New issue phases** — If new bugs or features are observed, add them to `Docs/Observed-Issues.md` and define a new Issue-Fix Phase in `Docs/Issue-Fix-Phases.md`.
-- **Optional**: dedicated unit tests for `UserImportService` internals (from Phase 4 Option C backlog).
+- **Phase 12 — Academic Calendar System — COMPLETE ✅** (commit 6e89af1, 2026-05-07)
+- **Phase 13 — Global Search** — next planned phase (Docs/Enhancements.md for full spec)
+- Continue through Phases 14–21 per Docs/Enhancements.md priority order
 
 ## Pending Extra Tasks (Cross-Phase)
 - Keep Report Center menu visible by role and working links.
