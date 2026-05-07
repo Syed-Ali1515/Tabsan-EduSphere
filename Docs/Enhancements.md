@@ -223,6 +223,54 @@
 
 ---
 
+## Phase 22 — Advanced Course Creation & Result Configuration
+**Complexity:** Medium–High | **Dependencies:** `Course`, `AcademicProgram`, `Semester`, `Result`, `ResultComponentRule` (all exist)
+
+> **Objective:** Extend the course creation flow and result calculation system to natively distinguish semester-based degree programs from short-duration non-semester courses. Introduce auto-semester generation, per-course grading configuration, and smart course filtering in the result calculation interface.
+
+### Stage 22.1 — Semester-Based Course Type Flag & Auto-Semester Generation
+- Add `HasSemesters` (`bool`, default `true`) and `TotalSemesters` (`int?`) columns to the `courses` table via EF migration.
+- Course creation form gains a **"This course has semesters"** checkbox.
+  - When checked (semester-based): show a **Number of Semesters** input (e.g. 2, 4, 6, 8).
+  - When unchecked (non-semester): hide semester count and show Stage 22.2 fields instead.
+- On save of a semester-based course, the system automatically creates `TotalSemesters` `Semester` rows (Semester 1 … Semester N) linked to the course's `AcademicProgram`.
+- New `CourseService.AutoCreateSemestersAsync(courseId, count)` orchestrates the batch creation.
+- After all semester results are published and passing, the existing graduation trigger (`StudentLifecycleController.GraduateStudent`) is invoked automatically — no manual step required.
+- **Files:** `Course.cs` (domain), `AcademicConfigurations.cs` (EF config), migration `Phase22_CourseTypeAndGrading`, `ICourseService.cs` / `CourseService.cs`, `CourseController.cs`, `Courses.cshtml` (portal), `PortalViewModels.cs`, `EduApiClient.cs`
+
+### Stage 22.2 — Non-Semester (Short-Duration) Course Support
+- When `HasSemesters = false`, course creation shows:
+  - **Duration** numeric input (e.g. `6`).
+  - **Duration Unit** dropdown (`Weeks` / `Months` / `Years`).
+- New columns on `courses` table: `DurationValue` (`int?`), `DurationUnit` (`nvarchar(20)?`).
+- No `Semester` rows are created for non-semester courses.
+- Non-semester courses are treated as a single-block program throughout the system (enrollment, attendance, result calculation).
+- Course creation form also exposes a **Grading Type** dropdown (values: `GPA`, `Percentage`, `Grade`) stored as `GradingType` (`nvarchar(20)`) on the `courses` table.
+- **Files:** same as Stage 22.1 (same migration, same service/controller/view)
+
+### Stage 22.3 — Result Calculation Dual Dropdown & Course Search
+- Result calculation page (Admin/Faculty) gains a **two-level course filter**:
+  1. **Course Type dropdown** — `Semester-Based` / `Non-Semester-Based`.
+  2. **Course dropdown** — dynamically populated to show only courses matching the selected type; uses `HasSemesters` flag.
+- A **search box** above the course list allows quick text filtering by course name (client-side JS or lightweight AJAX).
+- Selecting a course loads the result calculation interface specific to that course's grading type (GPA / Percentage / Grade).
+- New API query parameter: `GET /api/v1/course?hasSemesters={true|false}` on the existing `CourseController.GetAll` to support the filtered dropdown.
+- **Files:** `CourseController.cs` (filter param), `Results.cshtml` / result portal page, `PortalController.cs`, `EduApiClient.cs`
+
+### Stage 22.4 — Per-Course Grading Configuration (SuperAdmin)
+- SuperAdmin can define a **grading configuration** per course (not global):
+  - **Pass threshold** — minimum mark or GPA to pass.
+  - **Grade ranges** — mapping of mark ranges to letter grades (e.g. 90–100 → A+, 80–89 → A, …).
+  - **Evaluation method** — which component rules (assignments/quizzes/exams) contribute and at what weightage (leverages existing `ResultComponentRule`).
+- New `CourseGradingConfig` entity: `CourseId` (unique), `PassThreshold` (`decimal`), `GradingType` (from Stage 22.2), `GradeRangesJson` (`nvarchar(max)` — serialised range list).
+- New `ICourseGradingRepository` + `CourseGradingRepository` and `ICourseGradingService` + `CourseGradingService`.
+- New `GradingConfigController` with endpoints: `GET /api/v1/grading-config/{courseId}`, `PUT /api/v1/grading-config/{courseId}` (SuperAdmin only).
+- Portal page **GradingConfig.cshtml** (SuperAdmin only): grade-range builder UI (add/remove rows with mark-from, mark-to, grade label), pass-threshold input.
+- Grade ranges are applied by `ResultCalculationService` when publishing results for a course.
+- **Files:** `CourseGradingConfig.cs` (domain), `AcademicConfigurations.cs`, migration `Phase22_CourseTypeAndGrading`, `ICourseGradingRepository.cs`, `CourseGradingRepository.cs`, `ICourseGradingService.cs`, `CourseGradingService.cs`, `GradingConfigController.cs`, `GradingConfigDTOs.cs`, `GradingConfig.cshtml`, `PortalViewModels.cs`, `EduApiClient.cs`, `PortalController.cs`, `_Layout.cshtml` (sidebar link)
+
+---
+
 ## Implementation Sequence Summary
 
 | Phase | Feature | Complexity | Status |
@@ -237,3 +285,4 @@
 | 19 | Learning Management System | High | Planned (Stage 19.4 partial) |
 | 20 | Study Planner | Medium | Planned |
 | 21 | External Integrations | High | Planned (Stage 21.2 partial) |
+| 22 | Advanced Course Creation & Result Configuration | Medium–High | Planned |
