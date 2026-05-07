@@ -200,6 +200,10 @@ builder.Services.AddScoped<IReportService, Tabsan.EduSphere.Infrastructure.Repor
 builder.Services.AddScoped<IAcademicDeadlineRepository, AcademicDeadlineRepository>();
 builder.Services.AddScoped<IAcademicCalendarService, AcademicCalendarService>();
 
+// ── Phase 13: Global Search ───────────────────────────────────────────────
+builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.ISearchRepository, Tabsan.EduSphere.Infrastructure.Repositories.SearchRepository>();
+builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.ISearchService, Tabsan.EduSphere.Application.Search.SearchService>();
+
 // ── Rate limiting (OWASP hardening) ─────────────────────────────────────
 builder.Services.AddRateLimiter(opts =>
 {

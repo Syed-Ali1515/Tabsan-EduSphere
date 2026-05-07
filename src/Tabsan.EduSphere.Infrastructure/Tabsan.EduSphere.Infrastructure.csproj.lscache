@@ -167,6 +167,7 @@ Repositories/
  NotificationAttendanceRepositories.cs
  PasswordHistoryRepository.cs
  QuizFypRepositories.cs
+ SearchRepository.cs
  SettingsRepository.cs
  StudentLifecycleRepository.cs
  TimetableRepository.cs

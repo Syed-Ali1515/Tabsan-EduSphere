@@ -391,6 +391,28 @@
         <section class="app-main">
             <header class="app-header" role="banner">
                 <h1 class="page-title">@ViewData["Title"]</h1>
+
+                @* Phase 13 — Global Search bar (visible only when connected) *@
+                @if (isConnected)
+                {
+                    <div class="global-search-wrapper position-relative me-3" style="min-width:260px;">
+                        <form asp-controller="Portal" asp-action="Search" method="get" autocomplete="off" class="d-flex" role="search">
+                            <div class="input-group input-group-sm">
+                                <input id="globalSearchInput" name="q" type="search"
+                                       class="form-control" placeholder="Search…"
+                                       aria-label="Global search" minlength="2" />
+                                <button class="btn btn-outline-secondary" type="submit" aria-label="Search">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </div>
+                        </form>
+                        <ul id="searchTypeahead"
+                            class="dropdown-menu w-100 py-1 shadow-sm"
+                            style="display:none; position:absolute; top:100%; left:0; z-index:1050;">
+                        </ul>
+                    </div>
+                }
+
                 <div class="auth-chip d-flex align-items-center gap-2">
                     <span>
                         @displayName
@@ -435,5 +457,73 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js" defer></script>
     <script src="~/js/site.js" asp-append-version="true" defer></script>
     @await RenderSectionAsync("Scripts", required: false)
+
+    @* Phase 13 — Typeahead for global search bar *@
+    <script>
+    (function () {
+        document.addEventListener('DOMContentLoaded', function () {
+            var input     = document.getElementById('globalSearchInput');
+            var dropdown  = document.getElementById('searchTypeahead');
+            if (!input || !dropdown) return;
+
+            var timer = null;
+
+            input.addEventListener('input', function () {
+                clearTimeout(timer);
+                var q = input.value.trim();
+                if (q.length < 2) { dropdown.style.display = 'none'; return; }
+                timer = setTimeout(function () { fetchSuggestions(q); }, 300);
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!input.contains(e.target) && !dropdown.contains(e.target))
+                    dropdown.style.display = 'none';
+            });
+
+            function fetchSuggestions(q) {
+                var url = '/Portal/SearchTypeahead?q=' + encodeURIComponent(q);
+                fetch(url, { credentials: 'same-origin' })
+                    .then(function (r) { return r.ok ? r.json() : []; })
+                    .then(function (items) { renderDropdown(items); })
+                    .catch(function () { dropdown.style.display = 'none'; });
+            }
+
+            function renderDropdown(items) {
+                dropdown.innerHTML = '';
+                if (!items || items.length === 0) { dropdown.style.display = 'none'; return; }
+                items.forEach(function (item) {
+                    var li  = document.createElement('li');
+                    var a   = document.createElement('a');
+                    a.className = 'dropdown-item py-1';
+                    a.href = item.url || '#';
+                    a.innerHTML =
+                        '<span class="badge bg-secondary me-1 text-uppercase" style="font-size:.65rem">' +
+                        escHtml(item.type) + '</span>' +
+                        '<strong>' + escHtml(item.label) + '</strong>' +
+                        (item.subLabel ? ' <small class="text-muted">' + escHtml(item.subLabel) + '</small>' : '');
+                    li.appendChild(a);
+                    dropdown.appendChild(li);
+                });
+                // "See all" link
+                var li = document.createElement('li');
+                li.innerHTML = '<hr class="dropdown-divider my-1">';
+                dropdown.appendChild(li);
+                var li2 = document.createElement('li');
+                var a2  = document.createElement('a');
+                a2.className = 'dropdown-item small text-primary';
+                a2.href = '/Portal/Search?q=' + encodeURIComponent(input.value.trim());
+                a2.textContent = 'See all results…';
+                li2.appendChild(a2);
+                dropdown.appendChild(li2);
+                dropdown.style.display = 'block';
+            }
+
+            function escHtml(s) {
+                if (!s) return '';
+                return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+            }
+        });
+    }());
+    </script>
 </body>
 </html>

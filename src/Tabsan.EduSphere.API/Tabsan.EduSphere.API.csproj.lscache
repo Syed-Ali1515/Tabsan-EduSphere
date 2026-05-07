@@ -81,6 +81,7 @@ Controllers/
  ResultCalculationController.cs
  ResultController.cs
  RoomController.cs
+ SearchController.cs
  SemesterController.cs
  SidebarMenuController.cs
  StudentController.cs

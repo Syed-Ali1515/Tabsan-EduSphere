@@ -2900,4 +2900,52 @@ public class PortalController : Controller
         catch (Exception ex) { TempData["Message"] = "Error: " + ex.Message; }
         return RedirectToAction(nameof(AcademicDeadlines), new { semesterId });
     }
+
+    // ── Phase 13: Global Search ───────────────────────────────────────────────
+
+    [HttpGet]
+    public async Task<IActionResult> Search(string? q, int limit = 20, CancellationToken ct = default)
+    {
+        var model = new SearchPageModel { IsConnected = _api.IsConnected(), Query = q?.Trim() ?? "" };
+
+        if (!model.IsConnected || string.IsNullOrWhiteSpace(q) || q.Trim().Length < 2)
+            return View(model);
+
+        try
+        {
+            model.Response = await _api.SearchAsync(q.Trim(), Math.Clamp(limit, 1, 50), ct);
+        }
+        catch (Exception ex)
+        {
+            model.Response = new SearchWebResponse(q.Trim(), 0, new());
+            TempData["SearchError"] = ex.Message;
+        }
+
+        return View(model);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> SearchTypeahead(string? q, CancellationToken ct = default)
+    {
+        if (!_api.IsConnected() || string.IsNullOrWhiteSpace(q) || q.Trim().Length < 2)
+            return Json(new List<object>());
+
+        try
+        {
+            var response = await _api.SearchAsync(q.Trim(), 5, ct);
+            var items = response.Results.Select(r => new
+            {
+                r.Type,
+                r.Id,
+                r.Label,
+                r.SubLabel,
+                r.Url
+            });
+            return Json(items);
+        }
+        catch
+        {
+            return Json(new List<object>());
+        }
+    }
 }

@@ -235,6 +235,9 @@ public interface IEduApiClient
     Task CreateCalendarDeadlineAsync(DeadlineFormModel form, CancellationToken ct);
     Task UpdateCalendarDeadlineAsync(Guid id, DeadlineFormModel form, CancellationToken ct);
     Task DeleteCalendarDeadlineAsync(Guid id, CancellationToken ct);
+
+    // Phase 13: Global Search
+    Task<SearchWebResponse> SearchAsync(string term, int limit, CancellationToken ct);
 }
 
 public class EduApiClient : IEduApiClient
@@ -2623,5 +2626,41 @@ public class EduApiClient : IEduApiClient
 
     public Task DeleteCalendarDeadlineAsync(Guid id, CancellationToken ct)
         => DeleteAsync($"api/v1/calendar/deadlines/{id}", ct);
+
+    // ── Phase 13: Global Search ───────────────────────────────────────────────
+
+    public async Task<SearchWebResponse> SearchAsync(string term, int limit, CancellationToken ct)
+    {
+        var encoded = Uri.EscapeDataString(term);
+        var raw = await GetAsync<SearchApiDto>($"api/v1/search?q={encoded}&limit={limit}", ct);
+        if (raw is null) return new SearchWebResponse(term, 0, new());
+        return new SearchWebResponse(
+            raw.Term ?? term,
+            raw.TotalHits,
+            raw.Results?.Select(r => new SearchWebItem
+            {
+                Type     = r.Type     ?? "",
+                Id       = r.Id,
+                Label    = r.Label    ?? "",
+                SubLabel = r.SubLabel ?? "",
+                Url      = r.Url      ?? ""
+            }).ToList() ?? new());
+    }
+
+    // ── Phase 13 API DTOs (private) ───────────────────────────────────────────
+    private sealed class SearchApiDto
+    {
+        public string?                  Term      { get; set; }
+        public int                      TotalHits { get; set; }
+        public List<SearchResultApiDto>? Results  { get; set; }
+    }
+    private sealed class SearchResultApiDto
+    {
+        public string? Type     { get; set; }
+        public Guid    Id       { get; set; }
+        public string? Label    { get; set; }
+        public string? SubLabel { get; set; }
+        public string? Url      { get; set; }
+    }
 }
 

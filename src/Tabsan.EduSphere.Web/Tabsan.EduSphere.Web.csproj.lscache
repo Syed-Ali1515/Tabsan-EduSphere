@@ -491,6 +491,7 @@ Views/
   ResultCalculation.cshtml
   Results.cshtml
   Rooms.cshtml
+  Search.cshtml
   Section.cshtml
   SidebarSettings.cshtml
   StudentLifecycle.cshtml
@@ -500,6 +501,7 @@ Views/
   TimetableStudent.cshtml
   TimetableTeacher.cshtml
   UserImport.cshtml
+  _SearchResultsList.cshtml
  Shared/
   Error.cshtml
   _Layout.cshtml
@@ -549,6 +551,7 @@ Views/
   ResultCalculation.cshtml
   Results.cshtml
   Rooms.cshtml
+  Search.cshtml
   Section.cshtml
   SidebarSettings.cshtml
   StudentLifecycle.cshtml
@@ -558,6 +561,7 @@ Views/
   TimetableStudent.cshtml
   TimetableTeacher.cshtml
   UserImport.cshtml
+  _SearchResultsList.cshtml
  Shared/
   Error.cshtml
   _Layout.cshtml

@@ -1,0 +1,111 @@
+@model Tabsan.EduSphere.Web.Models.Portal.SearchPageModel
+@{
+    ViewData["Title"] = string.IsNullOrWhiteSpace(Model.Query)
+        ? "Global Search"
+        : $"Search: {Html.Encode(Model.Query)}";
+
+    var categoryLabels = new Dictionary<string, string>
+    {
+        ["Student"]        = "Students",
+        ["Course"]         = "Courses",
+        ["CourseOffering"] = "Course Offerings",
+        ["Faculty"]        = "Faculty",
+        ["Department"]     = "Departments"
+    };
+}
+
+@if (TempData["SearchError"] is string err)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        Search failed: @err
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (!Model.IsConnected)
+{
+    <div class="alert alert-warning">Not connected. <a asp-action="Dashboard">Configure API</a>.</div>
+}
+else
+{
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" asp-action="Search" class="row g-2 align-items-end">
+                <div class="col">
+                    <label class="form-label visually-hidden" for="qInput">Search</label>
+                    <input id="qInput" name="q" type="search" class="form-control"
+                           value="@Model.Query" placeholder="Enter at least 2 characters…"
+                           minlength="2" autofocus />
+                </div>
+                <div class="col-auto">
+                    <button class="btn btn-primary" type="submit">
+                        <i class="bi bi-search me-1"></i>Search
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Model.Query) && Model.Query.Length < 2)
+    {
+        <div class="alert alert-info">Please enter at least 2 characters.</div>
+    }
+    else if (Model.Response is not null)
+    {
+        <p class="text-muted mb-3">
+            @Model.Response.TotalHits result@(Model.Response.TotalHits == 1 ? "" : "s") for
+            <strong>&ldquo;@Html.Encode(Model.Query)&rdquo;</strong>
+        </p>
+
+        @if (Model.Response.TotalHits == 0)
+        {
+            <div class="alert alert-secondary">No results found. Try a different search term.</div>
+        }
+        else
+        {
+            @* Category tabs *@
+            var byCategory = Model.ByCategory;
+            var orderedKeys = Tabsan.EduSphere.Web.Models.Portal.SearchPageModel.CategoryOrder
+                .Where(k => byCategory.ContainsKey(k))
+                .ToList();
+            // Include any unexpected categories
+            var extraKeys = byCategory.Keys.Except(orderedKeys).ToList();
+            orderedKeys.AddRange(extraKeys);
+
+            <ul class="nav nav-tabs mb-3" id="searchTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="tab-all" data-bs-toggle="tab"
+                            data-bs-target="#pane-all" type="button" role="tab">
+                        All <span class="badge bg-secondary ms-1">@Model.Response.TotalHits</span>
+                    </button>
+                </li>
+                @foreach (var key in orderedKeys)
+                {
+                    var count = byCategory[key].Count;
+                    var label = categoryLabels.TryGetValue(key, out var l) ? l : key;
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="tab-@key" data-bs-toggle="tab"
+                                data-bs-target="#pane-@key" type="button" role="tab">
+                            @label <span class="badge bg-secondary ms-1">@count</span>
+                        </button>
+                    </li>
+                }
+            </ul>
+
+            <div class="tab-content" id="searchTabContent">
+                @* All results pane *@
+                <div class="tab-pane fade show active" id="pane-all" role="tabpanel">
+                    @await Html.PartialAsync("_SearchResultsList", Model.Response.Results)
+                </div>
+
+                @* Per-category panes *@
+                @foreach (var key in orderedKeys)
+                {
+                    <div class="tab-pane fade" id="pane-@key" role="tabpanel">
+                        @await Html.PartialAsync("_SearchResultsList", byCategory[key])
+                    </div>
+                }
+            </div>
+        }
+    }
+}

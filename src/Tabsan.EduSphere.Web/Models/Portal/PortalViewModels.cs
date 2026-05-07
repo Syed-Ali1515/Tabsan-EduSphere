@@ -1282,3 +1282,50 @@ public class AcademicDeadlinesPageModel
     public List<DeadlineWebItem> Deadlines   { get; set; } = new();
     public DeadlineFormModel    Form         { get; set; } = new();
 }
+
+// ── Phase 13: Global Search ───────────────────────────────────────────────────
+
+/// <summary>A single search result item returned from the API.</summary>
+public class SearchWebItem
+{
+    public string Type     { get; set; } = "";
+    public Guid   Id       { get; set; }
+    public string Label    { get; set; } = "";
+    public string SubLabel { get; set; } = "";
+    public string Url      { get; set; } = "";
+}
+
+/// <summary>Full search response returned from the API.</summary>
+public class SearchWebResponse
+{
+    public string             Term      { get; set; } = "";
+    public int                TotalHits { get; set; }
+    public List<SearchWebItem> Results  { get; set; } = new();
+
+    public SearchWebResponse() { }
+
+    public SearchWebResponse(string term, int totalHits, List<SearchWebItem> results)
+    {
+        Term      = term;
+        TotalHits = totalHits;
+        Results   = results;
+    }
+}
+
+/// <summary>View model for the full Search Results page.</summary>
+public class SearchPageModel
+{
+    public bool                IsConnected { get; set; }
+    public string              Query       { get; set; } = "";
+    public SearchWebResponse?  Response    { get; set; }
+
+    /// <summary>Results grouped by Type for the category-tabs layout.</summary>
+    public IReadOnlyDictionary<string, List<SearchWebItem>> ByCategory =>
+        Response?.Results
+            .GroupBy(r => r.Type)
+            .ToDictionary(g => g.Key, g => g.ToList())
+        ?? new Dictionary<string, List<SearchWebItem>>();
+
+    public static readonly IReadOnlyList<string> CategoryOrder =
+        new[] { "Student", "Course", "CourseOffering", "Faculty", "Department" };
+}

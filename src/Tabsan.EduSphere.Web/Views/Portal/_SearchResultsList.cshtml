@@ -1,0 +1,47 @@
+@model IEnumerable<Tabsan.EduSphere.Web.Models.Portal.SearchWebItem>
+@{
+    var typeIcons = new Dictionary<string, string>
+    {
+        ["Student"]        = "bi-person-fill",
+        ["Course"]         = "bi-book-fill",
+        ["CourseOffering"] = "bi-calendar2-week-fill",
+        ["Faculty"]        = "bi-person-badge-fill",
+        ["Department"]     = "bi-building-fill"
+    };
+    var typeBadge = new Dictionary<string, string>
+    {
+        ["Student"]        = "bg-primary",
+        ["Course"]         = "bg-success",
+        ["CourseOffering"] = "bg-info text-dark",
+        ["Faculty"]        = "bg-warning text-dark",
+        ["Department"]     = "bg-secondary"
+    };
+}
+
+@if (!Model.Any())
+{
+    <p class="text-muted">No results in this category.</p>
+}
+else
+{
+    <div class="list-group list-group-flush">
+        @foreach (var item in Model)
+        {
+            var icon  = typeIcons.TryGetValue(item.Type, out var ic)   ? ic   : "bi-circle";
+            var badge = typeBadge.TryGetValue(item.Type, out var bg)   ? bg   : "bg-secondary";
+            <a href="@item.Url" class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-2">
+                <span class="badge @badge rounded-pill" style="min-width:100px;text-align:center;">
+                    <i class="bi @icon me-1"></i>@item.Type
+                </span>
+                <div class="flex-grow-1 overflow-hidden">
+                    <div class="fw-semibold text-truncate">@item.Label</div>
+                    @if (!string.IsNullOrWhiteSpace(item.SubLabel))
+                    {
+                        <small class="text-muted">@item.SubLabel</small>
+                    }
+                </div>
+                <i class="bi bi-chevron-right text-muted"></i>
+            </a>
+        }
+    </div>
+}
