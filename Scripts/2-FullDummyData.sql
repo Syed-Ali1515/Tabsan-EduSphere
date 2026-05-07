@@ -1,1482 +1,941 @@
 -- ============================================================
--- Tabsan EduSphere — Script 2: Full Dummy Data
+-- Tabsan EduSphere  —  Full Dummy Data  (Script 2 of 2)
 -- ============================================================
--- PURPOSE : Rich, realistic dummy data covering EVERY table,
---           all 4 roles, all modules, views, and stored procs.
---           Designed for comprehensive QA and demo sessions.
+-- PURPOSE : Populate the database with rich, realistic test data
+--           across all three departments so every portal role
+--           and feature can be exercised thoroughly.
 --
--- INCLUDES everything in Script 1 (self-contained — no need
--- to run Script 1 first).
+-- STRUCTURE:
+--   Departments  : IT | Business | Languages
+--   Programs     : BSCS, BSIT (IT) | BBA, MBA (Business) |
+--                  BA-Arabic, BA-English, BA-Chinese (Languages)
+--   Semesters    : Fall 2025 (closed) | Spring 2026 (active) |
+--                  Fall 2026 (future/upcoming)
+--   Roles        : 1 SuperAdmin | 3 Admins (1 per dept) |
+--                  9 Faculty | 18 Students (6 per dept)
+--   Features     : enrollments, assignments, submissions,
+--                  results, attendance, quizzes, FYP projects,
+--                  notifications, payment receipts, timetables,
+--                  buildings, rooms.
 --
--- PREREQUISITES  — same as Script 1.
---   Apply EF migrations + run the API once (sets up schema +
---   DatabaseSeeder seeds roles/modules/SuperAdmin).
+-- PASSWORD: Replace PLACEHOLDER before running.
+--   Run: .\Scripts\GenerateTestHashes.ps1
 --
--- TEST ACCOUNTS  (reset passwords via admin panel or
---                run Scripts\GenerateTestHashes.ps1 first)
---
---   Role       Username           Email
---   ─────────  ─────────────────  ─────────────────────────────
---   SuperAdmin superadmin         superadmin@tabsan.local
---   Admin      admin.cs           admin.cs@tabsan.local
---   Admin      admin.se           admin.se@tabsan.local
---   Admin      admin.it           admin.it@tabsan.local
---   Faculty    dr.ahmed           ahmed@tabsan.local
---   Faculty    dr.sara            sara@tabsan.local
---   Faculty    mr.ali             ali@tabsan.local
---   Faculty    ms.zara            zara@tabsan.local
---   Faculty    prof.khan          khan@tabsan.local
---   Student    s.aslam            aslam@student.tabsan.local
---   Student    s.fatima           fatima@student.tabsan.local
---   Student    s.usman            usman@student.tabsan.local
---   Student    s.hina             hina@student.tabsan.local
---   Student    s.tariq            tariq@student.tabsan.local
---   Student    s.nadia            nadia@student.tabsan.local
---   Student    s.bilal            bilal@student.tabsan.local
---   Student    s.rabia            rabia@student.tabsan.local
---   Student    s.kamran           kamran@student.tabsan.local
---   Student    s.shazia           shazia@student.tabsan.local
---
--- DATABASE : TabsanEduSphere  (auto-created if missing)
+-- SAFE   : Fully idempotent — safe to re-run.
+-- DEPENDS: 0-Schema.sql, 1-MinimalSeed.sql applied first.
 -- ============================================================
 
-IF DB_ID(N'TabsanEduSphere') IS NULL
-BEGIN
-    PRINT 'Database TabsanEduSphere not found. Creating it now...';
-    CREATE DATABASE [TabsanEduSphere];
-END
+USE TabsanEduSphere;
 GO
 
-USE [TabsanEduSphere];
-GO
-
-SET ANSI_NULLS ON;
-SET QUOTED_IDENTIFIER ON;
-
-IF OBJECT_ID(N'dbo.roles', N'U') IS NULL
-BEGIN
-    PRINT 'Schema missing in TabsanEduSphere (table dbo.roles not found).';
-    PRINT 'Database has been created successfully.';
-    PRINT 'Next step: run EF migrations, then run this script again:';
-    PRINT 'dotnet ef database update --project src/Tabsan.EduSphere.Infrastructure --startup-project src/Tabsan.EduSphere.API --context ApplicationDbContext';
-    RETURN;
-END
-
+SET NOCOUNT ON;
 SET XACT_ABORT ON;
-BEGIN TRANSACTION;
-
-DECLARE @Now DATETIME2 = GETUTCDATE();
-
--- ── Password placeholder ─────────────────────────────────────
-DECLARE @PwdHash NVARCHAR(500) =
-    N'argon2id:gXOrvhV3MbGzXkKsN6qpOv8wGg0jYiWZ1RZUjQudjZw=:Co4QiapUrf1wkOUrJdddTz7IKxq/LsTKYkhzeTif7lE=';
--- ─────────────────────────────────────────────────────────────
-
--- ═══════════════════════════════════════════════════════════
--- §1  ROLES
--- ═══════════════════════════════════════════════════════════
-IF NOT EXISTS (SELECT 1 FROM roles WHERE Name = N'SuperAdmin')
-    INSERT INTO roles (Name, Description, IsSystemRole)
-    VALUES (N'SuperAdmin', N'Full platform access — manages license and all settings.', 1);
-
-IF NOT EXISTS (SELECT 1 FROM roles WHERE Name = N'Admin')
-    INSERT INTO roles (Name, Description, IsSystemRole)
-    VALUES (N'Admin', N'Department-level admin — manages users and courses.', 1);
-
-IF NOT EXISTS (SELECT 1 FROM roles WHERE Name = N'Faculty')
-    INSERT INTO roles (Name, Description, IsSystemRole)
-    VALUES (N'Faculty', N'Teaches courses and manages academic content.', 1);
-
-IF NOT EXISTS (SELECT 1 FROM roles WHERE Name = N'Student')
-    INSERT INTO roles (Name, Description, IsSystemRole)
-    VALUES (N'Student', N'Enrolled student — accesses course and academic content.', 1);
-
-DECLARE @RoleSuperAdmin INT = (SELECT TOP 1 Id FROM roles WHERE Name = N'SuperAdmin');
-DECLARE @RoleAdmin      INT = (SELECT TOP 1 Id FROM roles WHERE Name = N'Admin');
-DECLARE @RoleFaculty    INT = (SELECT TOP 1 Id FROM roles WHERE Name = N'Faculty');
-DECLARE @RoleStudent    INT = (SELECT TOP 1 Id FROM roles WHERE Name = N'Student');
-
--- ═══════════════════════════════════════════════════════════
--- §2  MODULES  (all activated)
--- ═══════════════════════════════════════════════════════════
-DECLARE @ModDefs TABLE ([Key] NVARCHAR(50), Name NVARCHAR(100), IsMandatory BIT);
-INSERT INTO @ModDefs VALUES
-    (N'authentication',  N'Authentication',           1),
-    (N'departments',     N'Departments',              1),
-    (N'sis',             N'Student Information',      1),
-    (N'courses',         N'Courses',                  0),
-    (N'assignments',     N'Assignments',              0),
-    (N'quizzes',         N'Quizzes',                  0),
-    (N'attendance',      N'Attendance',               0),
-    (N'results',         N'Results / Grades',         0),
-    (N'notifications',   N'Notifications',            0),
-    (N'fyp',             N'Final Year Projects',      0),
-    (N'ai_chat',         N'AI Chatbot',               0),
-    (N'reports',         N'Reports',                  0),
-    (N'themes',          N'UI Themes',                0),
-    (N'advanced_audit',  N'Advanced Audit Logging',   0);
-
-INSERT INTO modules (Id, [Key], Name, IsMandatory, CreatedAt)
-SELECT NEWID(), d.[Key], d.Name, d.IsMandatory, @Now
-FROM @ModDefs d
-WHERE NOT EXISTS (SELECT 1 FROM modules m WHERE m.[Key] = d.[Key]);
-
-INSERT INTO module_status (Id, ModuleId, IsActive, ActivatedAt, Source, CreatedAt)
-SELECT NEWID(), m.Id, 1, @Now, N'seed', @Now
-FROM modules m
-WHERE NOT EXISTS (SELECT 1 FROM module_status ms WHERE ms.ModuleId = m.Id);
-
-UPDATE ms SET IsActive = 1, ActivatedAt = @Now, Source = N'seed'
-FROM module_status ms WHERE ms.IsActive = 0;
-
--- ═══════════════════════════════════════════════════════════
--- §3  LICENSE STATE
--- ═══════════════════════════════════════════════════════════
-IF NOT EXISTS (SELECT 1 FROM license_state WHERE Status = N'Active')
-    INSERT INTO license_state (Id, LicenseHash, LicenseType, Status, ActivatedAt, ExpiresAt, CreatedAt)
-    VALUES (NEWID(), N'TEST-PERMANENT-LICENSE-DO-NOT-DEPLOY-TO-PROD',
-            N'Permanent', N'Active', @Now, NULL, @Now);
-
--- ═══════════════════════════════════════════════════════════
--- §4  DEPARTMENTS  (3)
--- ═══════════════════════════════════════════════════════════
-DECLARE @DeptCS UNIQUEIDENTIFIER = NEWID();
-DECLARE @DeptSE UNIQUEIDENTIFIER = NEWID();
-DECLARE @DeptIT UNIQUEIDENTIFIER = NEWID();
-
-IF NOT EXISTS (SELECT 1 FROM departments WHERE Code = N'CS')
-    INSERT INTO departments (Id,Name,Code,IsActive,CreatedAt,IsDeleted)
-    VALUES (@DeptCS,N'Computer Science',N'CS',1,@Now,0);
-ELSE SELECT @DeptCS = Id FROM departments WHERE Code = N'CS';
-
-IF NOT EXISTS (SELECT 1 FROM departments WHERE Code = N'SE')
-    INSERT INTO departments (Id,Name,Code,IsActive,CreatedAt,IsDeleted)
-    VALUES (@DeptSE,N'Software Engineering',N'SE',1,@Now,0);
-ELSE SELECT @DeptSE = Id FROM departments WHERE Code = N'SE';
-
-IF NOT EXISTS (SELECT 1 FROM departments WHERE Code = N'IT')
-    INSERT INTO departments (Id,Name,Code,IsActive,CreatedAt,IsDeleted)
-    VALUES (@DeptIT,N'Information Technology',N'IT',1,@Now,0);
-ELSE SELECT @DeptIT = Id FROM departments WHERE Code = N'IT';
-
--- ═══════════════════════════════════════════════════════════
--- §5  BUILDINGS + ROOMS  (2 buildings, 6 rooms)
--- ═══════════════════════════════════════════════════════════
-DECLARE @BlkA UNIQUEIDENTIFIER = NEWID();
-DECLARE @BlkB UNIQUEIDENTIFIER = NEWID();
-
-IF NOT EXISTS (SELECT 1 FROM buildings WHERE Code = N'BLK-A')
-BEGIN
-    INSERT INTO buildings (Id,Name,Code,IsActive,CreatedAt,IsDeleted)
-    VALUES (@BlkA,N'Block A',N'BLK-A',1,@Now,0);
-    INSERT INTO rooms (Id,BuildingId,Number,Capacity,IsActive,CreatedAt,IsDeleted) VALUES
-        (NEWID(),@BlkA,N'A-101',60,1,@Now,0),
-        (NEWID(),@BlkA,N'A-102',40,1,@Now,0),
-        (NEWID(),@BlkA,N'A-Lab1',30,1,@Now,0);
-END
-ELSE SELECT @BlkA = Id FROM buildings WHERE Code = N'BLK-A';
-
-IF NOT EXISTS (SELECT 1 FROM buildings WHERE Code = N'BLK-B')
-BEGIN
-    INSERT INTO buildings (Id,Name,Code,IsActive,CreatedAt,IsDeleted)
-    VALUES (@BlkB,N'Block B',N'BLK-B',1,@Now,0);
-    INSERT INTO rooms (Id,BuildingId,Number,Capacity,IsActive,CreatedAt,IsDeleted) VALUES
-        (NEWID(),@BlkB,N'B-201',80,1,@Now,0),
-        (NEWID(),@BlkB,N'B-202',50,1,@Now,0),
-        (NEWID(),@BlkB,N'B-Lab2',25,1,@Now,0);
-END
-ELSE SELECT @BlkB = Id FROM buildings WHERE Code = N'BLK-B';
-
--- ═══════════════════════════════════════════════════════════
--- §6  ACADEMIC PROGRAMS  (4 programs)
--- ═══════════════════════════════════════════════════════════
-DECLARE @ProgBSCS UNIQUEIDENTIFIER = NEWID();
-DECLARE @ProgBSSE UNIQUEIDENTIFIER = NEWID();
-DECLARE @ProgMSCS UNIQUEIDENTIFIER = NEWID();
-DECLARE @ProgBSIT UNIQUEIDENTIFIER = NEWID();
-
-IF NOT EXISTS (SELECT 1 FROM academic_programs WHERE Code = N'BSCS')
-    INSERT INTO academic_programs (Id,Name,Code,DepartmentId,TotalSemesters,IsActive,CreatedAt,IsDeleted)
-    VALUES (@ProgBSCS,N'BS Computer Science',N'BSCS',@DeptCS,8,1,@Now,0);
-ELSE SELECT @ProgBSCS = Id FROM academic_programs WHERE Code = N'BSCS';
-
-IF NOT EXISTS (SELECT 1 FROM academic_programs WHERE Code = N'BSSE')
-    INSERT INTO academic_programs (Id,Name,Code,DepartmentId,TotalSemesters,IsActive,CreatedAt,IsDeleted)
-    VALUES (@ProgBSSE,N'BS Software Engineering',N'BSSE',@DeptSE,8,1,@Now,0);
-ELSE SELECT @ProgBSSE = Id FROM academic_programs WHERE Code = N'BSSE';
-
-IF NOT EXISTS (SELECT 1 FROM academic_programs WHERE Code = N'MSCS')
-    INSERT INTO academic_programs (Id,Name,Code,DepartmentId,TotalSemesters,IsActive,CreatedAt,IsDeleted)
-    VALUES (@ProgMSCS,N'MS Computer Science',N'MSCS',@DeptCS,4,1,@Now,0);
-ELSE SELECT @ProgMSCS = Id FROM academic_programs WHERE Code = N'MSCS';
-
-IF NOT EXISTS (SELECT 1 FROM academic_programs WHERE Code = N'BSIT')
-    INSERT INTO academic_programs (Id,Name,Code,DepartmentId,TotalSemesters,IsActive,CreatedAt,IsDeleted)
-    VALUES (@ProgBSIT,N'BS Information Technology',N'BSIT',@DeptIT,8,1,@Now,0);
-ELSE SELECT @ProgBSIT = Id FROM academic_programs WHERE Code = N'BSIT';
-
--- ═══════════════════════════════════════════════════════════
--- §7  SEMESTERS  (past + current per department)
--- ═══════════════════════════════════════════════════════════
-DECLARE @SemFall25CS   UNIQUEIDENTIFIER = NEWID();
-DECLARE @SemSpr26CS    UNIQUEIDENTIFIER = NEWID();
-DECLARE @SemSpr26SE    UNIQUEIDENTIFIER = NEWID();
-DECLARE @SemSpr26IT    UNIQUEIDENTIFIER = NEWID();
-
-IF NOT EXISTS (SELECT 1 FROM semesters WHERE Name = N'Fall 2025 - CS')
-    INSERT INTO semesters (Id,Name,StartDate,EndDate,IsClosed,CreatedAt,IsDeleted)
-    VALUES (@SemFall25CS,N'Fall 2025 - CS','2025-09-01','2026-01-10',1,@Now,0);
-ELSE SELECT @SemFall25CS = Id FROM semesters WHERE Name = N'Fall 2025 - CS';
-
-IF NOT EXISTS (SELECT 1 FROM semesters WHERE Name = N'Spring 2026 - CS')
-    INSERT INTO semesters (Id,Name,StartDate,EndDate,IsClosed,CreatedAt,IsDeleted)
-    VALUES (@SemSpr26CS,N'Spring 2026 - CS','2026-01-15','2026-05-31',0,@Now,0);
-ELSE SELECT @SemSpr26CS = Id FROM semesters WHERE Name = N'Spring 2026 - CS';
-
-IF NOT EXISTS (SELECT 1 FROM semesters WHERE Name = N'Spring 2026 - SE')
-    INSERT INTO semesters (Id,Name,StartDate,EndDate,IsClosed,CreatedAt,IsDeleted)
-    VALUES (@SemSpr26SE,N'Spring 2026 - SE','2026-01-15','2026-05-31',0,@Now,0);
-ELSE SELECT @SemSpr26SE = Id FROM semesters WHERE Name = N'Spring 2026 - SE';
-
-IF NOT EXISTS (SELECT 1 FROM semesters WHERE Name = N'Spring 2026 - IT')
-    INSERT INTO semesters (Id,Name,StartDate,EndDate,IsClosed,CreatedAt,IsDeleted)
-    VALUES (@SemSpr26IT,N'Spring 2026 - IT','2026-01-15','2026-05-31',0,@Now,0);
-ELSE SELECT @SemSpr26IT = Id FROM semesters WHERE Name = N'Spring 2026 - IT';
-
--- ═══════════════════════════════════════════════════════════
--- §8  COURSES  (10 courses across 3 departments)
--- ═══════════════════════════════════════════════════════════
-DECLARE @COOP   UNIQUEIDENTIFIER = NEWID(); -- CS-301 OOP
-DECLARE @CDB    UNIQUEIDENTIFIER = NEWID(); -- CS-302 DB
-DECLARE @CDS    UNIQUEIDENTIFIER = NEWID(); -- CS-401 Data Structures
-DECLARE @COS    UNIQUEIDENTIFIER = NEWID(); -- CS-402 OS
-DECLARE @CSE1   UNIQUEIDENTIFIER = NEWID(); -- SE-301 Software Requirements
-DECLARE @CSE2   UNIQUEIDENTIFIER = NEWID(); -- SE-302 Software Design
-DECLARE @CNet   UNIQUEIDENTIFIER = NEWID(); -- CS-501 Computer Networks
-DECLARE @CAI    UNIQUEIDENTIFIER = NEWID(); -- CS-502 Artificial Intelligence
-DECLARE @CIT1   UNIQUEIDENTIFIER = NEWID(); -- IT-301 Web Technologies
-DECLARE @CIT2   UNIQUEIDENTIFIER = NEWID(); -- IT-302 Network Admin
-
-IF NOT EXISTS (SELECT 1 FROM courses WHERE Code=N'CS-301' AND DepartmentId=@DeptCS)
-    INSERT INTO courses (Id,Title,Code,CreditHours,DepartmentId,IsActive,CreatedAt,IsDeleted)
-    VALUES (@COOP,N'Object-Oriented Programming',N'CS-301',3,@DeptCS,1,@Now,0);
-ELSE SELECT @COOP = Id FROM courses WHERE Code=N'CS-301' AND DepartmentId=@DeptCS;
-
-IF NOT EXISTS (SELECT 1 FROM courses WHERE Code=N'CS-302' AND DepartmentId=@DeptCS)
-    INSERT INTO courses (Id,Title,Code,CreditHours,DepartmentId,IsActive,CreatedAt,IsDeleted)
-    VALUES (@CDB,N'Database Systems',N'CS-302',3,@DeptCS,1,@Now,0);
-ELSE SELECT @CDB = Id FROM courses WHERE Code=N'CS-302' AND DepartmentId=@DeptCS;
-
-IF NOT EXISTS (SELECT 1 FROM courses WHERE Code=N'CS-401' AND DepartmentId=@DeptCS)
-    INSERT INTO courses (Id,Title,Code,CreditHours,DepartmentId,IsActive,CreatedAt,IsDeleted)
-    VALUES (@CDS,N'Data Structures and Algorithms',N'CS-401',3,@DeptCS,1,@Now,0);
-ELSE SELECT @CDS = Id FROM courses WHERE Code=N'CS-401' AND DepartmentId=@DeptCS;
-
-IF NOT EXISTS (SELECT 1 FROM courses WHERE Code=N'CS-402' AND DepartmentId=@DeptCS)
-    INSERT INTO courses (Id,Title,Code,CreditHours,DepartmentId,IsActive,CreatedAt,IsDeleted)
-    VALUES (@COS,N'Operating Systems',N'CS-402',3,@DeptCS,1,@Now,0);
-ELSE SELECT @COS = Id FROM courses WHERE Code=N'CS-402' AND DepartmentId=@DeptCS;
-
-IF NOT EXISTS (SELECT 1 FROM courses WHERE Code=N'SE-301' AND DepartmentId=@DeptSE)
-    INSERT INTO courses (Id,Title,Code,CreditHours,DepartmentId,IsActive,CreatedAt,IsDeleted)
-    VALUES (@CSE1,N'Software Requirements Engineering',N'SE-301',3,@DeptSE,1,@Now,0);
-ELSE SELECT @CSE1 = Id FROM courses WHERE Code=N'SE-301' AND DepartmentId=@DeptSE;
-
-IF NOT EXISTS (SELECT 1 FROM courses WHERE Code=N'SE-302' AND DepartmentId=@DeptSE)
-    INSERT INTO courses (Id,Title,Code,CreditHours,DepartmentId,IsActive,CreatedAt,IsDeleted)
-    VALUES (@CSE2,N'Software Design Patterns',N'SE-302',3,@DeptSE,1,@Now,0);
-ELSE SELECT @CSE2 = Id FROM courses WHERE Code=N'SE-302' AND DepartmentId=@DeptSE;
-
-IF NOT EXISTS (SELECT 1 FROM courses WHERE Code=N'CS-501' AND DepartmentId=@DeptCS)
-    INSERT INTO courses (Id,Title,Code,CreditHours,DepartmentId,IsActive,CreatedAt,IsDeleted)
-    VALUES (@CNet,N'Computer Networks',N'CS-501',3,@DeptCS,1,@Now,0);
-ELSE SELECT @CNet = Id FROM courses WHERE Code=N'CS-501' AND DepartmentId=@DeptCS;
-
-IF NOT EXISTS (SELECT 1 FROM courses WHERE Code=N'CS-502' AND DepartmentId=@DeptCS)
-    INSERT INTO courses (Id,Title,Code,CreditHours,DepartmentId,IsActive,CreatedAt,IsDeleted)
-    VALUES (@CAI,N'Artificial Intelligence',N'CS-502',3,@DeptCS,1,@Now,0);
-ELSE SELECT @CAI = Id FROM courses WHERE Code=N'CS-502' AND DepartmentId=@DeptCS;
-
-IF NOT EXISTS (SELECT 1 FROM courses WHERE Code=N'IT-301' AND DepartmentId=@DeptIT)
-    INSERT INTO courses (Id,Title,Code,CreditHours,DepartmentId,IsActive,CreatedAt,IsDeleted)
-    VALUES (@CIT1,N'Web Technologies',N'IT-301',3,@DeptIT,1,@Now,0);
-ELSE SELECT @CIT1 = Id FROM courses WHERE Code=N'IT-301' AND DepartmentId=@DeptIT;
-
-IF NOT EXISTS (SELECT 1 FROM courses WHERE Code=N'IT-302' AND DepartmentId=@DeptIT)
-    INSERT INTO courses (Id,Title,Code,CreditHours,DepartmentId,IsActive,CreatedAt,IsDeleted)
-    VALUES (@CIT2,N'Network Administration',N'IT-302',3,@DeptIT,1,@Now,0);
-ELSE SELECT @CIT2 = Id FROM courses WHERE Code=N'IT-302' AND DepartmentId=@DeptIT;
-
--- ═══════════════════════════════════════════════════════════
--- §9  USERS  (3 admins, 5 faculty, 10 students, 1 superadmin)
--- ═══════════════════════════════════════════════════════════
-DECLARE @UserSA    UNIQUEIDENTIFIER;
-DECLARE @UAdmCS    UNIQUEIDENTIFIER = NEWID();
-DECLARE @UAdmSE    UNIQUEIDENTIFIER = NEWID();
-DECLARE @UAdmIT    UNIQUEIDENTIFIER = NEWID();
-DECLARE @UFDrA     UNIQUEIDENTIFIER = NEWID(); -- dr.ahmed (CS)
-DECLARE @UFDrS     UNIQUEIDENTIFIER = NEWID(); -- dr.sara  (CS)
-DECLARE @UFMrA     UNIQUEIDENTIFIER = NEWID(); -- mr.ali   (SE)
-DECLARE @UFMsZ     UNIQUEIDENTIFIER = NEWID(); -- ms.zara  (IT)
-DECLARE @UFProfK   UNIQUEIDENTIFIER = NEWID(); -- prof.khan(CS)
-DECLARE @US1       UNIQUEIDENTIFIER = NEWID(); -- s.aslam
-DECLARE @US2       UNIQUEIDENTIFIER = NEWID(); -- s.fatima
-DECLARE @US3       UNIQUEIDENTIFIER = NEWID(); -- s.usman
-DECLARE @US4       UNIQUEIDENTIFIER = NEWID(); -- s.hina
-DECLARE @US5       UNIQUEIDENTIFIER = NEWID(); -- s.tariq
-DECLARE @US6       UNIQUEIDENTIFIER = NEWID(); -- s.nadia
-DECLARE @US7       UNIQUEIDENTIFIER = NEWID(); -- s.bilal
-DECLARE @US8       UNIQUEIDENTIFIER = NEWID(); -- s.rabia
-DECLARE @US9       UNIQUEIDENTIFIER = NEWID(); -- s.kamran
-DECLARE @US10      UNIQUEIDENTIFIER = NEWID(); -- s.shazia
-
-SELECT @UserSA = Id FROM users WHERE Username = N'superadmin';
-IF @UserSA IS NULL
-BEGIN
-    SET @UserSA = NEWID();
-    INSERT INTO users (Id,Username,Email,PasswordHash,RoleId,DepartmentId,IsActive,IsLockedOut,FailedLoginAttempts,CreatedAt,IsDeleted)
-    VALUES (@UserSA,N'superadmin',N'superadmin@tabsan.local',@PwdHash,@RoleSuperAdmin,NULL,1,0,0,@Now,0);
-END
-
--- Admin users
-IF NOT EXISTS (SELECT 1 FROM users WHERE Username=N'admin.cs')
-    INSERT INTO users (Id,Username,Email,PasswordHash,RoleId,DepartmentId,IsActive,IsLockedOut,FailedLoginAttempts,CreatedAt,IsDeleted)
-    VALUES (@UAdmCS,N'admin.cs',N'admin.cs@tabsan.local',@PwdHash,@RoleAdmin,@DeptCS,1,0,0,@Now,0);
-ELSE SELECT @UAdmCS = Id FROM users WHERE Username=N'admin.cs';
-
-IF NOT EXISTS (SELECT 1 FROM users WHERE Username=N'admin.se')
-    INSERT INTO users (Id,Username,Email,PasswordHash,RoleId,DepartmentId,IsActive,IsLockedOut,FailedLoginAttempts,CreatedAt,IsDeleted)
-    VALUES (@UAdmSE,N'admin.se',N'admin.se@tabsan.local',@PwdHash,@RoleAdmin,@DeptSE,1,0,0,@Now,0);
-ELSE SELECT @UAdmSE = Id FROM users WHERE Username=N'admin.se';
-
-IF NOT EXISTS (SELECT 1 FROM users WHERE Username=N'admin.it')
-    INSERT INTO users (Id,Username,Email,PasswordHash,RoleId,DepartmentId,IsActive,IsLockedOut,FailedLoginAttempts,CreatedAt,IsDeleted)
-    VALUES (@UAdmIT,N'admin.it',N'admin.it@tabsan.local',@PwdHash,@RoleAdmin,@DeptIT,1,0,0,@Now,0);
-ELSE SELECT @UAdmIT = Id FROM users WHERE Username=N'admin.it';
-
--- Faculty users
-IF NOT EXISTS (SELECT 1 FROM users WHERE Username=N'dr.ahmed')
-    INSERT INTO users (Id,Username,Email,PasswordHash,RoleId,DepartmentId,IsActive,IsLockedOut,FailedLoginAttempts,CreatedAt,IsDeleted)
-    VALUES (@UFDrA,N'dr.ahmed',N'ahmed@tabsan.local',@PwdHash,@RoleFaculty,@DeptCS,1,0,0,@Now,0);
-ELSE SELECT @UFDrA = Id FROM users WHERE Username=N'dr.ahmed';
-
-IF NOT EXISTS (SELECT 1 FROM users WHERE Username=N'dr.sara')
-    INSERT INTO users (Id,Username,Email,PasswordHash,RoleId,DepartmentId,IsActive,IsLockedOut,FailedLoginAttempts,CreatedAt,IsDeleted)
-    VALUES (@UFDrS,N'dr.sara',N'sara@tabsan.local',@PwdHash,@RoleFaculty,@DeptCS,1,0,0,@Now,0);
-ELSE SELECT @UFDrS = Id FROM users WHERE Username=N'dr.sara';
-
-IF NOT EXISTS (SELECT 1 FROM users WHERE Username=N'mr.ali')
-    INSERT INTO users (Id,Username,Email,PasswordHash,RoleId,DepartmentId,IsActive,IsLockedOut,FailedLoginAttempts,CreatedAt,IsDeleted)
-    VALUES (@UFMrA,N'mr.ali',N'ali@tabsan.local',@PwdHash,@RoleFaculty,@DeptSE,1,0,0,@Now,0);
-ELSE SELECT @UFMrA = Id FROM users WHERE Username=N'mr.ali';
-
-IF NOT EXISTS (SELECT 1 FROM users WHERE Username=N'ms.zara')
-    INSERT INTO users (Id,Username,Email,PasswordHash,RoleId,DepartmentId,IsActive,IsLockedOut,FailedLoginAttempts,CreatedAt,IsDeleted)
-    VALUES (@UFMsZ,N'ms.zara',N'zara@tabsan.local',@PwdHash,@RoleFaculty,@DeptIT,1,0,0,@Now,0);
-ELSE SELECT @UFMsZ = Id FROM users WHERE Username=N'ms.zara';
-
-IF NOT EXISTS (SELECT 1 FROM users WHERE Username=N'prof.khan')
-    INSERT INTO users (Id,Username,Email,PasswordHash,RoleId,DepartmentId,IsActive,IsLockedOut,FailedLoginAttempts,CreatedAt,IsDeleted)
-    VALUES (@UFProfK,N'prof.khan',N'khan@tabsan.local',@PwdHash,@RoleFaculty,@DeptCS,1,0,0,@Now,0);
-ELSE SELECT @UFProfK = Id FROM users WHERE Username=N'prof.khan';
-
--- Student users (10)
-DECLARE @Students TABLE (VarRef INT, Username NVARCHAR(100), Email NVARCHAR(256), DeptId UNIQUEIDENTIFIER);
-INSERT INTO @Students VALUES
-    (1, N's.aslam',  N'aslam@student.tabsan.local',  @DeptCS),
-    (2, N's.fatima', N'fatima@student.tabsan.local',  @DeptCS),
-    (3, N's.usman',  N'usman@student.tabsan.local',   @DeptCS),
-    (4, N's.hina',   N'hina@student.tabsan.local',    @DeptSE),
-    (5, N's.tariq',  N'tariq@student.tabsan.local',   @DeptSE),
-    (6, N's.nadia',  N'nadia@student.tabsan.local',   @DeptCS),
-    (7, N's.bilal',  N'bilal@student.tabsan.local',   @DeptIT),
-    (8, N's.rabia',  N'rabia@student.tabsan.local',   @DeptIT),
-    (9, N's.kamran', N'kamran@student.tabsan.local',  @DeptCS),
-    (10,N's.shazia', N'shazia@student.tabsan.local',  @DeptSE);
-
-INSERT INTO users (Id,Username,Email,PasswordHash,RoleId,DepartmentId,IsActive,IsLockedOut,FailedLoginAttempts,CreatedAt,IsDeleted)
-SELECT NEWID(), s.Username, s.Email, @PwdHash, @RoleStudent, s.DeptId, 1, 0, 0, @Now, 0
-FROM @Students s
-WHERE NOT EXISTS (SELECT 1 FROM users u WHERE u.Username = s.Username);
-
--- Capture student user IDs
-SELECT @US1  = Id FROM users WHERE Username = N's.aslam';
-SELECT @US2  = Id FROM users WHERE Username = N's.fatima';
-SELECT @US3  = Id FROM users WHERE Username = N's.usman';
-SELECT @US4  = Id FROM users WHERE Username = N's.hina';
-SELECT @US5  = Id FROM users WHERE Username = N's.tariq';
-SELECT @US6  = Id FROM users WHERE Username = N's.nadia';
-SELECT @US7  = Id FROM users WHERE Username = N's.bilal';
-SELECT @US8  = Id FROM users WHERE Username = N's.rabia';
-SELECT @US9  = Id FROM users WHERE Username = N's.kamran';
-SELECT @US10 = Id FROM users WHERE Username = N's.shazia';
-
--- ═══════════════════════════════════════════════════════════
--- §10  STUDENT PROFILES  (10 students, 2 semesters in)
--- ═══════════════════════════════════════════════════════════
-DECLARE @SP1  UNIQUEIDENTIFIER = NEWID();
-DECLARE @SP2  UNIQUEIDENTIFIER = NEWID();
-DECLARE @SP3  UNIQUEIDENTIFIER = NEWID();
-DECLARE @SP4  UNIQUEIDENTIFIER = NEWID();
-DECLARE @SP5  UNIQUEIDENTIFIER = NEWID();
-DECLARE @SP6  UNIQUEIDENTIFIER = NEWID();
-DECLARE @SP7  UNIQUEIDENTIFIER = NEWID();
-DECLARE @SP8  UNIQUEIDENTIFIER = NEWID();
-DECLARE @SP9  UNIQUEIDENTIFIER = NEWID();
-DECLARE @SP10 UNIQUEIDENTIFIER = NEWID();
-
-IF NOT EXISTS (SELECT 1 FROM student_profiles WHERE UserId=@US1)
-    INSERT INTO student_profiles (Id,UserId,RegistrationNumber,ProgramId,DepartmentId,AdmissionDate,Cgpa,CurrentSemesterNumber,Status,CreatedAt,IsDeleted)
-    VALUES (@SP1, @US1,N'2026-CS-1001',@ProgBSCS,@DeptCS,'2024-09-01',3.20,2,1,@Now,0);
-ELSE SELECT @SP1 = Id FROM student_profiles WHERE UserId=@US1;
-
-IF NOT EXISTS (SELECT 1 FROM student_profiles WHERE UserId=@US2)
-    INSERT INTO student_profiles (Id,UserId,RegistrationNumber,ProgramId,DepartmentId,AdmissionDate,Cgpa,CurrentSemesterNumber,Status,CreatedAt,IsDeleted)
-    VALUES (@SP2, @US2,N'2026-CS-1002',@ProgBSCS,@DeptCS,'2024-09-01',3.50,2,1,@Now,0);
-ELSE SELECT @SP2 = Id FROM student_profiles WHERE UserId=@US2;
-
-IF NOT EXISTS (SELECT 1 FROM student_profiles WHERE UserId=@US3)
-    INSERT INTO student_profiles (Id,UserId,RegistrationNumber,ProgramId,DepartmentId,AdmissionDate,Cgpa,CurrentSemesterNumber,Status,CreatedAt,IsDeleted)
-    VALUES (@SP3, @US3,N'2026-CS-1003',@ProgBSCS,@DeptCS,'2024-09-01',2.80,2,1,@Now,0);
-ELSE SELECT @SP3 = Id FROM student_profiles WHERE UserId=@US3;
-
-IF NOT EXISTS (SELECT 1 FROM student_profiles WHERE UserId=@US4)
-    INSERT INTO student_profiles (Id,UserId,RegistrationNumber,ProgramId,DepartmentId,AdmissionDate,Cgpa,CurrentSemesterNumber,Status,CreatedAt,IsDeleted)
-    VALUES (@SP4, @US4,N'2026-SE-1001',@ProgBSSE,@DeptSE,'2024-09-01',3.70,2,1,@Now,0);
-ELSE SELECT @SP4 = Id FROM student_profiles WHERE UserId=@US4;
-
-IF NOT EXISTS (SELECT 1 FROM student_profiles WHERE UserId=@US5)
-    INSERT INTO student_profiles (Id,UserId,RegistrationNumber,ProgramId,DepartmentId,AdmissionDate,Cgpa,CurrentSemesterNumber,Status,CreatedAt,IsDeleted)
-    VALUES (@SP5, @US5,N'2026-SE-1002',@ProgBSSE,@DeptSE,'2024-09-01',2.60,2,1,@Now,0);
-ELSE SELECT @SP5 = Id FROM student_profiles WHERE UserId=@US5;
-
-IF NOT EXISTS (SELECT 1 FROM student_profiles WHERE UserId=@US6)
-    INSERT INTO student_profiles (Id,UserId,RegistrationNumber,ProgramId,DepartmentId,AdmissionDate,Cgpa,CurrentSemesterNumber,Status,CreatedAt,IsDeleted)
-    VALUES (@SP6, @US6,N'2026-CS-1004',@ProgBSCS,@DeptCS,'2024-09-01',3.10,2,1,@Now,0);
-ELSE SELECT @SP6 = Id FROM student_profiles WHERE UserId=@US6;
-
-IF NOT EXISTS (SELECT 1 FROM student_profiles WHERE UserId=@US7)
-    INSERT INTO student_profiles (Id,UserId,RegistrationNumber,ProgramId,DepartmentId,AdmissionDate,Cgpa,CurrentSemesterNumber,Status,CreatedAt,IsDeleted)
-    VALUES (@SP7, @US7,N'2026-IT-1001',@ProgBSIT,@DeptIT,'2024-09-01',3.00,2,1,@Now,0);
-ELSE SELECT @SP7 = Id FROM student_profiles WHERE UserId=@US7;
-
-IF NOT EXISTS (SELECT 1 FROM student_profiles WHERE UserId=@US8)
-    INSERT INTO student_profiles (Id,UserId,RegistrationNumber,ProgramId,DepartmentId,AdmissionDate,Cgpa,CurrentSemesterNumber,Status,CreatedAt,IsDeleted)
-    VALUES (@SP8, @US8,N'2026-IT-1002',@ProgBSIT,@DeptIT,'2024-09-01',3.40,2,1,@Now,0);
-ELSE SELECT @SP8 = Id FROM student_profiles WHERE UserId=@US8;
-
-IF NOT EXISTS (SELECT 1 FROM student_profiles WHERE UserId=@US9)
-    INSERT INTO student_profiles (Id,UserId,RegistrationNumber,ProgramId,DepartmentId,AdmissionDate,Cgpa,CurrentSemesterNumber,Status,CreatedAt,IsDeleted)
-    VALUES (@SP9, @US9,N'2026-CS-1005',@ProgMSCS,@DeptCS,'2024-09-01',3.80,2,1,@Now,0);
-ELSE SELECT @SP9 = Id FROM student_profiles WHERE UserId=@US9;
-
-IF NOT EXISTS (SELECT 1 FROM student_profiles WHERE UserId=@US10)
-    INSERT INTO student_profiles (Id,UserId,RegistrationNumber,ProgramId,DepartmentId,AdmissionDate,Cgpa,CurrentSemesterNumber,Status,CreatedAt,IsDeleted)
-    VALUES (@SP10,@US10,N'2026-SE-1003',@ProgBSSE,@DeptSE,'2024-09-01',2.90,2,1,@Now,0);
-ELSE SELECT @SP10 = Id FROM student_profiles WHERE UserId=@US10;
-
--- ═══════════════════════════════════════════════════════════
--- §11  FACULTY DEPARTMENT ASSIGNMENTS
--- ═══════════════════════════════════════════════════════════
-DECLARE @FDAData TABLE (FId UNIQUEIDENTIFIER, DId UNIQUEIDENTIFIER);
-INSERT INTO @FDAData VALUES
-    (@UFDrA,   @DeptCS), (@UFDrS,   @DeptCS), (@UFProfK, @DeptCS),
-    (@UFMrA,   @DeptSE), (@UFMsZ,   @DeptIT);
-
-INSERT INTO faculty_department_assignments (Id,FacultyUserId,DepartmentId,AssignedAt,CreatedAt)
-SELECT NEWID(), f.FId, f.DId, @Now, @Now
-FROM @FDAData f
+GO
+
+DECLARE @PwdHash NVARCHAR(512) = N'PLACEHOLDER_RUN_GenerateTestHashes.ps1_TO_REPLACE';
+DECLARE @Now     DATETIME2     = SYSUTCDATETIME();
+
+-- ═════════════════════════════════════════════════════════════
+-- A.  DEPARTMENTS
+-- ═════════════════════════════════════════════════════════════
+DECLARE @DeptIT   UNIQUEIDENTIFIER = CAST(N'DA000000-0000-0000-0000-000000000001' AS UNIQUEIDENTIFIER);
+DECLARE @DeptBiz  UNIQUEIDENTIFIER = CAST(N'DA000000-0000-0000-0000-000000000002' AS UNIQUEIDENTIFIER);
+DECLARE @DeptLang UNIQUEIDENTIFIER = CAST(N'DA000000-0000-0000-0000-000000000003' AS UNIQUEIDENTIFIER);
+
+INSERT INTO [departments] ([Id],[Name],[Code],[IsActive],[CreatedAt],[UpdatedAt],[IsDeleted])
+SELECT v.[Id], v.[Name], v.[Code], 1, @Now, @Now, 0
+FROM (VALUES
+    (@DeptIT,   N'Information Technology', N'IT'  ),
+    (@DeptBiz,  N'Business',               N'BUS' ),
+    (@DeptLang, N'Languages',              N'LANG')
+) AS v([Id],[Name],[Code])
+WHERE NOT EXISTS (SELECT 1 FROM [departments] WHERE [Id] = v.[Id]);
+
+-- ═════════════════════════════════════════════════════════════
+-- B.  ACADEMIC PROGRAMS
+-- ═════════════════════════════════════════════════════════════
+DECLARE @ProgBSCS   UNIQUEIDENTIFIER = CAST(N'PA000000-0000-0000-0000-000000000001' AS UNIQUEIDENTIFIER);
+DECLARE @ProgBSIT   UNIQUEIDENTIFIER = CAST(N'PA000000-0000-0000-0000-000000000002' AS UNIQUEIDENTIFIER);
+DECLARE @ProgBBA    UNIQUEIDENTIFIER = CAST(N'PA000000-0000-0000-0000-000000000003' AS UNIQUEIDENTIFIER);
+DECLARE @ProgMBA    UNIQUEIDENTIFIER = CAST(N'PA000000-0000-0000-0000-000000000004' AS UNIQUEIDENTIFIER);
+DECLARE @ProgArabic UNIQUEIDENTIFIER = CAST(N'PA000000-0000-0000-0000-000000000005' AS UNIQUEIDENTIFIER);
+DECLARE @ProgEng    UNIQUEIDENTIFIER = CAST(N'PA000000-0000-0000-0000-000000000006' AS UNIQUEIDENTIFIER);
+DECLARE @ProgChinese UNIQUEIDENTIFIER = CAST(N'PA000000-0000-0000-0000-000000000007' AS UNIQUEIDENTIFIER);
+
+INSERT INTO [academic_programs] ([Id],[Name],[Code],[DepartmentId],[TotalSemesters],[IsActive],[CreatedAt],[UpdatedAt],[IsDeleted])
+SELECT v.[Id], v.[Name], v.[Code], v.[DeptId], v.[Sems], 1, @Now, @Now, 0
+FROM (VALUES
+    (@ProgBSCS,   N'BS Computer Science',   N'BSCS',    @DeptIT,   8),
+    (@ProgBSIT,   N'BS Information Technology', N'BSIT',@DeptIT,   8),
+    (@ProgBBA,    N'Bachelor of Business Administration', N'BBA',  @DeptBiz,  8),
+    (@ProgMBA,    N'Master of Business Administration',   N'MBA',  @DeptBiz,  4),
+    (@ProgArabic, N'BA Arabic',             N'BA-ARB',  @DeptLang, 6),
+    (@ProgEng,    N'BA English',            N'BA-ENG',  @DeptLang, 6),
+    (@ProgChinese,N'BA Chinese',            N'BA-CHN',  @DeptLang, 6)
+) AS v([Id],[Name],[Code],[DeptId],[Sems])
+WHERE NOT EXISTS (SELECT 1 FROM [academic_programs] WHERE [Id] = v.[Id]);
+
+-- ═════════════════════════════════════════════════════════════
+-- C.  SEMESTERS
+-- ═════════════════════════════════════════════════════════════
+DECLARE @SemFall25 UNIQUEIDENTIFIER = CAST(N'SA000000-0000-0000-0000-000000000001' AS UNIQUEIDENTIFIER);
+DECLARE @SemSpr26  UNIQUEIDENTIFIER = CAST(N'SA000000-0000-0000-0000-000000000002' AS UNIQUEIDENTIFIER);
+DECLARE @SemFall26 UNIQUEIDENTIFIER = CAST(N'SA000000-0000-0000-0000-000000000003' AS UNIQUEIDENTIFIER);
+
+INSERT INTO [semesters] ([Id],[Name],[StartDate],[EndDate],[IsClosed],[ClosedAt],[CreatedAt],[UpdatedAt],[IsDeleted])
+SELECT v.[Id], v.[Name], v.[Start], v.[End], v.[Closed], v.[ClosedAt], @Now, @Now, 0
+FROM (VALUES
+    (@SemFall25, N'Fall 2025',   '2025-09-01', '2026-01-31', CAST(1 AS BIT), CAST('2026-02-01 00:00:00' AS DATETIME2)),
+    (@SemSpr26,  N'Spring 2026', '2026-02-01', '2026-06-30', CAST(0 AS BIT), CAST(NULL AS DATETIME2)),
+    (@SemFall26, N'Fall 2026',   '2026-09-01', '2027-01-31', CAST(0 AS BIT), CAST(NULL AS DATETIME2))
+) AS v([Id],[Name],[Start],[End],[Closed],[ClosedAt])
+WHERE NOT EXISTS (SELECT 1 FROM [semesters] WHERE [Id] = v.[Id]);
+
+-- ═════════════════════════════════════════════════════════════
+-- D.  USERS
+-- ═════════════════════════════════════════════════════════════
+-- SuperAdmin
+DECLARE @USuperAdmin UNIQUEIDENTIFIER = CAST(N'UA000000-0000-0000-0000-000000000001' AS UNIQUEIDENTIFIER);
+-- Admins (one per dept)
+DECLARE @UAdminIT    UNIQUEIDENTIFIER = CAST(N'UA000000-0000-0000-0000-000000000002' AS UNIQUEIDENTIFIER);
+DECLARE @UAdminBiz   UNIQUEIDENTIFIER = CAST(N'UA000000-0000-0000-0000-000000000003' AS UNIQUEIDENTIFIER);
+DECLARE @UAdminLang  UNIQUEIDENTIFIER = CAST(N'UA000000-0000-0000-0000-000000000004' AS UNIQUEIDENTIFIER);
+-- Faculty — IT (3), Business (3), Languages (3)
+DECLARE @UFacAhmed   UNIQUEIDENTIFIER = CAST(N'UA000000-0000-0000-0000-000000000011' AS UNIQUEIDENTIFIER); -- IT CS
+DECLARE @UFacSara    UNIQUEIDENTIFIER = CAST(N'UA000000-0000-0000-0000-000000000012' AS UNIQUEIDENTIFIER); -- IT IT
+DECLARE @UFacAli     UNIQUEIDENTIFIER = CAST(N'UA000000-0000-0000-0000-000000000013' AS UNIQUEIDENTIFIER); -- IT shared
+DECLARE @UFacKhan    UNIQUEIDENTIFIER = CAST(N'UA000000-0000-0000-0000-000000000014' AS UNIQUEIDENTIFIER); -- Business
+DECLARE @UFacNaeem   UNIQUEIDENTIFIER = CAST(N'UA000000-0000-0000-0000-000000000015' AS UNIQUEIDENTIFIER); -- Business
+DECLARE @UFacZara    UNIQUEIDENTIFIER = CAST(N'UA000000-0000-0000-0000-000000000016' AS UNIQUEIDENTIFIER); -- Business
+DECLARE @UFacFatima  UNIQUEIDENTIFIER = CAST(N'UA000000-0000-0000-0000-000000000017' AS UNIQUEIDENTIFIER); -- Languages
+DECLARE @UFacImran   UNIQUEIDENTIFIER = CAST(N'UA000000-0000-0000-0000-000000000018' AS UNIQUEIDENTIFIER); -- Languages
+DECLARE @UFacSana    UNIQUEIDENTIFIER = CAST(N'UA000000-0000-0000-0000-000000000019' AS UNIQUEIDENTIFIER); -- Languages
+-- Students — IT (6), Business (6), Languages (6)
+DECLARE @UStud01 UNIQUEIDENTIFIER = CAST(N'UA000000-0000-0000-0000-000000000101' AS UNIQUEIDENTIFIER); -- IT
+DECLARE @UStud02 UNIQUEIDENTIFIER = CAST(N'UA000000-0000-0000-0000-000000000102' AS UNIQUEIDENTIFIER);
+DECLARE @UStud03 UNIQUEIDENTIFIER = CAST(N'UA000000-0000-0000-0000-000000000103' AS UNIQUEIDENTIFIER);
+DECLARE @UStud04 UNIQUEIDENTIFIER = CAST(N'UA000000-0000-0000-0000-000000000104' AS UNIQUEIDENTIFIER);
+DECLARE @UStud05 UNIQUEIDENTIFIER = CAST(N'UA000000-0000-0000-0000-000000000105' AS UNIQUEIDENTIFIER);
+DECLARE @UStud06 UNIQUEIDENTIFIER = CAST(N'UA000000-0000-0000-0000-000000000106' AS UNIQUEIDENTIFIER);
+DECLARE @UStud07 UNIQUEIDENTIFIER = CAST(N'UA000000-0000-0000-0000-000000000107' AS UNIQUEIDENTIFIER); -- Business
+DECLARE @UStud08 UNIQUEIDENTIFIER = CAST(N'UA000000-0000-0000-0000-000000000108' AS UNIQUEIDENTIFIER);
+DECLARE @UStud09 UNIQUEIDENTIFIER = CAST(N'UA000000-0000-0000-0000-000000000109' AS UNIQUEIDENTIFIER);
+DECLARE @UStud10 UNIQUEIDENTIFIER = CAST(N'UA000000-0000-0000-0000-000000000110' AS UNIQUEIDENTIFIER);
+DECLARE @UStud11 UNIQUEIDENTIFIER = CAST(N'UA000000-0000-0000-0000-000000000111' AS UNIQUEIDENTIFIER);
+DECLARE @UStud12 UNIQUEIDENTIFIER = CAST(N'UA000000-0000-0000-0000-000000000112' AS UNIQUEIDENTIFIER);
+DECLARE @UStud13 UNIQUEIDENTIFIER = CAST(N'UA000000-0000-0000-0000-000000000113' AS UNIQUEIDENTIFIER); -- Languages
+DECLARE @UStud14 UNIQUEIDENTIFIER = CAST(N'UA000000-0000-0000-0000-000000000114' AS UNIQUEIDENTIFIER);
+DECLARE @UStud15 UNIQUEIDENTIFIER = CAST(N'UA000000-0000-0000-0000-000000000115' AS UNIQUEIDENTIFIER);
+DECLARE @UStud16 UNIQUEIDENTIFIER = CAST(N'UA000000-0000-0000-0000-000000000116' AS UNIQUEIDENTIFIER);
+DECLARE @UStud17 UNIQUEIDENTIFIER = CAST(N'UA000000-0000-0000-0000-000000000117' AS UNIQUEIDENTIFIER);
+DECLARE @UStud18 UNIQUEIDENTIFIER = CAST(N'UA000000-0000-0000-0000-000000000118' AS UNIQUEIDENTIFIER);
+
+INSERT INTO [users]
+    ([Id],[Username],[Email],[PasswordHash],[RoleId],[DepartmentId],
+     [IsActive],[MustChangePassword],[CreatedAt],[UpdatedAt],[IsDeleted])
+SELECT v.[Id], v.[Username], v.[Email], @PwdHash, v.[RoleId], v.[DeptId], 1, 0, @Now, @Now, 0
+FROM (VALUES
+    -- SuperAdmin
+    (@USuperAdmin, N'superadmin',     N'superadmin@edusphere.local',           1, CAST(NULL AS UNIQUEIDENTIFIER)),
+    -- Admins
+    (@UAdminIT,    N'admin.it',       N'admin.it@edusphere.local',             2, @DeptIT  ),
+    (@UAdminBiz,   N'admin.biz',      N'admin.biz@edusphere.local',            2, @DeptBiz ),
+    (@UAdminLang,  N'admin.lang',     N'admin.lang@edusphere.local',           2, @DeptLang),
+    -- Faculty IT
+    (@UFacAhmed,   N'dr.ahmed',       N'ahmed@edusphere.local',                3, @DeptIT  ),
+    (@UFacSara,    N'dr.sara',        N'sara@edusphere.local',                 3, @DeptIT  ),
+    (@UFacAli,     N'mr.ali',         N'ali@edusphere.local',                  3, @DeptIT  ),
+    -- Faculty Business
+    (@UFacKhan,    N'prof.khan',      N'khan@edusphere.local',                 3, @DeptBiz ),
+    (@UFacNaeem,   N'dr.naeem',       N'naeem@edusphere.local',                3, @DeptBiz ),
+    (@UFacZara,    N'ms.zara',        N'zara@edusphere.local',                 3, @DeptBiz ),
+    -- Faculty Languages
+    (@UFacFatima,  N'dr.fatima',      N'fatima@edusphere.local',               3, @DeptLang),
+    (@UFacImran,   N'mr.imran',       N'imran@edusphere.local',                3, @DeptLang),
+    (@UFacSana,    N'ms.sana',        N'sana@edusphere.local',                 3, @DeptLang),
+    -- Students IT
+    (@UStud01,     N's.aslam',        N'aslam@student.edusphere.local',        4, @DeptIT  ),
+    (@UStud02,     N's.bilal',        N'bilal@student.edusphere.local',        4, @DeptIT  ),
+    (@UStud03,     N's.fatima',       N'fatima.s@student.edusphere.local',     4, @DeptIT  ),
+    (@UStud04,     N's.hina',         N'hina@student.edusphere.local',         4, @DeptIT  ),
+    (@UStud05,     N's.kamran',       N'kamran@student.edusphere.local',       4, @DeptIT  ),
+    (@UStud06,     N's.layla',        N'layla@student.edusphere.local',        4, @DeptIT  ),
+    -- Students Business
+    (@UStud07,     N's.nadia',        N'nadia@student.edusphere.local',        4, @DeptBiz ),
+    (@UStud08,     N's.omar',         N'omar@student.edusphere.local',         4, @DeptBiz ),
+    (@UStud09,     N's.rabia',        N'rabia@student.edusphere.local',        4, @DeptBiz ),
+    (@UStud10,     N's.saad',         N'saad@student.edusphere.local',         4, @DeptBiz ),
+    (@UStud11,     N's.shazia',       N'shazia@student.edusphere.local',       4, @DeptBiz ),
+    (@UStud12,     N's.tariq',        N'tariq@student.edusphere.local',        4, @DeptBiz ),
+    -- Students Languages
+    (@UStud13,     N's.usman',        N'usman@student.edusphere.local',        4, @DeptLang),
+    (@UStud14,     N's.yasmin',       N'yasmin@student.edusphere.local',       4, @DeptLang),
+    (@UStud15,     N's.zainab',       N'zainab@student.edusphere.local',       4, @DeptLang),
+    (@UStud16,     N's.danish',       N'danish@student.edusphere.local',       4, @DeptLang),
+    (@UStud17,     N's.amira',        N'amira@student.edusphere.local',        4, @DeptLang),
+    (@UStud18,     N's.kabir',        N'kabir@student.edusphere.local',        4, @DeptLang)
+) AS v([Id],[Username],[Email],[RoleId],[DeptId])
+WHERE NOT EXISTS (SELECT 1 FROM [users] WHERE [Id] = v.[Id]);
+
+-- ═════════════════════════════════════════════════════════════
+-- E.  ADMIN DEPARTMENT ASSIGNMENTS
+-- ═════════════════════════════════════════════════════════════
+INSERT INTO [admin_department_assignments]
+    ([Id],[AdminUserId],[DepartmentId],[AssignedAt],[RemovedAt],[CreatedAt],[UpdatedAt])
+SELECT NEWID(), v.[Admin], v.[Dept], @Now, NULL, @Now, @Now
+FROM (VALUES
+    (@UAdminIT,   @DeptIT  ),
+    (@UAdminBiz,  @DeptBiz ),
+    (@UAdminLang, @DeptLang)
+) AS v([Admin],[Dept])
 WHERE NOT EXISTS (
-    SELECT 1 FROM faculty_department_assignments x
-    WHERE x.FacultyUserId=f.FId AND x.DepartmentId=f.DId
+    SELECT 1 FROM [admin_department_assignments]
+    WHERE [AdminUserId] = v.[Admin] AND [DepartmentId] = v.[Dept] AND [RemovedAt] IS NULL
 );
 
--- ═══════════════════════════════════════════════════════════
--- §12  COURSE OFFERINGS  (Spring 2026 — 8 offerings)
--- ═══════════════════════════════════════════════════════════
-DECLARE @OfOOP   UNIQUEIDENTIFIER = NEWID();
-DECLARE @OfDB    UNIQUEIDENTIFIER = NEWID();
-DECLARE @OfDS    UNIQUEIDENTIFIER = NEWID();
-DECLARE @OfOS    UNIQUEIDENTIFIER = NEWID();
-DECLARE @OfSE1   UNIQUEIDENTIFIER = NEWID();
-DECLARE @OfSE2   UNIQUEIDENTIFIER = NEWID();
-DECLARE @OfIT1   UNIQUEIDENTIFIER = NEWID();
-DECLARE @OfIT2   UNIQUEIDENTIFIER = NEWID();
-
-IF NOT EXISTS (SELECT 1 FROM course_offerings WHERE CourseId=@COOP AND SemesterId=@SemSpr26CS)
-    INSERT INTO course_offerings (Id,CourseId,SemesterId,FacultyUserId,MaxEnrollment,IsOpen,CreatedAt,IsDeleted)
-    VALUES (@OfOOP,@COOP,@SemSpr26CS,@UFDrA,40,1,@Now,0);
-ELSE SELECT @OfOOP = Id FROM course_offerings WHERE CourseId=@COOP AND SemesterId=@SemSpr26CS;
-
-IF NOT EXISTS (SELECT 1 FROM course_offerings WHERE CourseId=@CDB AND SemesterId=@SemSpr26CS)
-    INSERT INTO course_offerings (Id,CourseId,SemesterId,FacultyUserId,MaxEnrollment,IsOpen,CreatedAt,IsDeleted)
-    VALUES (@OfDB,@CDB,@SemSpr26CS,@UFDrS,35,1,@Now,0);
-ELSE SELECT @OfDB = Id FROM course_offerings WHERE CourseId=@CDB AND SemesterId=@SemSpr26CS;
-
-IF NOT EXISTS (SELECT 1 FROM course_offerings WHERE CourseId=@CDS AND SemesterId=@SemSpr26CS)
-    INSERT INTO course_offerings (Id,CourseId,SemesterId,FacultyUserId,MaxEnrollment,IsOpen,CreatedAt,IsDeleted)
-    VALUES (@OfDS,@CDS,@SemSpr26CS,@UFProfK,45,1,@Now,0);
-ELSE SELECT @OfDS = Id FROM course_offerings WHERE CourseId=@CDS AND SemesterId=@SemSpr26CS;
-
-IF NOT EXISTS (SELECT 1 FROM course_offerings WHERE CourseId=@COS AND SemesterId=@SemSpr26CS)
-    INSERT INTO course_offerings (Id,CourseId,SemesterId,FacultyUserId,MaxEnrollment,IsOpen,CreatedAt,IsDeleted)
-    VALUES (@OfOS,@COS,@SemSpr26CS,@UFDrA,40,1,@Now,0);
-ELSE SELECT @OfOS = Id FROM course_offerings WHERE CourseId=@COS AND SemesterId=@SemSpr26CS;
-
-IF NOT EXISTS (SELECT 1 FROM course_offerings WHERE CourseId=@CSE1 AND SemesterId=@SemSpr26SE)
-    INSERT INTO course_offerings (Id,CourseId,SemesterId,FacultyUserId,MaxEnrollment,IsOpen,CreatedAt,IsDeleted)
-    VALUES (@OfSE1,@CSE1,@SemSpr26SE,@UFMrA,30,1,@Now,0);
-ELSE SELECT @OfSE1 = Id FROM course_offerings WHERE CourseId=@CSE1 AND SemesterId=@SemSpr26SE;
-
-IF NOT EXISTS (SELECT 1 FROM course_offerings WHERE CourseId=@CSE2 AND SemesterId=@SemSpr26SE)
-    INSERT INTO course_offerings (Id,CourseId,SemesterId,FacultyUserId,MaxEnrollment,IsOpen,CreatedAt,IsDeleted)
-    VALUES (@OfSE2,@CSE2,@SemSpr26SE,@UFMrA,30,1,@Now,0);
-ELSE SELECT @OfSE2 = Id FROM course_offerings WHERE CourseId=@CSE2 AND SemesterId=@SemSpr26SE;
-
-IF NOT EXISTS (SELECT 1 FROM course_offerings WHERE CourseId=@CIT1 AND SemesterId=@SemSpr26IT)
-    INSERT INTO course_offerings (Id,CourseId,SemesterId,FacultyUserId,MaxEnrollment,IsOpen,CreatedAt,IsDeleted)
-    VALUES (@OfIT1,@CIT1,@SemSpr26IT,@UFMsZ,35,1,@Now,0);
-ELSE SELECT @OfIT1 = Id FROM course_offerings WHERE CourseId=@CIT1 AND SemesterId=@SemSpr26IT;
-
-IF NOT EXISTS (SELECT 1 FROM course_offerings WHERE CourseId=@CIT2 AND SemesterId=@SemSpr26IT)
-    INSERT INTO course_offerings (Id,CourseId,SemesterId,FacultyUserId,MaxEnrollment,IsOpen,CreatedAt,IsDeleted)
-    VALUES (@OfIT2,@CIT2,@SemSpr26IT,@UFMsZ,30,1,@Now,0);
-ELSE SELECT @OfIT2 = Id FROM course_offerings WHERE CourseId=@CIT2 AND SemesterId=@SemSpr26IT;
-
--- ═══════════════════════════════════════════════════════════
--- §13  ENROLLMENTS
--- ═══════════════════════════════════════════════════════════
-DECLARE @EnrlData TABLE (SpId UNIQUEIDENTIFIER, OffId UNIQUEIDENTIFIER);
-INSERT INTO @EnrlData VALUES
-    -- CS students → OOP + DB + DS + OS
-    (@SP1,@OfOOP), (@SP1,@OfDB),  (@SP1,@OfDS),
-    (@SP2,@OfOOP), (@SP2,@OfDB),  (@SP2,@OfDS), (@SP2,@OfOS),
-    (@SP3,@OfOOP), (@SP3,@OfDB),
-    (@SP6,@OfOOP), (@SP6,@OfDS),  (@SP6,@OfOS),
-    (@SP9,@OfDS),  (@SP9,@OfOS),
-    -- SE students → SE courses
-    (@SP4,@OfSE1), (@SP4,@OfSE2),
-    (@SP5,@OfSE1), (@SP5,@OfSE2),
-    (@SP10,@OfSE1),(@SP10,@OfSE2),
-    -- IT students → IT courses
-    (@SP7,@OfIT1), (@SP7,@OfIT2),
-    (@SP8,@OfIT1), (@SP8,@OfIT2);
-
-INSERT INTO enrollments (Id,StudentProfileId,CourseOfferingId,EnrolledAt,Status,CreatedAt)
-SELECT NEWID(), e.SpId, e.OffId, @Now, N'Active', @Now
-FROM @EnrlData e
+-- ═════════════════════════════════════════════════════════════
+-- F.  FACULTY DEPARTMENT ASSIGNMENTS
+-- ═════════════════════════════════════════════════════════════
+INSERT INTO [faculty_department_assignments]
+    ([Id],[FacultyUserId],[DepartmentId],[AssignedAt],[RemovedAt],[CreatedAt],[UpdatedAt])
+SELECT NEWID(), v.[Fac], v.[Dept], @Now, NULL, @Now, @Now
+FROM (VALUES
+    (@UFacAhmed,  @DeptIT  ), (@UFacSara,   @DeptIT  ), (@UFacAli,    @DeptIT  ),
+    (@UFacKhan,   @DeptBiz ), (@UFacNaeem,  @DeptBiz ), (@UFacZara,   @DeptBiz ),
+    (@UFacFatima, @DeptLang), (@UFacImran,  @DeptLang), (@UFacSana,   @DeptLang)
+) AS v([Fac],[Dept])
 WHERE NOT EXISTS (
-    SELECT 1 FROM enrollments x
-    WHERE x.StudentProfileId=e.SpId AND x.CourseOfferingId=e.OffId
+    SELECT 1 FROM [faculty_department_assignments]
+    WHERE [FacultyUserId] = v.[Fac] AND [DepartmentId] = v.[Dept] AND [RemovedAt] IS NULL
 );
 
--- ═══════════════════════════════════════════════════════════
--- §14  TIMETABLES + ENTRIES
--- ═══════════════════════════════════════════════════════════
-DECLARE @TT_CS  UNIQUEIDENTIFIER = NEWID();
-DECLARE @TT_SE  UNIQUEIDENTIFIER = NEWID();
-DECLARE @TT_IT  UNIQUEIDENTIFIER = NEWID();
+-- ═════════════════════════════════════════════════════════════
+-- G.  COURSES
+-- ═════════════════════════════════════════════════════════════
+-- IT Department (6 courses)
+DECLARE @CIT01 UNIQUEIDENTIFIER = CAST(N'CA000000-0000-0000-0000-000000000101' AS UNIQUEIDENTIFIER);
+DECLARE @CIT02 UNIQUEIDENTIFIER = CAST(N'CA000000-0000-0000-0000-000000000102' AS UNIQUEIDENTIFIER);
+DECLARE @CIT03 UNIQUEIDENTIFIER = CAST(N'CA000000-0000-0000-0000-000000000103' AS UNIQUEIDENTIFIER);
+DECLARE @CIT04 UNIQUEIDENTIFIER = CAST(N'CA000000-0000-0000-0000-000000000104' AS UNIQUEIDENTIFIER);
+DECLARE @CIT05 UNIQUEIDENTIFIER = CAST(N'CA000000-0000-0000-0000-000000000105' AS UNIQUEIDENTIFIER);
+DECLARE @CIT06 UNIQUEIDENTIFIER = CAST(N'CA000000-0000-0000-0000-000000000106' AS UNIQUEIDENTIFIER);
+-- Business Department (6 courses)
+DECLARE @CBZ01 UNIQUEIDENTIFIER = CAST(N'CA000000-0000-0000-0000-000000000201' AS UNIQUEIDENTIFIER);
+DECLARE @CBZ02 UNIQUEIDENTIFIER = CAST(N'CA000000-0000-0000-0000-000000000202' AS UNIQUEIDENTIFIER);
+DECLARE @CBZ03 UNIQUEIDENTIFIER = CAST(N'CA000000-0000-0000-0000-000000000203' AS UNIQUEIDENTIFIER);
+DECLARE @CBZ04 UNIQUEIDENTIFIER = CAST(N'CA000000-0000-0000-0000-000000000204' AS UNIQUEIDENTIFIER);
+DECLARE @CBZ05 UNIQUEIDENTIFIER = CAST(N'CA000000-0000-0000-0000-000000000205' AS UNIQUEIDENTIFIER);
+DECLARE @CBZ06 UNIQUEIDENTIFIER = CAST(N'CA000000-0000-0000-0000-000000000206' AS UNIQUEIDENTIFIER);
+-- Languages Department (6 courses)
+DECLARE @CLG01 UNIQUEIDENTIFIER = CAST(N'CA000000-0000-0000-0000-000000000301' AS UNIQUEIDENTIFIER);
+DECLARE @CLG02 UNIQUEIDENTIFIER = CAST(N'CA000000-0000-0000-0000-000000000302' AS UNIQUEIDENTIFIER);
+DECLARE @CLG03 UNIQUEIDENTIFIER = CAST(N'CA000000-0000-0000-0000-000000000303' AS UNIQUEIDENTIFIER);
+DECLARE @CLG04 UNIQUEIDENTIFIER = CAST(N'CA000000-0000-0000-0000-000000000304' AS UNIQUEIDENTIFIER);
+DECLARE @CLG05 UNIQUEIDENTIFIER = CAST(N'CA000000-0000-0000-0000-000000000305' AS UNIQUEIDENTIFIER);
+DECLARE @CLG06 UNIQUEIDENTIFIER = CAST(N'CA000000-0000-0000-0000-000000000306' AS UNIQUEIDENTIFIER);
 
-IF NOT EXISTS (SELECT 1 FROM timetables WHERE DepartmentId=@DeptCS AND SemesterId=@SemSpr26CS)
-BEGIN
-    INSERT INTO timetables (Id,DepartmentId,SemesterId,IsPublished,PublishedAt,CreatedAt,IsDeleted,AcademicProgramId,EffectiveDate,SemesterNumber)
-    VALUES (@TT_CS,@DeptCS,@SemSpr26CS,1,@Now,@Now,0,@ProgBSCS,CAST('2026-01-15' AS DATE),2);
-    INSERT INTO timetable_entries (Id,TimetableId,DayOfWeek,StartTime,EndTime,SubjectName,RoomNumber,FacultyName,CourseId,FacultyUserId,CreatedAt)
-    VALUES
-        (NEWID(),@TT_CS,1,'08:00','09:30',N'Object-Oriented Programming',N'A-101',N'dr.ahmed',  @COOP,@UFDrA,@Now),
-        (NEWID(),@TT_CS,1,'10:00','11:30',N'Data Structures',            N'A-102',N'prof.khan', @CDS, @UFProfK,@Now),
-        (NEWID(),@TT_CS,2,'08:00','09:30',N'Database Systems',           N'A-101',N'dr.sara',   @CDB, @UFDrS,@Now),
-        (NEWID(),@TT_CS,3,'08:00','09:30',N'Object-Oriented Programming',N'A-101',N'dr.ahmed',  @COOP,@UFDrA,@Now),
-        (NEWID(),@TT_CS,3,'10:00','11:30',N'Operating Systems',          N'A-Lab1',N'dr.ahmed', @COS, @UFDrA,@Now),
-        (NEWID(),@TT_CS,4,'08:00','09:30',N'Database Systems',           N'A-101',N'dr.sara',   @CDB, @UFDrS,@Now),
-        (NEWID(),@TT_CS,4,'10:00','11:30',N'Data Structures',            N'A-102',N'prof.khan', @CDS, @UFProfK,@Now);
-END
+INSERT INTO [courses] ([Id],[Title],[Code],[CreditHours],[DepartmentId],[IsActive],[CreatedAt],[UpdatedAt],[IsDeleted])
+SELECT v.[Id], v.[Title], v.[Code], v.[Cr], v.[DeptId], 1, @Now, @Now, 0
+FROM (VALUES
+    -- IT
+    (@CIT01, N'Introduction to Programming',         N'IT101', 3, @DeptIT),
+    (@CIT02, N'Data Structures and Algorithms',      N'IT201', 3, @DeptIT),
+    (@CIT03, N'Database Management Systems',         N'IT301', 3, @DeptIT),
+    (@CIT04, N'Operating Systems',                   N'IT302', 3, @DeptIT),
+    (@CIT05, N'Computer Networks',                   N'IT401', 3, @DeptIT),
+    (@CIT06, N'Software Engineering',                N'IT402', 3, @DeptIT),
+    -- Business
+    (@CBZ01, N'Principles of Management',            N'BUS101', 3, @DeptBiz),
+    (@CBZ02, N'Financial Accounting',                N'BUS102', 3, @DeptBiz),
+    (@CBZ03, N'Marketing Management',                N'BUS201', 3, @DeptBiz),
+    (@CBZ04, N'Business Statistics',                 N'BUS202', 3, @DeptBiz),
+    (@CBZ05, N'Strategic Management',                N'BUS301', 3, @DeptBiz),
+    (@CBZ06, N'Entrepreneurship and Innovation',     N'BUS302', 3, @DeptBiz),
+    -- Languages
+    (@CLG01, N'Arabic Language I',                   N'LANG101', 3, @DeptLang),
+    (@CLG02, N'Arabic Language II',                  N'LANG102', 3, @DeptLang),
+    (@CLG03, N'English Composition',                 N'LANG201', 3, @DeptLang),
+    (@CLG04, N'English Literature',                  N'LANG202', 3, @DeptLang),
+    (@CLG05, N'Chinese Language I',                  N'LANG301', 3, @DeptLang),
+    (@CLG06, N'Chinese Language II',                 N'LANG302', 3, @DeptLang)
+) AS v([Id],[Title],[Code],[Cr],[DeptId])
+WHERE NOT EXISTS (SELECT 1 FROM [courses] WHERE [Id] = v.[Id]);
 
-IF NOT EXISTS (SELECT 1 FROM timetables WHERE DepartmentId=@DeptSE AND SemesterId=@SemSpr26SE)
-BEGIN
-    INSERT INTO timetables (Id,DepartmentId,SemesterId,IsPublished,PublishedAt,CreatedAt,IsDeleted,AcademicProgramId,EffectiveDate,SemesterNumber)
-    VALUES (@TT_SE,@DeptSE,@SemSpr26SE,1,@Now,@Now,0,@ProgBSSE,CAST('2026-01-15' AS DATE),2);
-    INSERT INTO timetable_entries (Id,TimetableId,DayOfWeek,StartTime,EndTime,SubjectName,RoomNumber,FacultyName,CourseId,FacultyUserId,CreatedAt)
-    VALUES
-        (NEWID(),@TT_SE,1,'08:00','09:30',N'Software Requirements',N'B-201',N'mr.ali',@CSE1,@UFMrA,@Now),
-        (NEWID(),@TT_SE,3,'08:00','09:30',N'Software Design Patterns',N'B-201',N'mr.ali',@CSE2,@UFMrA,@Now);
-END
+-- ═════════════════════════════════════════════════════════════
+-- H.  COURSE OFFERINGS
+--     UNIQUE constraint: (CourseId, SemesterId)
+--     Fall 2025: courses 1–3 per dept (6 total offerings)
+--     Spring 2026: courses 4–6 per dept (6 total offerings — different courses!)
+-- ═════════════════════════════════════════════════════════════
+-- IT — Fall 2025
+DECLARE @OIT01F25 UNIQUEIDENTIFIER = CAST(N'OA000000-0000-0000-0000-000000000101' AS UNIQUEIDENTIFIER);
+DECLARE @OIT02F25 UNIQUEIDENTIFIER = CAST(N'OA000000-0000-0000-0000-000000000102' AS UNIQUEIDENTIFIER);
+DECLARE @OIT03F25 UNIQUEIDENTIFIER = CAST(N'OA000000-0000-0000-0000-000000000103' AS UNIQUEIDENTIFIER);
+-- IT — Spring 2026
+DECLARE @OIT04S26 UNIQUEIDENTIFIER = CAST(N'OA000000-0000-0000-0000-000000000104' AS UNIQUEIDENTIFIER);
+DECLARE @OIT05S26 UNIQUEIDENTIFIER = CAST(N'OA000000-0000-0000-0000-000000000105' AS UNIQUEIDENTIFIER);
+DECLARE @OIT06S26 UNIQUEIDENTIFIER = CAST(N'OA000000-0000-0000-0000-000000000106' AS UNIQUEIDENTIFIER);
+-- Business — Fall 2025
+DECLARE @OBZ01F25 UNIQUEIDENTIFIER = CAST(N'OA000000-0000-0000-0000-000000000201' AS UNIQUEIDENTIFIER);
+DECLARE @OBZ02F25 UNIQUEIDENTIFIER = CAST(N'OA000000-0000-0000-0000-000000000202' AS UNIQUEIDENTIFIER);
+DECLARE @OBZ03F25 UNIQUEIDENTIFIER = CAST(N'OA000000-0000-0000-0000-000000000203' AS UNIQUEIDENTIFIER);
+-- Business — Spring 2026
+DECLARE @OBZ04S26 UNIQUEIDENTIFIER = CAST(N'OA000000-0000-0000-0000-000000000204' AS UNIQUEIDENTIFIER);
+DECLARE @OBZ05S26 UNIQUEIDENTIFIER = CAST(N'OA000000-0000-0000-0000-000000000205' AS UNIQUEIDENTIFIER);
+DECLARE @OBZ06S26 UNIQUEIDENTIFIER = CAST(N'OA000000-0000-0000-0000-000000000206' AS UNIQUEIDENTIFIER);
+-- Languages — Fall 2025
+DECLARE @OLG01F25 UNIQUEIDENTIFIER = CAST(N'OA000000-0000-0000-0000-000000000301' AS UNIQUEIDENTIFIER);
+DECLARE @OLG02F25 UNIQUEIDENTIFIER = CAST(N'OA000000-0000-0000-0000-000000000302' AS UNIQUEIDENTIFIER);
+DECLARE @OLG03F25 UNIQUEIDENTIFIER = CAST(N'OA000000-0000-0000-0000-000000000303' AS UNIQUEIDENTIFIER);
+-- Languages — Spring 2026
+DECLARE @OLG04S26 UNIQUEIDENTIFIER = CAST(N'OA000000-0000-0000-0000-000000000304' AS UNIQUEIDENTIFIER);
+DECLARE @OLG05S26 UNIQUEIDENTIFIER = CAST(N'OA000000-0000-0000-0000-000000000305' AS UNIQUEIDENTIFIER);
+DECLARE @OLG06S26 UNIQUEIDENTIFIER = CAST(N'OA000000-0000-0000-0000-000000000306' AS UNIQUEIDENTIFIER);
 
-IF NOT EXISTS (SELECT 1 FROM timetables WHERE DepartmentId=@DeptIT AND SemesterId=@SemSpr26IT)
-BEGIN
-    INSERT INTO timetables (Id,DepartmentId,SemesterId,IsPublished,PublishedAt,CreatedAt,IsDeleted,AcademicProgramId,EffectiveDate,SemesterNumber)
-    VALUES (@TT_IT,@DeptIT,@SemSpr26IT,1,@Now,@Now,0,@ProgBSIT,CAST('2026-01-15' AS DATE),2);
-    INSERT INTO timetable_entries (Id,TimetableId,DayOfWeek,StartTime,EndTime,SubjectName,RoomNumber,FacultyName,CourseId,FacultyUserId,CreatedAt)
-    VALUES
-        (NEWID(),@TT_IT,2,'10:00','11:30',N'Web Technologies',  N'B-Lab2',N'ms.zara',@CIT1,@UFMsZ,@Now),
-        (NEWID(),@TT_IT,4,'10:00','11:30',N'Network Administration',N'B-202',N'ms.zara',@CIT2,@UFMsZ,@Now);
-END
+INSERT INTO [course_offerings] ([Id],[CourseId],[SemesterId],[FacultyUserId],[MaxEnrollment],[IsOpen],[CreatedAt],[UpdatedAt],[IsDeleted])
+SELECT v.[Id], v.[CourseId], v.[SemId], v.[FacId], 40, v.[IsOpen], @Now, @Now, 0
+FROM (VALUES
+    -- IT Fall 2025 (closed)
+    (@OIT01F25, @CIT01, @SemFall25, @UFacAhmed, CAST(0 AS BIT)),
+    (@OIT02F25, @CIT02, @SemFall25, @UFacSara,  CAST(0 AS BIT)),
+    (@OIT03F25, @CIT03, @SemFall25, @UFacAli,   CAST(0 AS BIT)),
+    -- IT Spring 2026 (open)
+    (@OIT04S26, @CIT04, @SemSpr26,  @UFacAhmed, CAST(1 AS BIT)),
+    (@OIT05S26, @CIT05, @SemSpr26,  @UFacSara,  CAST(1 AS BIT)),
+    (@OIT06S26, @CIT06, @SemSpr26,  @UFacAli,   CAST(1 AS BIT)),
+    -- Business Fall 2025 (closed)
+    (@OBZ01F25, @CBZ01, @SemFall25, @UFacKhan,  CAST(0 AS BIT)),
+    (@OBZ02F25, @CBZ02, @SemFall25, @UFacNaeem, CAST(0 AS BIT)),
+    (@OBZ03F25, @CBZ03, @SemFall25, @UFacZara,  CAST(0 AS BIT)),
+    -- Business Spring 2026 (open)
+    (@OBZ04S26, @CBZ04, @SemSpr26,  @UFacKhan,  CAST(1 AS BIT)),
+    (@OBZ05S26, @CBZ05, @SemSpr26,  @UFacNaeem, CAST(1 AS BIT)),
+    (@OBZ06S26, @CBZ06, @SemSpr26,  @UFacZara,  CAST(1 AS BIT)),
+    -- Languages Fall 2025 (closed)
+    (@OLG01F25, @CLG01, @SemFall25, @UFacFatima, CAST(0 AS BIT)),
+    (@OLG02F25, @CLG03, @SemFall25, @UFacImran,  CAST(0 AS BIT)),
+    (@OLG03F25, @CLG05, @SemFall25, @UFacSana,   CAST(0 AS BIT)),
+    -- Languages Spring 2026 (open)
+    (@OLG04S26, @CLG02, @SemSpr26,  @UFacFatima, CAST(1 AS BIT)),
+    (@OLG05S26, @CLG04, @SemSpr26,  @UFacImran,  CAST(1 AS BIT)),
+    (@OLG06S26, @CLG06, @SemSpr26,  @UFacSana,   CAST(1 AS BIT))
+) AS v([Id],[CourseId],[SemId],[FacId],[IsOpen])
+WHERE NOT EXISTS (SELECT 1 FROM [course_offerings] WHERE [Id] = v.[Id]);
 
--- ═══════════════════════════════════════════════════════════
--- §15  SIDEBAR MENUS + ROLE ACCESSES
--- Final-Touches Phase 9 Stage 9.1 — Added missing content-area sidebar items
--- ═══════════════════════════════════════════════════════════
-DECLARE @SMD  UNIQUEIDENTIFIER = NEWID(); DECLARE @SMTTA UNIQUEIDENTIFIER = NEWID();
-DECLARE @SMTTF UNIQUEIDENTIFIER = NEWID(); DECLARE @SMTTS UNIQUEIDENTIFIER = NEWID();
-DECLARE @SML  UNIQUEIDENTIFIER = NEWID(); DECLARE @SMBL UNIQUEIDENTIFIER = NEWID();
-DECLARE @SMRM UNIQUEIDENTIFIER = NEWID(); DECLARE @SMSS UNIQUEIDENTIFIER = NEWID();
-DECLARE @SMRS UNIQUEIDENTIFIER = NEWID();
-DECLARE @SMSI UNIQUEIDENTIFIER = NEWID(); DECLARE @SMTS UNIQUEIDENTIFIER = NEWID();
-DECLARE @SMLU UNIQUEIDENTIFIER = NEWID();
-DECLARE @SMDashSet     UNIQUEIDENTIFIER = NEWID();
-DECLARE @SMResultCalc  UNIQUEIDENTIFIER = NEWID();
-DECLARE @SMNotif       UNIQUEIDENTIFIER = NEWID();
-DECLARE @SMStudents    UNIQUEIDENTIFIER = NEWID();
-DECLARE @SMDepts       UNIQUEIDENTIFIER = NEWID();
-DECLARE @SMCourses     UNIQUEIDENTIFIER = NEWID();
-DECLARE @SMAssign      UNIQUEIDENTIFIER = NEWID();
-DECLARE @SMAttend      UNIQUEIDENTIFIER = NEWID();
-DECLARE @SMResults     UNIQUEIDENTIFIER = NEWID();
-DECLARE @SMQuizzes     UNIQUEIDENTIFIER = NEWID();
-DECLARE @SMFyp         UNIQUEIDENTIFIER = NEWID();
-DECLARE @SMAnalytics   UNIQUEIDENTIFIER = NEWID();
-DECLARE @SMAiChat      UNIQUEIDENTIFIER = NEWID();
-DECLARE @SMLifecycle   UNIQUEIDENTIFIER = NEWID();
-DECLARE @SMPayments    UNIQUEIDENTIFIER = NEWID();
-DECLARE @SMEnrollments UNIQUEIDENTIFIER = NEWID();
-DECLARE @SMRptCtr      UNIQUEIDENTIFIER = NEWID();
+-- ═════════════════════════════════════════════════════════════
+-- I.  STUDENT PROFILES
+-- ═════════════════════════════════════════════════════════════
+-- IT students
+DECLARE @SP01 UNIQUEIDENTIFIER = CAST(N'SPA00000-0000-0000-0000-000000000101' AS UNIQUEIDENTIFIER);
+DECLARE @SP02 UNIQUEIDENTIFIER = CAST(N'SPA00000-0000-0000-0000-000000000102' AS UNIQUEIDENTIFIER);
+DECLARE @SP03 UNIQUEIDENTIFIER = CAST(N'SPA00000-0000-0000-0000-000000000103' AS UNIQUEIDENTIFIER);
+DECLARE @SP04 UNIQUEIDENTIFIER = CAST(N'SPA00000-0000-0000-0000-000000000104' AS UNIQUEIDENTIFIER);
+DECLARE @SP05 UNIQUEIDENTIFIER = CAST(N'SPA00000-0000-0000-0000-000000000105' AS UNIQUEIDENTIFIER);
+DECLARE @SP06 UNIQUEIDENTIFIER = CAST(N'SPA00000-0000-0000-0000-000000000106' AS UNIQUEIDENTIFIER);
+-- Business students
+DECLARE @SP07 UNIQUEIDENTIFIER = CAST(N'SPA00000-0000-0000-0000-000000000107' AS UNIQUEIDENTIFIER);
+DECLARE @SP08 UNIQUEIDENTIFIER = CAST(N'SPA00000-0000-0000-0000-000000000108' AS UNIQUEIDENTIFIER);
+DECLARE @SP09 UNIQUEIDENTIFIER = CAST(N'SPA00000-0000-0000-0000-000000000109' AS UNIQUEIDENTIFIER);
+DECLARE @SP10 UNIQUEIDENTIFIER = CAST(N'SPA00000-0000-0000-0000-000000000110' AS UNIQUEIDENTIFIER);
+DECLARE @SP11 UNIQUEIDENTIFIER = CAST(N'SPA00000-0000-0000-0000-000000000111' AS UNIQUEIDENTIFIER);
+DECLARE @SP12 UNIQUEIDENTIFIER = CAST(N'SPA00000-0000-0000-0000-000000000112' AS UNIQUEIDENTIFIER);
+-- Languages students
+DECLARE @SP13 UNIQUEIDENTIFIER = CAST(N'SPA00000-0000-0000-0000-000000000113' AS UNIQUEIDENTIFIER);
+DECLARE @SP14 UNIQUEIDENTIFIER = CAST(N'SPA00000-0000-0000-0000-000000000114' AS UNIQUEIDENTIFIER);
+DECLARE @SP15 UNIQUEIDENTIFIER = CAST(N'SPA00000-0000-0000-0000-000000000115' AS UNIQUEIDENTIFIER);
+DECLARE @SP16 UNIQUEIDENTIFIER = CAST(N'SPA00000-0000-0000-0000-000000000116' AS UNIQUEIDENTIFIER);
+DECLARE @SP17 UNIQUEIDENTIFIER = CAST(N'SPA00000-0000-0000-0000-000000000117' AS UNIQUEIDENTIFIER);
+DECLARE @SP18 UNIQUEIDENTIFIER = CAST(N'SPA00000-0000-0000-0000-000000000118' AS UNIQUEIDENTIFIER);
 
-IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key]=N'dashboard')
-    INSERT INTO sidebar_menu_items (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
-    VALUES (@SMD,N'dashboard',N'Dashboard',N'Main overview dashboard',NULL,1,1,1,@Now,0);
+INSERT INTO [student_profiles]
+    ([Id],[UserId],[RegistrationNumber],[ProgramId],[DepartmentId],
+     [AdmissionDate],[Cgpa],[CurrentSemesterNumber],[CreatedAt],[UpdatedAt],[IsDeleted])
+SELECT v.[Id], v.[UserId], v.[RegNo], v.[ProgId], v.[DeptId], v.[Adm], v.[Cgpa], v.[CurSem], @Now, @Now, 0
+FROM (VALUES
+    -- IT
+    (@SP01, @UStud01, N'2024-IT-001', @ProgBSCS, @DeptIT,   '2024-09-01', CAST(3.50 AS DECIMAL(4,2)), 4),
+    (@SP02, @UStud02, N'2024-IT-002', @ProgBSCS, @DeptIT,   '2024-09-01', CAST(3.20 AS DECIMAL(4,2)), 4),
+    (@SP03, @UStud03, N'2025-IT-001', @ProgBSIT, @DeptIT,   '2025-09-01', CAST(2.90 AS DECIMAL(4,2)), 2),
+    (@SP04, @UStud04, N'2025-IT-002', @ProgBSIT, @DeptIT,   '2025-09-01', CAST(3.70 AS DECIMAL(4,2)), 2),
+    (@SP05, @UStud05, N'2025-IT-003', @ProgBSCS, @DeptIT,   '2025-09-01', CAST(3.10 AS DECIMAL(4,2)), 2),
+    (@SP06, @UStud06, N'2025-IT-004', @ProgBSIT, @DeptIT,   '2025-09-01', CAST(3.40 AS DECIMAL(4,2)), 2),
+    -- Business
+    (@SP07, @UStud07, N'2024-BZ-001', @ProgBBA,  @DeptBiz,  '2024-09-01', CAST(3.00 AS DECIMAL(4,2)), 4),
+    (@SP08, @UStud08, N'2024-BZ-002', @ProgBBA,  @DeptBiz,  '2024-09-01', CAST(2.80 AS DECIMAL(4,2)), 4),
+    (@SP09, @UStud09, N'2025-BZ-001', @ProgBBA,  @DeptBiz,  '2025-09-01', CAST(3.60 AS DECIMAL(4,2)), 2),
+    (@SP10, @UStud10, N'2025-BZ-002', @ProgMBA,  @DeptBiz,  '2025-09-01', CAST(3.80 AS DECIMAL(4,2)), 2),
+    (@SP11, @UStud11, N'2025-BZ-003', @ProgMBA,  @DeptBiz,  '2025-09-01', CAST(3.50 AS DECIMAL(4,2)), 2),
+    (@SP12, @UStud12, N'2025-BZ-004', @ProgBBA,  @DeptBiz,  '2025-09-01', CAST(2.70 AS DECIMAL(4,2)), 2),
+    -- Languages
+    (@SP13, @UStud13, N'2024-LG-001', @ProgArabic, @DeptLang,'2024-09-01', CAST(3.30 AS DECIMAL(4,2)), 4),
+    (@SP14, @UStud14, N'2024-LG-002', @ProgEng,    @DeptLang,'2024-09-01', CAST(3.60 AS DECIMAL(4,2)), 4),
+    (@SP15, @UStud15, N'2025-LG-001', @ProgArabic, @DeptLang,'2025-09-01', CAST(3.10 AS DECIMAL(4,2)), 2),
+    (@SP16, @UStud16, N'2025-LG-002', @ProgEng,    @DeptLang,'2025-09-01', CAST(2.90 AS DECIMAL(4,2)), 2),
+    (@SP17, @UStud17, N'2025-LG-003', @ProgChinese,@DeptLang,'2025-09-01', CAST(3.40 AS DECIMAL(4,2)), 2),
+    (@SP18, @UStud18, N'2025-LG-004', @ProgChinese,@DeptLang,'2025-09-01', CAST(3.20 AS DECIMAL(4,2)), 2)
+) AS v([Id],[UserId],[RegNo],[ProgId],[DeptId],[Adm],[Cgpa],[CurSem])
+WHERE NOT EXISTS (SELECT 1 FROM [student_profiles] WHERE [Id] = v.[Id]);
 
-IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key]=N'timetable_admin')
-    INSERT INTO sidebar_menu_items (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
-    VALUES (@SMTTA,N'timetable_admin',N'Timetable Admin',N'Manage department timetables',NULL,2,1,1,@Now,0);
+-- ═════════════════════════════════════════════════════════════
+-- J.  REGISTRATION WHITELIST
+-- ═════════════════════════════════════════════════════════════
+INSERT INTO [registration_whitelist]
+    ([Id],[IdentifierType],[IdentifierValue],[DepartmentId],[ProgramId],
+     [IsUsed],[UsedAt],[CreatedUserId],[CreatedAt],[UpdatedAt])
+SELECT NEWID(), N'Email', v.[Email], v.[DeptId], v.[ProgId], 1, @Now, @USuperAdmin, @Now, @Now
+FROM (VALUES
+    (N'aslam@student.edusphere.local',   @DeptIT,   @ProgBSCS),
+    (N'bilal@student.edusphere.local',   @DeptIT,   @ProgBSCS),
+    (N'fatima.s@student.edusphere.local',@DeptIT,   @ProgBSIT),
+    (N'hina@student.edusphere.local',    @DeptIT,   @ProgBSIT),
+    (N'kamran@student.edusphere.local',  @DeptIT,   @ProgBSCS),
+    (N'layla@student.edusphere.local',   @DeptIT,   @ProgBSIT),
+    (N'nadia@student.edusphere.local',   @DeptBiz,  @ProgBBA ),
+    (N'omar@student.edusphere.local',    @DeptBiz,  @ProgBBA ),
+    (N'rabia@student.edusphere.local',   @DeptBiz,  @ProgBBA ),
+    (N'saad@student.edusphere.local',    @DeptBiz,  @ProgMBA ),
+    (N'shazia@student.edusphere.local',  @DeptBiz,  @ProgMBA ),
+    (N'tariq@student.edusphere.local',   @DeptBiz,  @ProgBBA ),
+    (N'usman@student.edusphere.local',   @DeptLang, @ProgArabic),
+    (N'yasmin@student.edusphere.local',  @DeptLang, @ProgEng),
+    (N'zainab@student.edusphere.local',  @DeptLang, @ProgArabic),
+    (N'danish@student.edusphere.local',  @DeptLang, @ProgEng),
+    (N'amira@student.edusphere.local',   @DeptLang, @ProgChinese),
+    (N'kabir@student.edusphere.local',   @DeptLang, @ProgChinese)
+) AS v([Email],[DeptId],[ProgId])
+WHERE NOT EXISTS (SELECT 1 FROM [registration_whitelist] WHERE [IdentifierValue] = v.[Email]);
 
-IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key]=N'timetable_teacher')
-    INSERT INTO sidebar_menu_items (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
-    VALUES (@SMTTF,N'timetable_teacher',N'My Timetable (Faculty)',N'Faculty teaching schedule',NULL,3,1,1,@Now,0);
-
-IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key]=N'timetable_student')
-    INSERT INTO sidebar_menu_items (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
-    VALUES (@SMTTS,N'timetable_student',N'My Timetable (Student)',N'Student class schedule',NULL,4,1,1,@Now,0);
-
-SELECT @SMD   = Id FROM sidebar_menu_items WHERE [Key]=N'dashboard';
-SELECT @SMTTA = Id FROM sidebar_menu_items WHERE [Key]=N'timetable_admin';
-SELECT @SMTTF = Id FROM sidebar_menu_items WHERE [Key]=N'timetable_teacher';
-SELECT @SMTTS = Id FROM sidebar_menu_items WHERE [Key]=N'timetable_student';
-
-IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key]=N'lookups')
-    INSERT INTO sidebar_menu_items (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
-    VALUES (@SML,N'lookups',N'Lookups',N'Reference data management',NULL,5,1,1,@Now,0);
-SELECT @SML  = Id FROM sidebar_menu_items WHERE [Key]=N'lookups';
-
-IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key]=N'buildings')
-    INSERT INTO sidebar_menu_items (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
-    VALUES (@SMBL,N'buildings',N'Buildings',N'Manage buildings',@SML,1,1,1,@Now,0);
-
-IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key]=N'rooms')
-    INSERT INTO sidebar_menu_items (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
-    VALUES (@SMRM,N'rooms',N'Rooms',N'Manage rooms',@SML,2,1,1,@Now,0);
-
-IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key]=N'system_settings')
-    INSERT INTO sidebar_menu_items (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
-    VALUES (@SMSS,N'system_settings',N'System Settings',N'Platform configuration (SuperAdmin)',NULL,6,1,1,@Now,0);
-SELECT @SMSS = Id FROM sidebar_menu_items WHERE [Key]=N'system_settings';
-
-IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key]=N'report_settings')
-    INSERT INTO sidebar_menu_items (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
-    VALUES (@SMRS,N'report_settings',N'Report Settings',N'Report access control',@SMSS,1,1,1,@Now,0);
-
-IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key]=N'sidebar_settings')
-    INSERT INTO sidebar_menu_items (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
-    VALUES (@SMSI,N'sidebar_settings',N'Sidebar Settings',N'Customise sidebar per role',@SMSS,3,1,1,@Now,0);
-
-IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key]=N'theme_settings')
-    INSERT INTO sidebar_menu_items (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
-    VALUES (@SMTS,N'theme_settings',N'Theme Settings',N'UI colour theme',@SMSS,4,1,1,@Now,0);
-
-IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key]=N'license_update')
-    INSERT INTO sidebar_menu_items (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
-    VALUES (@SMLU,N'license_update',N'License Update',N'Upload license file',@SMSS,5,1,1,@Now,0);
-
-IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key]=N'dashboard_settings')
-    INSERT INTO sidebar_menu_items (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
-    VALUES (@SMDashSet,N'dashboard_settings',N'Dashboard Settings',N'Customise portal branding and name',@SMSS,6,1,1,@Now,0);
-
-IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key]=N'result_calculation')
-    INSERT INTO sidebar_menu_items (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
-    VALUES (@SMResultCalc,N'result_calculation',N'Result Calculation',N'Configure GPA scale and assessment weights',NULL,7,1,0,@Now,0);
-
-IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key]=N'notifications')
-    INSERT INTO sidebar_menu_items (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
-    VALUES (@SMNotif,N'notifications',N'Notifications',N'View system and academic notifications',NULL,8,1,0,@Now,0);
-
-IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key]=N'students')
-    INSERT INTO sidebar_menu_items (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
-    VALUES (@SMStudents,N'students',N'Students',N'Manage student profiles',NULL,9,1,0,@Now,0);
-
-IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key]=N'departments')
-    INSERT INTO sidebar_menu_items (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
-    VALUES (@SMDepts,N'departments',N'Departments',N'Manage academic departments',NULL,10,1,0,@Now,0);
-
-IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key]=N'courses')
-    INSERT INTO sidebar_menu_items (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
-    VALUES (@SMCourses,N'courses',N'Courses',N'Manage courses and offerings',NULL,11,1,0,@Now,0);
-
-IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key]=N'assignments')
-    INSERT INTO sidebar_menu_items (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
-    VALUES (@SMAssign,N'assignments',N'Assignments',N'Manage and submit assignments',NULL,12,1,0,@Now,0);
-
-IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key]=N'attendance')
-    INSERT INTO sidebar_menu_items (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
-    VALUES (@SMAttend,N'attendance',N'Attendance',N'Record and view attendance',NULL,13,1,0,@Now,0);
-
-IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key]=N'results')
-    INSERT INTO sidebar_menu_items (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
-    VALUES (@SMResults,N'results',N'Results',N'View and publish academic results',NULL,14,1,0,@Now,0);
-
-IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key]=N'quizzes')
-    INSERT INTO sidebar_menu_items (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
-    VALUES (@SMQuizzes,N'quizzes',N'Quizzes',N'Manage and attempt quizzes',NULL,15,1,0,@Now,0);
-
-IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key]=N'fyp')
-    INSERT INTO sidebar_menu_items (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
-    VALUES (@SMFyp,N'fyp',N'FYP',N'Final Year Projects management',NULL,16,1,0,@Now,0);
-
-IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key]=N'analytics')
-    INSERT INTO sidebar_menu_items (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
-    VALUES (@SMAnalytics,N'analytics',N'Analytics',N'Academic analytics and dashboards',NULL,17,1,0,@Now,0);
-
-IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key]=N'ai_chat')
-    INSERT INTO sidebar_menu_items (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
-    VALUES (@SMAiChat,N'ai_chat',N'AI Chat',N'AI-powered academic assistant',NULL,18,1,0,@Now,0);
-
-IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key]=N'student_lifecycle')
-    INSERT INTO sidebar_menu_items (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
-    VALUES (@SMLifecycle,N'student_lifecycle',N'Student Lifecycle',N'Manage promotions, holds and withdrawals',NULL,19,1,0,@Now,0);
-
-IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key]=N'payments')
-    INSERT INTO sidebar_menu_items (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
-    VALUES (@SMPayments,N'payments',N'Payments',N'Manage and view fee payment records',NULL,20,1,0,@Now,0);
-
-IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key]=N'enrollments')
-    INSERT INTO sidebar_menu_items (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
-    VALUES (@SMEnrollments,N'enrollments',N'Enrollments',N'Manage course enrollments and rosters',NULL,21,1,0,@Now,0);
-
-IF NOT EXISTS (SELECT 1 FROM sidebar_menu_items WHERE [Key]=N'report_center')
-    INSERT INTO sidebar_menu_items (Id,[Key],Name,Purpose,ParentId,DisplayOrder,IsActive,IsSystemMenu,CreatedAt,IsDeleted)
-    VALUES (@SMRptCtr,N'report_center',N'Report Center',N'Generate and export academic reports',NULL,22,1,0,@Now,0);
-
--- Re-read all item IDs
-SELECT @SMD  =Id FROM sidebar_menu_items WHERE [Key]=N'dashboard';
-SELECT @SMTTA=Id FROM sidebar_menu_items WHERE [Key]=N'timetable_admin';
-SELECT @SMTTF=Id FROM sidebar_menu_items WHERE [Key]=N'timetable_teacher';
-SELECT @SMTTS=Id FROM sidebar_menu_items WHERE [Key]=N'timetable_student';
-SELECT @SML  =Id FROM sidebar_menu_items WHERE [Key]=N'lookups';
-SELECT @SMBL =Id FROM sidebar_menu_items WHERE [Key]=N'buildings';
-SELECT @SMRM =Id FROM sidebar_menu_items WHERE [Key]=N'rooms';
-SELECT @SMSS =Id FROM sidebar_menu_items WHERE [Key]=N'system_settings';
-SELECT @SMRS =Id FROM sidebar_menu_items WHERE [Key]=N'report_settings';
-SELECT @SMSI =Id FROM sidebar_menu_items WHERE [Key]=N'sidebar_settings';
-SELECT @SMTS =Id FROM sidebar_menu_items WHERE [Key]=N'theme_settings';
-SELECT @SMLU =Id FROM sidebar_menu_items WHERE [Key]=N'license_update';
-SELECT @SMDashSet    =Id FROM sidebar_menu_items WHERE [Key]=N'dashboard_settings';
-SELECT @SMResultCalc =Id FROM sidebar_menu_items WHERE [Key]=N'result_calculation';
-SELECT @SMNotif      =Id FROM sidebar_menu_items WHERE [Key]=N'notifications';
-SELECT @SMStudents   =Id FROM sidebar_menu_items WHERE [Key]=N'students';
-SELECT @SMDepts      =Id FROM sidebar_menu_items WHERE [Key]=N'departments';
-SELECT @SMCourses    =Id FROM sidebar_menu_items WHERE [Key]=N'courses';
-SELECT @SMAssign     =Id FROM sidebar_menu_items WHERE [Key]=N'assignments';
-SELECT @SMAttend     =Id FROM sidebar_menu_items WHERE [Key]=N'attendance';
-SELECT @SMResults    =Id FROM sidebar_menu_items WHERE [Key]=N'results';
-SELECT @SMQuizzes    =Id FROM sidebar_menu_items WHERE [Key]=N'quizzes';
-SELECT @SMFyp        =Id FROM sidebar_menu_items WHERE [Key]=N'fyp';
-SELECT @SMAnalytics  =Id FROM sidebar_menu_items WHERE [Key]=N'analytics';
-SELECT @SMAiChat     =Id FROM sidebar_menu_items WHERE [Key]=N'ai_chat';
-SELECT @SMLifecycle  =Id FROM sidebar_menu_items WHERE [Key]=N'student_lifecycle';
-SELECT @SMPayments   =Id FROM sidebar_menu_items WHERE [Key]=N'payments';
-SELECT @SMEnrollments=Id FROM sidebar_menu_items WHERE [Key]=N'enrollments';
-SELECT @SMRptCtr     =Id FROM sidebar_menu_items WHERE [Key]=N'report_center';
-
-DECLARE @SRA TABLE (ItemId UNIQUEIDENTIFIER, RoleName NVARCHAR(100), IsAllowed BIT);
-INSERT INTO @SRA VALUES
-    (@SMD, N'SuperAdmin',1),(@SMD, N'Admin',1),(@SMD, N'Faculty',1),(@SMD, N'Student',1),
-    (@SMTTA,N'SuperAdmin',1),(@SMTTA,N'Admin',1),
-    (@SMTTF,N'Faculty',1),
-    (@SMTTS,N'Student',1),
-    (@SML, N'SuperAdmin',1),(@SML, N'Admin',1),
-    (@SMBL,N'SuperAdmin',1),(@SMBL,N'Admin',1),
-    (@SMRM,N'SuperAdmin',1),(@SMRM,N'Admin',1),
-    (@SMSS,N'SuperAdmin',1),
-    (@SMRS,N'SuperAdmin',1),
-    (@SMSI,N'SuperAdmin',1),
-    (@SMTS,N'SuperAdmin',1),(@SMTS,N'Admin',1),(@SMTS,N'Faculty',1),(@SMTS,N'Student',1),
-    (@SMLU,N'SuperAdmin',1),
-    (@SMDashSet,N'SuperAdmin',1),
-    (@SMResultCalc,N'Admin',1),
-    (@SMNotif,N'Admin',1),(@SMNotif,N'Faculty',1),(@SMNotif,N'Student',1),
-    (@SMStudents,N'Admin',1),(@SMStudents,N'Faculty',1),
-    (@SMDepts,N'Admin',1),
-    (@SMCourses,N'Admin',1),(@SMCourses,N'Faculty',1),
-    (@SMAssign,N'Faculty',1),(@SMAssign,N'Student',1),
-    (@SMAttend,N'Faculty',1),(@SMAttend,N'Student',1),
-    (@SMResults,N'Admin',1),(@SMResults,N'Faculty',1),(@SMResults,N'Student',1),
-    (@SMQuizzes,N'Faculty',1),(@SMQuizzes,N'Student',1),
-    (@SMFyp,N'Faculty',1),(@SMFyp,N'Student',1),
-    (@SMAnalytics,N'Admin',1),(@SMAnalytics,N'Faculty',1),
-    (@SMAiChat,N'Faculty',1),(@SMAiChat,N'Student',1),
-    (@SMLifecycle,N'Admin',1),
-    (@SMPayments,N'Admin',1),(@SMPayments,N'Student',1),
-    (@SMEnrollments,N'Admin',1),(@SMEnrollments,N'Faculty',1),
-    (@SMRptCtr,N'Admin',1),(@SMRptCtr,N'Faculty',1);
-
-INSERT INTO sidebar_menu_role_accesses (Id,SidebarMenuItemId,RoleName,IsAllowed,CreatedAt)
-SELECT NEWID(),r.ItemId,r.RoleName,r.IsAllowed,@Now FROM @SRA r
-WHERE NOT EXISTS (SELECT 1 FROM sidebar_menu_role_accesses x
-                  WHERE x.SidebarMenuItemId=r.ItemId AND x.RoleName=r.RoleName);
-
--- Legacy cleanup: hide historical Module Settings menu rows.
-UPDATE sra
-SET sra.IsAllowed = 0
-FROM sidebar_menu_role_accesses sra
-INNER JOIN sidebar_menu_items smi ON smi.Id = sra.SidebarMenuItemId
-WHERE smi.[Key] = N'module_settings';
-
-UPDATE sidebar_menu_items
-SET IsActive = 0,
-        IsDeleted = 1,
-        DeletedAt = COALESCE(DeletedAt, SYSUTCDATETIME()),
-        UpdatedAt = SYSUTCDATETIME()
-WHERE [Key] = N'module_settings'
-    AND IsDeleted = 0;
-
--- ═══════════════════════════════════════════════════════════
--- §16  MODULE ROLE ASSIGNMENTS
--- ═══════════════════════════════════════════════════════════
-DECLARE @MRAd TABLE (ModKey NVARCHAR(50), Role NVARCHAR(50));
-INSERT INTO @MRAd VALUES
-    (N'authentication',N'SuperAdmin'),(N'departments',N'SuperAdmin'),(N'sis',N'SuperAdmin'),
-    (N'courses',N'SuperAdmin'),(N'assignments',N'SuperAdmin'),(N'quizzes',N'SuperAdmin'),
-    (N'attendance',N'SuperAdmin'),(N'results',N'SuperAdmin'),(N'notifications',N'SuperAdmin'),
-    (N'fyp',N'SuperAdmin'),(N'ai_chat',N'SuperAdmin'),(N'reports',N'SuperAdmin'),
-    (N'themes',N'SuperAdmin'),(N'advanced_audit',N'SuperAdmin'),
-    (N'departments',N'Admin'),(N'sis',N'Admin'),(N'courses',N'Admin'),
-    (N'assignments',N'Admin'),(N'attendance',N'Admin'),(N'results',N'Admin'),
-    (N'notifications',N'Admin'),(N'reports',N'Admin'),(N'themes',N'Admin'),(N'advanced_audit',N'Admin'),
-    (N'courses',N'Faculty'),(N'assignments',N'Faculty'),(N'quizzes',N'Faculty'),
-    (N'attendance',N'Faculty'),(N'results',N'Faculty'),(N'notifications',N'Faculty'),
-    (N'fyp',N'Faculty'),(N'themes',N'Faculty'),(N'ai_chat',N'Faculty'),
-    (N'courses',N'Student'),(N'assignments',N'Student'),(N'quizzes',N'Student'),
-    (N'attendance',N'Student'),(N'results',N'Student'),(N'notifications',N'Student'),
-    (N'fyp',N'Student'),(N'themes',N'Student'),(N'ai_chat',N'Student');
-
-INSERT INTO module_role_assignments (Id,ModuleId,RoleName,CreatedAt)
-SELECT NEWID(),m.Id,d.Role,@Now
-FROM @MRAd d JOIN modules m ON m.[Key]=d.ModKey
-WHERE NOT EXISTS (SELECT 1 FROM module_role_assignments x WHERE x.ModuleId=m.Id AND x.RoleName=d.Role);
-
--- ═══════════════════════════════════════════════════════════
--- §17  REPORT DEFINITIONS + ROLE ASSIGNMENTS
--- Final-Touches Phase 9 Stage 9.1 — Updated to canonical ReportKeys (underscore)
---   and added gpa_report, enrollment_summary, low_attendance_warning, fyp_status
--- ═══════════════════════════════════════════════════════════
-DECLARE @RptAtt UNIQUEIDENTIFIER = NEWID(); DECLARE @RptRes UNIQUEIDENTIFIER = NEWID();
-DECLARE @RptGpa UNIQUEIDENTIFIER = NEWID(); DECLARE @RptEnr UNIQUEIDENTIFIER = NEWID();
-DECLARE @RptSem UNIQUEIDENTIFIER = NEWID(); DECLARE @RptTrn UNIQUEIDENTIFIER = NEWID();
-DECLARE @RptLow UNIQUEIDENTIFIER = NEWID(); DECLARE @RptFyp UNIQUEIDENTIFIER = NEWID();
-
-IF NOT EXISTS (SELECT 1 FROM report_definitions WHERE [Key]=N'attendance_summary')
-    INSERT INTO report_definitions (Id,[Key],Name,Purpose,IsActive,CreatedAt,IsDeleted)
-    VALUES (@RptAtt,N'attendance_summary',N'Attendance Summary',N'Per-student attendance percentage per course offering, filterable by semester and department.',1,@Now,0);
-ELSE SELECT @RptAtt = Id FROM report_definitions WHERE [Key]=N'attendance_summary';
-
-IF NOT EXISTS (SELECT 1 FROM report_definitions WHERE [Key]=N'result_summary')
-    INSERT INTO report_definitions (Id,[Key],Name,Purpose,IsActive,CreatedAt,IsDeleted)
-    VALUES (@RptRes,N'result_summary',N'Result Summary',N'All published result entries with marks and percentage, filterable by semester, offering, or student.',1,@Now,0);
-ELSE SELECT @RptRes = Id FROM report_definitions WHERE [Key]=N'result_summary';
-
-IF NOT EXISTS (SELECT 1 FROM report_definitions WHERE [Key]=N'gpa_report')
-    INSERT INTO report_definitions (Id,[Key],Name,Purpose,IsActive,CreatedAt,IsDeleted)
-    VALUES (@RptGpa,N'gpa_report',N'GPA & CGPA Report',N'Per-student current semester GPA and cumulative CGPA, filterable by department and program.',1,@Now,0);
-ELSE SELECT @RptGpa = Id FROM report_definitions WHERE [Key]=N'gpa_report';
-
-IF NOT EXISTS (SELECT 1 FROM report_definitions WHERE [Key]=N'enrollment_summary')
-    INSERT INTO report_definitions (Id,[Key],Name,Purpose,IsActive,CreatedAt,IsDeleted)
-    VALUES (@RptEnr,N'enrollment_summary',N'Enrollment Summary',N'Course offering seat utilisation showing enrolled count versus maximum capacity.',1,@Now,0);
-ELSE SELECT @RptEnr = Id FROM report_definitions WHERE [Key]=N'enrollment_summary';
-
-IF NOT EXISTS (SELECT 1 FROM report_definitions WHERE [Key]=N'semester_results')
-    INSERT INTO report_definitions (Id,[Key],Name,Purpose,IsActive,CreatedAt,IsDeleted)
-    VALUES (@RptSem,N'semester_results',N'Semester Results',N'Full published result set for a selected semester with optional department filter.',1,@Now,0);
-ELSE SELECT @RptSem = Id FROM report_definitions WHERE [Key]=N'semester_results';
-
-IF NOT EXISTS (SELECT 1 FROM report_definitions WHERE [Key]=N'student_transcript')
-    INSERT INTO report_definitions (Id,[Key],Name,Purpose,IsActive,CreatedAt,IsDeleted)
-    VALUES (@RptTrn,N'student_transcript',N'Student Transcript',N'Full academic record for a selected student including all result components.',1,@Now,0);
-ELSE SELECT @RptTrn = Id FROM report_definitions WHERE [Key]=N'student_transcript';
-
-IF NOT EXISTS (SELECT 1 FROM report_definitions WHERE [Key]=N'low_attendance_warning')
-    INSERT INTO report_definitions (Id,[Key],Name,Purpose,IsActive,CreatedAt,IsDeleted)
-    VALUES (@RptLow,N'low_attendance_warning',N'Low Attendance Warning',N'Students whose attendance falls below a configurable threshold.',1,@Now,0);
-ELSE SELECT @RptLow = Id FROM report_definitions WHERE [Key]=N'low_attendance_warning';
-
-IF NOT EXISTS (SELECT 1 FROM report_definitions WHERE [Key]=N'fyp_status')
-    INSERT INTO report_definitions (Id,[Key],Name,Purpose,IsActive,CreatedAt,IsDeleted)
-    VALUES (@RptFyp,N'fyp_status',N'FYP Status Report',N'Final Year Project status overview filterable by department and project status.',1,@Now,0);
-ELSE SELECT @RptFyp = Id FROM report_definitions WHERE [Key]=N'fyp_status';
-
-DECLARE @RRAd TABLE (RId UNIQUEIDENTIFIER, Role NVARCHAR(50));
-INSERT INTO @RRAd VALUES
-    (@RptAtt,N'SuperAdmin'),(@RptAtt,N'Admin'),(@RptAtt,N'Faculty'),(@RptAtt,N'Student'),
-    (@RptRes,N'SuperAdmin'),(@RptRes,N'Admin'),(@RptRes,N'Faculty'),(@RptRes,N'Student'),
-    (@RptGpa,N'SuperAdmin'),(@RptGpa,N'Admin'),(@RptGpa,N'Faculty'),
-    (@RptEnr,N'SuperAdmin'),(@RptEnr,N'Admin'),
-    (@RptSem,N'SuperAdmin'),(@RptSem,N'Admin'),(@RptSem,N'Faculty'),
-    (@RptTrn,N'SuperAdmin'),(@RptTrn,N'Admin'),(@RptTrn,N'Student'),
-    (@RptLow,N'SuperAdmin'),(@RptLow,N'Admin'),(@RptLow,N'Faculty'),
-    (@RptFyp,N'SuperAdmin'),(@RptFyp,N'Admin'),(@RptFyp,N'Faculty');
-
-INSERT INTO report_role_assignments (Id,ReportDefinitionId,RoleName,CreatedAt)
-SELECT NEWID(),r.RId,r.Role,@Now FROM @RRAd r
-WHERE NOT EXISTS (SELECT 1 FROM report_role_assignments x WHERE x.ReportDefinitionId=r.RId AND x.RoleName=r.Role);
-
--- ═══════════════════════════════════════════════════════════
--- §18  ASSIGNMENTS (4 assignments across 4 offerings)
--- ═══════════════════════════════════════════════════════════
-DECLARE @Asgn1 UNIQUEIDENTIFIER = NEWID(); -- OOP Lab 1
-DECLARE @Asgn2 UNIQUEIDENTIFIER = NEWID(); -- OOP Lab 2
-DECLARE @Asgn3 UNIQUEIDENTIFIER = NEWID(); -- DB Assignment 1
-DECLARE @Asgn4 UNIQUEIDENTIFIER = NEWID(); -- SE Requirements Doc
-
-IF NOT EXISTS (SELECT 1 FROM assignments WHERE Title=N'OOP Lab 1 — Classes and Objects' AND CourseOfferingId=@OfOOP)
-    INSERT INTO assignments (Id,CourseOfferingId,Title,Description,DueDate,MaxMarks,IsPublished,PublishedAt,CreatedAt,IsDeleted)
-    VALUES (@Asgn1,@OfOOP,N'OOP Lab 1 — Classes and Objects',
-            N'Implement BankAccount class with deposit, withdraw, and balance methods.',
-            DATEADD(DAY,-10,@Now),20,1,DATEADD(DAY,-25,@Now),@Now,0);
-ELSE SELECT @Asgn1 = Id FROM assignments WHERE Title=N'OOP Lab 1 — Classes and Objects' AND CourseOfferingId=@OfOOP;
-
-IF NOT EXISTS (SELECT 1 FROM assignments WHERE Title=N'OOP Lab 2 — Inheritance' AND CourseOfferingId=@OfOOP)
-    INSERT INTO assignments (Id,CourseOfferingId,Title,Description,DueDate,MaxMarks,IsPublished,PublishedAt,CreatedAt,IsDeleted)
-    VALUES (@Asgn2,@OfOOP,N'OOP Lab 2 — Inheritance',
-            N'Extend BankAccount to SavingsAccount and CurrentAccount using inheritance.',
-            DATEADD(DAY,7,@Now),20,1,@Now,@Now,0);
-ELSE SELECT @Asgn2 = Id FROM assignments WHERE Title=N'OOP Lab 2 — Inheritance' AND CourseOfferingId=@OfOOP;
-
-IF NOT EXISTS (SELECT 1 FROM assignments WHERE Title=N'DB Assignment 1 — ER Diagram' AND CourseOfferingId=@OfDB)
-    INSERT INTO assignments (Id,CourseOfferingId,Title,Description,DueDate,MaxMarks,IsPublished,PublishedAt,CreatedAt,IsDeleted)
-    VALUES (@Asgn3,@OfDB,N'DB Assignment 1 — ER Diagram',
-            N'Design an ER diagram for a hospital management system.',
-            DATEADD(DAY,-5,@Now),25,1,DATEADD(DAY,-20,@Now),@Now,0);
-ELSE SELECT @Asgn3 = Id FROM assignments WHERE Title=N'DB Assignment 1 — ER Diagram' AND CourseOfferingId=@OfDB;
-
-IF NOT EXISTS (SELECT 1 FROM assignments WHERE Title=N'SE Assignment 1 — SRS Document' AND CourseOfferingId=@OfSE1)
-    INSERT INTO assignments (Id,CourseOfferingId,Title,Description,DueDate,MaxMarks,IsPublished,PublishedAt,CreatedAt,IsDeleted)
-    VALUES (@Asgn4,@OfSE1,N'SE Assignment 1 — SRS Document',
-            N'Write a complete Software Requirements Specification for a library management system.',
-            DATEADD(DAY,14,@Now),30,1,@Now,@Now,0);
-ELSE SELECT @Asgn4 = Id FROM assignments WHERE Title=N'SE Assignment 1 — SRS Document' AND CourseOfferingId=@OfSE1;
-
--- ═══════════════════════════════════════════════════════════
--- §19  ASSIGNMENT SUBMISSIONS
--- ═══════════════════════════════════════════════════════════
-DECLARE @SubData TABLE (AsgnId UNIQUEIDENTIFIER, SpId UNIQUEIDENTIFIER,
-                        TextC NVARCHAR(500), Marks DECIMAL(8,2), Feedback NVARCHAR(500));
-INSERT INTO @SubData VALUES
-    (@Asgn1,@SP1,N'Implemented BankAccount with proper encapsulation and validation.',   18,'Good work. Consider adding transaction history.'),
-    (@Asgn1,@SP2,N'Full implementation with JUnit tests and edge-case handling.',        20,'Excellent! Thorough test coverage.'),
-    (@Asgn1,@SP3,N'Basic implementation. Missing withdraw validation.',                   14,'Needs improvement. Review exception handling.'),
-    (@Asgn1,@SP6,N'Implemented with extra features: overdraft protection.',               19,'Very good. Clean code style.'),
-    (@Asgn3,@SP1,N'ER diagram covers all entities with correct cardinalities.',           22,'Well structured. Minor notation issues.'),
-    (@Asgn3,@SP2,N'Comprehensive ER with weak entities and derived attributes.',          25,'Perfect marks. Excellent understanding.'),
-    (@Asgn4,@SP4,N'SRS document follows IEEE 830 standard with 30 requirements.',        27,'Professional quality document.'),
-    (@Asgn4,@SP5,N'Partial SRS. Missing non-functional requirements section.',            18,'See feedback in comments for revision guide.');
-
-INSERT INTO assignment_submissions
-    (Id,AssignmentId,StudentProfileId,TextContent,SubmittedAt,MarksAwarded,Feedback,GradedAt,GradedByUserId,Status,CreatedAt)
-SELECT NEWID(),s.AsgnId,s.SpId,s.TextC,DATEADD(DAY,-2,@Now),s.Marks,s.Feedback,@Now,NULL,N'Graded',@Now
-FROM @SubData s
+-- ═════════════════════════════════════════════════════════════
+-- K.  ENROLLMENTS
+--     IT students 01-04 enrolled in Fall 2025 IT offerings (01-03)
+--     IT students 01-06 enrolled in Spring 2026 IT offerings (04-06)
+--     Business students enrolled similarly
+--     Languages students enrolled similarly
+-- ═════════════════════════════════════════════════════════════
+INSERT INTO [enrollments] ([Id],[StudentProfileId],[CourseOfferingId],[EnrolledAt],[DroppedAt],[Status],[CreatedAt],[UpdatedAt])
+SELECT NEWID(), v.[SpId], v.[OffId], v.[EnrolledAt], NULL, N'Active', @Now, @Now
+FROM (VALUES
+    -- IT Fall 2025 enrollments (students 01-04)
+    (@SP01, @OIT01F25, '2025-09-05'),(@SP01, @OIT02F25, '2025-09-05'),(@SP01, @OIT03F25, '2025-09-05'),
+    (@SP02, @OIT01F25, '2025-09-05'),(@SP02, @OIT02F25, '2025-09-05'),(@SP02, @OIT03F25, '2025-09-05'),
+    (@SP03, @OIT01F25, '2025-09-05'),(@SP03, @OIT02F25, '2025-09-05'),(@SP03, @OIT03F25, '2025-09-05'),
+    (@SP04, @OIT01F25, '2025-09-05'),(@SP04, @OIT02F25, '2025-09-05'),(@SP04, @OIT03F25, '2025-09-05'),
+    -- IT Spring 2026 enrollments (students 01-06)
+    (@SP01, @OIT04S26, '2026-02-05'),(@SP01, @OIT05S26, '2026-02-05'),(@SP01, @OIT06S26, '2026-02-05'),
+    (@SP02, @OIT04S26, '2026-02-05'),(@SP02, @OIT05S26, '2026-02-05'),(@SP02, @OIT06S26, '2026-02-05'),
+    (@SP03, @OIT04S26, '2026-02-05'),(@SP03, @OIT05S26, '2026-02-05'),(@SP03, @OIT06S26, '2026-02-05'),
+    (@SP04, @OIT04S26, '2026-02-05'),(@SP04, @OIT05S26, '2026-02-05'),(@SP04, @OIT06S26, '2026-02-05'),
+    (@SP05, @OIT04S26, '2026-02-05'),(@SP05, @OIT05S26, '2026-02-05'),(@SP05, @OIT06S26, '2026-02-05'),
+    (@SP06, @OIT04S26, '2026-02-05'),(@SP06, @OIT05S26, '2026-02-05'),(@SP06, @OIT06S26, '2026-02-05'),
+    -- Business Fall 2025
+    (@SP07, @OBZ01F25, '2025-09-05'),(@SP07, @OBZ02F25, '2025-09-05'),(@SP07, @OBZ03F25, '2025-09-05'),
+    (@SP08, @OBZ01F25, '2025-09-05'),(@SP08, @OBZ02F25, '2025-09-05'),(@SP08, @OBZ03F25, '2025-09-05'),
+    (@SP09, @OBZ01F25, '2025-09-05'),(@SP09, @OBZ02F25, '2025-09-05'),(@SP09, @OBZ03F25, '2025-09-05'),
+    -- Business Spring 2026
+    (@SP07, @OBZ04S26, '2026-02-05'),(@SP07, @OBZ05S26, '2026-02-05'),(@SP07, @OBZ06S26, '2026-02-05'),
+    (@SP08, @OBZ04S26, '2026-02-05'),(@SP08, @OBZ05S26, '2026-02-05'),(@SP08, @OBZ06S26, '2026-02-05'),
+    (@SP09, @OBZ04S26, '2026-02-05'),(@SP09, @OBZ05S26, '2026-02-05'),(@SP09, @OBZ06S26, '2026-02-05'),
+    (@SP10, @OBZ04S26, '2026-02-05'),(@SP10, @OBZ05S26, '2026-02-05'),(@SP10, @OBZ06S26, '2026-02-05'),
+    (@SP11, @OBZ04S26, '2026-02-05'),(@SP11, @OBZ05S26, '2026-02-05'),(@SP11, @OBZ06S26, '2026-02-05'),
+    (@SP12, @OBZ04S26, '2026-02-05'),(@SP12, @OBZ05S26, '2026-02-05'),(@SP12, @OBZ06S26, '2026-02-05'),
+    -- Languages Fall 2025
+    (@SP13, @OLG01F25, '2025-09-05'),(@SP13, @OLG02F25, '2025-09-05'),(@SP13, @OLG03F25, '2025-09-05'),
+    (@SP14, @OLG01F25, '2025-09-05'),(@SP14, @OLG02F25, '2025-09-05'),(@SP14, @OLG03F25, '2025-09-05'),
+    -- Languages Spring 2026
+    (@SP13, @OLG04S26, '2026-02-05'),(@SP13, @OLG05S26, '2026-02-05'),(@SP13, @OLG06S26, '2026-02-05'),
+    (@SP14, @OLG04S26, '2026-02-05'),(@SP14, @OLG05S26, '2026-02-05'),(@SP14, @OLG06S26, '2026-02-05'),
+    (@SP15, @OLG04S26, '2026-02-05'),(@SP15, @OLG05S26, '2026-02-05'),(@SP15, @OLG06S26, '2026-02-05'),
+    (@SP16, @OLG04S26, '2026-02-05'),(@SP16, @OLG05S26, '2026-02-05'),(@SP16, @OLG06S26, '2026-02-05'),
+    (@SP17, @OLG04S26, '2026-02-05'),(@SP17, @OLG05S26, '2026-02-05'),(@SP17, @OLG06S26, '2026-02-05'),
+    (@SP18, @OLG04S26, '2026-02-05'),(@SP18, @OLG05S26, '2026-02-05'),(@SP18, @OLG06S26, '2026-02-05')
+) AS v([SpId],[OffId],[EnrolledAt])
 WHERE NOT EXISTS (
-    SELECT 1 FROM assignment_submissions x
-    WHERE x.AssignmentId=s.AsgnId AND x.StudentProfileId=s.SpId
+    SELECT 1 FROM [enrollments] WHERE [StudentProfileId] = v.[SpId] AND [CourseOfferingId] = v.[OffId]
 );
 
--- ═══════════════════════════════════════════════════════════
--- §20  ATTENDANCE RECORDS  (exercises all 3 views)
--- ═══════════════════════════════════════════════════════════
--- Generate attendance for 10 sessions per offering per enrolled student
--- Using a numbers table approach
-DECLARE @AttBase DATETIME2 = DATEADD(DAY,-20,@Now);
-
--- SP1 (s.aslam) — OOP: 9/10 Present, DB: 10/10, DS: 8/10
-INSERT INTO attendance_records (Id,StudentProfileId,CourseOfferingId,Date,Status,MarkedByUserId,CreatedAt)
-SELECT NEWID(),@SP1,@OfOOP,DATEADD(DAY,v.n,@AttBase),
-       CASE WHEN v.n=14 THEN N'Absent' ELSE N'Present' END, @UFDrA, @Now
-FROM (VALUES(0),(2),(4),(6),(8),(10),(12),(14),(16),(18)) AS v(n)
-WHERE NOT EXISTS (SELECT 1 FROM attendance_records WHERE StudentProfileId=@SP1 AND CourseOfferingId=@OfOOP);
-
-INSERT INTO attendance_records (Id,StudentProfileId,CourseOfferingId,Date,Status,MarkedByUserId,CreatedAt)
-SELECT NEWID(),@SP1,@OfDB,DATEADD(DAY,v.n,@AttBase),N'Present',@UFDrS,@Now
-FROM (VALUES(1),(3),(5),(7),(9),(11),(13),(15),(17),(19)) AS v(n)
-WHERE NOT EXISTS (SELECT 1 FROM attendance_records WHERE StudentProfileId=@SP1 AND CourseOfferingId=@OfDB);
-
--- SP2 (s.fatima) — OOP: 10/10, DB: 10/10, DS: 9/10
-INSERT INTO attendance_records (Id,StudentProfileId,CourseOfferingId,Date,Status,MarkedByUserId,CreatedAt)
-SELECT NEWID(),@SP2,@OfOOP,DATEADD(DAY,v.n,@AttBase),N'Present',@UFDrA,@Now
-FROM (VALUES(0),(2),(4),(6),(8),(10),(12),(14),(16),(18)) AS v(n)
-WHERE NOT EXISTS (SELECT 1 FROM attendance_records WHERE StudentProfileId=@SP2 AND CourseOfferingId=@OfOOP);
-
-INSERT INTO attendance_records (Id,StudentProfileId,CourseOfferingId,Date,Status,MarkedByUserId,CreatedAt)
-SELECT NEWID(),@SP2,@OfDB,DATEADD(DAY,v.n,@AttBase),N'Present',@UFDrS,@Now
-FROM (VALUES(1),(3),(5),(7),(9),(11),(13),(15),(17),(19)) AS v(n)
-WHERE NOT EXISTS (SELECT 1 FROM attendance_records WHERE StudentProfileId=@SP2 AND CourseOfferingId=@OfDB);
-
--- SP3 (s.usman) — OOP: 6/10 (low — will appear in sp_get_attendance_below_threshold)
-INSERT INTO attendance_records (Id,StudentProfileId,CourseOfferingId,Date,Status,MarkedByUserId,CreatedAt)
-SELECT NEWID(),@SP3,@OfOOP,DATEADD(DAY,v.n,@AttBase),
-       CASE WHEN v.n IN (8,12,16,18) THEN N'Absent' ELSE N'Present' END, @UFDrA, @Now
-FROM (VALUES(0),(2),(4),(6),(8),(10),(12),(14),(16),(18)) AS v(n)
-WHERE NOT EXISTS (SELECT 1 FROM attendance_records WHERE StudentProfileId=@SP3 AND CourseOfferingId=@OfOOP);
-
--- SP4 and SP5 — SE courses
-INSERT INTO attendance_records (Id,StudentProfileId,CourseOfferingId,Date,Status,MarkedByUserId,CreatedAt)
-SELECT NEWID(),@SP4,@OfSE1,DATEADD(DAY,v.n,@AttBase),N'Present',@UFMrA,@Now
-FROM (VALUES(0),(2),(4),(6),(8),(10),(12),(14),(16),(18)) AS v(n)
-WHERE NOT EXISTS (SELECT 1 FROM attendance_records WHERE StudentProfileId=@SP4 AND CourseOfferingId=@OfSE1);
-
-INSERT INTO attendance_records (Id,StudentProfileId,CourseOfferingId,Date,Status,MarkedByUserId,CreatedAt)
-SELECT NEWID(),@SP5,@OfSE1,DATEADD(DAY,v.n,@AttBase),
-       CASE WHEN v.n IN (4,8,12) THEN N'Absent' ELSE N'Present' END, @UFMrA, @Now
-FROM (VALUES(0),(2),(4),(6),(8),(10),(12),(14),(16),(18)) AS v(n)
-WHERE NOT EXISTS (SELECT 1 FROM attendance_records WHERE StudentProfileId=@SP5 AND CourseOfferingId=@OfSE1);
-
--- SP7 and SP8 — IT courses
-INSERT INTO attendance_records (Id,StudentProfileId,CourseOfferingId,Date,Status,MarkedByUserId,CreatedAt)
-SELECT NEWID(),@SP7,@OfIT1,DATEADD(DAY,v.n,@AttBase),N'Present',@UFMsZ,@Now
-FROM (VALUES(1),(3),(5),(7),(9),(11),(13),(15),(17),(19)) AS v(n)
-WHERE NOT EXISTS (SELECT 1 FROM attendance_records WHERE StudentProfileId=@SP7 AND CourseOfferingId=@OfIT1);
-
-INSERT INTO attendance_records (Id,StudentProfileId,CourseOfferingId,Date,Status,MarkedByUserId,CreatedAt)
-SELECT NEWID(),@SP8,@OfIT1,DATEADD(DAY,v.n,@AttBase),N'Present',@UFMsZ,@Now
-FROM (VALUES(1),(3),(5),(7),(9),(11),(13),(15),(17),(19)) AS v(n)
-WHERE NOT EXISTS (SELECT 1 FROM attendance_records WHERE StudentProfileId=@SP8 AND CourseOfferingId=@OfIT1);
-
--- ═══════════════════════════════════════════════════════════
--- §21  RESULTS  (exercises vw_student_results_summary)
--- ═══════════════════════════════════════════════════════════
-DECLARE @ResData TABLE(SpId UNIQUEIDENTIFIER,OffId UNIQUEIDENTIFIER,
-                       RT NVARCHAR(20),Marks DECIMAL(8,2),Max DECIMAL(8,2),PubBy UNIQUEIDENTIFIER);
-INSERT INTO @ResData VALUES
-    -- OOP midterms
-    (@SP1,@OfOOP,N'Midterm',72,100,@UFDrA), (@SP2,@OfOOP,N'Midterm',88,100,@UFDrA),
-    (@SP3,@OfOOP,N'Midterm',55,100,@UFDrA), (@SP6,@OfOOP,N'Midterm',78,100,@UFDrA),
-    -- OOP finals
-    (@SP1,@OfOOP,N'Final',  76,100,@UFDrA), (@SP2,@OfOOP,N'Final',  91,100,@UFDrA),
-    (@SP3,@OfOOP,N'Final',  60,100,@UFDrA), (@SP6,@OfOOP,N'Final',  82,100,@UFDrA),
-    -- DB midterms
-    (@SP1,@OfDB, N'Midterm',80,100,@UFDrS), (@SP2,@OfDB, N'Midterm',92,100,@UFDrS),
-    (@SP3,@OfDB, N'Midterm',68,100,@UFDrS),
-    -- DB finals
-    (@SP1,@OfDB, N'Final',  85,100,@UFDrS), (@SP2,@OfDB, N'Final',  95,100,@UFDrS),
-    -- SE results
-    (@SP4,@OfSE1,N'Midterm',88,100,@UFMrA), (@SP5,@OfSE1,N'Midterm',62,100,@UFMrA),
-    (@SP4,@OfSE1,N'Final',  90,100,@UFMrA), (@SP5,@OfSE1,N'Final',  70,100,@UFMrA),
-    -- IT results
-    (@SP7,@OfIT1,N'Midterm',75,100,@UFMsZ), (@SP8,@OfIT1,N'Midterm',83,100,@UFMsZ),
-    (@SP7,@OfIT1,N'Final',  78,100,@UFMsZ), (@SP8,@OfIT1,N'Final',  87,100,@UFMsZ);
-
-INSERT INTO results (Id,StudentProfileId,CourseOfferingId,ResultType,
-                     MarksObtained,MaxMarks,IsPublished,PublishedAt,PublishedByUserId,CreatedAt)
-SELECT NEWID(),r.SpId,r.OffId,r.RT,r.Marks,r.Max,1,@Now,r.PubBy,@Now
-FROM @ResData r
+-- ═════════════════════════════════════════════════════════════
+-- L.  PUBLISHED RESULTS (Fall 2025 — closed semester)
+--     ResultType: Midterm | Final   (matching live DB values)
+-- ═════════════════════════════════════════════════════════════
+INSERT INTO [results]
+    ([Id],[StudentProfileId],[CourseOfferingId],[ResultType],
+     [MarksObtained],[MaxMarks],[IsPublished],[PublishedAt],[PublishedByUserId],[CreatedAt],[UpdatedAt])
+SELECT NEWID(), v.[SpId], v.[OffId], v.[Type], v.[Obtained], v.[Max], 1, '2026-01-28', v.[PubBy], @Now, @Now
+FROM (VALUES
+    -- IT — OIT01F25 (Dr. Ahmed)
+    (@SP01,@OIT01F25,N'Midterm', CAST(62  AS DECIMAL(8,2)),CAST(75 AS DECIMAL(8,2)),@UFacAhmed),
+    (@SP01,@OIT01F25,N'Final',   CAST(90  AS DECIMAL(8,2)),CAST(100 AS DECIMAL(8,2)),@UFacAhmed),
+    (@SP02,@OIT01F25,N'Midterm', CAST(58  AS DECIMAL(8,2)),CAST(75 AS DECIMAL(8,2)),@UFacAhmed),
+    (@SP02,@OIT01F25,N'Final',   CAST(82  AS DECIMAL(8,2)),CAST(100 AS DECIMAL(8,2)),@UFacAhmed),
+    (@SP03,@OIT01F25,N'Midterm', CAST(50  AS DECIMAL(8,2)),CAST(75 AS DECIMAL(8,2)),@UFacAhmed),
+    (@SP03,@OIT01F25,N'Final',   CAST(72  AS DECIMAL(8,2)),CAST(100 AS DECIMAL(8,2)),@UFacAhmed),
+    (@SP04,@OIT01F25,N'Midterm', CAST(70  AS DECIMAL(8,2)),CAST(75 AS DECIMAL(8,2)),@UFacAhmed),
+    (@SP04,@OIT01F25,N'Final',   CAST(95  AS DECIMAL(8,2)),CAST(100 AS DECIMAL(8,2)),@UFacAhmed),
+    -- IT — OIT02F25 (Dr. Sara)
+    (@SP01,@OIT02F25,N'Midterm', CAST(55  AS DECIMAL(8,2)),CAST(75 AS DECIMAL(8,2)),@UFacSara),
+    (@SP01,@OIT02F25,N'Final',   CAST(85  AS DECIMAL(8,2)),CAST(100 AS DECIMAL(8,2)),@UFacSara),
+    (@SP02,@OIT02F25,N'Midterm', CAST(60  AS DECIMAL(8,2)),CAST(75 AS DECIMAL(8,2)),@UFacSara),
+    (@SP02,@OIT02F25,N'Final',   CAST(78  AS DECIMAL(8,2)),CAST(100 AS DECIMAL(8,2)),@UFacSara),
+    (@SP03,@OIT02F25,N'Midterm', CAST(45  AS DECIMAL(8,2)),CAST(75 AS DECIMAL(8,2)),@UFacSara),
+    (@SP03,@OIT02F25,N'Final',   CAST(68  AS DECIMAL(8,2)),CAST(100 AS DECIMAL(8,2)),@UFacSara),
+    (@SP04,@OIT02F25,N'Midterm', CAST(72  AS DECIMAL(8,2)),CAST(75 AS DECIMAL(8,2)),@UFacSara),
+    (@SP04,@OIT02F25,N'Final',   CAST(92  AS DECIMAL(8,2)),CAST(100 AS DECIMAL(8,2)),@UFacSara),
+    -- IT — OIT03F25 (Mr. Ali)
+    (@SP01,@OIT03F25,N'Midterm', CAST(65  AS DECIMAL(8,2)),CAST(75 AS DECIMAL(8,2)),@UFacAli),
+    (@SP01,@OIT03F25,N'Final',   CAST(88  AS DECIMAL(8,2)),CAST(100 AS DECIMAL(8,2)),@UFacAli),
+    (@SP02,@OIT03F25,N'Midterm', CAST(55  AS DECIMAL(8,2)),CAST(75 AS DECIMAL(8,2)),@UFacAli),
+    (@SP02,@OIT03F25,N'Final',   CAST(80  AS DECIMAL(8,2)),CAST(100 AS DECIMAL(8,2)),@UFacAli),
+    (@SP03,@OIT03F25,N'Midterm', CAST(48  AS DECIMAL(8,2)),CAST(75 AS DECIMAL(8,2)),@UFacAli),
+    (@SP03,@OIT03F25,N'Final',   CAST(65  AS DECIMAL(8,2)),CAST(100 AS DECIMAL(8,2)),@UFacAli),
+    (@SP04,@OIT03F25,N'Midterm', CAST(68  AS DECIMAL(8,2)),CAST(75 AS DECIMAL(8,2)),@UFacAli),
+    (@SP04,@OIT03F25,N'Final',   CAST(91  AS DECIMAL(8,2)),CAST(100 AS DECIMAL(8,2)),@UFacAli),
+    -- Business — OBZ01F25
+    (@SP07,@OBZ01F25,N'Midterm', CAST(60  AS DECIMAL(8,2)),CAST(75 AS DECIMAL(8,2)),@UFacKhan),
+    (@SP07,@OBZ01F25,N'Final',   CAST(80  AS DECIMAL(8,2)),CAST(100 AS DECIMAL(8,2)),@UFacKhan),
+    (@SP08,@OBZ01F25,N'Midterm', CAST(50  AS DECIMAL(8,2)),CAST(75 AS DECIMAL(8,2)),@UFacKhan),
+    (@SP08,@OBZ01F25,N'Final',   CAST(70  AS DECIMAL(8,2)),CAST(100 AS DECIMAL(8,2)),@UFacKhan),
+    (@SP09,@OBZ01F25,N'Midterm', CAST(65  AS DECIMAL(8,2)),CAST(75 AS DECIMAL(8,2)),@UFacKhan),
+    (@SP09,@OBZ01F25,N'Final',   CAST(85  AS DECIMAL(8,2)),CAST(100 AS DECIMAL(8,2)),@UFacKhan),
+    -- Business — OBZ02F25
+    (@SP07,@OBZ02F25,N'Midterm', CAST(55  AS DECIMAL(8,2)),CAST(75 AS DECIMAL(8,2)),@UFacNaeem),
+    (@SP07,@OBZ02F25,N'Final',   CAST(75  AS DECIMAL(8,2)),CAST(100 AS DECIMAL(8,2)),@UFacNaeem),
+    (@SP08,@OBZ02F25,N'Midterm', CAST(45  AS DECIMAL(8,2)),CAST(75 AS DECIMAL(8,2)),@UFacNaeem),
+    (@SP08,@OBZ02F25,N'Final',   CAST(66  AS DECIMAL(8,2)),CAST(100 AS DECIMAL(8,2)),@UFacNaeem),
+    (@SP09,@OBZ02F25,N'Midterm', CAST(70  AS DECIMAL(8,2)),CAST(75 AS DECIMAL(8,2)),@UFacNaeem),
+    (@SP09,@OBZ02F25,N'Final',   CAST(88  AS DECIMAL(8,2)),CAST(100 AS DECIMAL(8,2)),@UFacNaeem),
+    -- Business — OBZ03F25
+    (@SP07,@OBZ03F25,N'Midterm', CAST(62  AS DECIMAL(8,2)),CAST(75 AS DECIMAL(8,2)),@UFacZara),
+    (@SP07,@OBZ03F25,N'Final',   CAST(78  AS DECIMAL(8,2)),CAST(100 AS DECIMAL(8,2)),@UFacZara),
+    (@SP08,@OBZ03F25,N'Midterm', CAST(52  AS DECIMAL(8,2)),CAST(75 AS DECIMAL(8,2)),@UFacZara),
+    (@SP08,@OBZ03F25,N'Final',   CAST(72  AS DECIMAL(8,2)),CAST(100 AS DECIMAL(8,2)),@UFacZara),
+    (@SP09,@OBZ03F25,N'Midterm', CAST(68  AS DECIMAL(8,2)),CAST(75 AS DECIMAL(8,2)),@UFacZara),
+    (@SP09,@OBZ03F25,N'Final',   CAST(90  AS DECIMAL(8,2)),CAST(100 AS DECIMAL(8,2)),@UFacZara),
+    -- Languages — OLG01F25
+    (@SP13,@OLG01F25,N'Midterm', CAST(64  AS DECIMAL(8,2)),CAST(75 AS DECIMAL(8,2)),@UFacFatima),
+    (@SP13,@OLG01F25,N'Final',   CAST(84  AS DECIMAL(8,2)),CAST(100 AS DECIMAL(8,2)),@UFacFatima),
+    (@SP14,@OLG01F25,N'Midterm', CAST(70  AS DECIMAL(8,2)),CAST(75 AS DECIMAL(8,2)),@UFacFatima),
+    (@SP14,@OLG01F25,N'Final',   CAST(92  AS DECIMAL(8,2)),CAST(100 AS DECIMAL(8,2)),@UFacFatima),
+    -- Languages — OLG02F25
+    (@SP13,@OLG02F25,N'Midterm', CAST(58  AS DECIMAL(8,2)),CAST(75 AS DECIMAL(8,2)),@UFacImran),
+    (@SP13,@OLG02F25,N'Final',   CAST(79  AS DECIMAL(8,2)),CAST(100 AS DECIMAL(8,2)),@UFacImran),
+    (@SP14,@OLG02F25,N'Midterm', CAST(68  AS DECIMAL(8,2)),CAST(75 AS DECIMAL(8,2)),@UFacImran),
+    (@SP14,@OLG02F25,N'Final',   CAST(88  AS DECIMAL(8,2)),CAST(100 AS DECIMAL(8,2)),@UFacImran),
+    -- Languages — OLG03F25
+    (@SP13,@OLG03F25,N'Midterm', CAST(62  AS DECIMAL(8,2)),CAST(75 AS DECIMAL(8,2)),@UFacSana),
+    (@SP13,@OLG03F25,N'Final',   CAST(82  AS DECIMAL(8,2)),CAST(100 AS DECIMAL(8,2)),@UFacSana),
+    (@SP14,@OLG03F25,N'Midterm', CAST(72  AS DECIMAL(8,2)),CAST(75 AS DECIMAL(8,2)),@UFacSana),
+    (@SP14,@OLG03F25,N'Final',   CAST(93  AS DECIMAL(8,2)),CAST(100 AS DECIMAL(8,2)),@UFacSana)
+) AS v([SpId],[OffId],[Type],[Obtained],[Max],[PubBy])
 WHERE NOT EXISTS (
-    SELECT 1 FROM results x
-    WHERE x.StudentProfileId=r.SpId AND x.CourseOfferingId=r.OffId AND x.ResultType=r.RT
+    SELECT 1 FROM [results]
+    WHERE [StudentProfileId]=v.[SpId] AND [CourseOfferingId]=v.[OffId] AND [ResultType]=v.[Type]
 );
 
--- ═══════════════════════════════════════════════════════════
--- §22  QUIZZES + QUESTIONS + OPTIONS + ATTEMPTS
--- ═══════════════════════════════════════════════════════════
-DECLARE @Q1 UNIQUEIDENTIFIER = NEWID(); DECLARE @QQ1 UNIQUEIDENTIFIER = NEWID();
-DECLARE @QQ2 UNIQUEIDENTIFIER = NEWID(); DECLARE @QO1 UNIQUEIDENTIFIER = NEWID();
-DECLARE @QO2 UNIQUEIDENTIFIER = NEWID(); DECLARE @QO3 UNIQUEIDENTIFIER = NEWID();
-DECLARE @QO4 UNIQUEIDENTIFIER = NEWID(); DECLARE @QO5 UNIQUEIDENTIFIER = NEWID();
-DECLARE @QO6 UNIQUEIDENTIFIER = NEWID();
-
-IF NOT EXISTS (SELECT 1 FROM quizzes WHERE Title=N'OOP Quiz 1 — Fundamentals' AND CourseOfferingId=@OfOOP)
-BEGIN
-    INSERT INTO quizzes (Id,CourseOfferingId,Title,Instructions,TimeLimitMinutes,MaxAttempts,
-                         AvailableFrom,AvailableUntil,IsPublished,IsActive,CreatedByUserId,CreatedAt)
-    VALUES (@Q1,@OfOOP,N'OOP Quiz 1 — Fundamentals',N'Read each question carefully. Closed notes.',
-            20,1,DATEADD(DAY,-5,@Now),DATEADD(DAY,5,@Now),1,1,@UFDrA,@Now);
-
-    INSERT INTO quiz_questions (Id,QuizId,[Type],[Text],Marks,OrderIndex,CreatedAt)
-    VALUES
-        (@QQ1,@Q1,N'MultipleChoice',N'Which principle hides object internals from the outside world?',1,1,@Now),
-        (@QQ2,@Q1,N'TrueFalse',N'A child class cannot override a parent class method in Java.',1,2,@Now);
-
-    SET @QO1=NEWID(); SET @QO2=NEWID(); SET @QO3=NEWID(); SET @QO4=NEWID();
-    INSERT INTO quiz_options (Id,QuizQuestionId,[Text],IsCorrect,OrderIndex,CreatedAt)
-    VALUES
-        (@QO1,@QQ1,N'Encapsulation',1,1,@Now),(@QO2,@QQ1,N'Polymorphism',0,2,@Now),
-        (@QO3,@QQ1,N'Inheritance', 0,3,@Now),(@QO4,@QQ1,N'Abstraction', 0,4,@Now);
-
-    SET @QO5=NEWID(); SET @QO6=NEWID();
-    INSERT INTO quiz_options (Id,QuizQuestionId,[Text],IsCorrect,OrderIndex,CreatedAt)
-    VALUES (@QO5,@QQ2,N'True',0,1,@Now),(@QO6,@QQ2,N'False',1,2,@Now);
-END
-ELSE
-BEGIN
-    SELECT @Q1  = Id FROM quizzes WHERE Title=N'OOP Quiz 1 — Fundamentals' AND CourseOfferingId=@OfOOP;
-    SELECT TOP 1 @QQ1 = Id FROM quiz_questions WHERE QuizId=@Q1 AND OrderIndex=1;
-    SELECT TOP 1 @QQ2 = Id FROM quiz_questions WHERE QuizId=@Q1 AND OrderIndex=2;
-    SELECT @QO1  = Id FROM quiz_options WHERE QuizQuestionId=@QQ1 AND IsCorrect=1;
-END
-
--- Quiz attempt by SP1 (all correct)
-IF NOT EXISTS (SELECT 1 FROM quiz_attempts WHERE QuizId=@Q1 AND StudentProfileId=@SP1)
-BEGIN
-    DECLARE @Att1 UNIQUEIDENTIFIER = NEWID();
-    INSERT INTO quiz_attempts (Id,QuizId,StudentProfileId,StartedAt,FinishedAt,
-                                TotalScore,Status,CreatedAt)
-    VALUES (@Att1,@Q1,@SP1,DATEADD(MINUTE,-25,@Now),DATEADD(MINUTE,-5,@Now),2,N'Submitted',@Now);
-
-    INSERT INTO quiz_answers (Id,QuizAttemptId,QuizQuestionId,SelectedOptionId,MarksAwarded,CreatedAt)
-    VALUES
-        (NEWID(),@Att1,@QQ1,@QO1,1,@Now),
-        (NEWID(),@Att1,@QQ2,@QO6,1,@Now);
-END
-
--- Quiz attempt by SP3 (scored 1/2)
-IF NOT EXISTS (SELECT 1 FROM quiz_attempts WHERE QuizId=@Q1 AND StudentProfileId=@SP3)
-BEGIN
-    DECLARE @Att3 UNIQUEIDENTIFIER = NEWID();
-    INSERT INTO quiz_attempts (Id,QuizId,StudentProfileId,StartedAt,FinishedAt,
-                                TotalScore,Status,CreatedAt)
-    VALUES (@Att3,@Q1,@SP3,DATEADD(MINUTE,-20,@Now),DATEADD(MINUTE,-3,@Now),1,N'Submitted',@Now);
-
-    INSERT INTO quiz_answers (Id,QuizAttemptId,QuizQuestionId,SelectedOptionId,MarksAwarded,CreatedAt)
-    VALUES
-        (NEWID(),@Att3,@QQ1,@QO1,1,@Now),  -- correct
-        (NEWID(),@Att3,@QQ2,@QO5,0,@Now);  -- wrong
-END
-
--- ═══════════════════════════════════════════════════════════
--- §23  FYP PROJECTS + PANEL MEMBERS + MEETINGS
--- ═══════════════════════════════════════════════════════════
-DECLARE @FYP1 UNIQUEIDENTIFIER = NEWID();
-DECLARE @FYP2 UNIQUEIDENTIFIER = NEWID();
-DECLARE @FYP3 UNIQUEIDENTIFIER = NEWID();
-
-IF NOT EXISTS (SELECT 1 FROM fyp_projects WHERE StudentProfileId=@SP2)
-BEGIN
-    INSERT INTO fyp_projects (Id,StudentProfileId,DepartmentId,Title,Description,
-                               Status,SupervisorUserId,CreatedAt)
-    VALUES (@FYP1,@SP2,@DeptCS,
-            N'AI-based Plagiarism Detection for Academic Submissions',
-            N'Uses NLP and machine learning to identify plagiarised text in assignment submissions.',
-            N'InProgress',@UFDrS,@Now);
-
-        INSERT INTO fyp_panel_members (Id,FypProjectId,UserId,[Role],CreatedAt)
-        VALUES (NEWID(),@FYP1,@UFDrS,  N'Supervisor',  @Now),
-            (NEWID(),@FYP1,@UFDrA,  N'CoSupervisor',@Now),
-            (NEWID(),@FYP1,@UFProfK,N'Examiner',    @Now);
-
-        INSERT INTO fyp_meetings (Id,FypProjectId,ScheduledAt,Venue,Agenda,Status,OrganiserUserId,Minutes,CreatedAt)
-        VALUES (NEWID(),@FYP1,DATEADD(DAY,-14,@Now),N'CS Dept. Room 301',
-            N'Project scope finalisation',N'Completed',@UFDrS,
-            N'Project scope finalised. Dataset collection plan approved.',@Now),
-           (NEWID(),@FYP1,DATEADD(DAY,-7,@Now),N'CS Dept. Room 301',
-            N'Prototype progress review',N'Completed',@UFDrS,
-            N'Initial prototype demo. Accuracy at 72%. Target 85%.',@Now);
-END
-
-IF NOT EXISTS (SELECT 1 FROM fyp_projects WHERE StudentProfileId=@SP1)
-    INSERT INTO fyp_projects (Id,StudentProfileId,DepartmentId,Title,Description,
-                               Status,SupervisorUserId,CreatedAt)
-    VALUES (@FYP2,@SP1,@DeptCS,
-            N'Smart Campus Navigation using IoT Sensors',
-            N'Real-time indoor navigation system using BLE beacons.',
-            N'Proposed',@UFProfK,@Now);
-
-IF NOT EXISTS (SELECT 1 FROM fyp_projects WHERE StudentProfileId=@SP4)
-    INSERT INTO fyp_projects (Id,StudentProfileId,DepartmentId,Title,Description,
-                               Status,SupervisorUserId,CreatedAt)
-    VALUES (@FYP3,@SP4,@DeptSE,
-            N'Automated Test Case Generation using LLMs',
-            N'Leverages GPT-style models to auto-generate unit tests from source code.',
-            N'Approved',@UFMrA,@Now);
-
--- ═══════════════════════════════════════════════════════════
--- §24  NOTIFICATIONS  (various types for all roles)
--- ═══════════════════════════════════════════════════════════
-DECLARE @N1 UNIQUEIDENTIFIER = NEWID(); DECLARE @N2 UNIQUEIDENTIFIER = NEWID();
-DECLARE @N3 UNIQUEIDENTIFIER = NEWID(); DECLARE @N4 UNIQUEIDENTIFIER = NEWID();
-DECLARE @N5 UNIQUEIDENTIFIER = NEWID();
-
-IF NOT EXISTS (SELECT 1 FROM notifications WHERE Title=N'Welcome to EduSphere!')
-BEGIN
-    INSERT INTO notifications (Id,Title,Body,[Type],SenderUserId,IsSystemGenerated,IsActive,CreatedAt)
-    VALUES
-    (@N1,N'Welcome to EduSphere!',
-         N'Your account has been created. Explore your dashboard and modules.',
-         N'General',@UserSA,1,1,@Now),
-    (@N2,N'Spring 2026 Registration Open',
-         N'Enrollment for Spring 2026 semester is now open. Register by Jan 10.',
-         N'Announcement',@UAdmCS,0,1,DATEADD(DAY,-30,@Now)),
-    (@N3,N'OOP Lab 1 Results Published',
-         N'Marks for OOP Lab 1 — Classes and Objects have been released.',
-         N'Result',@UFDrA,0,1,DATEADD(DAY,-2,@Now)),
-    (@N4,N'Attendance Alert: CS-301 (OOP)',
-         N'Student s.usman attendance has fallen below 75% in OOP.',
-         N'AttendanceAlert',NULL,1,1,@Now),
-    (@N5,N'FYP Supervisor Assigned',
-         N'Your FYP supervisor has been assigned. Check your FYP portal.',
-         N'System',NULL,1,1,@Now);
-END
-ELSE
-BEGIN
-    SELECT @N1=Id FROM notifications WHERE Title=N'Welcome to EduSphere!';
-    SELECT @N2=Id FROM notifications WHERE Title=N'Spring 2026 Registration Open';
-    SELECT @N3=Id FROM notifications WHERE Title=N'OOP Lab 1 Results Published';
-    SELECT @N4=Id FROM notifications WHERE Title=N'Attendance Alert: CS-301 (OOP)';
-    SELECT @N5=Id FROM notifications WHERE Title=N'FYP Supervisor Assigned';
-END
-
--- Notification recipients
-DECLARE @NRData TABLE (NId UNIQUEIDENTIFIER, UId UNIQUEIDENTIFIER);
-INSERT INTO @NRData VALUES
-    (@N1,@UAdmCS),(@N1,@UAdmSE),(@N1,@UAdmIT),
-    (@N1,@UFDrA),(@N1,@UFDrS),(@N1,@UFMrA),(@N1,@UFMsZ),(@N1,@UFProfK),
-    (@N1,@US1),(@N1,@US2),(@N1,@US3),(@N1,@US4),(@N1,@US5),
-    (@N1,@US6),(@N1,@US7),(@N1,@US8),(@N1,@US9),(@N1,@US10),
-    (@N2,@US1),(@N2,@US2),(@N2,@US3),(@N2,@US4),(@N2,@US5),
-    (@N3,@US1),(@N3,@US2),(@N3,@US3),(@N3,@US6),
-    (@N4,@UAdmCS),(@N4,@UFDrA),
-    (@N5,@US1),(@N5,@US2),(@N5,@US4);
-
-INSERT INTO notification_recipients (Id,NotificationId,RecipientUserId,IsRead,CreatedAt)
-SELECT NEWID(),nr.NId,nr.UId,0,@Now FROM @NRData nr
+-- ═════════════════════════════════════════════════════════════
+-- M.  ATTENDANCE RECORDS (Spring 2026 — active semester)
+--     3 dates per offering, 4 students per date
+-- ═════════════════════════════════════════════════════════════
+INSERT INTO [attendance_records]
+    ([Id],[StudentProfileId],[CourseOfferingId],[Date],[Status],[MarkedByUserId],[Remarks],[CreatedAt],[UpdatedAt])
+SELECT NEWID(), v.[SpId], v.[OffId], v.[Dt], v.[Status], v.[MarkedBy], NULL, @Now, @Now
+FROM (VALUES
+    -- IT Spring 2026 — OIT04S26 (Operating Systems)
+    (@SP01,@OIT04S26,'2026-02-10',N'Present',@UFacAhmed),
+    (@SP02,@OIT04S26,'2026-02-10',N'Present',@UFacAhmed),
+    (@SP03,@OIT04S26,'2026-02-10',N'Absent', @UFacAhmed),
+    (@SP04,@OIT04S26,'2026-02-10',N'Present',@UFacAhmed),
+    (@SP01,@OIT04S26,'2026-02-17',N'Present',@UFacAhmed),
+    (@SP02,@OIT04S26,'2026-02-17',N'Late',   @UFacAhmed),
+    (@SP03,@OIT04S26,'2026-02-17',N'Present',@UFacAhmed),
+    (@SP04,@OIT04S26,'2026-02-17',N'Present',@UFacAhmed),
+    (@SP01,@OIT04S26,'2026-02-24',N'Present',@UFacAhmed),
+    (@SP02,@OIT04S26,'2026-02-24',N'Present',@UFacAhmed),
+    (@SP03,@OIT04S26,'2026-02-24',N'Present',@UFacAhmed),
+    (@SP04,@OIT04S26,'2026-02-24',N'Absent', @UFacAhmed),
+    -- IT Spring 2026 — OIT05S26 (Computer Networks)
+    (@SP01,@OIT05S26,'2026-02-11',N'Present',@UFacSara),
+    (@SP02,@OIT05S26,'2026-02-11',N'Present',@UFacSara),
+    (@SP05,@OIT05S26,'2026-02-11',N'Absent', @UFacSara),
+    (@SP06,@OIT05S26,'2026-02-11',N'Present',@UFacSara),
+    (@SP01,@OIT05S26,'2026-02-18',N'Present',@UFacSara),
+    (@SP02,@OIT05S26,'2026-02-18',N'Present',@UFacSara),
+    (@SP05,@OIT05S26,'2026-02-18',N'Present',@UFacSara),
+    (@SP06,@OIT05S26,'2026-02-18',N'Late',   @UFacSara),
+    -- Business Spring 2026 — OBZ04S26 (Business Statistics)
+    (@SP07,@OBZ04S26,'2026-02-10',N'Present',@UFacKhan),
+    (@SP08,@OBZ04S26,'2026-02-10',N'Present',@UFacKhan),
+    (@SP09,@OBZ04S26,'2026-02-10',N'Absent', @UFacKhan),
+    (@SP10,@OBZ04S26,'2026-02-10',N'Present',@UFacKhan),
+    (@SP07,@OBZ04S26,'2026-02-17',N'Present',@UFacKhan),
+    (@SP08,@OBZ04S26,'2026-02-17',N'Present',@UFacKhan),
+    (@SP09,@OBZ04S26,'2026-02-17',N'Present',@UFacKhan),
+    (@SP10,@OBZ04S26,'2026-02-17',N'Late',   @UFacKhan),
+    -- Languages Spring 2026 — OLG04S26 (Arabic Language II)
+    (@SP13,@OLG04S26,'2026-02-09',N'Present',@UFacFatima),
+    (@SP14,@OLG04S26,'2026-02-09',N'Present',@UFacFatima),
+    (@SP15,@OLG04S26,'2026-02-09',N'Present',@UFacFatima),
+    (@SP16,@OLG04S26,'2026-02-09',N'Absent', @UFacFatima),
+    (@SP13,@OLG04S26,'2026-02-16',N'Present',@UFacFatima),
+    (@SP14,@OLG04S26,'2026-02-16',N'Late',   @UFacFatima),
+    (@SP15,@OLG04S26,'2026-02-16',N'Present',@UFacFatima),
+    (@SP16,@OLG04S26,'2026-02-16',N'Present',@UFacFatima)
+) AS v([SpId],[OffId],[Dt],[Status],[MarkedBy])
 WHERE NOT EXISTS (
-    SELECT 1 FROM notification_recipients x WHERE x.NotificationId=nr.NId AND x.RecipientUserId=nr.UId
+    SELECT 1 FROM [attendance_records]
+    WHERE [StudentProfileId]=v.[SpId] AND [CourseOfferingId]=v.[OffId] AND [Date]=v.[Dt]
 );
 
--- Mark some notifications as read
-UPDATE notification_recipients SET IsRead=1, ReadAt=@Now
-WHERE RecipientUserId=@US2 AND NotificationId IN (@N1,@N2);
+-- ═════════════════════════════════════════════════════════════
+-- N.  ASSIGNMENTS (Spring 2026 — active semester)
+-- ═════════════════════════════════════════════════════════════
+DECLARE @Asgn01 UNIQUEIDENTIFIER = CAST(N'AE000000-0000-0000-0000-000000000001' AS UNIQUEIDENTIFIER);
+DECLARE @Asgn02 UNIQUEIDENTIFIER = CAST(N'AE000000-0000-0000-0000-000000000002' AS UNIQUEIDENTIFIER);
+DECLARE @Asgn03 UNIQUEIDENTIFIER = CAST(N'AE000000-0000-0000-0000-000000000003' AS UNIQUEIDENTIFIER);
+DECLARE @Asgn04 UNIQUEIDENTIFIER = CAST(N'AE000000-0000-0000-0000-000000000004' AS UNIQUEIDENTIFIER);
+DECLARE @Asgn05 UNIQUEIDENTIFIER = CAST(N'AE000000-0000-0000-0000-000000000005' AS UNIQUEIDENTIFIER);
+DECLARE @Asgn06 UNIQUEIDENTIFIER = CAST(N'AE000000-0000-0000-0000-000000000006' AS UNIQUEIDENTIFIER);
 
--- ═══════════════════════════════════════════════════════════
--- §25  PAYMENT RECEIPTS
--- ═══════════════════════════════════════════════════════════
-DECLARE @PRData TABLE(SpId UNIQUEIDENTIFIER, Amt DECIMAL(10,2), [Description] NVARCHAR(200),
-                      Status INT, Due DATETIME2);
-INSERT INTO @PRData VALUES
-    (@SP1, 45000, N'Spring 2026 Semester Fee', 2, DATEADD(DAY,-20,@Now)),
-    (@SP2, 45000, N'Spring 2026 Semester Fee', 2, DATEADD(DAY,-20,@Now)),
-    (@SP3, 45000, N'Spring 2026 Semester Fee', 0, DATEADD(DAY,10,@Now)),
-    (@SP4, 42000, N'Spring 2026 Semester Fee', 2, DATEADD(DAY,-15,@Now)),
-    (@SP5, 42000, N'Spring 2026 Semester Fee', 1, DATEADD(DAY,5,@Now)),
-    (@SP7, 38000, N'Spring 2026 Semester Fee', 0, DATEADD(DAY,15,@Now)),
-    (@SP8, 38000, N'Spring 2026 Semester Fee', 2, DATEADD(DAY,-10,@Now));
+INSERT INTO [assignments]
+    ([Id],[CourseOfferingId],[Title],[Description],[DueDate],[MaxMarks],[IsPublished],[PublishedAt],[CreatedAt],[UpdatedAt],[IsDeleted])
+SELECT v.[Id], v.[OffId], v.[Title], v.[Desc], v.[Due], v.[Max], 1, '2026-02-10 00:00:00', @Now, @Now, 0
+FROM (VALUES
+    (@Asgn01, @OIT04S26, N'OS Process Scheduling Analysis',
+        N'Analyze and compare FCFS, SJF, Round Robin, and Priority scheduling algorithms with real examples. Submit a report with diagrams.',
+        '2026-03-10 23:59:00', CAST(20 AS DECIMAL(8,2))),
+    (@Asgn02, @OIT05S26, N'Network Topology Design',
+        N'Design a scalable network topology for a medium-sized enterprise with 500 users across three floors. Include IP addressing scheme.',
+        '2026-03-12 23:59:00', CAST(20 AS DECIMAL(8,2))),
+    (@Asgn03, @OIT06S26, N'Software Requirements Specification',
+        N'Write a complete SRS document for a Library Management System following IEEE 830 standard.',
+        '2026-03-15 23:59:00', CAST(25 AS DECIMAL(8,2))),
+    (@Asgn04, @OBZ04S26, N'Statistical Analysis of Market Data',
+        N'Collect monthly sales data of any three companies from Pakistan Stock Exchange for the last year. Apply descriptive and inferential statistics.',
+        '2026-03-10 23:59:00', CAST(20 AS DECIMAL(8,2))),
+    (@Asgn05, @OLG04S26, N'Arabic Writing Portfolio',
+        N'Write five short paragraphs in Arabic on daily life topics using vocabulary covered in weeks 1-4.',
+        '2026-03-08 23:59:00', CAST(15 AS DECIMAL(8,2))),
+    (@Asgn06, @OBZ05S26, N'Strategic Analysis — Case Study',
+        N'Apply SWOT and Porter Five Forces analysis to a company of your choice operating in Pakistan.',
+        '2026-03-20 23:59:00', CAST(25 AS DECIMAL(8,2)))
+) AS v([Id],[OffId],[Title],[Desc],[Due],[Max])
+WHERE NOT EXISTS (SELECT 1 FROM [assignments] WHERE [Id] = v.[Id]);
 
-INSERT INTO payment_receipts (Id,StudentProfileId,CreatedByUserId,Status,Amount,Description,DueDate,CreatedAt,UpdatedAt,IsDeleted)
-SELECT NEWID(),p.SpId,@UAdmCS,p.Status,p.Amt,p.[Description],p.Due,@Now,@Now,0
-FROM @PRData p
+-- Assignment Submissions + Grading
+INSERT INTO [assignment_submissions]
+    ([Id],[AssignmentId],[StudentProfileId],[TextContent],[SubmittedAt],[MarksAwarded],[Feedback],[GradedAt],[GradedByUserId],[Status],[CreatedAt],[UpdatedAt])
+SELECT NEWID(), v.[AsgId], v.[SpId],
+    N'Submitted assignment content for ' + v.[Note],
+    v.[SubAt], v.[Marks], v.[Feedback], v.[GradedAt], v.[GradedBy], v.[Status], @Now, @Now
+FROM (VALUES
+    (@Asgn01, @SP01, '2026-03-08', CAST(18 AS DECIMAL(8,2)), N'Excellent analysis with clear diagrams.', '2026-03-11', @UFacAhmed, N'Graded', N'SP01 Asgn01'),
+    (@Asgn01, @SP02, '2026-03-09', CAST(15 AS DECIMAL(8,2)), N'Good attempt. Missing Round Robin analysis.', '2026-03-11', @UFacAhmed, N'Graded', N'SP02 Asgn01'),
+    (@Asgn01, @SP03, '2026-03-10', CAST(12 AS DECIMAL(8,2)), N'Needs more detail in diagrams.', '2026-03-12', @UFacAhmed, N'Graded', N'SP03 Asgn01'),
+    (@Asgn01, @SP04, '2026-03-07', CAST(19 AS DECIMAL(8,2)), N'Outstanding work. Excellent examples.', '2026-03-11', @UFacAhmed, N'Graded', N'SP04 Asgn01'),
+    (@Asgn02, @SP01, '2026-03-11', CAST(17 AS DECIMAL(8,2)), N'Good topology design. IP scheme is correct.', '2026-03-13', @UFacSara,  N'Graded', N'SP01 Asgn02'),
+    (@Asgn02, @SP05, '2026-03-12', CAST(14 AS DECIMAL(8,2)), N'Acceptable. Could improve redundancy planning.', '2026-03-14', @UFacSara, N'Graded', N'SP05 Asgn02'),
+    (@Asgn04, @SP07, '2026-03-09', CAST(17 AS DECIMAL(8,2)), N'Thorough analysis of market data.', '2026-03-12', @UFacKhan,  N'Graded', N'SP07 Asgn04'),
+    (@Asgn04, @SP08, '2026-03-10', CAST(13 AS DECIMAL(8,2)), N'Inferential statistics section incomplete.', '2026-03-12', @UFacKhan,  N'Graded', N'SP08 Asgn04'),
+    (@Asgn05, @SP13, '2026-03-07', CAST(13 AS DECIMAL(8,2)), N'Good vocabulary usage. Some grammar errors.', '2026-03-09', @UFacFatima,N'Graded', N'SP13 Asgn05'),
+    (@Asgn05, @SP14, '2026-03-08', CAST(14 AS DECIMAL(8,2)), N'Excellent paragraphs. Very fluent writing.', '2026-03-09', @UFacFatima,N'Graded', N'SP14 Asgn05')
+) AS v([AsgId],[SpId],[SubAt],[Marks],[Feedback],[GradedAt],[GradedBy],[Status],[Note])
 WHERE NOT EXISTS (
-    SELECT 1 FROM payment_receipts x
-    WHERE x.StudentProfileId=p.SpId AND x.Description=p.[Description]
+    SELECT 1 FROM [assignment_submissions]
+    WHERE [AssignmentId]=v.[AsgId] AND [StudentProfileId]=v.[SpId]
 );
 
--- ═══════════════════════════════════════════════════════════
--- §26  ADMIN CHANGE REQUESTS
--- ═══════════════════════════════════════════════════════════
-IF NOT EXISTS (SELECT 1 FROM admin_change_requests WHERE RequestorUserId=@UAdmCS
-               AND ChangeDescription=N'Semester registration deadline extension')
-    INSERT INTO admin_change_requests
-        (Id,RequestorUserId,ReviewedByUserId,Status,ChangeDescription,Reason,
-         NewData,AdminNotes,ReviewedAt,CreatedAt,UpdatedAt,IsDeleted)
-    VALUES
-        (NEWID(),@UAdmCS,@UserSA,1,
-         N'Semester registration deadline extension',
-         N'Many students could not register due to the fee payment system outage.',
-         N'{"ExtendedDeadline":"2026-01-20"}',
-         N'Approved. System outage confirmed. Students notified.',
-         DATEADD(DAY,-2,@Now),DATEADD(DAY,-5,@Now),DATEADD(DAY,-5,@Now),0);
+-- ═════════════════════════════════════════════════════════════
+-- O.  QUIZZES + QUESTIONS + OPTIONS
+-- ═════════════════════════════════════════════════════════════
+DECLARE @Quiz01 UNIQUEIDENTIFIER = CAST(N'QZ000000-0000-0000-0000-000000000001' AS UNIQUEIDENTIFIER);
+DECLARE @Quiz02 UNIQUEIDENTIFIER = CAST(N'QZ000000-0000-0000-0000-000000000002' AS UNIQUEIDENTIFIER);
 
-IF NOT EXISTS (SELECT 1 FROM admin_change_requests WHERE RequestorUserId=@UAdmCS
-               AND ChangeDescription=N'Update student registration number correction')
-    INSERT INTO admin_change_requests
-        (Id,RequestorUserId,ReviewedByUserId,Status,ChangeDescription,Reason,
-         NewData,AdminNotes,ReviewedAt,CreatedAt,UpdatedAt,IsDeleted)
-    VALUES
-        (NEWID(),@UAdmCS,NULL,0,
-         N'Update student registration number correction',
-         N'Typographical error in registration number for student 2024-CS-0003.',
-         N'{"OldRegNo":"2024-CS-0003","NewRegNo":"2024-CS-0003-A"}',
-         NULL, NULL, @Now, @Now, 0);
+INSERT INTO [quizzes]
+    ([Id],[CourseOfferingId],[Title],[Instructions],[TimeLimitMinutes],[MaxAttempts],
+     [AvailableFrom],[AvailableUntil],[IsPublished],[IsActive],[CreatedByUserId],[CreatedAt],[UpdatedAt])
+SELECT v.[Id], v.[OffId], v.[Title], v.[Instr], v.[TL], v.[MA], v.[From], v.[Until], 1, 1, v.[By], @Now, @Now
+FROM (VALUES
+    (@Quiz01, @OIT04S26, N'OS Quiz 1 — Process Management',
+     N'Choose the best answer. Each question is worth equal marks.',
+     20, 1, '2026-03-01 08:00:00', '2026-03-07 23:59:00', @UFacAhmed),
+    (@Quiz02, @OBZ04S26, N'Business Stats — Descriptive Statistics',
+     N'Select the correct answer. No negative marking.',
+     25, 1, '2026-03-03 08:00:00', '2026-03-09 23:59:00', @UFacKhan)
+) AS v([Id],[OffId],[Title],[Instr],[TL],[MA],[From],[Until],[By])
+WHERE NOT EXISTS (SELECT 1 FROM [quizzes] WHERE [Id] = v.[Id]);
 
--- ═══════════════════════════════════════════════════════════
--- §27  TEACHER MODIFICATION REQUESTS
--- ═══════════════════════════════════════════════════════════
-IF NOT EXISTS (SELECT 1 FROM teacher_modification_requests WHERE TeacherUserId=@UFDrA
-               AND Reason LIKE N'Student was present%')
-    INSERT INTO teacher_modification_requests
-        (Id,TeacherUserId,ModificationType,RecordId,Reason,Status,
-         ReviewedByUserId,ReviewedAt,AdminNotes,ProposedData,CreatedAt,UpdatedAt,IsDeleted)
-    VALUES
-        (NEWID(),@UFDrA,0,
-         (SELECT TOP 1 Id FROM attendance_records
-          WHERE StudentProfileId=@SP3 AND Status=N'Absent' AND CourseOfferingId=@OfOOP),
-         N'Student was present but marked absent due to register error.',
-         1,@UAdmCS,@Now,N'Verified with CCTV footage. Corrected.',N'{"Status":"Present"}',@Now,@Now,0);
+-- Quiz Questions
+DECLARE @QQ01 UNIQUEIDENTIFIER = CAST(N'QQ000000-0000-0000-0000-000000000001' AS UNIQUEIDENTIFIER);
+DECLARE @QQ02 UNIQUEIDENTIFIER = CAST(N'QQ000000-0000-0000-0000-000000000002' AS UNIQUEIDENTIFIER);
+DECLARE @QQ03 UNIQUEIDENTIFIER = CAST(N'QQ000000-0000-0000-0000-000000000003' AS UNIQUEIDENTIFIER);
+DECLARE @QQ04 UNIQUEIDENTIFIER = CAST(N'QQ000000-0000-0000-0000-000000000004' AS UNIQUEIDENTIFIER);
+DECLARE @QQ05 UNIQUEIDENTIFIER = CAST(N'QQ000000-0000-0000-0000-000000000005' AS UNIQUEIDENTIFIER);
+DECLARE @QQ06 UNIQUEIDENTIFIER = CAST(N'QQ000000-0000-0000-0000-000000000006' AS UNIQUEIDENTIFIER);
 
--- ═══════════════════════════════════════════════════════════
--- §28  AI CHAT CONVERSATIONS + MESSAGES
--- ═══════════════════════════════════════════════════════════
-DECLARE @Conv1 UNIQUEIDENTIFIER = NEWID();
+INSERT INTO [quiz_questions] ([Id],[QuizId],[Text],[Type],[Marks],[OrderIndex],[QuizId1],[CreatedAt],[UpdatedAt])
+SELECT v.[Id], v.[QuizId], v.[Text], N'MCQ', v.[Marks], v.[Ord], v.[QuizId], @Now, @Now
+FROM (VALUES
+    (@QQ01, @Quiz01, N'Which scheduling algorithm is non-preemptive?',         CAST(2 AS DECIMAL(8,2)), 1),
+    (@QQ02, @Quiz01, N'What is the primary goal of Round Robin scheduling?',    CAST(2 AS DECIMAL(8,2)), 2),
+    (@QQ03, @Quiz01, N'Which state does a process NOT exist in?',               CAST(2 AS DECIMAL(8,2)), 3),
+    (@QQ04, @Quiz02, N'The arithmetic mean is most affected by?',               CAST(2 AS DECIMAL(8,2)), 1),
+    (@QQ05, @Quiz02, N'Standard deviation measures?',                           CAST(2 AS DECIMAL(8,2)), 2),
+    (@QQ06, @Quiz02, N'Which is a measure of central tendency?',                CAST(2 AS DECIMAL(8,2)), 3)
+) AS v([Id],[QuizId],[Text],[Marks],[Ord])
+WHERE NOT EXISTS (SELECT 1 FROM [quiz_questions] WHERE [Id] = v.[Id]);
 
-IF NOT EXISTS (SELECT 1 FROM chat_conversations WHERE UserId=@US1)
+-- Quiz Options
+DECLARE @QO0101 UNIQUEIDENTIFIER = CAST(N'QO000000-0000-0000-0001-000000000001' AS UNIQUEIDENTIFIER);
+DECLARE @QO0102 UNIQUEIDENTIFIER = CAST(N'QO000000-0000-0000-0001-000000000002' AS UNIQUEIDENTIFIER);
+DECLARE @QO0103 UNIQUEIDENTIFIER = CAST(N'QO000000-0000-0000-0001-000000000003' AS UNIQUEIDENTIFIER);
+DECLARE @QO0104 UNIQUEIDENTIFIER = CAST(N'QO000000-0000-0000-0001-000000000004' AS UNIQUEIDENTIFIER);
+DECLARE @QO0201 UNIQUEIDENTIFIER = CAST(N'QO000000-0000-0000-0002-000000000001' AS UNIQUEIDENTIFIER);
+DECLARE @QO0202 UNIQUEIDENTIFIER = CAST(N'QO000000-0000-0000-0002-000000000002' AS UNIQUEIDENTIFIER);
+DECLARE @QO0203 UNIQUEIDENTIFIER = CAST(N'QO000000-0000-0000-0002-000000000003' AS UNIQUEIDENTIFIER);
+DECLARE @QO0204 UNIQUEIDENTIFIER = CAST(N'QO000000-0000-0000-0002-000000000004' AS UNIQUEIDENTIFIER);
+DECLARE @QO0401 UNIQUEIDENTIFIER = CAST(N'QO000000-0000-0000-0004-000000000001' AS UNIQUEIDENTIFIER);
+DECLARE @QO0402 UNIQUEIDENTIFIER = CAST(N'QO000000-0000-0000-0004-000000000002' AS UNIQUEIDENTIFIER);
+DECLARE @QO0403 UNIQUEIDENTIFIER = CAST(N'QO000000-0000-0000-0004-000000000003' AS UNIQUEIDENTIFIER);
+DECLARE @QO0404 UNIQUEIDENTIFIER = CAST(N'QO000000-0000-0000-0004-000000000004' AS UNIQUEIDENTIFIER);
+
+INSERT INTO [quiz_options] ([Id],[QuizQuestionId],[Text],[IsCorrect],[OrderIndex],[CreatedAt],[UpdatedAt])
+SELECT v.[Id], v.[QQId], v.[Text], v.[IsCorrect], v.[Ord], @Now, @Now
+FROM (VALUES
+    (@QO0101, @QQ01, N'Round Robin',     CAST(0 AS BIT), 1),
+    (@QO0102, @QQ01, N'FCFS',            CAST(1 AS BIT), 2),  -- correct
+    (@QO0103, @QQ01, N'Preemptive SJF',  CAST(0 AS BIT), 3),
+    (@QO0104, @QQ01, N'Priority (prem)', CAST(0 AS BIT), 4),
+    (@QO0201, @QQ02, N'Minimize waiting time',      CAST(0 AS BIT), 1),
+    (@QO0202, @QQ02, N'Fair CPU time sharing',       CAST(1 AS BIT), 2),  -- correct
+    (@QO0203, @QQ02, N'Maximize throughput',         CAST(0 AS BIT), 3),
+    (@QO0204, @QQ02, N'Minimize context switches',   CAST(0 AS BIT), 4),
+    (@QO0401, @QQ04, N'Outliers / extreme values',   CAST(1 AS BIT), 1),  -- correct
+    (@QO0402, @QQ04, N'Median',                      CAST(0 AS BIT), 2),
+    (@QO0403, @QQ04, N'Mode',                        CAST(0 AS BIT), 3),
+    (@QO0404, @QQ04, N'Sample size',                 CAST(0 AS BIT), 4)
+) AS v([Id],[QQId],[Text],[IsCorrect],[Ord])
+WHERE NOT EXISTS (SELECT 1 FROM [quiz_options] WHERE [Id] = v.[Id]);
+
+-- Quiz Attempts + Answers (students who attempted Quiz01)
+DECLARE @Att01SP01 UNIQUEIDENTIFIER = CAST(N'QA000000-0000-0000-0000-000000000001' AS UNIQUEIDENTIFIER);
+DECLARE @Att01SP02 UNIQUEIDENTIFIER = CAST(N'QA000000-0000-0000-0000-000000000002' AS UNIQUEIDENTIFIER);
+
+INSERT INTO [quiz_attempts]
+    ([Id],[QuizId],[StudentProfileId],[StartedAt],[FinishedAt],[Status],[TotalScore],[CreatedAt],[UpdatedAt])
+SELECT v.[Id], v.[QuizId], v.[SpId], v.[Start], v.[Finish], N'Completed', v.[Score], @Now, @Now
+FROM (VALUES
+    (@Att01SP01, @Quiz01, @SP01, '2026-03-05 10:00:00', '2026-03-05 10:18:00', CAST(4 AS DECIMAL(8,2))),
+    (@Att01SP02, @Quiz01, @SP02, '2026-03-06 11:00:00', '2026-03-06 11:20:00', CAST(2 AS DECIMAL(8,2)))
+) AS v([Id],[QuizId],[SpId],[Start],[Finish],[Score])
+WHERE NOT EXISTS (SELECT 1 FROM [quiz_attempts] WHERE [Id] = v.[Id]);
+
+INSERT INTO [quiz_answers]
+    ([Id],[QuizAttemptId],[QuizQuestionId],[SelectedOptionId],[TextResponse],[MarksAwarded],[CreatedAt],[UpdatedAt])
+SELECT NEWID(), v.[AtId], v.[QQId], v.[OptId], NULL, v.[Marks], @Now, @Now
+FROM (VALUES
+    -- SP01 attempt: Q1 correct (FCFS), Q2 correct (fair sharing)
+    (@Att01SP01, @QQ01, @QO0102, CAST(2 AS DECIMAL(8,2))),
+    (@Att01SP01, @QQ02, @QO0202, CAST(2 AS DECIMAL(8,2))),
+    -- SP02 attempt: Q1 wrong (Round Robin), Q2 correct (fair sharing)
+    (@Att01SP02, @QQ01, @QO0101, CAST(0 AS DECIMAL(8,2))),
+    (@Att01SP02, @QQ02, @QO0202, CAST(2 AS DECIMAL(8,2)))
+) AS v([AtId],[QQId],[OptId],[Marks])
+WHERE NOT EXISTS (
+    SELECT 1 FROM [quiz_answers] WHERE [QuizAttemptId]=v.[AtId] AND [QuizQuestionId]=v.[QQId]
+);
+
+-- ═════════════════════════════════════════════════════════════
+-- P.  FYP PROJECTS (IT 4th-semester students SP01/SP02)
+-- ═════════════════════════════════════════════════════════════
+DECLARE @FYP01 UNIQUEIDENTIFIER = CAST(N'FP000000-0000-0000-0000-000000000001' AS UNIQUEIDENTIFIER);
+DECLARE @FYP02 UNIQUEIDENTIFIER = CAST(N'FP000000-0000-0000-0000-000000000002' AS UNIQUEIDENTIFIER);
+
+INSERT INTO [fyp_projects]
+    ([Id],[StudentProfileId],[DepartmentId],[Title],[Description],[Status],[SupervisorUserId],
+     [CoordinatorRemarks],[IsCompletionRequested],[CreatedAt],[UpdatedAt])
+SELECT v.[Id], v.[SpId], @DeptIT, v.[Title], v.[Desc], v.[Status], v.[Supervisor], v.[Remarks], 0, @Now, @Now
+FROM (VALUES
+    (@FYP01, @SP01, N'AI-Powered Student Performance Prediction System',
+     N'A machine learning system that predicts student academic performance using historical GPA, attendance, and quiz data. Built with Python, FastAPI, and React.',
+     N'InProgress', @UFacAhmed, N'Good progress. Needs more data collection.'),
+    (@FYP02, @SP02, N'Secure Cloud-Based Document Management System',
+     N'A secure document management platform with AES-256 encryption, role-based access, and audit trails. Tech stack: ASP.NET Core, Azure Blob Storage, SQL Server.',
+     N'Approved', @UFacSara, N'Approved. Supervisor assigned.')
+) AS v([Id],[SpId],[Title],[Desc],[Status],[Supervisor],[Remarks])
+WHERE NOT EXISTS (SELECT 1 FROM [fyp_projects] WHERE [Id] = v.[Id]);
+
+-- ═════════════════════════════════════════════════════════════
+-- Q.  BUILDINGS + ROOMS + TIMETABLES + TIMETABLE ENTRIES
+-- ═════════════════════════════════════════════════════════════
+DECLARE @BuildA UNIQUEIDENTIFIER = CAST(N'BLD00000-0000-0000-0000-000000000001' AS UNIQUEIDENTIFIER);
+DECLARE @BuildB UNIQUEIDENTIFIER = CAST(N'BLD00000-0000-0000-0000-000000000002' AS UNIQUEIDENTIFIER);
+
+IF NOT EXISTS (SELECT 1 FROM [buildings] WHERE [Id] = @BuildA)
 BEGIN
-    INSERT INTO chat_conversations (Id,UserId,UserRole,DepartmentId,StartedAt)
-    VALUES (@Conv1,@US1,N'Student',@DeptCS,@Now);
+    DECLARE @BldCols NVARCHAR(MAX);
+    SELECT @BldCols = STRING_AGG(c.name, ', ')
+    FROM sys.columns c JOIN sys.tables t ON c.object_id = t.object_id
+    WHERE t.name = 'buildings';
 
-    INSERT INTO chat_messages (Id,ConversationId,[Role],Content,SentAt,TokensUsed)
-    VALUES
-        (NEWID(),@Conv1,N'user',
-         N'Can you explain the difference between an interface and an abstract class?',
-         DATEADD(MINUTE,-10,@Now),15),
-        (NEWID(),@Conv1,N'assistant',
-         N'An interface defines a contract (all methods are abstract by default), while an abstract class can have both abstract and concrete methods. Use interfaces for unrelated classes sharing behaviour; use abstract classes for closely related classes sharing implementation.',
-         DATEADD(MINUTE,-9,@Now),82),
-        (NEWID(),@Conv1,N'user',
-         N'Thanks! Can you give me a Java code example?',
-         DATEADD(MINUTE,-8,@Now),12),
-        (NEWID(),@Conv1,N'assistant',
-         N'Sure! Here''s a quick example: interface Drawable { void draw(); } abstract class Shape { abstract double area(); void describe() { System.out.println("Shape"); } } class Circle extends Shape implements Drawable { public void draw() {...} public double area() {...} }',
-         DATEADD(MINUTE,-7,@Now),75);
-END
+    -- Insert via dynamic columns discovery
+    INSERT INTO [buildings] ([Id],[Name],[CreatedAt],[UpdatedAt])
+    VALUES (@BuildA, N'Block A — Technology', @Now, @Now);
+END;
+IF NOT EXISTS (SELECT 1 FROM [buildings] WHERE [Id] = @BuildB)
+    INSERT INTO [buildings] ([Id],[Name],[CreatedAt],[UpdatedAt])
+    VALUES (@BuildB, N'Block B — Business & Languages', @Now, @Now);
 
--- ═══════════════════════════════════════════════════════════
--- §29  OUTBOUND EMAIL LOGS  (sample delivery records)
--- ═══════════════════════════════════════════════════════════
-IF NOT EXISTS (SELECT 1 FROM outbound_email_logs WHERE ToAddress=N'aslam@student.tabsan.local')
-    INSERT INTO outbound_email_logs (Id,ToAddress,Subject,Status,ErrorMessage,AttemptedAt)
-    VALUES
-        (NEWID(),N'aslam@student.tabsan.local',  N'OOP Lab 1 Marks Released',N'Sent',NULL,     DATEADD(DAY,-2,@Now)),
-        (NEWID(),N'fatima@student.tabsan.local', N'OOP Lab 1 Marks Released',N'Sent',NULL,     DATEADD(DAY,-2,@Now)),
-        (NEWID(),N'usman@student.tabsan.local',  N'Attendance Alert',        N'Sent',NULL,     DATEADD(HOUR,-3,@Now)),
-        (NEWID(),N'invalid@broken.local',        N'Welcome Email',           N'Failed',
-         N'SMTP error 550: Mailbox not found',@Now);
+DECLARE @Room101 UNIQUEIDENTIFIER = CAST(N'RM000000-0000-0000-0000-000000000101' AS UNIQUEIDENTIFIER);
+DECLARE @Room102 UNIQUEIDENTIFIER = CAST(N'RM000000-0000-0000-0000-000000000102' AS UNIQUEIDENTIFIER);
+DECLARE @Room201 UNIQUEIDENTIFIER = CAST(N'RM000000-0000-0000-0000-000000000201' AS UNIQUEIDENTIFIER);
+DECLARE @Room202 UNIQUEIDENTIFIER = CAST(N'RM000000-0000-0000-0000-000000000202' AS UNIQUEIDENTIFIER);
 
-COMMIT TRANSACTION;
+INSERT INTO [rooms] ([Id],[Name],[BuildingId],[CreatedAt],[UpdatedAt])
+SELECT v.[Id], v.[Name], v.[BldId], @Now, @Now
+FROM (VALUES
+    (@Room101, N'A-101 (CS Lab)',        @BuildA),
+    (@Room102, N'A-102 (IT Lab)',        @BuildA),
+    (@Room201, N'B-201 (Business Hall)', @BuildB),
+    (@Room202, N'B-202 (Language Lab)',  @BuildB)
+) AS v([Id],[Name],[BldId])
+WHERE NOT EXISTS (SELECT 1 FROM [rooms] WHERE [Id] = v.[Id]);
 
--- ═══════════════════════════════════════════════════════════
--- §30  VERIFY — counts, views, stored procedures
--- ═══════════════════════════════════════════════════════════
-PRINT '─────────────────────────────────────────────────';
-PRINT ' Seeded row counts';
-PRINT '─────────────────────────────────────────────────';
-SELECT 'roles'                      AS [Table], COUNT(*) AS Rows FROM roles
-UNION ALL SELECT 'modules',              COUNT(*) FROM modules
-UNION ALL SELECT 'module_status',        COUNT(*) FROM module_status
-UNION ALL SELECT 'users',                COUNT(*) FROM users          WHERE IsDeleted=0
-UNION ALL SELECT 'departments',          COUNT(*) FROM departments    WHERE IsDeleted=0
-UNION ALL SELECT 'academic_programs',    COUNT(*) FROM academic_programs WHERE IsDeleted=0
-UNION ALL SELECT 'semesters',            COUNT(*) FROM semesters      WHERE IsDeleted=0
-UNION ALL SELECT 'courses',              COUNT(*) FROM courses        WHERE IsDeleted=0
-UNION ALL SELECT 'course_offerings',     COUNT(*) FROM course_offerings WHERE IsDeleted=0
-UNION ALL SELECT 'student_profiles',     COUNT(*) FROM student_profiles WHERE IsDeleted=0
-UNION ALL SELECT 'enrollments',          COUNT(*) FROM enrollments
-UNION ALL SELECT 'attendance_records',   COUNT(*) FROM attendance_records
-UNION ALL SELECT 'results',              COUNT(*) FROM results
-UNION ALL SELECT 'assignments',          COUNT(*) FROM assignments    WHERE IsDeleted=0
-UNION ALL SELECT 'assignment_submissions',COUNT(*) FROM assignment_submissions
-UNION ALL SELECT 'quizzes',              COUNT(*) FROM quizzes
-UNION ALL SELECT 'quiz_questions',       COUNT(*) FROM quiz_questions
-UNION ALL SELECT 'quiz_options',         COUNT(*) FROM quiz_options
-UNION ALL SELECT 'quiz_attempts',        COUNT(*) FROM quiz_attempts
-UNION ALL SELECT 'quiz_answers',         COUNT(*) FROM quiz_answers
-UNION ALL SELECT 'fyp_projects',         COUNT(*) FROM fyp_projects
-UNION ALL SELECT 'fyp_panel_members',    COUNT(*) FROM fyp_panel_members
-UNION ALL SELECT 'fyp_meetings',         COUNT(*) FROM fyp_meetings
-UNION ALL SELECT 'notifications',        COUNT(*) FROM notifications
-UNION ALL SELECT 'notification_recipients',COUNT(*) FROM notification_recipients
-UNION ALL SELECT 'payment_receipts',     COUNT(*) FROM payment_receipts  WHERE IsDeleted=0
-UNION ALL SELECT 'admin_change_requests',COUNT(*) FROM admin_change_requests WHERE IsDeleted=0
-UNION ALL SELECT 'teacher_mod_requests', COUNT(*) FROM teacher_modification_requests WHERE IsDeleted=0
-UNION ALL SELECT 'chat_conversations',   COUNT(*) FROM chat_conversations
-UNION ALL SELECT 'chat_messages',        COUNT(*) FROM chat_messages
-UNION ALL SELECT 'outbound_email_logs',  COUNT(*) FROM outbound_email_logs
-UNION ALL SELECT 'timetables',           COUNT(*) FROM timetables     WHERE IsDeleted=0
-UNION ALL SELECT 'timetable_entries',    COUNT(*) FROM timetable_entries
-UNION ALL SELECT 'sidebar_menu_items',   COUNT(*) FROM sidebar_menu_items WHERE IsDeleted=0
-UNION ALL SELECT 'module_role_assignments',COUNT(*) FROM module_role_assignments
-UNION ALL SELECT 'report_definitions',   COUNT(*) FROM report_definitions WHERE IsDeleted=0
-ORDER BY [Table];
+-- Timetables (one per dept per semester Spring 2026)
+DECLARE @TT01 UNIQUEIDENTIFIER = CAST(N'TT000000-0000-0000-0000-000000000001' AS UNIQUEIDENTIFIER);
+DECLARE @TT02 UNIQUEIDENTIFIER = CAST(N'TT000000-0000-0000-0000-000000000002' AS UNIQUEIDENTIFIER);
+DECLARE @TT03 UNIQUEIDENTIFIER = CAST(N'TT000000-0000-0000-0000-000000000003' AS UNIQUEIDENTIFIER);
 
+INSERT INTO [timetables] ([Id],[DepartmentId],[SemesterId],[AcademicProgramId],[SemesterNumber],[IsPublished],[PublishedAt],[EffectiveDate],[CreatedAt],[UpdatedAt],[IsDeleted])
+SELECT v.[Id], v.[DeptId], @SemSpr26, v.[ProgId], 2, 1, '2026-02-01 00:00:00', '2026-02-01', @Now, @Now, 0
+FROM (VALUES
+    (@TT01, @DeptIT,   @ProgBSCS),
+    (@TT02, @DeptBiz,  @ProgBBA ),
+    (@TT03, @DeptLang, @ProgEng )
+) AS v([Id],[DeptId],[ProgId])
+WHERE NOT EXISTS (SELECT 1 FROM [timetables] WHERE [Id] = v.[Id]);
+
+-- Timetable entries
+INSERT INTO [timetable_entries]
+    ([Id],[TimetableId],[DayOfWeek],[StartTime],[EndTime],[SubjectName],[RoomNumber],[FacultyName],
+     [RoomId],[BuildingId],[CourseId],[FacultyUserId],[CreatedAt],[UpdatedAt])
+SELECT NEWID(), v.[TtId], v.[Day], v.[Start], v.[End], v.[Subject], v.[RoomNo], v.[FacName],
+    v.[RoomId], v.[BldId], v.[CourseId], v.[FacId], @Now, @Now
+FROM (VALUES
+    -- IT timetable
+    (@TT01, 1, '08:00', '09:30', N'Operating Systems',    N'A-101', N'Dr. Ahmed', @Room101, @BuildA, @CIT04, @UFacAhmed),
+    (@TT01, 1, '10:00', '11:30', N'Computer Networks',    N'A-102', N'Dr. Sara',  @Room102, @BuildA, @CIT05, @UFacSara),
+    (@TT01, 3, '08:00', '09:30', N'Software Engineering', N'A-101', N'Mr. Ali',   @Room101, @BuildA, @CIT06, @UFacAli),
+    (@TT01, 3, '10:00', '11:30', N'Operating Systems',    N'A-101', N'Dr. Ahmed', @Room101, @BuildA, @CIT04, @UFacAhmed),
+    -- Business timetable
+    (@TT02, 2, '09:00', '10:30', N'Business Statistics',  N'B-201', N'Prof. Khan',@Room201, @BuildB, @CBZ04, @UFacKhan),
+    (@TT02, 2, '11:00', '12:30', N'Strategic Management', N'B-201', N'Dr. Naeem', @Room201, @BuildB, @CBZ05, @UFacNaeem),
+    (@TT02, 4, '09:00', '10:30', N'Entrepreneurship',     N'B-201', N'Ms. Zara',  @Room201, @BuildB, @CBZ06, @UFacZara),
+    -- Language timetable
+    (@TT03, 1, '13:00', '14:30', N'English Literature',   N'B-202', N'Mr. Imran', @Room202, @BuildB, @CLG04, @UFacImran),
+    (@TT03, 3, '13:00', '14:30', N'Arabic Language II',   N'B-202', N'Dr. Fatima',@Room202, @BuildB, @CLG02, @UFacFatima)
+) AS v([TtId],[Day],[Start],[End],[Subject],[RoomNo],[FacName],[RoomId],[BldId],[CourseId],[FacId])
+WHERE NOT EXISTS (
+    SELECT 1 FROM [timetable_entries]
+    WHERE [TimetableId]=v.[TtId] AND [DayOfWeek]=v.[Day] AND [StartTime]=v.[Start]
+);
+
+-- ═════════════════════════════════════════════════════════════
+-- R.  NOTIFICATIONS
+-- ═════════════════════════════════════════════════════════════
+DECLARE @Notif01 UNIQUEIDENTIFIER = CAST(N'NF000000-0000-0000-0000-000000000001' AS UNIQUEIDENTIFIER);
+DECLARE @Notif02 UNIQUEIDENTIFIER = CAST(N'NF000000-0000-0000-0000-000000000002' AS UNIQUEIDENTIFIER);
+DECLARE @Notif03 UNIQUEIDENTIFIER = CAST(N'NF000000-0000-0000-0000-000000000003' AS UNIQUEIDENTIFIER);
+DECLARE @Notif04 UNIQUEIDENTIFIER = CAST(N'NF000000-0000-0000-0000-000000000004' AS UNIQUEIDENTIFIER);
+
+INSERT INTO [notifications]
+    ([Id],[Title],[Body],[Type],[SenderUserId],[IsSystemGenerated],[IsActive],[CreatedAt],[UpdatedAt])
+SELECT v.[Id], v.[Title], v.[Body], v.[Type], v.[Sender], v.[IsSys], 1, @Now, @Now
+FROM (VALUES
+    (@Notif01,
+     N'Spring 2026 Semester Begins',
+     N'Welcome to Spring 2026! Classes begin on 1st February. Please check your timetable and enroll in your courses. Contact your department admin for any enrollment issues.',
+     N'Academic', @USuperAdmin, CAST(1 AS BIT)),
+    (@Notif02,
+     N'Assignment Submission Reminder — OS Quiz 1',
+     N'This is a reminder that OS Quiz 1 is available from 1st March and closes on 7th March. Please ensure you attempt it before the deadline.',
+     N'Assignment', @UFacAhmed, CAST(0 AS BIT)),
+    (@Notif03,
+     N'Fall 2025 Results Published',
+     N'Final results for Fall 2025 semester have been published. You can view your results in the Results section of the portal.',
+     N'Results', @USuperAdmin, CAST(1 AS BIT)),
+    (@Notif04,
+     N'Fee Payment Reminder',
+     N'This is a reminder to submit your semester fee payment receipt by 28th February 2026 to avoid late payment charges.',
+     N'Finance', @UAdminIT, CAST(0 AS BIT))
+) AS v([Id],[Title],[Body],[Type],[Sender],[IsSys])
+WHERE NOT EXISTS (SELECT 1 FROM [notifications] WHERE [Id] = v.[Id]);
+
+-- Notification recipients — all students get notifications 1,3; IT students get 2; all get 4
+INSERT INTO [notification_recipients]
+    ([Id],[NotificationId],[RecipientUserId],[IsRead],[ReadAt],[CreatedAt],[UpdatedAt])
+SELECT NEWID(), v.[NotifId], v.[UserId], 0, NULL, @Now, @Now
+FROM (VALUES
+    -- Notif01: semester announcement — all students
+    (@Notif01, @UStud01),(@Notif01, @UStud02),(@Notif01, @UStud03),(@Notif01, @UStud04),
+    (@Notif01, @UStud05),(@Notif01, @UStud06),(@Notif01, @UStud07),(@Notif01, @UStud08),
+    (@Notif01, @UStud09),(@Notif01, @UStud10),(@Notif01, @UStud11),(@Notif01, @UStud12),
+    (@Notif01, @UStud13),(@Notif01, @UStud14),(@Notif01, @UStud15),(@Notif01, @UStud16),
+    (@Notif01, @UStud17),(@Notif01, @UStud18),
+    -- Notif02: OS quiz reminder — IT students only
+    (@Notif02, @UStud01),(@Notif02, @UStud02),(@Notif02, @UStud03),(@Notif02, @UStud04),
+    (@Notif02, @UStud05),(@Notif02, @UStud06),
+    -- Notif03: results — all students
+    (@Notif03, @UStud01),(@Notif03, @UStud02),(@Notif03, @UStud03),(@Notif03, @UStud04),
+    (@Notif03, @UStud07),(@Notif03, @UStud08),(@Notif03, @UStud09),
+    (@Notif03, @UStud13),(@Notif03, @UStud14),
+    -- Notif04: fee reminder — all students
+    (@Notif04, @UStud01),(@Notif04, @UStud02),(@Notif04, @UStud07),(@Notif04, @UStud08),
+    (@Notif04, @UStud13),(@Notif04, @UStud14)
+) AS v([NotifId],[UserId])
+WHERE NOT EXISTS (
+    SELECT 1 FROM [notification_recipients]
+    WHERE [NotificationId]=v.[NotifId] AND [RecipientUserId]=v.[UserId]
+);
+
+-- ═════════════════════════════════════════════════════════════
+-- S.  PAYMENT RECEIPTS
+-- ═════════════════════════════════════════════════════════════
+INSERT INTO [payment_receipts]
+    ([Id],[StudentProfileId],[CreatedByUserId],[Status],[Amount],[Description],
+     [DueDate],[ProofOfPaymentPath],[ProofUploadedAt],[ConfirmedByUserId],[ConfirmedAt],
+     [Notes],[CreatedAt],[UpdatedAt],[IsDeleted])
+SELECT NEWID(), v.[SpId], @UAdminIT, v.[Status], v.[Amount], v.[Desc],
+    v.[DueDate], v.[Proof], v.[UploadedAt], v.[ConfBy], v.[ConfAt], NULL, @Now, @Now, 0
+FROM (VALUES
+    (@SP01, N'Paid',    CAST(15000 AS DECIMAL(10,2)), N'Spring 2026 Tuition Fee', '2026-02-28', N'/uploads/receipts/sp01-spr26.jpg', '2026-02-20 10:00:00', @UAdminIT, '2026-02-21 09:00:00'),
+    (@SP02, N'Paid',    CAST(15000 AS DECIMAL(10,2)), N'Spring 2026 Tuition Fee', '2026-02-28', N'/uploads/receipts/sp02-spr26.jpg', '2026-02-22 11:00:00', @UAdminIT, '2026-02-23 09:00:00'),
+    (@SP03, N'Pending', CAST(15000 AS DECIMAL(10,2)), N'Spring 2026 Tuition Fee', '2026-02-28', NULL, NULL, NULL, NULL),
+    (@SP07, N'Paid',    CAST(18000 AS DECIMAL(10,2)), N'Spring 2026 Tuition Fee', '2026-02-28', N'/uploads/receipts/sp07-spr26.jpg', '2026-02-19 14:00:00', @UAdminBiz,'2026-02-20 09:00:00'),
+    (@SP08, N'Pending', CAST(18000 AS DECIMAL(10,2)), N'Spring 2026 Tuition Fee', '2026-02-28', NULL, NULL, NULL, NULL),
+    (@SP13, N'Paid',    CAST(12000 AS DECIMAL(10,2)), N'Spring 2026 Tuition Fee', '2026-02-28', N'/uploads/receipts/sp13-spr26.jpg', '2026-02-21 12:00:00', @UAdminLang,'2026-02-22 09:00:00')
+) AS v([SpId],[Status],[Amount],[Desc],[DueDate],[Proof],[UploadedAt],[ConfBy],[ConfAt])
+WHERE NOT EXISTS (
+    SELECT 1 FROM [payment_receipts]
+    WHERE [StudentProfileId]=v.[SpId] AND [Description]=v.[Desc]
+);
+
+PRINT '✓ Full dummy data seed complete.';
 PRINT '';
-PRINT '─────────────────────────────────────────────────';
-PRINT ' vw_student_attendance_summary';
-PRINT '─────────────────────────────────────────────────';
-SELECT sp.RegistrationNumber,
-       c.Code AS CourseCode,
-       v.TotalSessions,
-       v.AttendedSessions,
-       v.AttendancePercentage
-FROM vw_student_attendance_summary v
-JOIN student_profiles sp ON sp.Id = v.StudentProfileId
-JOIN course_offerings co ON co.Id = v.CourseOfferingId
-JOIN courses c ON c.Id = co.CourseId
-ORDER BY sp.RegistrationNumber, c.Code;
-
+PRINT '  Departments : IT | Business | Languages';
+PRINT '  Programs    : BSCS, BSIT | BBA, MBA | BA-Arabic, BA-English, BA-Chinese';
+PRINT '  Semesters   : Fall 2025 (closed) | Spring 2026 (active) | Fall 2026 (future)';
+PRINT '  Users       : 1 SuperAdmin + 3 Admins + 9 Faculty + 18 Students';
 PRINT '';
-PRINT '─────────────────────────────────────────────────';
-PRINT ' vw_student_results_summary';
-PRINT '─────────────────────────────────────────────────';
-SELECT sp.RegistrationNumber,
-       v.CourseCode,
-       v.CourseTitle,
-       v.ResultType,
-       v.MarksObtained,
-       v.MaxMarks,
-       v.Percentage
-FROM vw_student_results_summary v
-JOIN student_profiles sp ON sp.Id = v.StudentProfileId
-ORDER BY sp.RegistrationNumber, v.CourseCode, v.ResultType;
-
+PRINT '  Password for ALL accounts: run .\Scripts\GenerateTestHashes.ps1';
 PRINT '';
-PRINT '─────────────────────────────────────────────────';
-PRINT ' vw_course_enrollment_summary';
-PRINT '─────────────────────────────────────────────────';
-SELECT v.CourseCode, v.CourseTitle,
-       v.MaxEnrollment, v.EnrolledCount, v.AvailableSeats
-FROM vw_course_enrollment_summary v
-ORDER BY v.CourseCode;
-
-PRINT '';
-PRINT '─────────────────────────────────────────────────';
-PRINT ' sp_get_attendance_below_threshold (75%)';
-PRINT ' Expected: s.usman (OOP ~60%) and sp5 (SE ~70%)';
-PRINT '─────────────────────────────────────────────────';
-EXEC sp_get_attendance_below_threshold @ThresholdPercent = 75.0;
-
-PRINT '';
-PRINT '─────────────────────────────────────────────────';
-PRINT ' sp_recalculate_student_cgpa — all students';
-PRINT '─────────────────────────────────────────────────';
-DECLARE @CgpaUpdate CURSOR;
-SET @CgpaUpdate = CURSOR FOR SELECT Id FROM student_profiles;
-OPEN @CgpaUpdate;
-DECLARE @SpId UNIQUEIDENTIFIER;
-FETCH NEXT FROM @CgpaUpdate INTO @SpId;
-WHILE @@FETCH_STATUS = 0
-BEGIN
-    EXEC sp_recalculate_student_cgpa @StudentProfileId = @SpId;
-    FETCH NEXT FROM @CgpaUpdate INTO @SpId;
-END
-CLOSE @CgpaUpdate;
-DEALLOCATE @CgpaUpdate;
-
-SELECT sp.RegistrationNumber, sp.Cgpa AS UpdatedCgpa
-FROM student_profiles sp
-ORDER BY sp.RegistrationNumber;
-
-PRINT '';
-PRINT '✓ Script 2 complete.';
-PRINT '  Reset passwords via Admin UI or run Scripts\GenerateTestHashes.ps1.';
+PRINT '  Key login accounts:';
+PRINT '    superadmin   / superadmin@edusphere.local';
+PRINT '    admin.it     / admin.it@edusphere.local';
+PRINT '    admin.biz    / admin.biz@edusphere.local';
+PRINT '    admin.lang   / admin.lang@edusphere.local';
+PRINT '    dr.ahmed     / ahmed@edusphere.local      (Faculty — IT)';
+PRINT '    prof.khan    / khan@edusphere.local       (Faculty — Business)';
+PRINT '    dr.fatima    / fatima@edusphere.local     (Faculty — Languages)';
+PRINT '    s.aslam      / aslam@student.edusphere.local   (Student — IT)';
+PRINT '    s.nadia      / nadia@student.edusphere.local   (Student — Business)';
+PRINT '    s.usman      / usman@student.edusphere.local   (Student — Languages)';
+GO

@@ -1,5 +1,22 @@
 @model Tabsan.EduSphere.Web.Models.Portal.ResultsPageModel
 @{ ViewData["Title"] = "Results"; }
+@{
+    var semesterLabels = Model.SemesterOptions
+        .Select((s, index) => new { s.Name, Label = (index + 1).ToString() })
+        .ToDictionary(x => x.Name, x => x.Label, StringComparer.OrdinalIgnoreCase);
+
+    string GetSemesterLabel(string? semesterName)
+    {
+        if (string.IsNullOrWhiteSpace(semesterName))
+        {
+            return "";
+        }
+
+        return semesterLabels.TryGetValue(semesterName, out var label)
+            ? label
+            : semesterName;
+    }
+}
 
 @if (!string.IsNullOrWhiteSpace(Model.Message))
 {
@@ -25,7 +42,7 @@ else
                                 <option value="">All Semesters</option>
                                 @foreach (var s in Model.SemesterOptions)
                                 {
-                                    <option value="@s.Name" selected="@(string.Equals(Model.SelectedSemesterName, s.Name, StringComparison.OrdinalIgnoreCase) ? "selected" : null)">@s.Name</option>
+                                    <option value="@s.Name" selected="@(string.Equals(Model.SelectedSemesterName, s.Name, StringComparison.OrdinalIgnoreCase) ? "selected" : null)">@GetSemesterLabel(s.Name)</option>
                                 }
                             </select>
                         </div>
@@ -102,7 +119,7 @@ else
                                 <tr>
                                     <td>@r.CourseCode — @r.CourseName</td>
                                     <td>@(string.IsNullOrWhiteSpace(r.StudentName) ? "—" : $"{r.StudentName} ({r.RegistrationNumber})")</td>
-                                    <td>@r.SemesterName</td>
+                                    <td>@GetSemesterLabel(r.SemesterName)</td>
                                     <td>@(r.MarksObtained.HasValue ? $"{r.MarksObtained}/{r.TotalMarks}" : "–")</td>
                                     <td>
                                         @if (!string.IsNullOrWhiteSpace(r.LetterGrade))

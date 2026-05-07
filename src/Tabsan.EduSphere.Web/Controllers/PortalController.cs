@@ -98,7 +98,6 @@ public class PortalController : Controller
             .Where(s => !string.IsNullOrWhiteSpace(s))
             .Select(s => s!)
             .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(s => s)
             .Select(s => new LookupItem { Id = Guid.Empty, Name = s })
             .ToList();
     }
@@ -1384,43 +1383,21 @@ public class PortalController : Controller
             model.Offerings = FilterOfferingsBySemester(allOfferings, semesterName);
             if (sessionId?.IsStudent == true)
             {
+                model.Results = await _api.GetMyResultsAsync(ct);
+
                 if (offeringId.HasValue)
                 {
-                    model.Results = await _api.GetResultsByOfferingAsync(offeringId.Value, ct);
-                }
-                else if (!string.IsNullOrWhiteSpace(semesterName))
-                {
-                    var scopedResults = new List<ResultItem>();
-                    foreach (var offering in model.Offerings)
-                    {
-                        try
-                        {
-                            var rows = await _api.GetResultsByOfferingAsync(offering.Id, ct);
-                            scopedResults.AddRange(rows);
-                        }
-                        catch
-                        {
-                            // Some offering endpoints can be role-scoped; skip and continue.
-                        }
-                    }
-
-                    model.Results = scopedResults
-                        .GroupBy(r => r.Id)
-                        .Select(g => g.First())
+                    model.Results = model.Results
+                        .Where(r => r.CourseOfferingId == offeringId.Value)
                         .ToList();
-
-                    if (model.Results.Count == 0)
-                    {
-                        model.Results = await _api.GetMyResultsAsync(ct);
-                        model.Results = model.Results
-                            .Where(r => string.Equals(r.SemesterName, semesterName, StringComparison.OrdinalIgnoreCase)
-                                        || string.IsNullOrWhiteSpace(r.SemesterName))
-                            .ToList();
-                    }
                 }
-                else
+
+                if (!string.IsNullOrWhiteSpace(semesterName))
                 {
-                    model.Results = await _api.GetMyResultsAsync(ct);
+                    model.Results = model.Results
+                        .Where(r => string.Equals(r.SemesterName, semesterName, StringComparison.OrdinalIgnoreCase)
+                                    || string.IsNullOrWhiteSpace(r.SemesterName))
+                        .ToList();
                 }
 
                 // Stage 4.6: Completed FYP should be visible in student results.

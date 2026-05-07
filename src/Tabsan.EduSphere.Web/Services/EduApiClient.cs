@@ -1410,6 +1410,7 @@ public class EduApiClient : IEduApiClient
     {
         Id                 = r.Id,
         StudentProfileId   = r.StudentProfileId,
+        CourseOfferingId   = r.CourseOfferingId,
         ResultType         = r.ResultType ?? "",
         CourseName         = r.CourseName ?? "",
         CourseCode         = r.CourseCode ?? "",
@@ -1426,6 +1427,7 @@ public class EduApiClient : IEduApiClient
     {
         public Guid    Id                 { get; set; }
         public Guid    StudentProfileId   { get; set; }
+        public Guid    CourseOfferingId   { get; set; }
         public string? ResultType         { get; set; }
         public string? CourseName         { get; set; }
         public string? CourseCode         { get; set; }

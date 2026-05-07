@@ -85,6 +85,8 @@ Migrations/
  20260505_Phase2LicenseConcurrency.Designer.cs
  20260506_Phase4UserImport.cs
  20260506_Phase4UserImport.Designer.cs
+ 20260507103000_PortalBrandingLogoValueMaxLength.cs
+ 20260507103000_PortalBrandingLogoValueMaxLength.Designer.cs
  ApplicationDbContextModelSnapshot.cs
 Modules/ModuleEntitlementResolver.cs
 obj/Debug/net8.0/

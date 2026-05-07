@@ -615,6 +615,7 @@ public class ResultItem
     public Guid   Id                 { get; set; }
     // Used by the per-row Promote button in the Results table to identify the student.
     public Guid   StudentProfileId   { get; set; }
+    public Guid   CourseOfferingId   { get; set; }
     public string ResultType         { get; set; } = "";
     public string CourseName         { get; set; } = "";
     public string CourseCode         { get; set; } = "";

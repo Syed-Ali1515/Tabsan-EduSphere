@@ -2540,6 +2540,312 @@ BEGIN
 END;
 GO
 
+-- ============================================================
+-- Migration: 20260502134611_Phase11ResultCalculation
+-- ============================================================
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260502134611_Phase11ResultCalculation'
+)
+BEGIN
+    IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'result_component_rules')
+    BEGIN
+        CREATE TABLE [result_component_rules] (
+            [Id] uniqueidentifier NOT NULL,
+            [Name] nvarchar(200) NOT NULL,
+            [Weightage] decimal(5,2) NOT NULL,
+            [DisplayOrder] int NOT NULL,
+            [IsActive] bit NOT NULL,
+            [CreatedAt] datetime2 NOT NULL,
+            [UpdatedAt] datetime2 NULL,
+            [RowVersion] rowversion NULL,
+            CONSTRAINT [PK_result_component_rules] PRIMARY KEY ([Id])
+        );
+    END;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260502134611_Phase11ResultCalculation'
+)
+BEGIN
+    IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'gpa_scale_rules')
+    BEGIN
+        CREATE TABLE [gpa_scale_rules] (
+            [Id] uniqueidentifier NOT NULL,
+            [GradePoint] decimal(4,2) NOT NULL,
+            [MinimumScore] decimal(5,2) NOT NULL,
+            [DisplayOrder] int NOT NULL,
+            [CreatedAt] datetime2 NOT NULL,
+            [UpdatedAt] datetime2 NULL,
+            [RowVersion] rowversion NULL,
+            CONSTRAINT [PK_gpa_scale_rules] PRIMARY KEY ([Id])
+        );
+    END;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260502134611_Phase11ResultCalculation'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260502134611_Phase11ResultCalculation', N'8.0.8');
+END;
+GO
+
+COMMIT;
+GO
+
+-- ============================================================
+-- Migration: 20260503210356_Phase1DashboardBranding
+-- ============================================================
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260503210356_Phase1DashboardBranding'
+)
+BEGIN
+    IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'portal_settings')
+    BEGIN
+        CREATE TABLE [portal_settings] (
+            [Id] uniqueidentifier NOT NULL,
+            [Key] nvarchar(100) NOT NULL,
+            [Value] nvarchar(1000) NOT NULL,
+            [CreatedAt] datetime2 NOT NULL,
+            [UpdatedAt] datetime2 NULL,
+            [RowVersion] rowversion NULL,
+            CONSTRAINT [PK_portal_settings] PRIMARY KEY ([Id])
+        );
+        CREATE UNIQUE INDEX [IX_portal_settings_key] ON [portal_settings] ([Key]);
+    END;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260503210356_Phase1DashboardBranding'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260503210356_Phase1DashboardBranding', N'8.0.8');
+END;
+GO
+
+COMMIT;
+GO
+
+-- ============================================================
+-- Migration: 20260505_Phase2LicenseConcurrency
+-- ============================================================
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260505_Phase2LicenseConcurrency'
+)
+BEGIN
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('license_state') AND name = 'ActivatedDomain')
+    BEGIN
+        ALTER TABLE [license_state] ADD [ActivatedDomain] nvarchar(253) NULL;
+    END;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('license_state') AND name = 'MaxUsers')
+    BEGIN
+        ALTER TABLE [license_state] ADD [MaxUsers] int NOT NULL DEFAULT 0;
+    END;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260505_Phase2LicenseConcurrency'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260505_Phase2LicenseConcurrency', N'8.0.8');
+END;
+GO
+
+COMMIT;
+GO
+
+-- ============================================================
+-- Migration: 20260506_Phase4UserImport
+-- ============================================================
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260506_Phase4UserImport'
+)
+BEGIN
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('users') AND name = 'MustChangePassword')
+    BEGIN
+        ALTER TABLE [users] ADD [MustChangePassword] bit NOT NULL DEFAULT 0;
+    END;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260506_Phase4UserImport'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260506_Phase4UserImport', N'8.0.8');
+END;
+GO
+
+COMMIT;
+GO
+
+-- ============================================================
+-- Migration: 20260506035554_Phase4FypCompletionApprovalFlow
+-- ============================================================
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260506035554_Phase4FypCompletionApprovalFlow'
+)
+BEGIN
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('fyp_projects') AND name = 'IsCompletionRequested')
+    BEGIN
+        ALTER TABLE [fyp_projects] ADD [IsCompletionRequested] bit NOT NULL DEFAULT 0;
+        ALTER TABLE [fyp_projects] ADD [CompletionRequestedAt] datetime2 NULL;
+        ALTER TABLE [fyp_projects] ADD [CompletionRequestedByStudentProfileId] uniqueidentifier NULL;
+        ALTER TABLE [fyp_projects] ADD [CompletionApprovedByUserIdsCsv] nvarchar(max) NULL;
+    END;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260506035554_Phase4FypCompletionApprovalFlow'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260506035554_Phase4FypCompletionApprovalFlow', N'8.0.8');
+END;
+GO
+
+COMMIT;
+GO
+
+-- ============================================================
+-- Migration: 20260506044806_20260506_Phase6AdminDepartmentAssignments
+-- ============================================================
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260506044806_20260506_Phase6AdminDepartmentAssignments'
+)
+BEGIN
+    IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'admin_department_assignments')
+    BEGIN
+        CREATE TABLE [admin_department_assignments] (
+            [Id] uniqueidentifier NOT NULL,
+            [AdminUserId] uniqueidentifier NOT NULL,
+            [DepartmentId] uniqueidentifier NOT NULL,
+            [AssignedAt] datetime2 NOT NULL,
+            [RemovedAt] datetime2 NULL,
+            [CreatedAt] datetime2 NOT NULL,
+            [UpdatedAt] datetime2 NULL,
+            [RowVersion] rowversion NULL,
+            CONSTRAINT [PK_admin_department_assignments] PRIMARY KEY ([Id]),
+            CONSTRAINT [FK_admin_department_assignments_departments_DepartmentId]
+                FOREIGN KEY ([DepartmentId]) REFERENCES [departments] ([Id]) ON DELETE NO ACTION
+        );
+        CREATE INDEX [IX_admin_dept_assignments_admin] ON [admin_department_assignments] ([AdminUserId]);
+        CREATE INDEX [IX_admin_dept_assignments_dept] ON [admin_department_assignments] ([DepartmentId]);
+    END;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260506044806_20260506_Phase6AdminDepartmentAssignments'
+)
+BEGIN
+    IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'module_role_assignments')
+    BEGIN
+        CREATE TABLE [module_role_assignments] (
+            [Id] uniqueidentifier NOT NULL,
+            [ModuleId] uniqueidentifier NOT NULL,
+            [RoleName] nvarchar(50) NOT NULL,
+            [CreatedAt] datetime2 NOT NULL,
+            [UpdatedAt] datetime2 NULL,
+            [RowVersion] rowversion NULL,
+            CONSTRAINT [PK_module_role_assignments] PRIMARY KEY ([Id]),
+            CONSTRAINT [FK_module_role_assignments_modules_ModuleId]
+                FOREIGN KEY ([ModuleId]) REFERENCES [modules] ([Id]) ON DELETE CASCADE
+        );
+        CREATE INDEX [IX_module_role_assignments_module] ON [module_role_assignments] ([ModuleId]);
+    END;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260506044806_20260506_Phase6AdminDepartmentAssignments'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260506044806_20260506_Phase6AdminDepartmentAssignments', N'8.0.8');
+END;
+GO
+
+COMMIT;
+GO
+
+-- ============================================================
+-- Migration: 20260507103000_PortalBrandingLogoValueMaxLength
+-- ============================================================
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507103000_PortalBrandingLogoValueMaxLength'
+)
+BEGIN
+    IF EXISTS (
+        SELECT * FROM sys.columns c
+        JOIN sys.tables t ON c.object_id = t.object_id
+        WHERE t.name = 'portal_settings' AND c.name = 'Value'
+          AND c.max_length <> -1
+    )
+    BEGIN
+        ALTER TABLE [portal_settings] ALTER COLUMN [Value] nvarchar(max) NOT NULL;
+    END;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507103000_PortalBrandingLogoValueMaxLength'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260507103000_PortalBrandingLogoValueMaxLength', N'8.0.8');
+END;
+GO
+
+COMMIT;
+GO
+
 PRINT '✓ Schema script complete. All tables, views, and stored procedures are ready.';
 GO
 

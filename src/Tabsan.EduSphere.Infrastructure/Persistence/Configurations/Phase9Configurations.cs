@@ -399,7 +399,7 @@ public class PortalSettingConfiguration : IEntityTypeConfiguration<PortalSetting
 
         builder.Property(p => p.Value)
                .IsRequired()
-               .HasMaxLength(1000);
+               .HasColumnType("nvarchar(max)");
 
         builder.HasIndex(p => p.Key)
                .IsUnique()

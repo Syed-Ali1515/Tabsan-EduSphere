@@ -467,6 +467,7 @@ Views/
   DashboardSettings.cshtml
   Departments.cshtml
   Enrollments.cshtml
+  ForceChangePassword.cshtml
   Fyp.cshtml
   LicenseUpdate.cshtml
   ModuleSettings.cshtml
@@ -522,6 +523,7 @@ Views/
   DashboardSettings.cshtml
   Departments.cshtml
   Enrollments.cshtml
+  ForceChangePassword.cshtml
   Fyp.cshtml
   LicenseUpdate.cshtml
   ModuleSettings.cshtml

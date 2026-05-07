@@ -67,6 +67,7 @@ obj/Debug/net8.0/
  Tabsan.EduSphere.IntegrationTests.GlobalUsings.g.cs
 SidebarMenuIntegrationTests.cs
 UnitTest1.cs
+UserImportAndForceChangeIntegrationTests.cs
 
 [metadataReferences]
 ../../src/
