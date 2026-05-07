@@ -49,30 +49,36 @@ git push
 
 ## Current Execution Pointer
 - Plan Source: Issue-Fix-Phases.md
-- Active Phase: **Issue-Fix Phase 3 — Faculty Workflow Repair**
-- Active Stage: **All 8 stages completed**
-- Status: **Completed — 0 build errors; 78/78 tests passed (70 integration + 7 unit + 1 contract).**
+- Active Phase: **Issue-Fix Phase 4 — Student Workflow Repair**
+- Active Stage: **4.1 (Assignment Submission) — COMPLETED ✅**
+- Status: **All 12 integration tests passed; 0 build errors**
 - Last Updated: 2026-05-07
 
 ---
 
-## ⚡ Resuming at Home — Start Here
+## ⚡ Database & Migration Status
 
-### Step 1: Apply pending DB migrations (REQUIRED before running the app)
+✅ **All pending migrations applied successfully** (2026-05-07):
+1. `20260505_Phase2LicenseConcurrency` — adds `MaxUsers` + `ActivatedDomain` to `license_state` ✅
+2. `20260506_Phase4UserImport` — adds `MustChangePassword` to `users` ✅
+3. `20260507103000_PortalBrandingLogoValueMaxLength` — alters `portal_settings.Value` to `nvarchar(max)` ✅
+4. `20260506044806_Phase6AdminDepartmentAssignments` — adds `admin_department_assignments` table ✅
 
-Both migrations are written but NOT yet applied to the SQL Server database:
+Database is fully synchronized with codebase.
 
-```powershell
-cd "C:\Users\alin\Desktop\Prj\Tabsan-EduSphere"
-dotnet ef database update --project src/Tabsan.EduSphere.Infrastructure --startup-project src/Tabsan.EduSphere.API
-```
+## ⚡ Phase 4.1 Status — Assignment Submission Flow
 
-This applies:
-1. `20260505_Phase2LicenseConcurrency` — adds `MaxUsers` + `ActivatedDomain` to `license_state`
-2. `20260506_Phase4UserImport` — adds `MustChangePassword` to `users`
-3. `20260506044806_20260506_Phase6AdminDepartmentAssignments` — adds `admin_department_assignments`
+✅ **COMPLETED** — Student assignment submission workflow is fully functional:
+- Students can view their enrolled course offerings in dropdowns
+- Students can view published assignments for their courses
+- Students can submit assignments with file uploads or text content
+- File submissions saved to `/uploads/assignment-submissions/` with GUID filenames
+- API endpoints: `POST /api/v1/assignment/submit`, `GET /api/v1/assignment/my-submissions` working
+- Portal UI: Submit modal in `Assignments.cshtml` fully functional
+- Controller: `SubmitAssignment` action in `PortalController` handles file upload + API call
+- **Validation: 12/12 integration tests passed**
 
-### Step 2: Decide what comes next
+### What Remains in Phase 4
 
 All items in Observed-Issues.md are now **Done** (Phases 1–6). Options:
 
@@ -96,6 +102,14 @@ Open `Observed-Issues.md` and add new Phase 5 items, then tell the assistant to 
 ---
 
 ## Completed Work
+- **Issue-Fix Phase 4.1 — Assignment Submission Flow (Stage 4.1 Done)** ✅ (2026-05-07)
+  - Student assignment submission via API endpoint `POST /api/v1/assignment/submit` fully functional
+  - File upload handling: saves to `/wwwroot/uploads/assignment-submissions/{guid}{ext}`
+  - Portal UI: Submit Assignment modal in `Assignments.cshtml` with file + text submission options
+  - Controller action: `SubmitAssignment` in `PortalController` validates and processes submissions
+  - API client: `SubmitAssignmentAsync` in `EduApiClient` sends to backend
+  - Student dropdown: `CourseController.GetMyOfferings` returns enrolled courses
+  - Validation: **12/12 integration tests passed**, 0 build errors
 - **Issue-Fix Phase 3 — Faculty Workflow Repair (ALL 8 stages Done)** ✅ (2026-05-07)
   - Stage 3.1: CourseController.GetAll + GetOfferings — replaced Forbid() with Ok(empty) for out-of-scope dept requests
   - Stage 3.2/3.5/3.6/3.7: CourseController.GetMyOfferings — changed from FacultyUserId filter to dept-scope filter; fixes all empty dropdowns
