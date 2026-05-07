@@ -248,6 +248,11 @@ public interface IEduApiClient
     Task ResolveTicketAsync(Guid ticketId, CancellationToken ct);
     Task CloseTicketAsync(Guid ticketId, CancellationToken ct);
     Task ReopenTicketAsync(Guid ticketId, CancellationToken ct);
+
+    // Phase 15: Enrollment Rules — Prerequisites
+    Task<List<PrerequisiteWebItem>> GetPrerequisitesAsync(Guid courseId, CancellationToken ct);
+    Task AddPrerequisiteAsync(Guid courseId, Guid prerequisiteCourseId, CancellationToken ct);
+    Task RemovePrerequisiteAsync(Guid courseId, Guid prerequisiteCourseId, CancellationToken ct);
 }
 
 public class EduApiClient : IEduApiClient
@@ -2745,6 +2750,40 @@ public class EduApiClient : IEduApiClient
 
     public Task ReopenTicketAsync(Guid ticketId, CancellationToken ct)
         => PutAsync<object, object>($"api/v1/helpdesk/tickets/{ticketId}/reopen", new { }, ct);
+
+    // ── Phase 15: Enrollment Rules — Prerequisites ────────────────────────────
+
+    public async Task<List<PrerequisiteWebItem>> GetPrerequisitesAsync(Guid courseId, CancellationToken ct)
+    {
+        var items = await GetAsync<List<PrerequisiteApiDto>>($"api/v1/prerequisite/{courseId}", ct)
+                    ?? new List<PrerequisiteApiDto>();
+        return items.Select(p => new PrerequisiteWebItem
+        {
+            CourseId                = p.CourseId,
+            CourseCode              = p.CourseCode ?? "",
+            CourseTitle             = p.CourseTitle ?? "",
+            PrerequisiteCourseId    = p.PrerequisiteCourseId,
+            PrerequisiteCourseCode  = p.PrerequisiteCourseCode ?? "",
+            PrerequisiteCourseTitle = p.PrerequisiteCourseTitle ?? ""
+        }).ToList();
+    }
+
+    public Task AddPrerequisiteAsync(Guid courseId, Guid prerequisiteCourseId, CancellationToken ct)
+        => PostAsync<object, object>("api/v1/prerequisite",
+               new { CourseId = courseId, PrerequisiteCourseId = prerequisiteCourseId }, ct);
+
+    public Task RemovePrerequisiteAsync(Guid courseId, Guid prerequisiteCourseId, CancellationToken ct)
+        => DeleteAsync($"api/v1/prerequisite/{courseId}/{prerequisiteCourseId}", ct);
+
+    private sealed class PrerequisiteApiDto
+    {
+        public Guid    CourseId                { get; set; }
+        public string? CourseCode              { get; set; }
+        public string? CourseTitle             { get; set; }
+        public Guid    PrerequisiteCourseId    { get; set; }
+        public string? PrerequisiteCourseCode  { get; set; }
+        public string? PrerequisiteCourseTitle { get; set; }
+    }
 
     // ── Phase 14 API DTOs (private) ───────────────────────────────────────────
 

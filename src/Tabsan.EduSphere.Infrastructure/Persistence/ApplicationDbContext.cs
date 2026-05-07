@@ -72,6 +72,10 @@ public class ApplicationDbContext : DbContext
     /// <summary>Course offerings — a course scheduled for a specific semester and faculty.</summary>
     public DbSet<CourseOffering> CourseOfferings => Set<CourseOffering>();
 
+    // Final-Touches Phase 15 Stage 15.1 — CoursePrerequisite: prerequisite enrollment rules
+    /// <summary>Prerequisite links — courses that must be passed before another course can be enrolled in.</summary>
+    public DbSet<CoursePrerequisite> CoursePrerequisites => Set<CoursePrerequisite>();
+
     /// <summary>Extended academic profile for students.</summary>
     public DbSet<StudentProfile> StudentProfiles => Set<StudentProfile>();
 

@@ -45,10 +45,18 @@ public class EnrollmentController : ControllerBase
         var profile = await _studentRepo.GetByUserIdAsync(userId, ct);
         if (profile is null) return BadRequest("Student profile not found.");
 
-        var result = await _enrollmentService.EnrollAsync(profile.Id, request, ct);
-        return result is null
-            ? Conflict("Enrollment rejected: offering full, closed, or already enrolled.")
-            : Ok(result);
+        var result = await _enrollmentService.TryEnrollAsync(profile.Id, request.CourseOfferingId, ct: ct);
+        if (!result.IsSuccess)
+        {
+            var body = new
+            {
+                message              = result.RejectionReason,
+                unmetPrerequisites   = result.UnmetPrerequisites,
+                clashDetails         = result.ClashDetails
+            };
+            return Conflict(body);
+        }
+        return Ok(result.Enrollment);
     }
 
     // ── DELETE /api/v1/enrollment/{offeringId} ────────────────────────────────
@@ -114,16 +122,26 @@ public class EnrollmentController : ControllerBase
     // ── POST /api/v1/enrollment/admin ──────────────────────────────────────────
 
     // Final-Touches Phase 8 Stage 8.2 — admin enrolls any student into any offering
-    /// <summary>Admin enrolls a student into a course offering. Bypasses JWT student-profile lookup.</summary>
+    // Final-Touches Phase 15 Stage 15.2 — admin can override timetable clash with reason
+    /// <summary>Admin enrolls a student into a course offering. Supports clash override (Phase 15).</summary>
     [HttpPost("admin")]
     [Authorize(Roles = "SuperAdmin,Admin")]
     public async Task<IActionResult> AdminEnroll([FromBody] AdminEnrollRequest request, CancellationToken ct)
     {
-        var enrollReq = new EnrollRequest(request.CourseOfferingId);
-        var result = await _enrollmentService.EnrollAsync(request.StudentProfileId, enrollReq, ct);
-        return result is null
-            ? Conflict("Enrollment rejected: offering full, closed, or already enrolled.")
-            : Ok(result);
+        var result = await _enrollmentService.TryEnrollAsync(
+            request.StudentProfileId, request.CourseOfferingId,
+            request.OverrideClash, request.OverrideReason, ct);
+        if (!result.IsSuccess)
+        {
+            var body = new
+            {
+                message            = result.RejectionReason,
+                unmetPrerequisites = result.UnmetPrerequisites,
+                clashDetails       = result.ClashDetails
+            };
+            return Conflict(body);
+        }
+        return Ok(result.Enrollment);
     }
 
     // ── DELETE /api/v1/enrollment/admin/{enrollmentId} ─────────────────────────

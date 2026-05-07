@@ -1,0 +1,94 @@
+@model PrerequisitesPageModel
+@using Tabsan.EduSphere.Web.Models.Portal
+@{
+    ViewData["Title"] = "Course Prerequisites";
+    Layout = "_Layout";
+}
+
+@* Final-Touches Phase 15 Stage 15.1 — Prerequisites view: Admin/SuperAdmin manage course prerequisites *@
+
+<div class="container-fluid">
+    <h4 class="mb-3">Course Prerequisites</h4>
+    <p class="text-muted">Define which courses a student must pass before they can enroll in another course.</p>
+
+    @if (Model.Message != null)
+    {
+        var alertClass = Model.Message.StartsWith("Error") ? "alert-danger" : "alert-success";
+        <div class="alert @alertClass alert-dismissible fade show">
+            @Model.Message
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @* Department filter *@
+    <form method="get" class="row g-2 mb-4">
+        <div class="col-auto">
+            <select name="departmentId" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="">All Departments</option>
+                @foreach (var d in Model.Departments)
+                {
+                    <option value="@d.Id" selected="@(Model.SelectedDepartmentId == d.Id ? "selected" : null)">@d.Name</option>
+                }
+            </select>
+        </div>
+    </form>
+
+    @foreach (var group in Model.CourseGroups)
+    {
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><strong>@group.CourseCode</strong> — @group.CourseTitle</span>
+                <span class="badge bg-secondary">@group.Prerequisites.Count prerequisite(s)</span>
+            </div>
+            <div class="card-body">
+                @if (group.Prerequisites.Any())
+                {
+                    <ul class="list-group list-group-flush mb-3">
+                        @foreach (var prereq in group.Prerequisites)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>@prereq.PrerequisiteCourseCode — @prereq.PrerequisiteCourseTitle</span>
+                                <form method="post" asp-action="PrerequisiteRemove" style="display:inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="courseId" value="@group.CourseId" />
+                                    <input type="hidden" name="prerequisiteCourseId" value="@prereq.PrerequisiteCourseId" />
+                                    <input type="hidden" name="departmentId" value="@Model.SelectedDepartmentId" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                                            onclick="return confirm('Remove this prerequisite?')">Remove</button>
+                                </form>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-muted small mb-2">No prerequisites defined.</p>
+                }
+
+                @* Add prerequisite form *@
+                <form method="post" asp-action="PrerequisiteAdd" class="row g-2">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="courseId" value="@group.CourseId" />
+                    <input type="hidden" name="departmentId" value="@Model.SelectedDepartmentId" />
+                    <div class="col">
+                        <select name="prerequisiteCourseId" class="form-select form-select-sm" required>
+                            <option value="">— Select prerequisite course —</option>
+                            @foreach (var c in Model.Courses.Where(c => c.Id != group.CourseId))
+                            {
+                                <option value="@c.Id">@c.Code — @c.Title</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-sm btn-primary">Add Prerequisite</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+
+    @if (!Model.CourseGroups.Any())
+    {
+        <div class="alert alert-info">No courses found. Select a department to filter.</div>
+    }
+</div>

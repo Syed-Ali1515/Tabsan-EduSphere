@@ -46,4 +46,11 @@ public interface ITimetableRepository
     /// Used by the teacher dashboard view.
     /// </summary>
     Task<IList<TimetableEntry>> GetTeacherEntriesAsync(Guid facultyUserId, CancellationToken ct = default);
+
+    // Final-Touches Phase 15 Stage 15.2 — GetEntriesByCourseOfferingAsync: timetable clash detection
+    /// <summary>
+    /// Returns all published timetable entries that belong to the given course within the given semester.
+    /// Used to detect timetable clashes before enrollment.
+    /// </summary>
+    Task<IList<TimetableEntry>> GetEntriesByCourseOfferingAsync(Guid courseId, Guid semesterId, CancellationToken ct = default);
 }

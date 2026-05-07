@@ -223,6 +223,20 @@ public class ResultRepository : IResultRepository
     public async Task AddExportLogAsync(TranscriptExportLog log, CancellationToken ct = default)
         => await _db.TranscriptExportLogs.AddAsync(log, ct);
 
+    // Final-Touches Phase 15 Stage 15.1 — HasPassedCourseAsync: prerequisite pass check
+    /// <summary>
+    /// Returns true when the student has a published 'Total' result for any offering of the given course
+    /// with marks obtained >= 50% of max marks.
+    /// </summary>
+    public Task<bool> HasPassedCourseAsync(Guid studentProfileId, Guid courseId, CancellationToken ct = default)
+        => _db.Results.AnyAsync(r =>
+               r.StudentProfileId == studentProfileId
+               && r.IsPublished
+               && r.ResultType == "Total"
+               && r.MaxMarks > 0
+               && r.MarksObtained * 2 >= r.MaxMarks
+               && _db.CourseOfferings.Any(o => o.Id == r.CourseOfferingId && o.CourseId == courseId), ct);
+
     /// <summary>Commits pending changes.</summary>
     public Task<int> SaveChangesAsync(CancellationToken ct = default) => _db.SaveChangesAsync(ct);
 }

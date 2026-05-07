@@ -95,3 +95,29 @@ public class CourseOfferingConfiguration : IEntityTypeConfiguration<CourseOfferi
         builder.HasQueryFilter(o => !o.IsDeleted);
     }
 }
+
+// Final-Touches Phase 15 Stage 15.1 — CoursePrerequisiteConfiguration: prerequisite link table
+/// <summary>EF Core configuration for the CoursePrerequisite join entity.</summary>
+public class CoursePrerequisiteConfiguration : IEntityTypeConfiguration<CoursePrerequisite>
+{
+    public void Configure(EntityTypeBuilder<CoursePrerequisite> builder)
+    {
+        builder.ToTable("course_prerequisites");
+        builder.HasKey(p => p.Id);
+
+        // Unique constraint: a course can list each prerequisite at most once.
+        builder.HasIndex(p => new { p.CourseId, p.PrerequisiteCourseId })
+               .IsUnique()
+               .HasDatabaseName("IX_course_prerequisites_course_prereq");
+
+        builder.HasOne(p => p.Course)
+               .WithMany()
+               .HasForeignKey(p => p.CourseId)
+               .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(p => p.PrerequisiteCourse)
+               .WithMany()
+               .HasForeignKey(p => p.PrerequisiteCourseId)
+               .OnDelete(DeleteBehavior.Restrict);
+    }
+}

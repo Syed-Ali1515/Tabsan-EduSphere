@@ -3109,4 +3109,66 @@ public class PortalController : Controller
         catch (Exception ex) { TempData["Message"] = "Error: " + ex.Message; }
         return RedirectToAction(nameof(HelpdeskDetail), new { id = ticketId });
     }
+
+    // ── Phase 15: Enrollment Rules — Prerequisites ─────────────────────────────────
+
+    // Final-Touches Phase 15 Stage 15.1 — Prerequisites: Admin/SuperAdmin manage course prerequisites
+    [HttpGet]
+    public async Task<IActionResult> Prerequisites(Guid? departmentId, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(Dashboard));
+
+        var departments = await _api.GetDepartmentsAsync(ct);
+        var model = new PrerequisitesPageModel
+        {
+            IsConnected          = true,
+            Message              = TempData["Message"] as string,
+            Departments          = departments.Select(d => new LookupItem { Id = d.Id, Name = d.Name }).ToList(),
+            SelectedDepartmentId = departmentId
+        };
+
+        var courses = await _api.GetCourseDetailsAsync(departmentId, ct);
+        model.Courses = courses;
+
+        var groups = new List<CoursePrerequisiteGroup>();
+        foreach (var course in courses)
+        {
+            var prereqs = await _api.GetPrerequisitesAsync(course.Id, ct);
+            groups.Add(new CoursePrerequisiteGroup
+            {
+                CourseId      = course.Id,
+                CourseCode    = course.Code,
+                CourseTitle   = course.Title,
+                Prerequisites = prereqs
+            });
+        }
+        model.CourseGroups = groups;
+        return View(model);
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> PrerequisiteAdd(Guid courseId, Guid prerequisiteCourseId, Guid? departmentId, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(Dashboard));
+        try
+        {
+            await _api.AddPrerequisiteAsync(courseId, prerequisiteCourseId, ct);
+            TempData["Message"] = "Prerequisite added.";
+        }
+        catch (Exception ex) { TempData["Message"] = "Error: " + ex.Message; }
+        return RedirectToAction(nameof(Prerequisites), new { departmentId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> PrerequisiteRemove(Guid courseId, Guid prerequisiteCourseId, Guid? departmentId, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(Dashboard));
+        try
+        {
+            await _api.RemovePrerequisiteAsync(courseId, prerequisiteCourseId, ct);
+            TempData["Message"] = "Prerequisite removed.";
+        }
+        catch (Exception ex) { TempData["Message"] = "Error: " + ex.Message; }
+        return RedirectToAction(nameof(Prerequisites), new { departmentId });
+    }
 }

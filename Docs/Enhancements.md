@@ -80,24 +80,21 @@
 
 ---
 
-## Phase 15 — Enrollment Rules Engine
+## Phase 15 — Enrollment Rules Engine ✅ Complete
 **Complexity:** Medium | **Dependencies:** `Enrollment`, `CourseOffering`, `Result` entities (all exist)
 
-> **Stage 15.3 is already implemented** — `CourseOffering.MaxEnrollment` and capacity enforcement in `EnrollmentService` are in production. Mark complete when reaching this phase.
+### Stage 15.1 — Prerequisite Validation ✅
+- `CoursePrerequisite` entity + `IPrerequisiteRepository` + `PrerequisiteRepository` added.
+- `EnrollmentService.TryEnrollAsync` checks all prerequisites; rejects with unmet list.
+- `PrerequisiteController` (GET/POST/DELETE) exposes prerequisite CRUD API.
+- Web portal: Prerequisites page (Admin/SuperAdmin) to view/add/remove prerequisites per course.
 
-### Stage 15.1 — Prerequisite Validation
-- Admin or SuperAdmin can attach prerequisite course(s) to a course via a new `CoursePrerequisite` entity (`CourseId`, `PrerequisiteCourseId`).
-- On enrollment, `EnrollmentService` checks that the student has a passing `Result` for every prerequisite.
-- Enrollment is rejected with a message listing the unmet prerequisites.
-
-### Stage 15.2 — Timetable Clash Detection
-- On enrollment, the system checks the student's existing enrolled offerings for time-slot overlap with the requested offering (using `TimetableEntry` data).
-- Conflicting offerings and their schedule details are returned in the rejection message.
-- Admin can override the clash check (persisted as an audit log entry with reason).
+### Stage 15.2 — Timetable Clash Detection ✅
+- `TryEnrollAsync` joins timetable entries for the requested and already-enrolled offerings; rejects on overlap.
+- Admin `AdminEnrollRequest` supports `OverrideClash` + `OverrideReason`; override is audit-logged.
 
 ### Stage 15.3 — Course Capacity Limits ✅ Already Implemented
 - `CourseOffering.MaxEnrollment` enforced by `EnrollmentService`; `UpdateMaxEnrollment` API action exists.
-- No work required.
 
 ---
 

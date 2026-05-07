@@ -21,17 +21,26 @@ public class EnrollmentService : IEnrollmentService
     private readonly ICourseRepository _courseRepo;
     private readonly ISemesterRepository _semesterRepo;
     private readonly IAuditService _audit;
+    private readonly IPrerequisiteRepository _prerequisiteRepo;
+    private readonly IResultRepository _resultRepo;
+    private readonly ITimetableRepository _timetableRepo;
 
     public EnrollmentService(
         IEnrollmentRepository enrollmentRepo,
         ICourseRepository courseRepo,
         ISemesterRepository semesterRepo,
-        IAuditService audit)
+        IAuditService audit,
+        IPrerequisiteRepository prerequisiteRepo,
+        IResultRepository resultRepo,
+        ITimetableRepository timetableRepo)
     {
         _enrollmentRepo = enrollmentRepo;
         _courseRepo = courseRepo;
         _semesterRepo = semesterRepo;
         _audit = audit;
+        _prerequisiteRepo = prerequisiteRepo;
+        _resultRepo = resultRepo;
+        _timetableRepo = timetableRepo;
     }
 
     /// <summary>
@@ -117,5 +126,132 @@ public class EnrollmentService : IEnrollmentService
         _enrollmentRepo.Update(enrollment);
         await _enrollmentRepo.SaveChangesAsync(ct);
         return true;
+    }
+
+    // Final-Touches Phase 15 Stages 15.1 & 15.2 — TryEnrollAsync: prerequisite + clash checks
+    /// <summary>
+    /// Attempts enrollment with full Phase 15 rule checks (prerequisite validation + timetable clash detection).
+    /// Returns a rich <see cref="EnrollmentAttemptResult"/> describing success or the specific rejection reason.
+    /// </summary>
+    public async Task<EnrollmentAttemptResult> TryEnrollAsync(
+        Guid studentProfileId,
+        Guid courseOfferingId,
+        bool overrideClash = false,
+        string? overrideReason = null,
+        CancellationToken ct = default)
+    {
+        // 1. Load offering with navigations.
+        var offering = await _courseRepo.GetOfferingByIdAsync(courseOfferingId, ct);
+        if (offering is null)
+            return new EnrollmentAttemptResult(false, RejectionReason: "Offering not found.");
+
+        // 2. Semester closed guard.
+        if (offering.Semester.IsClosed)
+            return new EnrollmentAttemptResult(false, RejectionReason: "Semester is closed.");
+
+        // 3. Offering open guard.
+        if (!offering.IsOpen)
+            return new EnrollmentAttemptResult(false, RejectionReason: "Enrollment is closed for this offering.");
+
+        // 4. Duplicate enrollment guard.
+        if (await _enrollmentRepo.IsEnrolledAsync(studentProfileId, courseOfferingId, ct))
+            return new EnrollmentAttemptResult(false, RejectionReason: "Already enrolled in this offering.");
+
+        // 5. Seat availability guard.
+        var currentCount = await _courseRepo.GetEnrollmentCountAsync(courseOfferingId, ct);
+        if (currentCount >= offering.MaxEnrollment)
+            return new EnrollmentAttemptResult(false, RejectionReason: "Offering is full.");
+
+        // 6. Prerequisite check (Stage 15.1).
+        var prerequisites = await _prerequisiteRepo.GetByCourseIdAsync(offering.CourseId, ct);
+        if (prerequisites.Count > 0)
+        {
+            var unmet = new List<string>();
+            foreach (var prereq in prerequisites)
+            {
+                if (!await _resultRepo.HasPassedCourseAsync(studentProfileId, prereq.PrerequisiteCourseId, ct))
+                {
+                    var label = prereq.PrerequisiteCourse is not null
+                        ? $"{prereq.PrerequisiteCourse.Code} – {prereq.PrerequisiteCourse.Title}"
+                        : prereq.PrerequisiteCourseId.ToString();
+                    unmet.Add(label);
+                }
+            }
+            if (unmet.Count > 0)
+                return new EnrollmentAttemptResult(false,
+                    RejectionReason: "Unmet prerequisites.",
+                    UnmetPrerequisites: unmet);
+        }
+
+        // 7. Timetable clash check (Stage 15.2) — skipped when admin provides override.
+        if (!overrideClash)
+        {
+            var requestedSlots = await _timetableRepo.GetEntriesByCourseOfferingAsync(offering.CourseId, offering.SemesterId, ct);
+            if (requestedSlots.Count > 0)
+            {
+                var studentEnrollments = await _enrollmentRepo.GetByStudentAsync(studentProfileId, ct);
+                var activeOfferingIds = studentEnrollments
+                    .Where(e => e.Status == EnrollmentStatus.Active && e.CourseOfferingId != courseOfferingId)
+                    .Select(e => e.CourseOfferingId)
+                    .ToList();
+
+                var clashes = new List<string>();
+                foreach (var existingOfferingId in activeOfferingIds)
+                {
+                    var existingOffering = await _courseRepo.GetOfferingByIdAsync(existingOfferingId, ct);
+                    if (existingOffering is null) continue;
+
+                    var existingSlots = await _timetableRepo.GetEntriesByCourseOfferingAsync(
+                        existingOffering.CourseId, existingOffering.SemesterId, ct);
+
+                    foreach (var reqSlot in requestedSlots)
+                    {
+                        foreach (var exSlot in existingSlots)
+                        {
+                            if (reqSlot.DayOfWeek == exSlot.DayOfWeek
+                                && reqSlot.StartTime < exSlot.EndTime
+                                && reqSlot.EndTime > exSlot.StartTime)
+                            {
+                                var day = ((DayOfWeek)reqSlot.DayOfWeek).ToString();
+                                clashes.Add(
+                                    $"{reqSlot.SubjectName} ({day} {reqSlot.StartTime:hh\\:mm}–{reqSlot.EndTime:hh\\:mm}) " +
+                                    $"conflicts with {exSlot.SubjectName} ({day} {exSlot.StartTime:hh\\:mm}–{exSlot.EndTime:hh\\:mm})");
+                            }
+                        }
+                    }
+                }
+
+                if (clashes.Count > 0)
+                    return new EnrollmentAttemptResult(false,
+                        RejectionReason: "Timetable clash detected.",
+                        ClashDetails: clashes);
+            }
+        }
+
+        // 8. All checks passed — create enrollment.
+        var enrollment = new Enrollment(studentProfileId, courseOfferingId);
+        await _enrollmentRepo.AddAsync(enrollment, ct);
+        await _enrollmentRepo.SaveChangesAsync(ct);
+
+        // Audit clash override when applicable.
+        if (overrideClash)
+        {
+            await _audit.LogAsync(new AuditLog(
+                "EnrollClashOverride", "Enrollment", enrollment.Id.ToString(),
+                actorUserId: studentProfileId,
+                newValuesJson: overrideReason), ct);
+        }
+
+        await _audit.LogAsync(new AuditLog(
+            "Enroll", "Enrollment", enrollment.Id.ToString(),
+            actorUserId: studentProfileId), ct);
+
+        return new EnrollmentAttemptResult(true, Enrollment: new EnrollmentResponse(
+            EnrollmentId:     enrollment.Id,
+            CourseOfferingId: offering.Id,
+            CourseName:       offering.Course.Title,
+            SemesterName:     offering.Semester.Name,
+            Status:           enrollment.Status.ToString(),
+            EnrolledAt:       enrollment.EnrolledAt));
     }
 }

@@ -30,4 +30,16 @@ public interface IEnrollmentService
     // Final-Touches Phase 8 Stage 8.2 — admin drop any enrollment by its ID
     /// <summary>Drops any active enrollment identified by its enrollment ID. Returns false when not found or not active.</summary>
     Task<bool> AdminDropByIdAsync(Guid enrollmentId, CancellationToken ct = default);
+
+    // Final-Touches Phase 15 Stages 15.1 & 15.2 — TryEnrollAsync: rich enrollment attempt with rules
+    /// <summary>
+    /// Attempts enrollment with full Phase 15 rule checks (prerequisite validation + timetable clash detection).
+    /// Returns a rich result describing success or the specific rejection reason.
+    /// </summary>
+    Task<EnrollmentAttemptResult> TryEnrollAsync(
+        Guid studentProfileId,
+        Guid courseOfferingId,
+        bool overrideClash = false,
+        string? overrideReason = null,
+        CancellationToken ct = default);
 }

@@ -84,4 +84,19 @@ public class TimetableRepository : ITimetableRepository
               .ThenBy(e => e.StartTime)
               .ToListAsync(ct)
               .ContinueWith<IList<TimetableEntry>>(r => r.Result, ct);
+
+    // Final-Touches Phase 15 Stage 15.2 — GetEntriesByCourseOfferingAsync: timetable clash detection
+    /// <summary>
+    /// Returns published timetable entries whose CourseId matches <paramref name="courseId"/>
+    /// within the specified semester. Used to detect schedule conflicts before enrollment.
+    /// </summary>
+    public Task<IList<TimetableEntry>> GetEntriesByCourseOfferingAsync(Guid courseId, Guid semesterId, CancellationToken ct = default)
+        => _db.TimetableEntries
+              .Where(e => e.CourseId == courseId
+                       && e.Timetable.SemesterId == semesterId
+                       && e.Timetable.IsPublished)
+              .OrderBy(e => e.DayOfWeek)
+              .ThenBy(e => e.StartTime)
+              .ToListAsync(ct)
+              .ContinueWith<IList<TimetableEntry>>(r => r.Result, ct);
 }

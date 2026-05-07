@@ -208,6 +208,9 @@ builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.ISearchServic
 builder.Services.AddScoped<Tabsan.EduSphere.Domain.Interfaces.IHelpdeskRepository, Tabsan.EduSphere.Infrastructure.Repositories.HelpdeskRepository>();
 builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IHelpdeskService, Tabsan.EduSphere.Application.Helpdesk.HelpdeskService>();
 
+// ── Phase 15: Enrollment Rules Engine ────────────────────────────────────
+builder.Services.AddScoped<Tabsan.EduSphere.Domain.Interfaces.IPrerequisiteRepository, Tabsan.EduSphere.Infrastructure.Repositories.PrerequisiteRepository>();
+
 // ── Rate limiting (OWASP hardening) ─────────────────────────────────────
 builder.Services.AddRateLimiter(opts =>
 {

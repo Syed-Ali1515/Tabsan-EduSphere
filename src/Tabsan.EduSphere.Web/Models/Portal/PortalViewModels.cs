@@ -1408,3 +1408,35 @@ public class HelpdeskCreatePageModel
     public string                  Body        { get; set; } = "";
     public Guid?                   DepartmentId { get; set; }
 }
+
+// ── Phase 15: Enrollment Rules — Prerequisites ────────────────────────────────
+
+// Final-Touches Phase 15 Stage 15.1 — PrerequisiteWebItem: prerequisite DTO for Web layer
+public class PrerequisiteWebItem
+{
+    public Guid   CourseId                { get; set; }
+    public string CourseCode              { get; set; } = "";
+    public string CourseTitle             { get; set; } = "";
+    public Guid   PrerequisiteCourseId    { get; set; }
+    public string PrerequisiteCourseCode  { get; set; } = "";
+    public string PrerequisiteCourseTitle { get; set; } = "";
+}
+
+public class PrerequisitesPageModel
+{
+    public bool                       IsConnected  { get; set; }
+    public string?                    Message      { get; set; }
+    /// <summary>All courses in the filtered department, with their prerequisites grouped.</summary>
+    public List<CoursePrerequisiteGroup> CourseGroups { get; set; } = new();
+    public List<LookupItem>           Departments  { get; set; } = new();
+    public List<CourseItem>           Courses      { get; set; } = new();
+    public Guid?                      SelectedDepartmentId { get; set; }
+}
+
+public class CoursePrerequisiteGroup
+{
+    public Guid                       CourseId     { get; set; }
+    public string                     CourseCode   { get; set; } = "";
+    public string                     CourseTitle  { get; set; } = "";
+    public List<PrerequisiteWebItem>  Prerequisites { get; set; } = new();
+}

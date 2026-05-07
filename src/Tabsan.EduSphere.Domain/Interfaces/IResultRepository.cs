@@ -78,6 +78,13 @@ public interface IResultRepository
     /// <summary>Queues a new transcript export log entry for insertion.</summary>
     Task AddExportLogAsync(TranscriptExportLog log, CancellationToken ct = default);
 
+    // Final-Touches Phase 15 Stage 15.1 — HasPassedCourseAsync: prerequisite check
+    /// <summary>
+    /// Returns true when the student has a published 'Total' result for any offering of the given course
+    /// with a passing mark (marks obtained ≥ 50% of max marks).
+    /// </summary>
+    Task<bool> HasPassedCourseAsync(Guid studentProfileId, Guid courseId, CancellationToken ct = default);
+
     /// <summary>Commits pending changes.</summary>
     Task<int> SaveChangesAsync(CancellationToken ct = default);
 }

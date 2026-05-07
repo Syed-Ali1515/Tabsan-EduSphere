@@ -37,7 +37,13 @@ public sealed record EnrollRequest(Guid CourseOfferingId);
 
 // Final-Touches Phase 8 Stage 8.2 — admin-managed enrollment of any student
 /// <summary>Request body for an admin to enroll any student into a course offering.</summary>
-public sealed record AdminEnrollRequest(Guid StudentProfileId, Guid CourseOfferingId);
+/// <param name="OverrideClash">When true the Admin bypasses timetable clash rejection (Phase 15 Stage 15.2).</param>
+/// <param name="OverrideReason">Reason for the clash override — required when OverrideClash is true.</param>
+public sealed record AdminEnrollRequest(
+    Guid StudentProfileId,
+    Guid CourseOfferingId,
+    bool OverrideClash = false,
+    string? OverrideReason = null);
 
 /// <summary>Response returned after a successful enrollment action.</summary>
 public sealed record EnrollmentResponse(
