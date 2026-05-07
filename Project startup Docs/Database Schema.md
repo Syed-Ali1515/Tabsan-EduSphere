@@ -1,8 +1,8 @@
 # Database Schema Documentation
 ## University Portal & License Creation Tool
 
-**Version:** 1.1  
-**Aligned With PRD:** v1.6  
+**Version:** 1.2  
+**Aligned With PRD:** v1.33  
 **Purpose:** Define database schemas for the University Portal Application and the License Creation Tool  
 
 ---
@@ -421,6 +421,31 @@ Named academic deadlines and key dates attached to a semester. Used by the Acade
 - `IX_academic_deadlines_date_active` on `(deadline_date, is_active)`
 
 **EF Migration:** `20260507_Phase12AcademicCalendar`
+
+---
+
+## 19. Global Search (Phase 13)
+
+Phase 13 introduces no new database tables. All search queries execute against existing tables using EF Core LINQ joins:
+
+| Entity searched | Table(s) queried |
+|---|---|
+| Students | `student_profiles` JOIN `users` |
+| Courses | `courses` |
+| Course Offerings | `course_offerings` JOIN `courses` JOIN `semesters` |
+| Faculty | `users` JOIN `roles` (where `roles.name = 'Faculty'`) |
+| Departments | `departments` |
+| Student-enrolled offerings | `enrollments` JOIN `course_offerings` JOIN `courses` |
+
+All queries respect global soft-delete query filters (`is_deleted = 0`) automatically.
+
+Role-scoped filtering applied at the application service layer:
+- **SuperAdmin** — all entities across all departments
+- **Admin** — entities within their assigned departments
+- **Faculty** — entities within their own department + their own course offerings
+- **Student** — only their enrolled course offerings
+
+**EF Migration:** None required (no schema changes)
 
 ---
 
