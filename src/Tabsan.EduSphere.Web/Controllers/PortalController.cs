@@ -3171,4 +3171,180 @@ public class PortalController : Controller
         catch (Exception ex) { TempData["Message"] = "Error: " + ex.Message; }
         return RedirectToAction(nameof(Prerequisites), new { departmentId });
     }
+
+    // ── Phase 16: Faculty Grading System ──────────────────────────────────────────
+
+    // Final-Touches Phase 16 Stage 16.1 — Gradebook grid for faculty
+    public async Task<IActionResult> Gradebook(Guid? offeringId, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(Dashboard));
+        var model = new GradebookPageModel { IsConnected = true };
+        try
+        {
+            model.Offerings = await _api.GetMyOfferingsAsync(ct);
+            model.SelectedOffering = offeringId;
+            if (offeringId.HasValue)
+                model.Grid = await _api.GetGradebookAsync(offeringId.Value, ct);
+        }
+        catch (Exception ex) { model.Message = "Error: " + ex.Message; }
+        return View(model);
+    }
+
+    // Final-Touches Phase 16 Stage 16.1 — AJAX endpoint: upsert one result cell inline
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> GradebookUpsertEntry(
+        Guid offeringId,
+        Guid studentProfileId,
+        string componentName,
+        decimal marksObtained,
+        decimal maxMarks,
+        CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return Json(new { success = false, error = "Not connected." });
+        try
+        {
+            await _api.UpsertGradebookEntryAsync(offeringId, studentProfileId, componentName, marksObtained, maxMarks, ct);
+            return Json(new { success = true });
+        }
+        catch (Exception ex) { return Json(new { success = false, error = ex.Message }); }
+    }
+
+    // Final-Touches Phase 16 Stage 16.1 — publish all results for an offering
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> GradebookPublishAll(Guid offeringId, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(Dashboard));
+        try
+        {
+            await _api.PublishGradebookAllAsync(offeringId, ct);
+            TempData["Message"] = "All results published.";
+        }
+        catch (Exception ex) { TempData["Message"] = "Error: " + ex.Message; }
+        return RedirectToAction(nameof(Gradebook), new { offeringId });
+    }
+
+    // Final-Touches Phase 16 Stage 16.3 — download CSV template
+    public async Task<IActionResult> GradebookCsvTemplate(Guid offeringId, string component, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(Dashboard));
+        var bytes = await _api.GetGradebookCsvTemplateAsync(offeringId, component, ct);
+        return File(bytes, "text/csv", $"gradebook-{component}-template.csv");
+    }
+
+    // Final-Touches Phase 16 Stage 16.3 — upload CSV preview
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> GradebookBulkUpload(
+        Guid offeringId,
+        string componentName,
+        Microsoft.AspNetCore.Http.IFormFile file,
+        CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(Dashboard));
+        if (file is null || file.Length == 0)
+        {
+            TempData["Message"] = "No file selected.";
+            return RedirectToAction(nameof(Gradebook), new { offeringId });
+        }
+        try
+        {
+            await using var stream = file.OpenReadStream();
+            var preview = await _api.UploadBulkGradeCsvAsync(offeringId, componentName, stream, file.FileName, ct);
+            TempData["BulkPreview"] = System.Text.Json.JsonSerializer.Serialize(preview);
+            TempData["BulkOffering"] = offeringId.ToString();
+            TempData["BulkComponent"] = componentName;
+        }
+        catch (Exception ex) { TempData["Message"] = "Error: " + ex.Message; }
+        return RedirectToAction(nameof(Gradebook), new { offeringId });
+    }
+
+    // Final-Touches Phase 16 Stage 16.3 — confirm bulk grade
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> GradebookBulkConfirm(
+        Guid offeringId,
+        string previewJson,
+        CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(Dashboard));
+        try
+        {
+            var preview = System.Text.Json.JsonSerializer.Deserialize<BulkGradePreviewWebModel>(previewJson,
+                new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            if (preview is null) throw new InvalidOperationException("Invalid preview data.");
+            var confirm = new BulkGradeConfirmWebRequest
+            {
+                CourseOfferingId = offeringId,
+                ComponentName    = preview.ComponentName,
+                ValidRows        = preview.Rows.Where(r => r.ValidationError is null).ToList()
+            };
+            await _api.ConfirmBulkGradeAsync(offeringId, confirm, ct);
+            TempData["Message"] = $"Applied {confirm.ValidRows.Count} grade(s).";
+        }
+        catch (Exception ex) { TempData["Message"] = "Error: " + ex.Message; }
+        return RedirectToAction(nameof(Gradebook), new { offeringId });
+    }
+
+    // Final-Touches Phase 16 Stage 16.2 — rubric management (Faculty/Admin)
+    public async Task<IActionResult> RubricManage(Guid? offeringId, Guid? assignmentId, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(Dashboard));
+        var model = new RubricManagePageModel { IsConnected = true };
+        try
+        {
+            model.Offerings = await _api.GetMyOfferingsAsync(ct);
+            model.SelectedOffering = offeringId;
+            if (offeringId.HasValue)
+            {
+                model.Assignments = await _api.GetAssignmentsByOfferingAsync(offeringId.Value, ct);
+                model.SelectedAssignment = assignmentId;
+                if (assignmentId.HasValue)
+                {
+                    try { model.Rubric = await _api.GetRubricByAssignmentAsync(assignmentId.Value, ct); }
+                    catch { /* no rubric yet — model.Rubric stays null */ }
+                }
+            }
+        }
+        catch (Exception ex) { model.Message = "Error: " + ex.Message; }
+        return View(model);
+    }
+
+    // Final-Touches Phase 16 Stage 16.2 — create rubric POST handler
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> RubricCreate(CreateRubricWebRequest request, Guid? offeringId, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(Dashboard));
+        try
+        {
+            await _api.CreateRubricAsync(request, ct);
+            TempData["Message"] = "Rubric created.";
+        }
+        catch (Exception ex) { TempData["Message"] = "Error: " + ex.Message; }
+        return RedirectToAction(nameof(RubricManage), new { offeringId, assignmentId = request.AssignmentId });
+    }
+
+    // Final-Touches Phase 16 Stage 16.2 — delete (deactivate) rubric
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> RubricDelete(Guid rubricId, Guid? offeringId, Guid? assignmentId, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(Dashboard));
+        try
+        {
+            await _api.DeleteRubricAsync(rubricId, ct);
+            TempData["Message"] = "Rubric deleted.";
+        }
+        catch (Exception ex) { TempData["Message"] = "Error: " + ex.Message; }
+        return RedirectToAction(nameof(RubricManage), new { offeringId, assignmentId });
+    }
+
+    // Final-Touches Phase 16 Stage 16.2 — student rubric grade view
+    public async Task<IActionResult> RubricView(Guid rubricId, Guid submissionId, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(Dashboard));
+        var model = new RubricViewPageModel { IsConnected = true };
+        try
+        {
+            model.Grade = await _api.GetRubricGradeAsync(rubricId, submissionId, ct);
+        }
+        catch (Exception ex) { model.Message = "Error: " + ex.Message; }
+        return View(model);
+    }
 }

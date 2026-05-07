@@ -253,6 +253,20 @@ public interface IEduApiClient
     Task<List<PrerequisiteWebItem>> GetPrerequisitesAsync(Guid courseId, CancellationToken ct);
     Task AddPrerequisiteAsync(Guid courseId, Guid prerequisiteCourseId, CancellationToken ct);
     Task RemovePrerequisiteAsync(Guid courseId, Guid prerequisiteCourseId, CancellationToken ct);
+
+    // Phase 16: Faculty Grading System
+    Task<GradebookGridWebModel?> GetGradebookAsync(Guid offeringId, CancellationToken ct);
+    Task UpsertGradebookEntryAsync(Guid offeringId, Guid studentProfileId, string componentName, decimal marksObtained, decimal maxMarks, CancellationToken ct);
+    Task PublishGradebookAllAsync(Guid offeringId, CancellationToken ct);
+    Task<byte[]> GetGradebookCsvTemplateAsync(Guid offeringId, string componentName, CancellationToken ct);
+    Task<BulkGradePreviewWebModel?> UploadBulkGradeCsvAsync(Guid offeringId, string componentName, Stream csvStream, string fileName, CancellationToken ct);
+    Task ConfirmBulkGradeAsync(Guid offeringId, BulkGradeConfirmWebRequest request, CancellationToken ct);
+    Task<RubricWebModel?> GetRubricByAssignmentAsync(Guid assignmentId, CancellationToken ct);
+    Task<Guid> CreateRubricAsync(CreateRubricWebRequest request, CancellationToken ct);
+    Task UpdateRubricAsync(Guid rubricId, string title, CancellationToken ct);
+    Task DeleteRubricAsync(Guid rubricId, CancellationToken ct);
+    Task<RubricGradeWebModel?> GetRubricGradeAsync(Guid rubricId, Guid submissionId, CancellationToken ct);
+    Task<RubricGradeWebModel?> GradeRubricSubmissionAsync(Guid rubricId, RubricGradeWebRequest request, CancellationToken ct);
 }
 
 public class EduApiClient : IEduApiClient
@@ -2784,6 +2798,298 @@ public class EduApiClient : IEduApiClient
         public string? PrerequisiteCourseCode  { get; set; }
         public string? PrerequisiteCourseTitle { get; set; }
     }
+
+    // ── Phase 16: Faculty Grading System ──────────────────────────────────────
+
+    // Final-Touches Phase 16 Stage 16.1 — gradebook grid
+    public async Task<GradebookGridWebModel?> GetGradebookAsync(Guid offeringId, CancellationToken ct)
+    {
+        var raw = await GetAsync<GradebookGridApiDto>($"api/v1/gradebook/{offeringId}", ct);
+        if (raw is null) return null;
+        return new GradebookGridWebModel
+        {
+            CourseOfferingId = raw.CourseOfferingId,
+            Columns = raw.Columns?.Select(c => new GradebookColumnWebModel
+            {
+                ComponentName = c.ComponentName ?? "",
+                Weightage     = c.Weightage
+            }).ToList() ?? new(),
+            Rows = raw.Rows?.Select(r => new GradebookStudentRowWeb
+            {
+                StudentProfileId   = r.StudentProfileId,
+                RegistrationNumber = r.RegistrationNumber ?? "",
+                StudentName        = r.StudentName ?? "",
+                WeightedTotal      = r.WeightedTotal,
+                Cells = r.Cells?.Select(cell => new GradebookCellWebModel
+                {
+                    ComponentName = cell.ComponentName ?? "",
+                    MarksObtained = cell.MarksObtained,
+                    MaxMarks      = cell.MaxMarks,
+                    IsPublished   = cell.IsPublished
+                }).ToList() ?? new()
+            }).ToList() ?? new()
+        };
+    }
+
+    // Final-Touches Phase 16 Stage 16.1 — upsert single result cell
+    public Task UpsertGradebookEntryAsync(
+        Guid offeringId,
+        Guid studentProfileId,
+        string componentName,
+        decimal marksObtained,
+        decimal maxMarks,
+        CancellationToken ct)
+        => PutAsync<object, object>(
+            $"api/v1/gradebook/{offeringId}/entry",
+            new { studentProfileId, courseOfferingId = offeringId, componentName, marksObtained, maxMarks },
+            ct);
+
+    // Final-Touches Phase 16 Stage 16.1 — publish all results for offering
+    public Task PublishGradebookAllAsync(Guid offeringId, CancellationToken ct)
+        => PostAsync<object, object>($"api/v1/gradebook/{offeringId}/publish-all", new { }, ct);
+
+    // Final-Touches Phase 16 Stage 16.3 — download CSV template
+    public Task<byte[]> GetGradebookCsvTemplateAsync(Guid offeringId, string componentName, CancellationToken ct)
+        => GetBytesAsync($"api/v1/gradebook/{offeringId}/template?component={Uri.EscapeDataString(componentName)}", ct);
+
+    // Final-Touches Phase 16 Stage 16.3 — upload CSV for preview
+    public async Task<BulkGradePreviewWebModel?> UploadBulkGradeCsvAsync(
+        Guid offeringId,
+        string componentName,
+        Stream csvStream,
+        string fileName,
+        CancellationToken ct)
+    {
+        using var content = new MultipartFormDataContent();
+        content.Add(new StreamContent(csvStream), "file", fileName);
+        using var request = CreateRequest(HttpMethod.Post,
+            $"api/v1/gradebook/{offeringId}/bulk-grade?component={Uri.EscapeDataString(componentName)}");
+        request.Content = content;
+        using var response = await CreateClient().SendAsync(request, ct);
+        var body = await response.Content.ReadAsStringAsync(ct);
+        if (!response.IsSuccessStatusCode) throw BuildException(response.StatusCode, body);
+        var raw = JsonSerializer.Deserialize<BulkGradePreviewApiDto>(body, _jsonOptions);
+        if (raw is null) return null;
+        return new BulkGradePreviewWebModel
+        {
+            ComponentName = raw.ComponentName ?? "",
+            TotalRows     = raw.TotalRows,
+            ValidRows     = raw.ValidRows,
+            ErrorRows     = raw.ErrorRows,
+            Rows = raw.Rows?.Select(r => new BulkGradeRowWeb
+            {
+                RegistrationNumber = r.RegistrationNumber ?? "",
+                StudentName        = r.StudentName ?? "",
+                StudentProfileId   = r.StudentProfileId,
+                MarksObtained      = r.MarksObtained,
+                MaxMarks           = r.MaxMarks,
+                ValidationError    = r.ValidationError
+            }).ToList() ?? new()
+        };
+    }
+
+    // Final-Touches Phase 16 Stage 16.3 — confirm bulk grade
+    public Task ConfirmBulkGradeAsync(Guid offeringId, BulkGradeConfirmWebRequest request, CancellationToken ct)
+    {
+        var payload = new
+        {
+            courseOfferingId = request.CourseOfferingId,
+            componentName    = request.ComponentName,
+            maxMarks         = request.MaxMarks,
+            validRows        = request.ValidRows.Select(r => new
+            {
+                registrationNumber = r.RegistrationNumber,
+                studentName        = r.StudentName,
+                studentProfileId   = r.StudentProfileId,
+                marksObtained      = r.MarksObtained,
+                maxMarks           = r.MaxMarks
+            }).ToList()
+        };
+        return PostAsync<object, object>($"api/v1/gradebook/{offeringId}/bulk-grade/confirm", payload, ct);
+    }
+
+    // Final-Touches Phase 16 Stage 16.2 — get rubric by assignment
+    public async Task<RubricWebModel?> GetRubricByAssignmentAsync(Guid assignmentId, CancellationToken ct)
+    {
+        var raw = await GetAsync<RubricApiDto>($"api/v1/rubric/assignment/{assignmentId}", ct);
+        return raw is null ? null : MapRubricApiDto(raw);
+    }
+
+    // Final-Touches Phase 16 Stage 16.2 — create rubric
+    public async Task<Guid> CreateRubricAsync(CreateRubricWebRequest request, CancellationToken ct)
+    {
+        var payload = new
+        {
+            assignmentId = request.AssignmentId,
+            title        = request.Title,
+            criteria     = request.Criteria.Select(c => new
+            {
+                name         = c.Name,
+                maxPoints    = c.MaxPoints,
+                displayOrder = c.DisplayOrder,
+                levels       = c.Levels.Select(l => new { label = l.Label, pointsAwarded = l.PointsAwarded, displayOrder = l.DisplayOrder })
+            })
+        };
+        var result = await PostAsync<object, RubricCreateResponseApiDto>("api/v1/rubric", payload, ct);
+        return result?.RubricId ?? Guid.Empty;
+    }
+
+    // Final-Touches Phase 16 Stage 16.2 — update rubric title
+    public Task UpdateRubricAsync(Guid rubricId, string title, CancellationToken ct)
+        => PutAsync<object, object>($"api/v1/rubric/{rubricId}", new { title }, ct);
+
+    // Final-Touches Phase 16 Stage 16.2 — delete (deactivate) rubric
+    public Task DeleteRubricAsync(Guid rubricId, CancellationToken ct)
+        => DeleteAsync($"api/v1/rubric/{rubricId}", ct);
+
+    // Final-Touches Phase 16 Stage 16.2 — get rubric grade for submission
+    public async Task<RubricGradeWebModel?> GetRubricGradeAsync(Guid rubricId, Guid submissionId, CancellationToken ct)
+    {
+        var raw = await GetAsync<RubricGradeApiDto>($"api/v1/rubric/{rubricId}/grade/{submissionId}", ct);
+        return raw is null ? null : MapRubricGradeDto(raw);
+    }
+
+    // Final-Touches Phase 16 Stage 16.2 — submit rubric grades for a submission
+    public async Task<RubricGradeWebModel?> GradeRubricSubmissionAsync(
+        Guid rubricId,
+        RubricGradeWebRequest request,
+        CancellationToken ct)
+    {
+        var payload = new
+        {
+            submissionId = request.SubmissionId,
+            grades       = request.Grades.Select(g => new { criterionId = g.CriterionId, levelId = g.LevelId })
+        };
+        var raw = await PostAsync<object, RubricGradeApiDto>($"api/v1/rubric/{rubricId}/grade", payload, ct);
+        return raw is null ? null : MapRubricGradeDto(raw);
+    }
+
+    // Phase 16 API DTOs (private)
+    private sealed class GradebookGridApiDto
+    {
+        public Guid CourseOfferingId { get; set; }
+        public List<GradebookColumnApiDto>?      Columns { get; set; }
+        public List<GradebookStudentRowApiDto>?  Rows    { get; set; }
+    }
+    private sealed class GradebookColumnApiDto
+    {
+        public string?  ComponentName { get; set; }
+        public decimal  Weightage     { get; set; }
+    }
+    private sealed class GradebookStudentRowApiDto
+    {
+        public Guid    StudentProfileId   { get; set; }
+        public string? RegistrationNumber { get; set; }
+        public string? StudentName        { get; set; }
+        public List<GradebookCellApiDto>? Cells { get; set; }
+        public decimal? WeightedTotal { get; set; }
+    }
+    private sealed class GradebookCellApiDto
+    {
+        public string?  ComponentName { get; set; }
+        public decimal? MarksObtained { get; set; }
+        public decimal? MaxMarks      { get; set; }
+        public bool     IsPublished   { get; set; }
+    }
+    private sealed class BulkGradePreviewApiDto
+    {
+        public string? ComponentName { get; set; }
+        public int     TotalRows     { get; set; }
+        public int     ValidRows     { get; set; }
+        public int     ErrorRows     { get; set; }
+        public List<BulkGradeRowApiDto>? Rows { get; set; }
+    }
+    private sealed class BulkGradeRowApiDto
+    {
+        public string?  RegistrationNumber { get; set; }
+        public string?  StudentName        { get; set; }
+        public Guid?    StudentProfileId   { get; set; }
+        public decimal? MarksObtained      { get; set; }
+        public decimal? MaxMarks           { get; set; }
+        public string?  ValidationError    { get; set; }
+    }
+    private sealed class RubricApiDto
+    {
+        public Guid    RubricId     { get; set; }
+        public Guid    AssignmentId { get; set; }
+        public string? Title        { get; set; }
+        public bool    IsActive     { get; set; }
+        public List<RubricCriterionApiDto>? Criteria { get; set; }
+    }
+    private sealed class RubricCriterionApiDto
+    {
+        public Guid    CriterionId  { get; set; }
+        public string? Name         { get; set; }
+        public decimal MaxPoints    { get; set; }
+        public int     DisplayOrder { get; set; }
+        public List<RubricLevelApiDto>? Levels { get; set; }
+    }
+    private sealed class RubricLevelApiDto
+    {
+        public Guid    LevelId       { get; set; }
+        public string? Label         { get; set; }
+        public decimal PointsAwarded { get; set; }
+        public int     DisplayOrder  { get; set; }
+    }
+    private sealed class RubricCreateResponseApiDto { public Guid RubricId { get; set; } }
+    private sealed class RubricGradeApiDto
+    {
+        public Guid    SubmissionId   { get; set; }
+        public Guid    RubricId       { get; set; }
+        public string? RubricTitle    { get; set; }
+        public decimal TotalPoints    { get; set; }
+        public decimal MaxTotalPoints { get; set; }
+        public List<RubricCriterionGradeApiDto>? CriteriaResults { get; set; }
+    }
+    private sealed class RubricCriterionGradeApiDto
+    {
+        public Guid    CriterionId   { get; set; }
+        public string? CriterionName { get; set; }
+        public decimal MaxPoints     { get; set; }
+        public Guid?   ChosenLevelId { get; set; }
+        public string? ChosenLabel   { get; set; }
+        public decimal PointsAwarded { get; set; }
+    }
+
+    private static RubricWebModel MapRubricApiDto(RubricApiDto raw) => new()
+    {
+        RubricId     = raw.RubricId,
+        AssignmentId = raw.AssignmentId,
+        Title        = raw.Title ?? "",
+        IsActive     = raw.IsActive,
+        Criteria = raw.Criteria?.Select(c => new RubricCriterionWebModel
+        {
+            CriterionId  = c.CriterionId,
+            Name         = c.Name ?? "",
+            MaxPoints    = c.MaxPoints,
+            DisplayOrder = c.DisplayOrder,
+            Levels = c.Levels?.Select(l => new RubricLevelWebModel
+            {
+                LevelId       = l.LevelId,
+                Label         = l.Label ?? "",
+                PointsAwarded = l.PointsAwarded,
+                DisplayOrder  = l.DisplayOrder
+            }).ToList() ?? new()
+        }).ToList() ?? new()
+    };
+
+    private static RubricGradeWebModel MapRubricGradeDto(RubricGradeApiDto raw) => new()
+    {
+        SubmissionId   = raw.SubmissionId,
+        RubricId       = raw.RubricId,
+        RubricTitle    = raw.RubricTitle ?? "",
+        TotalPoints    = raw.TotalPoints,
+        MaxTotalPoints = raw.MaxTotalPoints,
+        CriteriaResults = raw.CriteriaResults?.Select(r => new RubricCriterionGradeWebModel
+        {
+            CriterionId   = r.CriterionId,
+            CriterionName = r.CriterionName ?? "",
+            MaxPoints     = r.MaxPoints,
+            ChosenLevelId = r.ChosenLevelId,
+            ChosenLabel   = r.ChosenLabel,
+            PointsAwarded = r.PointsAwarded
+        }).ToList() ?? new()
+    };
 
     // ── Phase 14 API DTOs (private) ───────────────────────────────────────────
 

@@ -1,0 +1,165 @@
+@* Final-Touches Phase 16 Stage 16.2 — Rubric management view for Faculty *@
+@model Tabsan.EduSphere.Web.Models.Portal.RubricManagePageModel
+@{ ViewData["Title"] = "Rubric Management"; }
+
+@if (!string.IsNullOrWhiteSpace(Model.Message)) { <div class="alert alert-info">@Model.Message</div> }
+@if (TempData["Message"] is string td) { <div class="alert alert-info">@td</div> }
+
+@if (!Model.IsConnected)
+{
+    <div class="alert alert-warning">Not connected. <a asp-action="Dashboard">Configure API</a>.</div>
+}
+else
+{
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+            <form method="get" asp-action="RubricManage" class="row g-2 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Course Offering</label>
+                    <select name="offeringId" class="form-select" onchange="this.form.submit()">
+                        <option value="">-- Select Offering --</option>
+                        @foreach (var o in Model.Offerings)
+                        {
+                            <option value="@o.Id" selected="@(Model.SelectedOffering == o.Id ? "selected" : null)">@o.Name</option>
+                        }
+                    </select>
+                </div>
+                @if (Model.Assignments.Count > 0)
+                {
+                    <input type="hidden" name="offeringId" value="@Model.SelectedOffering" />
+                    <div class="col-md-4">
+                        <label class="form-label">Assignment</label>
+                        <select name="assignmentId" class="form-select" onchange="this.form.submit()">
+                            <option value="">-- Select Assignment --</option>
+                            @foreach (var a in Model.Assignments)
+                            {
+                                <option value="@a.Id" selected="@(Model.SelectedAssignment == a.Id ? "selected" : null)">@a.Title</option>
+                            }
+                        </select>
+                    </div>
+                }
+            </form>
+        </div>
+    </div>
+
+    @if (Model.SelectedAssignment.HasValue)
+    {
+        if (Model.Rubric is null)
+        {
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header"><h6 class="mb-0">Create Rubric</h6></div>
+                <div class="card-body">
+                    <form method="post" asp-action="RubricCreate" id="rubricForm">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="AssignmentId" value="@Model.SelectedAssignment" />
+                        <input type="hidden" name="OfferingId" value="@Model.SelectedOffering" />
+                        <div class="mb-3">
+                            <label class="form-label">Rubric Title</label>
+                            <input type="text" name="Title" class="form-control" required placeholder="e.g. Project Evaluation Rubric" />
+                        </div>
+                        <div id="criteria-container">
+                            <div class="criterion-block border rounded p-3 mb-2" data-idx="0">
+                                <div class="row g-2 mb-2">
+                                    <div class="col-md-5">
+                                        <input type="text" name="Criteria[0].Name" class="form-control" placeholder="Criterion name" required />
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="number" name="Criteria[0].MaxPoints" class="form-control" placeholder="Max pts" min="1" required />
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="hidden" name="Criteria[0].DisplayOrder" value="0" />
+                                    </div>
+                                </div>
+                                <div class="levels-container ps-3">
+                                    <div class="row g-1 mb-1">
+                                        <div class="col-md-4"><input type="text" name="Criteria[0].Levels[0].Label" class="form-control form-control-sm" placeholder="Level label" required /></div>
+                                        <div class="col-md-2"><input type="number" name="Criteria[0].Levels[0].PointsAwarded" class="form-control form-control-sm" placeholder="Points" min="0" required /></div>
+                                        <input type="hidden" name="Criteria[0].Levels[0].DisplayOrder" value="0" />
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-secondary add-level-btn" data-crit="0">+ Level</button>
+                            </div>
+                        </div>
+                        <button type="button" id="addCriterion" class="btn btn-sm btn-outline-primary mb-3">+ Criterion</button>
+                        <div>
+                            <button type="submit" class="btn btn-success">Save Rubric</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        }
+        else
+        {
+            var rubric = Model.Rubric;
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">@rubric.Title <span class="badge @(rubric.IsActive ? "bg-success" : "bg-secondary")">@(rubric.IsActive ? "Active" : "Inactive")</span></h6>
+                    <form method="post" asp-action="RubricDelete" asp-route-rubricId="@rubric.RubricId" asp-route-offeringId="@Model.SelectedOffering" asp-route-assignmentId="@Model.SelectedAssignment">
+                        @Html.AntiForgeryToken()
+                        <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete rubric?')">Delete</button>
+                    </form>
+                </div>
+                <div class="card-body">
+                    @foreach (var c in rubric.Criteria.OrderBy(x => x.DisplayOrder))
+                    {
+                        <div class="mb-3">
+                            <strong>@c.Name</strong> <span class="text-muted">(max @c.MaxPoints pts)</span>
+                            <table class="table table-sm table-bordered mt-1">
+                                <thead class="table-light"><tr><th>Level</th><th>Points</th></tr></thead>
+                                <tbody>
+                                    @foreach (var l in c.Levels.OrderBy(x => x.DisplayOrder))
+                                    {
+                                        <tr><td>@l.Label</td><td>@l.PointsAwarded</td></tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }
+}
+
+@section Scripts {
+    <script>
+    // Final-Touches Phase 16 Stage 16.2 — dynamic criterion/level builder
+    let critCount = 1;
+    document.getElementById('addCriterion')?.addEventListener('click', function () {
+        const idx = critCount++;
+        const container = document.getElementById('criteria-container');
+        const div = document.createElement('div');
+        div.className = 'criterion-block border rounded p-3 mb-2';
+        div.dataset.idx = idx;
+        div.innerHTML = `
+            <div class="row g-2 mb-2">
+                <div class="col-md-5"><input type="text" name="Criteria[${idx}].Name" class="form-control" placeholder="Criterion name" required /></div>
+                <div class="col-md-2"><input type="number" name="Criteria[${idx}].MaxPoints" class="form-control" placeholder="Max pts" min="1" required /></div>
+                <input type="hidden" name="Criteria[${idx}].DisplayOrder" value="${idx}" />
+            </div>
+            <div class="levels-container ps-3">
+                <div class="row g-1 mb-1">
+                    <div class="col-md-4"><input type="text" name="Criteria[${idx}].Levels[0].Label" class="form-control form-control-sm" placeholder="Level label" required /></div>
+                    <div class="col-md-2"><input type="number" name="Criteria[${idx}].Levels[0].PointsAwarded" class="form-control form-control-sm" placeholder="Points" min="0" required /></div>
+                    <input type="hidden" name="Criteria[${idx}].Levels[0].DisplayOrder" value="0" />
+                </div>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-secondary add-level-btn" data-crit="${idx}">+ Level</button>`;
+        container.appendChild(div);
+        div.querySelector('.add-level-btn').addEventListener('click', addLevel);
+    });
+    document.querySelectorAll('.add-level-btn').forEach(b => b.addEventListener('click', addLevel));
+    function addLevel(e) {
+        const critIdx = e.target.dataset.crit;
+        const lvlContainer = e.target.closest('.criterion-block').querySelector('.levels-container');
+        const lvlIdx = lvlContainer.querySelectorAll('.row').length;
+        const row = document.createElement('div');
+        row.className = 'row g-1 mb-1';
+        row.innerHTML = `
+            <div class="col-md-4"><input type="text" name="Criteria[${critIdx}].Levels[${lvlIdx}].Label" class="form-control form-control-sm" placeholder="Level label" required /></div>
+            <div class="col-md-2"><input type="number" name="Criteria[${critIdx}].Levels[${lvlIdx}].PointsAwarded" class="form-control form-control-sm" placeholder="Points" min="0" required /></div>
+            <input type="hidden" name="Criteria[${critIdx}].Levels[${lvlIdx}].DisplayOrder" value="${lvlIdx}" />`;
+        lvlContainer.appendChild(row);
+    }
+    </script>
+}

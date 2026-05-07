@@ -1440,3 +1440,173 @@ public class CoursePrerequisiteGroup
     public string                     CourseTitle  { get; set; } = "";
     public List<PrerequisiteWebItem>  Prerequisites { get; set; } = new();
 }
+
+// ── Phase 16: Faculty Grading System ──────────────────────────────────────────
+
+// Final-Touches Phase 16 Stage 16.1 — gradebook grid web models
+public class GradebookGridWebModel
+{
+    public Guid                           CourseOfferingId { get; set; }
+    public List<GradebookColumnWebModel>  Columns          { get; set; } = new();
+    public List<GradebookStudentRowWeb>   Rows             { get; set; } = new();
+}
+
+public class GradebookColumnWebModel
+{
+    public string  ComponentName { get; set; } = "";
+    public decimal Weightage     { get; set; }
+}
+
+public class GradebookStudentRowWeb
+{
+    public Guid                        StudentProfileId   { get; set; }
+    public string                      RegistrationNumber { get; set; } = "";
+    public string                      StudentName        { get; set; } = "";
+    public List<GradebookCellWebModel> Cells              { get; set; } = new();
+    public decimal?                    WeightedTotal      { get; set; }
+}
+
+public class GradebookCellWebModel
+{
+    public string   ComponentName  { get; set; } = "";
+    public decimal? MarksObtained  { get; set; }
+    public decimal? MaxMarks       { get; set; }
+    public bool     IsPublished    { get; set; }
+}
+
+public class GradebookPageModel
+{
+    public bool                  IsConnected      { get; set; }
+    public string?               Message          { get; set; }
+    public List<LookupItem>      Offerings        { get; set; } = new();
+    public Guid?                 SelectedOffering { get; set; }
+    public GradebookGridWebModel? Grid            { get; set; }
+}
+
+// Final-Touches Phase 16 Stage 16.3 — bulk CSV grade models
+public class BulkGradePreviewWebModel
+{
+    public string                  ComponentName { get; set; } = "";
+    public int                     TotalRows     { get; set; }
+    public int                     ValidRows     { get; set; }
+    public int                     ErrorRows     { get; set; }
+    public List<BulkGradeRowWeb>   Rows          { get; set; } = new();
+}
+
+public class BulkGradeRowWeb
+{
+    public string   RegistrationNumber { get; set; } = "";
+    public string   StudentName        { get; set; } = "";
+    public Guid?    StudentProfileId   { get; set; }
+    public decimal? MarksObtained      { get; set; }
+    public decimal? MaxMarks           { get; set; }
+    public string?  ValidationError    { get; set; }
+}
+
+public class BulkGradeConfirmWebRequest
+{
+    public Guid                  CourseOfferingId { get; set; }
+    public string                ComponentName    { get; set; } = "";
+    public decimal               MaxMarks         { get; set; }
+    public List<BulkGradeRowWeb> ValidRows        { get; set; } = new();
+}
+
+// Final-Touches Phase 16 Stage 16.2 — rubric web models
+public class RubricWebModel
+{
+    public Guid                         RubricId     { get; set; }
+    public Guid                         AssignmentId { get; set; }
+    public string                       Title        { get; set; } = "";
+    public bool                         IsActive     { get; set; }
+    public List<RubricCriterionWebModel> Criteria    { get; set; } = new();
+}
+
+public class RubricCriterionWebModel
+{
+    public Guid                      CriterionId  { get; set; }
+    public string                    Name         { get; set; } = "";
+    public decimal                   MaxPoints    { get; set; }
+    public int                       DisplayOrder { get; set; }
+    public List<RubricLevelWebModel> Levels       { get; set; } = new();
+}
+
+public class RubricLevelWebModel
+{
+    public Guid    LevelId       { get; set; }
+    public string  Label         { get; set; } = "";
+    public decimal PointsAwarded { get; set; }
+    public int     DisplayOrder  { get; set; }
+}
+
+public class RubricManagePageModel
+{
+    public bool             IsConnected  { get; set; }
+    public string?          Message      { get; set; }
+    public List<LookupItem> Offerings    { get; set; } = new();
+    public Guid?            SelectedOffering { get; set; }
+    public RubricWebModel?  Rubric       { get; set; }
+    public List<AssignmentItem> Assignments { get; set; } = new();
+    public Guid?            SelectedAssignment { get; set; }
+}
+
+public class RubricViewPageModel
+{
+    public bool                IsConnected  { get; set; }
+    public string?             Message      { get; set; }
+    public RubricGradeWebModel? Grade       { get; set; }
+    public RubricWebModel?     Rubric       { get; set; }
+}
+
+public class RubricGradeWebModel
+{
+    public Guid                               SubmissionId    { get; set; }
+    public Guid                               RubricId        { get; set; }
+    public string                             RubricTitle     { get; set; } = "";
+    public decimal                            TotalPoints     { get; set; }
+    public decimal                            MaxTotalPoints  { get; set; }
+    public List<RubricCriterionGradeWebModel> CriteriaResults { get; set; } = new();
+}
+
+public class RubricCriterionGradeWebModel
+{
+    public Guid    CriterionId   { get; set; }
+    public string  CriterionName { get; set; } = "";
+    public decimal MaxPoints     { get; set; }
+    public Guid?   ChosenLevelId { get; set; }
+    public string? ChosenLabel   { get; set; }
+    public decimal PointsAwarded { get; set; }
+}
+
+public class RubricGradeWebRequest
+{
+    public Guid                           SubmissionId { get; set; }
+    public List<RubricCriterionGradeWeb>  Grades       { get; set; } = new();
+}
+
+public class RubricCriterionGradeWeb
+{
+    public Guid CriterionId { get; set; }
+    public Guid LevelId     { get; set; }
+}
+
+public class CreateRubricWebRequest
+{
+    public Guid                         AssignmentId { get; set; }
+    public string                       Title        { get; set; } = "";
+    public List<CreateCriterionWebReq>  Criteria     { get; set; } = new();
+}
+
+public class CreateCriterionWebReq
+{
+    public string                    Name         { get; set; } = "";
+    public decimal                   MaxPoints    { get; set; }
+    public int                       DisplayOrder { get; set; }
+    public List<CreateLevelWebReq>   Levels       { get; set; } = new();
+}
+
+public class CreateLevelWebReq
+{
+    public string  Label         { get; set; } = "";
+    public decimal PointsAwarded { get; set; }
+    public int     DisplayOrder  { get; set; }
+}

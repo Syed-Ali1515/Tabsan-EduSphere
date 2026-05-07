@@ -3365,3 +3365,59 @@ New themes added to site.css and ThemeSettingsPageModel: `neon_mint`, `sakura_pi
 | `PrerequisiteWebItem`, `CoursePrerequisiteGroup`, `PrerequisitesPageModel` | Classes (new) | View models for the Prerequisites portal page. | Web/Models/Portal/PortalViewModels.cs |
 | `Prerequisites`, `PrerequisiteAdd`, `PrerequisiteRemove` | Actions (new) | Portal controller actions for prerequisite management. | Web/Controllers/PortalController.cs |
 | `Prerequisites.cshtml` | View (new) | Prerequisite management page (Admin/SuperAdmin): department filter, per-course prerequisite list, add/remove forms. | Web/Views/Portal/Prerequisites.cshtml |
+
+## Final-Touches Phase 16 — Faculty Grading System
+
+### Domain — Rubric Entities (Phase 16)
+
+| Symbol | Type | Change | Location |
+|---|---|---|-----------|
+| `Rubric` | Class (new) | AuditableEntity: `AssignmentId`, `Title`, `IsActive`, `Criteria`; factory `Create`, `Update`, `Deactivate`. | Domain/Assignments/Rubric.cs |
+| `RubricCriterion` | Class (new) | BaseEntity: `RubricId`, `Name`, `MaxPoints`, `DisplayOrder`, `Levels`. | Domain/Assignments/Rubric.cs |
+| `RubricLevel` | Class (new) | BaseEntity: `CriterionId`, `Label`, `PointsAwarded`, `DisplayOrder`. | Domain/Assignments/Rubric.cs |
+| `RubricStudentGrade` | Class (new) | BaseEntity: `AssignmentSubmissionId`, `RubricCriterionId`, `RubricLevelId`, `PointsAwarded`, `GradedByUserId`. | Domain/Assignments/Rubric.cs |
+
+### Domain Interfaces (Phase 16)
+
+| Symbol | Type | Change | Location |
+|---|---|---|-----------|
+| `IGradebookRepository` | Interface (new) | `GetStudentsForOfferingAsync` → `IReadOnlyList<GradebookStudentInfo>`. | Domain/Interfaces/IGradebookRepository.cs |
+| `IRubricRepository` | Interface (new) | CRUD + student grade upsert for rubric entities. | Domain/Interfaces/IRubricRepository.cs |
+
+### Infrastructure — Configurations + Repositories (Phase 16)
+
+| Symbol | Type | Change | Location |
+|---|---|---|-----------|
+| `RubricConfiguration`, `RubricCriterionConfiguration`, `RubricLevelConfiguration`, `RubricStudentGradeConfiguration` | Configs (new) | EF table configs for 4 rubric tables; soft-delete filter on Rubric; unique index on (SubmissionId, CriterionId). | Infrastructure/Persistence/Configurations/RubricConfigurations.cs |
+| `GradebookRepository` | Class (new) | 3-way join Enrollments→StudentProfiles→Users for gradebook grid. | Infrastructure/Repositories/GradebookRubricRepositories.cs |
+| `RubricRepository` | Class (new) | `GetByAssignmentAsync` with Include Criteria→Levels; upsert student grade. | Infrastructure/Repositories/GradebookRubricRepositories.cs |
+| `ApplicationDbContext` | Modified | Added 4 new DbSets: Rubrics, RubricCriteria, RubricLevels, RubricStudentGrades. | Infrastructure/Persistence/ApplicationDbContext.cs |
+
+### Application — Services + DTOs (Phase 16)
+
+| Symbol | Type | Change | Location |
+|---|---|---|-----------|
+| `GradebookGridResponse`, `GradebookStudentRow`, `GradebookCellDto`, `UpsertGradebookEntryRequest`, `BulkGradePreviewResponse`, `BulkGradeConfirmRequest` | DTOs (new) | Gradebook response/request DTOs. | Application/DTOs/Assignments/GradebookDTOs.cs |
+| `RubricResponse`, `CreateRubricRequest`, `RubricGradeRequest`, `RubricGradeResponse` | DTOs (new) | Rubric CRUD + grading DTOs. | Application/DTOs/Assignments/RubricDTOs.cs |
+| `IGradebookService` | Interface (new) | GetGradebookAsync, UpsertEntryAsync, PublishAllAsync, CSV methods. | Application/Interfaces/IGradebookService.cs |
+| `IRubricService` | Interface (new) | Rubric lifecycle + GradeSubmissionAsync. | Application/Interfaces/IRubricService.cs |
+| `GradebookService` | Class (new) | Full gradebook orchestration; CSV template generation + parsing. | Application/Assignments/GradebookService.cs |
+| `RubricService` | Class (new) | Rubric lifecycle and per-criterion grading. | Application/Assignments/RubricService.cs |
+
+### API — Controllers (Phase 16)
+
+| Symbol | Type | Change | Location |
+|---|---|---|-----------|
+| `GradebookController` | Class (new) | `GET /{offeringId}`, `PUT entry`, `POST publish-all`, `GET template`, `POST bulk-grade`, `POST bulk-grade/confirm`. | API/Controllers/GradebookController.cs |
+| `RubricController` | Class (new) | `GET assignment/{id}`, `POST /`, `PUT /{id}`, `DELETE /{id}`, `POST /{id}/grade`, `GET /{id}/grade/{subId}`. | API/Controllers/RubricController.cs |
+
+### Web — EduApiClient + PortalController + Views (Phase 16)
+
+| Symbol | Type | Change | Location |
+|---|---|---|-----------|
+| Phase 16 interface + impl methods (12 methods) | Methods (new) | Gradebook grid, upsert, publish-all, CSV template/upload/confirm; Rubric CRUD + grade methods. | Web/Services/EduApiClient.cs |
+| Gradebook + Rubric web models (16 classes) | Classes (new) | `GradebookGridWebModel`, `BulkGradePreviewWebModel`, `RubricWebModel`, `RubricGradeWebModel`, page models, etc. | Web/Models/Portal/PortalViewModels.cs |
+| `Gradebook`, `GradebookUpsertEntry`, `GradebookPublishAll`, `GradebookCsvTemplate`, `GradebookBulkUpload`, `GradebookBulkConfirm`, `RubricManage`, `RubricCreate`, `RubricDelete`, `RubricView` | Actions (new) | Portal controller actions for Phase 16. | Web/Controllers/PortalController.cs |
+| `Gradebook.cshtml` | View (new) | Gradebook grid with inline cell editing (JS fetch), CSV upload/preview/confirm, publish-all. | Web/Views/Portal/Gradebook.cshtml |
+| `RubricManage.cshtml` | View (new) | Rubric definition UI with dynamic criterion/level builder. | Web/Views/Portal/RubricManage.cshtml |
+| `RubricView.cshtml` | View (new) | Rubric grade scorecard view. | Web/Views/Portal/RubricView.cshtml |

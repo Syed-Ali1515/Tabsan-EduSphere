@@ -211,6 +211,16 @@ public class ApplicationDbContext : DbContext
     /// <summary>Thread messages on support tickets.</summary>
     public DbSet<SupportTicketMessage> SupportTicketMessages => Set<SupportTicketMessage>();
 
+    // ── Phase 16: Faculty Grading — Rubric-Based Grading ──────────────────────
+    /// <summary>Rubrics attached to assignments for structured grading.</summary>
+    public DbSet<Rubric> Rubrics => Set<Rubric>();
+    /// <summary>Criteria rows within a rubric (e.g. Clarity, Depth).</summary>
+    public DbSet<RubricCriterion> RubricCriteria => Set<RubricCriterion>();
+    /// <summary>Performance levels for a rubric criterion (e.g. Excellent / Good / Poor).</summary>
+    public DbSet<RubricLevel> RubricLevels => Set<RubricLevel>();
+    /// <summary>Records which level was selected for each criterion per student submission.</summary>
+    public DbSet<RubricStudentGrade> RubricStudentGrades => Set<RubricStudentGrade>();
+
     /// <summary>
     /// Scans the current assembly for all IEntityTypeConfiguration implementations
     /// and applies them automatically. This keeps OnModelCreating clean as the

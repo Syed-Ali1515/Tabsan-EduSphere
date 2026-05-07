@@ -128,6 +128,8 @@
         "fyp"               => ("Portal", "Fyp"),
         "helpdesk"          => ("Portal", "Helpdesk"),
         "prerequisites"     => ("Portal", "Prerequisites"),
+        "gradebook"         => ("Portal", "Gradebook"),
+        "rubric_manage"     => ("Portal", "RubricManage"),
         "analytics"         => ("Portal", "Analytics"),
         "ai_chat"           => ("Portal", "AiChat"),
         "student_lifecycle" => ("Portal", "StudentLifecycle"),
@@ -163,6 +165,8 @@
         "fyp" => ("Student Related", 3),
         "helpdesk" => ("Student Related", 3),
         "prerequisites" => ("Academic Related", 2),
+        "gradebook"     => ("Faculty Related", 2),
+        "rubric_manage" => ("Faculty Related", 2),
         "ai_chat" => ("Student Related", 3),
         "student_lifecycle" => ("Student Related", 3),
 
@@ -365,6 +369,13 @@
                     @if (showAdminLinks)
                     {
                         <a class="menu-link" asp-controller="Portal" asp-action="Prerequisites">Prerequisites</a>
+                    }
+
+                    @* Final-Touches Phase 16 Stage 16.1 — Gradebook sidebar link (Faculty/Admin) *@
+                    @if (showFacultyLinks || showAdminLinks)
+                    {
+                        <a class="menu-link" asp-controller="Portal" asp-action="Gradebook">Gradebook</a>
+                        <a class="menu-link" asp-controller="Portal" asp-action="RubricManage">Rubric Management</a>
                     }
 
                     @if (showAdminLinks || showFacultyLinks)

@@ -471,11 +471,15 @@ Views/
   Enrollments.cshtml
   ForceChangePassword.cshtml
   Fyp.cshtml
+  Gradebook.cshtml
   Helpdesk.cshtml
+  HelpdeskCreate.cshtml
+  HelpdeskDetail.cshtml
   LicenseUpdate.cshtml
   ModuleSettings.cshtml
   Notifications.cshtml
   Payments.cshtml
+  Prerequisites.cshtml
   Quizzes.cshtml
   ReportAssignments.cshtml
   ReportAttendance.cshtml
@@ -492,6 +496,8 @@ Views/
   ResultCalculation.cshtml
   Results.cshtml
   Rooms.cshtml
+  RubricManage.cshtml
+  RubricView.cshtml
   Search.cshtml
   Section.cshtml
   SidebarSettings.cshtml
@@ -533,11 +539,15 @@ Views/
   Enrollments.cshtml
   ForceChangePassword.cshtml
   Fyp.cshtml
+  Gradebook.cshtml
   Helpdesk.cshtml
+  HelpdeskCreate.cshtml
+  HelpdeskDetail.cshtml
   LicenseUpdate.cshtml
   ModuleSettings.cshtml
   Notifications.cshtml
   Payments.cshtml
+  Prerequisites.cshtml
   Quizzes.cshtml
   ReportAssignments.cshtml
   ReportAttendance.cshtml
@@ -554,6 +564,8 @@ Views/
   ResultCalculation.cshtml
   Results.cshtml
   Rooms.cshtml
+  RubricManage.cshtml
+  RubricView.cshtml
   Search.cshtml
   Section.cshtml
   SidebarSettings.cshtml

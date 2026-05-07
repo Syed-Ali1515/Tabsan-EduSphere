@@ -60,20 +60,25 @@ Academic/
 AiChat/AiChatService.cs
 Assignments/
  AssignmentService.cs
+ GradebookService.cs
  ResultCalculationService.cs
  ResultService.cs
+ RubricService.cs
 Attendance/AttendanceService.cs
 Auth/AuthService.cs
 DTOs/Academic/
  AcademicDeadlineDTOs.cs
  AcademicDtos.cs
+ EnrollmentRulesDTOs.cs
 DTOs/
  AccountSecurityDtos.cs
  AiChat/AiChatDtos.cs
  Analytics/AnalyticsDtos.cs
  Assignments/
   AssignmentDtos.cs
+  GradebookDTOs.cs
   ResultCalculationDtos.cs
+  RubricDTOs.cs
  Attendance/AttendanceDtos.cs
  Auth/
   AdminUserManagementDtos.cs
@@ -104,6 +109,7 @@ Interfaces/
  IEmailTemplateRenderer.cs
  IEnrollmentService.cs
  IFypService.cs
+ IGradebookService.cs
  IHelpdeskService.cs
  ILlmClient.cs
  IModuleEntitlementResolver.cs
@@ -114,6 +120,7 @@ Interfaces/
  IReportService.cs
  IResultCalculationService.cs
  IResultService.cs
+ IRubricService.cs
  ISearchRepository.cs
  ISearchService.cs
  ISettingsServices.cs

@@ -49,11 +49,11 @@ git push
 
 ## Current Execution Pointer
 - Plan Source: Docs/Enhancements.md
-- Active Phase: **Phase 15 — Enrollment Rules Engine — FULLY COMPLETE ✅**
-- Active Stage: **Stages 15.1 + 15.2 + 15.3 done — Prerequisite validation, timetable clash detection, capacity limits**
-- Status: **0 build errors; 7/7 tests passed**
+- Active Phase: **Phase 16 — Faculty Grading System — FULLY COMPLETE ✅**
+- Active Stage: **Stages 16.1 + 16.2 + 16.3 done — Gradebook Grid, Rubric-Based Grading, Bulk CSV Import**
+- Status: **0 build errors; 78/78 tests passed**
 - Last Updated: 2026-05-08
-- Next: Phase 16 — Faculty Grading System
+- Next: Phase 17 — (see Enhancements.md)
 
 ---
 
@@ -67,6 +67,7 @@ git push
 5. `20260507_Phase12AcademicCalendar` — adds `academic_deadlines` table ✅
 6. `20260507_Phase14_Helpdesk` — adds `support_tickets` + `support_ticket_messages` tables ✅
 7. `20260507133254_Phase15_EnrollmentRules` — adds `course_prerequisites` table with unique index ✅
+8. `Phase16_FacultyGrading` — adds `rubrics`, `rubric_criteria`, `rubric_levels`, `rubric_student_grades` tables ✅
 
 Database is fully synchronized with codebase.
 

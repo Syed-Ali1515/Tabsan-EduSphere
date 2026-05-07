@@ -60,6 +60,7 @@ Academic/
  Building.cs
  Course.cs
  CourseOffering.cs
+ CoursePrerequisite.cs
  Department.cs
  Enrollment.cs
  FacultyDepartmentAssignment.cs
@@ -75,6 +76,7 @@ Assignments/
  AssignmentSubmission.cs
  Result.cs
  ResultCalculation.cs
+ Rubric.cs
  TranscriptExportLog.cs
 Attendance/AttendanceRecord.cs
 Auditing/AuditLog.cs
@@ -111,15 +113,18 @@ Interfaces/
  IEnrollmentRepository.cs
  IFacultyAssignmentRepository.cs
  IFypRepository.cs
+ IGradebookRepository.cs
  IHelpdeskRepository.cs
  ILicenseRepository.cs
  IModuleRepository.cs
  INotificationRepository.cs
  IPasswordHistoryRepository.cs
+ IPrerequisiteRepository.cs
  IQuizRepository.cs
  IRegistrationWhitelistRepository.cs
  IReportRepository.cs
  IResultRepository.cs
+ IRubricRepository.cs
  ISemesterRepository.cs
  ISettingsRepository.cs
  IStudentLifecycleRepository.cs

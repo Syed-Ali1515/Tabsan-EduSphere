@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.35 (Phase 15 Enrollment Rules Engine — Fully Complete)  
+**Version:** 1.36 (Phase 16 Faculty Grading System — Fully Complete)  
 **Status:** Approved  
 **Prepared By:** Product Team  
 **Last Updated:** 8 May 2026  
@@ -10,7 +10,12 @@
 
 ## 0. Implementation Update Log
 
-### 2026-05-08 — Phase 15 Enrollment Rules Engine Complete (commit 42f0993)
+### 2026-05-08 — Phase 16 Faculty Grading System Complete
+- **Stage 16.1 — Gradebook Grid View:** `GradebookController` (GET/PUT/POST endpoints), `GradebookService` (GetGradebookAsync, UpsertEntryAsync, PublishAllAsync), `GradebookRepository` (3-way join for student info), `Gradebook.cshtml` (inline edit + publish-all).
+- **Stage 16.2 — Rubric-Based Grading:** Domain entities `Rubric`/`RubricCriterion`/`RubricLevel`/`RubricStudentGrade`, EF configs, `RubricRepository`, `RubricService`, `RubricController`, `RubricManage.cshtml`, `RubricView.cshtml`.
+- **Stage 16.3 — Bulk CSV Grading:** `GradebookService` (GetCsvTemplateAsync, ParseBulkCsvAsync, ConfirmBulkGradeAsync), `GradebookController` bulk endpoints, CSV upload UI in `Gradebook.cshtml`.
+- Migration `Phase16_FacultyGrading` — creates `rubrics`, `rubric_criteria`, `rubric_levels`, `rubric_student_grades` tables.
+- 78/78 unit tests passing.
 - **Stage 15.1 — Prerequisite Validation:**
   - `CoursePrerequisite` domain entity (`CourseId`, `PrerequisiteCourseId`) with unique composite index.
   - `IPrerequisiteRepository` + `PrerequisiteRepository` (EF Core, table `course_prerequisites`, cascade-delete on parent course removal).

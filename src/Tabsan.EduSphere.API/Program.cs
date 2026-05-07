@@ -211,6 +211,12 @@ builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IHelpdeskServ
 // ── Phase 15: Enrollment Rules Engine ────────────────────────────────────
 builder.Services.AddScoped<Tabsan.EduSphere.Domain.Interfaces.IPrerequisiteRepository, Tabsan.EduSphere.Infrastructure.Repositories.PrerequisiteRepository>();
 
+// ── Phase 16: Faculty Grading System ─────────────────────────────────────
+builder.Services.AddScoped<Tabsan.EduSphere.Domain.Interfaces.IGradebookRepository, Tabsan.EduSphere.Infrastructure.Repositories.GradebookRepository>();
+builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IGradebookService, Tabsan.EduSphere.Application.Assignments.GradebookService>();
+builder.Services.AddScoped<Tabsan.EduSphere.Domain.Interfaces.IRubricRepository, Tabsan.EduSphere.Infrastructure.Repositories.RubricRepository>();
+builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IRubricService, Tabsan.EduSphere.Application.Assignments.RubricService>();
+
 // ── Rate limiting (OWASP hardening) ─────────────────────────────────────
 builder.Services.AddRateLimiter(opts =>
 {
