@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.33 (Phase 13 Global Search — Fully Complete)  
+**Version:** 1.35 (Phase 15 Enrollment Rules Engine — Fully Complete)  
 **Status:** Approved  
 **Prepared By:** Product Team  
 **Last Updated:** 8 May 2026  
@@ -9,6 +9,36 @@
 ---
 
 ## 0. Implementation Update Log
+
+### 2026-05-08 — Phase 15 Enrollment Rules Engine Complete (commit 42f0993)
+- **Stage 15.1 — Prerequisite Validation:**
+  - `CoursePrerequisite` domain entity (`CourseId`, `PrerequisiteCourseId`) with unique composite index.
+  - `IPrerequisiteRepository` + `PrerequisiteRepository` (EF Core, table `course_prerequisites`, cascade-delete on parent course removal).
+  - `EnrollmentService.TryEnrollAsync` fetches prerequisites and checks each against student's passing results; returns `UnmetPrerequisites` list on failure.
+  - `PrerequisiteController` (`GET /api/v1/prerequisite/{courseId}`, `POST /api/v1/prerequisite`, `DELETE /api/v1/prerequisite/{courseId}/{prerequisiteCourseId}`) — read open to all authenticated; write restricted to Admin/SuperAdmin.
+  - `EnrollmentRulesDTOs` updated: `AdminEnrollRequest` gains `OverrideClash` (bool) + `OverrideReason` (string?) fields.
+  - EF migration `20260507133254_Phase15_EnrollmentRules` — creates `course_prerequisites` table + unique index `IX_course_prerequisites_course_prereq`.
+- **Stage 15.2 — Timetable Clash Detection:**
+  - `TryEnrollAsync` joins timetable entries for requested and already-enrolled offerings; rejects enrollment on time overlap.
+  - Admin `OverrideClash` flag bypasses clash check; override reason is audit-logged.
+- **Stage 15.3 — Capacity Limits (already implemented):**
+  - `CourseOffering.MaxEnrollment` already enforced; `UpdateMaxEnrollment` API action in place.
+- **Web Portal:**
+  - `PrerequisitesPageModel`, `PrerequisiteWebItem`, `CoursePrerequisiteGroup` view models.
+  - `Prerequisites` / `PrerequisiteAdd` / `PrerequisiteRemove` portal controller actions.
+  - `Prerequisites.cshtml` view with department filter, per-course prerequisite list, add/remove forms.
+  - Sidebar link added (Admin/SuperAdmin only).
+- **Build:** 0 errors · **Tests:** 7/7 passed
+
+### 2026-05-09 — Phase 14 Helpdesk / Support Ticketing System Complete (commit 8576e44)
+- **Stage 14.1 — Ticket Submission and Tracking:**
+  - `SupportTicket` entity (`SubmitterId`, `Category`, `Subject`, `Body`, `Status`, `AssignedToId`, timestamps); `SupportTicketMessage` thread entity.
+  - `IHelpdeskRepository` + `HelpdeskRepository` (EF Core, tables `support_tickets` + `support_ticket_messages`, dept-scoped query filters).
+  - `IHelpdeskService` + `HelpdeskService`: create, list, get, add-message, assign, status transitions, reopen window.
+  - `HelpdeskController` (GET tickets, GET ticket, POST create, POST message, POST assign/resolve/close/reopen); EF migration `20260507_Phase14_Helpdesk`.
+- **Stage 14.2 — Admin Case Management:** Admin/SuperAdmin endpoints; assignment to staff; dept-scoped visibility.
+- **Stage 14.3 — Faculty Responses:** Faculty reply support; reopen within configurable window; `Helpdesk.cshtml`, `HelpdeskCreate.cshtml`, `HelpdeskDetail.cshtml`, `_TicketStatusBadge.cshtml`; sidebar link.
+- **Build:** 0 errors · **Tests:** 78/78 passed
 
 ### 2026-05-08 — Phase 13 Global Search Complete (commit 00b7b64)
 - **Stage 13.1 — Cross-Entity Search API:**

@@ -688,3 +688,24 @@ Implemented student-side assignment workflow corrections in the web portal:
 - Phase 6 fully delivered. Both backend rules and SuperAdmin UI are in production.
 - Stage 5.4 (Admin Reporting Scope) is also fully complete â€” portal UX guidance guards added to all 9 report pages.
 - No remaining work in Phase 6.
+
+---
+
+## Phase 14 — Helpdesk / Support Ticketing System ? Complete (2026-05-09, commit 8576e44)
+
+Enhancement phases 12–15 are tracked in `Docs/Enhancements.md`. Summary entry recorded here for cross-reference.
+
+- Stages 14.1–14.3: Full ticket lifecycle (create, thread reply, assign, resolve, close, reopen); Admin/SuperAdmin case management; Faculty responses; EF migration `20260507_Phase14_Helpdesk`.
+- Validation: 0 build errors; 78/78 tests passed.
+
+---
+
+## Phase 15 — Enrollment Rules Engine ? Complete (2026-05-08, commit 42f0993)
+
+Enhancement phases 12–15 are tracked in `Docs/Enhancements.md`. Summary entry recorded here for cross-reference.
+
+- Stage 15.1: Prerequisite validation in `TryEnrollAsync`; `CoursePrerequisite` entity; `PrerequisiteController`; EF migration `20260507133254_Phase15_EnrollmentRules`.
+- Stage 15.2: Timetable clash detection; Admin override with audit log.
+- Stage 15.3: Capacity limits already enforced (pre-existing).
+- Web portal: Prerequisites page (Admin/SuperAdmin) — view, add, remove prerequisites per course.
+- Validation: 0 build errors; 7/7 tests passed.

@@ -3277,3 +3277,91 @@ New themes added to site.css and ThemeSettingsPageModel: `neon_mint`, `sakura_pi
 | Admin roster view | Rebuilt | Shows offering filter + "Enroll Student" button (Admin/SuperAdmin) + roster table with per-row "Drop" button. | Web/Views/Portal/Enrollments.cshtml |
 | Student own-courses view | New | Shows `MyCourses` list with per-row "Drop" button (Active only) + "Enroll in Course" modal. | Web/Views/Portal/Enrollments.cshtml |
 
+
+---
+
+## Final-Touches Phase 14 — Helpdesk / Support Ticketing System
+
+### Domain — SupportTicket, SupportTicketMessage (Phase 14)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `SupportTicket` | Class (new) | Support ticket entity: `SubmitterId`, `Category`, `Subject`, `Body`, `Status`, `AssignedToId`, timestamps; extends `AuditableEntity`. | Domain/Helpdesk/SupportTicket.cs |
+| `SupportTicketMessage` | Class (new) | Thread reply entity: `TicketId`, `SenderId`, `Body`; child of `SupportTicket`. | Domain/Helpdesk/SupportTicketMessage.cs |
+| `TicketStatus` | Enum (new) | `Open`, `InProgress`, `Resolved`, `Closed`. | Domain/Helpdesk/TicketStatus.cs |
+| `TicketCategory` | Enum (new) | `Academic`, `Technical`, `Administrative`. | Domain/Helpdesk/TicketCategory.cs |
+| `IHelpdeskRepository` | Interface (new) | Contract for ticket CRUD and lifecycle operations. | Domain/Interfaces/IHelpdeskRepository.cs |
+
+### Infrastructure — HelpdeskRepository (Phase 14)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `HelpdeskRepository` | Class (new) | EF Core implementation; tables `support_tickets` + `support_ticket_messages`; dept-scoped query filters; all lifecycle query methods. | Infrastructure/Repositories/HelpdeskRepository.cs |
+
+### Application — HelpdeskService (Phase 14)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `IHelpdeskService` | Interface (new) | Contract: create ticket, list, get, add message, assign, resolve, close, reopen. | Application/Interfaces/IHelpdeskService.cs |
+| `HelpdeskService` | Class (new) | Business logic; status validation; reopen window check; notification dispatch on status change. | Application/Services/HelpdeskService.cs |
+| `HelpdeskDTOs` | Records (new) | `CreateTicketRequest`, `AddMessageRequest`, `TicketListItem`, `TicketDetail`, `TicketMessageItem`. | Application/DTOs/Helpdesk/HelpdeskDTOs.cs |
+
+### API — HelpdeskController (Phase 14)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `HelpdeskController` | Class (new) | `GET /api/v1/helpdesk`, `GET /api/v1/helpdesk/{id}`, `POST /api/v1/helpdesk`, `POST /api/v1/helpdesk/{id}/message`, `POST /api/v1/helpdesk/{id}/assign`, `POST /api/v1/helpdesk/{id}/resolve`, `POST /api/v1/helpdesk/{id}/close`, `POST /api/v1/helpdesk/{id}/reopen`. | API/Controllers/HelpdeskController.cs |
+
+### Web — EduApiClient + PortalController + Views (Phase 14)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `GetTicketsAsync`, `GetTicketAsync`, `CreateTicketAsync`, `AddTicketMessageAsync`, `AssignTicketAsync`, `ResolveTicketAsync`, `CloseTicketAsync`, `ReopenTicketAsync` | Methods (new) | `IEduApiClient` interface + `EduApiClient` impl for all helpdesk endpoints. | Web/Services/EduApiClient.cs |
+| `HelpdeskPageModel`, `HelpdeskDetailModel`, `HelpdeskTicketItem`, `HelpdeskMessageItem` | Classes (new) | View models for helpdesk list and detail pages. | Web/Models/Portal/PortalViewModels.cs |
+| `Helpdesk`, `HelpdeskCreate`, `HelpdeskDetail`, `HelpdeskReply`, `HelpdeskAssign`, `HelpdeskResolve`, `HelpdeskClose`, `HelpdeskReopen` | Actions (new) | Portal controller actions for full ticket lifecycle. | Web/Controllers/PortalController.cs |
+| `Helpdesk.cshtml` | View (new) | Ticket list with status badges and filter. | Web/Views/Portal/Helpdesk.cshtml |
+| `HelpdeskCreate.cshtml` | View (new) | Ticket creation form. | Web/Views/Portal/HelpdeskCreate.cshtml |
+| `HelpdeskDetail.cshtml` | View (new) | Thread view with reply form and lifecycle action buttons. | Web/Views/Portal/HelpdeskDetail.cshtml |
+| `_TicketStatusBadge.cshtml` | Partial (new) | Reusable Bootstrap badge for ticket status. | Web/Views/Shared/_TicketStatusBadge.cshtml |
+
+---
+
+## Final-Touches Phase 15 — Enrollment Rules Engine
+
+### Domain — CoursePrerequisite (Phase 15)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `CoursePrerequisite` | Class (new) | Prerequisite link entity: `CourseId`, `PrerequisiteCourseId`; unique composite index `IX_course_prerequisites_course_prereq`. | Domain/Academic/CoursePrerequisite.cs |
+| `IPrerequisiteRepository` | Interface (new) | Contract: `GetByCourseAsync`, `ExistsAsync`, `AddAsync`, `RemoveAsync`. | Domain/Interfaces/IPrerequisiteRepository.cs |
+
+### Infrastructure — PrerequisiteRepository + Migration (Phase 15)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `PrerequisiteRepository` | Class (new) | EF Core impl; table `course_prerequisites`; cascade-delete on parent course. | Infrastructure/Repositories/PrerequisiteRepository.cs |
+| `Phase15_EnrollmentRules` | Migration (new) | Creates `course_prerequisites` table with FKs to `courses` and unique index. | Infrastructure/Migrations/20260507133254_Phase15_EnrollmentRules.cs |
+
+### Application — EnrollmentService + DTOs (Phase 15)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `TryEnrollAsync` | Method (modified) | Added prerequisite pass check (loops prereqs, calls `IAssignmentResultRepository.HasPassedCourseAsync`) + timetable clash detection; returns `UnmetPrerequisites` list. | Application/Services/EnrollmentService.cs |
+| `AdminEnrollRequest` | Class (modified) | Added `OverrideClash` (bool) and `OverrideReason` (string?) fields for admin clash bypass with audit log. | Application/DTOs/Academic/EnrollmentRulesDTOs.cs |
+| `HasPassedCourseAsync` | Method (new) | Returns true if student has a passing result for the given course. | Infrastructure/Repositories/AssignmentResultRepositories.cs |
+
+### API — PrerequisiteController (Phase 15)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `PrerequisiteController` | Class (new) | `GET /api/v1/prerequisite/{courseId}` (all authenticated), `POST /api/v1/prerequisite` (Admin/SuperAdmin), `DELETE /api/v1/prerequisite/{courseId}/{prereqCourseId}` (Admin/SuperAdmin). | API/Controllers/PrerequisiteController.cs |
+| `PrerequisiteDto` | Record (new) | Response DTO: `CourseId`, `PrerequisiteCourseId`, `PrerequisiteCourseCode`, `PrerequisiteCourseTitle`. | API/Controllers/PrerequisiteController.cs |
+
+### Web — EduApiClient + PortalController + Views (Phase 15)
+
+| Symbol | Type | Change | Location |
+|---|---|---|---|
+| `GetPrerequisitesAsync`, `AddPrerequisiteAsync`, `RemovePrerequisiteAsync` | Methods (new) | `IEduApiClient` interface + `EduApiClient` impl for all prerequisite endpoints. | Web/Services/EduApiClient.cs |
+| `PrerequisiteWebItem`, `CoursePrerequisiteGroup`, `PrerequisitesPageModel` | Classes (new) | View models for the Prerequisites portal page. | Web/Models/Portal/PortalViewModels.cs |
+| `Prerequisites`, `PrerequisiteAdd`, `PrerequisiteRemove` | Actions (new) | Portal controller actions for prerequisite management. | Web/Controllers/PortalController.cs |
+| `Prerequisites.cshtml` | View (new) | Prerequisite management page (Admin/SuperAdmin): department filter, per-course prerequisite list, add/remove forms. | Web/Views/Portal/Prerequisites.cshtml |
