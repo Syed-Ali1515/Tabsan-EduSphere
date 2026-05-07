@@ -267,6 +267,22 @@ public interface IEduApiClient
     Task DeleteRubricAsync(Guid rubricId, CancellationToken ct);
     Task<RubricGradeWebModel?> GetRubricGradeAsync(Guid rubricId, Guid submissionId, CancellationToken ct);
     Task<RubricGradeWebModel?> GradeRubricSubmissionAsync(Guid rubricId, RubricGradeWebRequest request, CancellationToken ct);
+
+    // Phase 17: Degree Audit System
+    // Final-Touches Phase 17 Stage 17.1 — student own audit
+    Task<DegreeAuditWebModel?> GetMyDegreeAuditAsync(CancellationToken ct);
+    // Final-Touches Phase 17 Stage 17.1 — admin/faculty audit for a student
+    Task<DegreeAuditWebModel?> GetStudentDegreeAuditAsync(Guid studentProfileId, CancellationToken ct);
+    // Final-Touches Phase 17 Stage 17.2 — eligibility list
+    Task<List<EligibilityListWebItem>> GetEligibilityListAsync(Guid? departmentId, Guid? programId, CancellationToken ct);
+    // Final-Touches Phase 17 Stage 17.2 — degree rules
+    Task<List<DegreeRuleWebModel>> GetAllDegreeRulesAsync(CancellationToken ct);
+    Task<DegreeRuleWebModel?> GetDegreeRuleByProgramAsync(Guid programId, CancellationToken ct);
+    Task<DegreeRuleWebModel?> CreateDegreeRuleAsync(CreateDegreeRuleWebRequest request, CancellationToken ct);
+    Task<DegreeRuleWebModel?> UpdateDegreeRuleAsync(Guid ruleId, UpdateDegreeRuleWebRequest request, CancellationToken ct);
+    Task DeleteDegreeRuleAsync(Guid ruleId, CancellationToken ct);
+    // Final-Touches Phase 17 Stage 17.3 — course type tagging
+    Task SetCourseTypeAsync(Guid courseId, string courseType, CancellationToken ct);
 }
 
 public class EduApiClient : IEduApiClient
@@ -2963,6 +2979,190 @@ public class EduApiClient : IEduApiClient
         var raw = await PostAsync<object, RubricGradeApiDto>($"api/v1/rubric/{rubricId}/grade", payload, ct);
         return raw is null ? null : MapRubricGradeDto(raw);
     }
+
+    // ── Phase 17: Degree Audit System ──────────────────────────────────────────
+
+    // Final-Touches Phase 17 Stage 17.1 — student own degree audit
+    public async Task<DegreeAuditWebModel?> GetMyDegreeAuditAsync(CancellationToken ct)
+    {
+        var raw = await GetAsync<DegreeAuditApiDto>("api/v1/degree-audit/me", ct);
+        return raw is null ? null : MapDegreeAudit(raw);
+    }
+
+    // Final-Touches Phase 17 Stage 17.1 — admin/faculty fetch student audit
+    public async Task<DegreeAuditWebModel?> GetStudentDegreeAuditAsync(Guid studentProfileId, CancellationToken ct)
+    {
+        var raw = await GetAsync<DegreeAuditApiDto>($"api/v1/degree-audit/{studentProfileId}", ct);
+        return raw is null ? null : MapDegreeAudit(raw);
+    }
+
+    // Final-Touches Phase 17 Stage 17.2 — eligibility list
+    public async Task<List<EligibilityListWebItem>> GetEligibilityListAsync(
+        Guid? departmentId, Guid? programId, CancellationToken ct)
+    {
+        var qs = "";
+        if (departmentId.HasValue) qs += $"?departmentId={departmentId}";
+        if (programId.HasValue)    qs += (qs.Length > 0 ? "&" : "?") + $"programId={programId}";
+        var raw = await GetAsync<List<EligibilityListApiDto>>($"api/v1/degree-audit/eligible{qs}", ct);
+        return raw?.Select(r => new EligibilityListWebItem
+        {
+            StudentProfileId   = r.StudentProfileId,
+            StudentName        = r.StudentName ?? "",
+            RegistrationNumber = r.RegistrationNumber ?? "",
+            Cgpa               = r.Cgpa,
+            TotalCreditsEarned = r.TotalCreditsEarned,
+            IsEligible         = r.IsEligible,
+            UnmetCount         = r.UnmetCount
+        }).ToList() ?? new();
+    }
+
+    // Final-Touches Phase 17 Stage 17.2 — list all degree rules
+    public async Task<List<DegreeRuleWebModel>> GetAllDegreeRulesAsync(CancellationToken ct)
+    {
+        var raw = await GetAsync<List<DegreeRuleApiDto>>("api/v1/degree-audit/rule", ct);
+        return raw?.Select(MapDegreeRule).ToList() ?? new();
+    }
+
+    // Final-Touches Phase 17 Stage 17.2 — rule by program
+    public async Task<DegreeRuleWebModel?> GetDegreeRuleByProgramAsync(Guid programId, CancellationToken ct)
+    {
+        var raw = await GetAsync<DegreeRuleApiDto>($"api/v1/degree-audit/rule/{programId}", ct);
+        return raw is null ? null : MapDegreeRule(raw);
+    }
+
+    // Final-Touches Phase 17 Stage 17.2 — create degree rule
+    public async Task<DegreeRuleWebModel?> CreateDegreeRuleAsync(CreateDegreeRuleWebRequest request, CancellationToken ct)
+    {
+        var payload = new
+        {
+            academicProgramId  = request.AcademicProgramId,
+            minTotalCredits    = request.MinTotalCredits,
+            minCoreCredits     = request.MinCoreCredits,
+            minElectiveCredits = request.MinElectiveCredits,
+            minGpa             = request.MinGpa,
+            requiredCourseIds  = request.RequiredCourseIds
+        };
+        var raw = await PostAsync<object, DegreeRuleApiDto>("api/v1/degree-audit/rule", payload, ct);
+        return raw is null ? null : MapDegreeRule(raw);
+    }
+
+    // Final-Touches Phase 17 Stage 17.2 — update degree rule
+    public async Task<DegreeRuleWebModel?> UpdateDegreeRuleAsync(Guid ruleId, UpdateDegreeRuleWebRequest request, CancellationToken ct)
+    {
+        var payload = new
+        {
+            minTotalCredits    = request.MinTotalCredits,
+            minCoreCredits     = request.MinCoreCredits,
+            minElectiveCredits = request.MinElectiveCredits,
+            minGpa             = request.MinGpa,
+            requiredCourseIds  = request.RequiredCourseIds
+        };
+        var raw = await PutAsync<object, DegreeRuleApiDto>($"api/v1/degree-audit/rule/{ruleId}", payload, ct);
+        return raw is null ? null : MapDegreeRule(raw);
+    }
+
+    // Final-Touches Phase 17 Stage 17.2 — delete degree rule
+    public async Task DeleteDegreeRuleAsync(Guid ruleId, CancellationToken ct)
+        => await DeleteAsync($"api/v1/degree-audit/rule/{ruleId}", ct);
+
+    // Final-Touches Phase 17 Stage 17.3 — set course type
+    public async Task SetCourseTypeAsync(Guid courseId, string courseType, CancellationToken ct)
+    {
+        var payload = new { courseType };
+        await PutAsync<object, object?>($"api/v1/degree-audit/course/{courseId}/type", payload, ct);
+    }
+
+    // Phase 17 API DTOs (private)
+    private sealed class DegreeAuditApiDto
+    {
+        public Guid    StudentProfileId     { get; set; }
+        public string? StudentName          { get; set; }
+        public string? RegistrationNumber   { get; set; }
+        public string? ProgramName          { get; set; }
+        public decimal Cgpa                 { get; set; }
+        public int     TotalCreditsEarned   { get; set; }
+        public int     CoreCreditsEarned    { get; set; }
+        public int     ElectiveCreditsEarned{ get; set; }
+        public bool    IsEligible           { get; set; }
+        public List<string>?        UnmetRequirements { get; set; }
+        public List<EarnedCourseRowApiDto>? CompletedCourses { get; set; }
+    }
+    private sealed class EarnedCourseRowApiDto
+    {
+        public Guid    CourseId    { get; set; }
+        public string? CourseCode  { get; set; }
+        public string? CourseTitle { get; set; }
+        public int     CreditHours { get; set; }
+        public string? CourseType  { get; set; }
+        public decimal? GradePoint { get; set; }
+    }
+    private sealed class DegreeRuleApiDto
+    {
+        public Guid    RuleId             { get; set; }
+        public Guid    AcademicProgramId  { get; set; }
+        public string? ProgramName        { get; set; }
+        public int     MinTotalCredits    { get; set; }
+        public int     MinCoreCredits     { get; set; }
+        public int     MinElectiveCredits { get; set; }
+        public decimal MinGpa             { get; set; }
+        public List<RequiredCourseApiDto>? RequiredCourses { get; set; }
+    }
+    private sealed class RequiredCourseApiDto
+    {
+        public Guid    CourseId    { get; set; }
+        public string? CourseCode  { get; set; }
+        public string? CourseTitle { get; set; }
+    }
+    private sealed class EligibilityListApiDto
+    {
+        public Guid    StudentProfileId   { get; set; }
+        public string? StudentName        { get; set; }
+        public string? RegistrationNumber { get; set; }
+        public decimal Cgpa               { get; set; }
+        public int     TotalCreditsEarned { get; set; }
+        public bool    IsEligible         { get; set; }
+        public int     UnmetCount         { get; set; }
+    }
+
+    private static DegreeAuditWebModel MapDegreeAudit(DegreeAuditApiDto raw) => new()
+    {
+        StudentProfileId      = raw.StudentProfileId,
+        StudentName           = raw.StudentName           ?? "",
+        RegistrationNumber    = raw.RegistrationNumber    ?? "",
+        ProgramName           = raw.ProgramName           ?? "",
+        Cgpa                  = raw.Cgpa,
+        TotalCreditsEarned    = raw.TotalCreditsEarned,
+        CoreCreditsEarned     = raw.CoreCreditsEarned,
+        ElectiveCreditsEarned = raw.ElectiveCreditsEarned,
+        IsEligible            = raw.IsEligible,
+        UnmetRequirements     = raw.UnmetRequirements ?? new(),
+        CompletedCourses      = raw.CompletedCourses?.Select(r => new EarnedCourseRowWebItem
+        {
+            CourseId    = r.CourseId,
+            CourseCode  = r.CourseCode  ?? "",
+            CourseTitle = r.CourseTitle ?? "",
+            CreditHours = r.CreditHours,
+            CourseType  = r.CourseType  ?? "Core",
+            GradePoint  = r.GradePoint
+        }).ToList() ?? new()
+    };
+
+    private static DegreeRuleWebModel MapDegreeRule(DegreeRuleApiDto raw) => new()
+    {
+        RuleId             = raw.RuleId,
+        AcademicProgramId  = raw.AcademicProgramId,
+        ProgramName        = raw.ProgramName        ?? "",
+        MinTotalCredits    = raw.MinTotalCredits,
+        MinCoreCredits     = raw.MinCoreCredits,
+        MinElectiveCredits = raw.MinElectiveCredits,
+        MinGpa             = raw.MinGpa,
+        RequiredCourses    = raw.RequiredCourses?.Select(r => new RequiredCourseWebItem
+        {
+            CourseId    = r.CourseId,
+            CourseCode  = r.CourseCode  ?? "",
+            CourseTitle = r.CourseTitle ?? ""
+        }).ToList() ?? new()
+    };
 
     // Phase 16 API DTOs (private)
     private sealed class GradebookGridApiDto

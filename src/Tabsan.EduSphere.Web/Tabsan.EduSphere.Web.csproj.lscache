@@ -467,11 +467,14 @@ Views/
   Courses.cshtml
   Dashboard.cshtml
   DashboardSettings.cshtml
+  DegreeAudit.cshtml
+  DegreeRules.cshtml
   Departments.cshtml
   Enrollments.cshtml
   ForceChangePassword.cshtml
   Fyp.cshtml
   Gradebook.cshtml
+  GraduationEligibility.cshtml
   Helpdesk.cshtml
   HelpdeskCreate.cshtml
   HelpdeskDetail.cshtml
@@ -535,11 +538,14 @@ Views/
   Courses.cshtml
   Dashboard.cshtml
   DashboardSettings.cshtml
+  DegreeAudit.cshtml
+  DegreeRules.cshtml
   Departments.cshtml
   Enrollments.cshtml
   ForceChangePassword.cshtml
   Fyp.cshtml
   Gradebook.cshtml
+  GraduationEligibility.cshtml
   Helpdesk.cshtml
   HelpdeskCreate.cshtml
   HelpdeskDetail.cshtml

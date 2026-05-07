@@ -1,0 +1,129 @@
+@* Final-Touches Phase 17 Stage 17.1 — Degree Audit view (credit breakdown + eligibility) *@
+@model DegreeAuditPageModel
+@{
+    ViewData["Title"] = "Degree Audit";
+}
+
+<h2 class="mb-4"><i class="bi bi-mortarboard-fill me-2"></i>Degree Audit</h2>
+
+@if (TempData["Message"] is string msg)
+{
+    <div class="alert alert-info">@msg</div>
+}
+
+@if (Model.Audit is { } audit)
+{
+    <div class="card mb-4">
+        <div class="card-header fw-bold">
+            @audit.StudentName — @audit.RegistrationNumber
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <strong>Program:</strong> @audit.ProgramName
+                </div>
+                <div class="col-md-4">
+                    <strong>CGPA:</strong> @audit.Cgpa.ToString("F2")
+                </div>
+                <div class="col-md-4">
+                    <strong>Eligibility:</strong>
+                    @if (audit.IsEligible)
+                    {
+                        <span class="badge bg-success fs-6">Eligible to Graduate</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger fs-6">Not Eligible</span>
+                    }
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <div class="card text-center border-primary">
+                        <div class="card-body py-2">
+                            <div class="fs-4 fw-bold text-primary">@audit.TotalCreditsEarned</div>
+                            <small class="text-muted">Total Credits</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center border-success">
+                        <div class="card-body py-2">
+                            <div class="fs-4 fw-bold text-success">@audit.CoreCreditsEarned</div>
+                            <small class="text-muted">Core Credits</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center border-warning">
+                        <div class="card-body py-2">
+                            <div class="fs-4 fw-bold text-warning">@audit.ElectiveCreditsEarned</div>
+                            <small class="text-muted">Elective Credits</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @if (audit.UnmetRequirements.Count > 0)
+            {
+                <div class="alert alert-warning">
+                    <strong>Unmet Requirements:</strong>
+                    <ul class="mb-0 mt-2">
+                        @foreach (var req in audit.UnmetRequirements)
+                        {
+                            <li>@req</li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            <h5 class="mt-4">Completed Courses</h5>
+            @if (audit.CompletedCourses.Count == 0)
+            {
+                <p class="text-muted">No passing results found.</p>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Code</th>
+                                <th>Title</th>
+                                <th class="text-center">Credits</th>
+                                <th class="text-center">Type</th>
+                                <th class="text-center">GPA Points</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var c in audit.CompletedCourses)
+                            {
+                                <tr>
+                                    <td><code>@c.CourseCode</code></td>
+                                    <td>@c.CourseTitle</td>
+                                    <td class="text-center">@c.CreditHours</td>
+                                    <td class="text-center">
+                                        @if (c.CourseType == "Core")
+                                        {
+                                            <span class="badge bg-primary">Core</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Elective</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">@(c.GradePoint?.ToString("F2") ?? "—")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-secondary">No audit data available.</div>
+}

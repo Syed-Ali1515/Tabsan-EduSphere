@@ -65,6 +65,7 @@ Controllers/
  BuildingController.cs
  CalendarController.cs
  CourseController.cs
+ DegreeAuditController.cs
  DepartmentController.cs
  EnrollmentController.cs
  FypController.cs

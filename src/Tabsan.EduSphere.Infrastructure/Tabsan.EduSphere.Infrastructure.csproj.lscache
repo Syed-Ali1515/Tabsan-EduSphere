@@ -95,6 +95,8 @@ Migrations/
  20260507133254_Phase15_EnrollmentRules.Designer.cs
  20260507223356_Phase16_FacultyGrading.cs
  20260507223356_Phase16_FacultyGrading.Designer.cs
+ 20260507231326_Phase17_DegreeAudit.cs
+ 20260507231326_Phase17_DegreeAudit.Designer.cs
  ApplicationDbContextModelSnapshot.cs
 Modules/ModuleEntitlementResolver.cs
 obj/Debug/net8.0/
@@ -170,6 +172,7 @@ Repositories/
  AssignmentResultRepositories.cs
  BuildingRoomRepository.cs
  CourseRepository.cs
+ DegreeAuditRepository.cs
  DepartmentRepository.cs
  GradebookRubricRepositories.cs
  HelpdeskRepository.cs

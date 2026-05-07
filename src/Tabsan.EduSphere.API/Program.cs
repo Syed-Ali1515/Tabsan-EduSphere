@@ -217,6 +217,10 @@ builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IGradebookSer
 builder.Services.AddScoped<Tabsan.EduSphere.Domain.Interfaces.IRubricRepository, Tabsan.EduSphere.Infrastructure.Repositories.RubricRepository>();
 builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IRubricService, Tabsan.EduSphere.Application.Assignments.RubricService>();
 
+// ── Phase 17: Degree Audit System ─────────────────────────────────────────
+builder.Services.AddScoped<Tabsan.EduSphere.Domain.Interfaces.IDegreeAuditRepository, Tabsan.EduSphere.Infrastructure.Repositories.DegreeAuditRepository>();
+builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IDegreeAuditService, Tabsan.EduSphere.Application.Academic.DegreeAuditService>();
+
 // ── Rate limiting (OWASP hardening) ─────────────────────────────────────
 builder.Services.AddRateLimiter(opts =>
 {

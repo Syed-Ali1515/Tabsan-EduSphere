@@ -1610,3 +1610,103 @@ public class CreateLevelWebReq
     public decimal PointsAwarded { get; set; }
     public int     DisplayOrder  { get; set; }
 }
+
+// ── Phase 17: Degree Audit System ─────────────────────────────────────────────
+
+// Final-Touches Phase 17 Stage 17.1 — degree audit web models
+public class DegreeAuditWebModel
+{
+    public Guid    StudentProfileId      { get; set; }
+    public string  StudentName           { get; set; } = "";
+    public string  RegistrationNumber    { get; set; } = "";
+    public string  ProgramName           { get; set; } = "";
+    public decimal Cgpa                  { get; set; }
+    public int     TotalCreditsEarned    { get; set; }
+    public int     CoreCreditsEarned     { get; set; }
+    public int     ElectiveCreditsEarned { get; set; }
+    public bool    IsEligible            { get; set; }
+    public List<string>               UnmetRequirements { get; set; } = new();
+    public List<EarnedCourseRowWebItem> CompletedCourses { get; set; } = new();
+}
+
+public class EarnedCourseRowWebItem
+{
+    public Guid    CourseId    { get; set; }
+    public string  CourseCode  { get; set; } = "";
+    public string  CourseTitle { get; set; } = "";
+    public int     CreditHours { get; set; }
+    public string  CourseType  { get; set; } = "Core";
+    public decimal? GradePoint { get; set; }
+}
+
+// Final-Touches Phase 17 Stage 17.2 — degree rule web models
+public class DegreeRuleWebModel
+{
+    public Guid    RuleId             { get; set; }
+    public Guid    AcademicProgramId  { get; set; }
+    public string  ProgramName        { get; set; } = "";
+    public int     MinTotalCredits    { get; set; }
+    public int     MinCoreCredits     { get; set; }
+    public int     MinElectiveCredits { get; set; }
+    public decimal MinGpa             { get; set; }
+    public List<RequiredCourseWebItem> RequiredCourses { get; set; } = new();
+}
+
+public class RequiredCourseWebItem
+{
+    public Guid   CourseId    { get; set; }
+    public string CourseCode  { get; set; } = "";
+    public string CourseTitle { get; set; } = "";
+}
+
+public class EligibilityListWebItem
+{
+    public Guid    StudentProfileId   { get; set; }
+    public string  StudentName        { get; set; } = "";
+    public string  RegistrationNumber { get; set; } = "";
+    public decimal Cgpa               { get; set; }
+    public int     TotalCreditsEarned { get; set; }
+    public bool    IsEligible         { get; set; }
+    public int     UnmetCount         { get; set; }
+}
+
+public class CreateDegreeRuleWebRequest
+{
+    public Guid    AcademicProgramId  { get; set; }
+    public int     MinTotalCredits    { get; set; }
+    public int     MinCoreCredits     { get; set; }
+    public int     MinElectiveCredits { get; set; }
+    public decimal MinGpa             { get; set; }
+    public List<Guid> RequiredCourseIds { get; set; } = new();
+}
+
+public class UpdateDegreeRuleWebRequest
+{
+    public int     MinTotalCredits    { get; set; }
+    public int     MinCoreCredits     { get; set; }
+    public int     MinElectiveCredits { get; set; }
+    public decimal MinGpa             { get; set; }
+    public List<Guid> RequiredCourseIds { get; set; } = new();
+}
+
+// Final-Touches Phase 17 Stage 17.2/17.1 — page view models
+public class DegreeAuditPageModel
+{
+    public DegreeAuditWebModel?         Audit       { get; set; }
+    public List<StudentItem>            Students    { get; set; } = new();  // for admin picker
+    public Guid?                        SelectedStudentProfileId { get; set; }
+}
+
+public class DegreeRulesPageModel
+{
+    public List<DegreeRuleWebModel>     Rules           { get; set; } = new();
+    public CreateDegreeRuleWebRequest   CreateRequest   { get; set; } = new();
+    public List<LookupItem>             Programs        { get; set; } = new();
+}
+
+public class EligibilityPageModel
+{
+    public List<EligibilityListWebItem> Items          { get; set; } = new();
+    public Guid?                        DepartmentId   { get; set; }
+    public Guid?                        ProgramId      { get; set; }
+}

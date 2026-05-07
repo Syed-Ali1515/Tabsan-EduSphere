@@ -221,6 +221,12 @@ public class ApplicationDbContext : DbContext
     /// <summary>Records which level was selected for each criterion per student submission.</summary>
     public DbSet<RubricStudentGrade> RubricStudentGrades => Set<RubricStudentGrade>();
 
+    // ── Phase 17: Degree Audit System ─────────────────────────────────────────
+    /// <summary>Graduation requirement rules defined per academic program.</summary>
+    public DbSet<DegreeRule> DegreeRules => Set<DegreeRule>();
+    /// <summary>Individual required courses within a degree rule.</summary>
+    public DbSet<DegreeRuleRequiredCourse> DegreeRuleRequiredCourses => Set<DegreeRuleRequiredCourse>();
+
     /// <summary>
     /// Scans the current assembly for all IEntityTypeConfiguration implementations
     /// and applies them automatically. This keeps OnModelCreating clean as the

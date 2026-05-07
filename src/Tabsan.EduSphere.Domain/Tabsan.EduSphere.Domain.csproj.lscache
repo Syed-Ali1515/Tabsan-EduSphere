@@ -61,6 +61,7 @@ Academic/
  Course.cs
  CourseOffering.cs
  CoursePrerequisite.cs
+ DegreeRule.cs
  Department.cs
  Enrollment.cs
  FacultyDepartmentAssignment.cs
@@ -109,6 +110,7 @@ Interfaces/
  IAuditService.cs
  IBuildingRoomRepository.cs
  ICourseRepository.cs
+ IDegreeAuditRepository.cs
  IDepartmentRepository.cs
  IEnrollmentRepository.cs
  IFacultyAssignmentRepository.cs

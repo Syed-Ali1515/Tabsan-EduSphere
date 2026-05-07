@@ -64,6 +64,12 @@ public class CourseConfiguration : IEntityTypeConfiguration<Course>
                .HasForeignKey(c => c.DepartmentId)
                .OnDelete(DeleteBehavior.Restrict);
 
+        // Final-Touches Phase 17 Stage 17.3 — core/elective classification column
+        builder.Property(c => c.CourseType)
+               .IsRequired()
+               .HasConversion<int>()
+               .HasDefaultValue(Domain.Academic.CourseType.Core);
+
         builder.HasQueryFilter(c => !c.IsDeleted);
     }
 }
@@ -118,6 +124,57 @@ public class CoursePrerequisiteConfiguration : IEntityTypeConfiguration<CoursePr
         builder.HasOne(p => p.PrerequisiteCourse)
                .WithMany()
                .HasForeignKey(p => p.PrerequisiteCourseId)
+               .OnDelete(DeleteBehavior.Restrict);
+    }
+}
+
+// Final-Touches Phase 17 Stage 17.2 — degree rule EF configuration
+/// <summary>EF Core configuration for DegreeRule.</summary>
+public class DegreeRuleConfiguration : IEntityTypeConfiguration<DegreeRule>
+{
+    public void Configure(EntityTypeBuilder<DegreeRule> builder)
+    {
+        builder.ToTable("degree_rules");
+        builder.HasKey(r => r.Id);
+        builder.Property(r => r.MinGpa).HasPrecision(4, 2);
+        builder.Property(r => r.RowVersion).IsRowVersion();
+
+        // Only one rule per academic program.
+        builder.HasIndex(r => r.AcademicProgramId)
+               .IsUnique()
+               .HasDatabaseName("IX_degree_rules_program");
+
+        builder.HasOne(r => r.AcademicProgram)
+               .WithMany()
+               .HasForeignKey(r => r.AcademicProgramId)
+               .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasMany(r => r.RequiredCourses)
+               .WithOne()
+               .HasForeignKey(rc => rc.DegreeRuleId)
+               .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasQueryFilter(r => !r.IsDeleted);
+    }
+}
+
+// Final-Touches Phase 17 Stage 17.2 — required course join table configuration
+/// <summary>EF Core configuration for DegreeRuleRequiredCourse.</summary>
+public class DegreeRuleRequiredCourseConfiguration : IEntityTypeConfiguration<DegreeRuleRequiredCourse>
+{
+    public void Configure(EntityTypeBuilder<DegreeRuleRequiredCourse> builder)
+    {
+        builder.ToTable("degree_rule_required_courses");
+        builder.HasKey(rc => rc.Id);
+
+        // A course can be required at most once per rule.
+        builder.HasIndex(rc => new { rc.DegreeRuleId, rc.CourseId })
+               .IsUnique()
+               .HasDatabaseName("IX_degree_rule_required_courses_rule_course");
+
+        builder.HasOne(rc => rc.Course)
+               .WithMany()
+               .HasForeignKey(rc => rc.CourseId)
                .OnDelete(DeleteBehavior.Restrict);
     }
 }

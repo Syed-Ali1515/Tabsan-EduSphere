@@ -3421,3 +3421,58 @@ New themes added to site.css and ThemeSettingsPageModel: `neon_mint`, `sakura_pi
 | `Gradebook.cshtml` | View (new) | Gradebook grid with inline cell editing (JS fetch), CSV upload/preview/confirm, publish-all. | Web/Views/Portal/Gradebook.cshtml |
 | `RubricManage.cshtml` | View (new) | Rubric definition UI with dynamic criterion/level builder. | Web/Views/Portal/RubricManage.cshtml |
 | `RubricView.cshtml` | View (new) | Rubric grade scorecard view. | Web/Views/Portal/RubricView.cshtml |
+
+## Final-Touches Phase 17 — Degree Audit System
+
+### Domain — Entities (Phase 17)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `DegreeRule.Create(...)` | Static factory — creates degree rule with min credits/GPA. | Domain/Academic/DegreeRule.cs |
+| `DegreeRule.Update(...)` | Updates rule requirements. | Domain/Academic/DegreeRule.cs |
+| `DegreeRule.AddRequiredCourse(courseId)` | Adds required course to rule. | Domain/Academic/DegreeRule.cs |
+| `DegreeRule.RemoveRequiredCourse(courseId)` | Removes required course from rule. | Domain/Academic/DegreeRule.cs |
+| `Course.SetCourseType(courseType)` | Tags course as Core or Elective. | Domain/Academic/Course.cs |
+
+### Domain Interfaces (Phase 17)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `IDegreeAuditRepository` | Repo interface for DegreeRule CRUD + earned-credit queries. | Domain/Interfaces/IDegreeAuditRepository.cs |
+| `CreditRow` record | Sealed record returned by `GetEarnedCreditsAsync`. | Domain/Interfaces/IDegreeAuditRepository.cs |
+
+### Infrastructure — Configurations + Repository (Phase 17)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `DegreeRuleConfiguration` | EF config — `degree_rules` table, unique index on `AcademicProgramId`. | Infrastructure/Persistence/Configurations/AcademicConfigurations.cs |
+| `DegreeRuleRequiredCourseConfiguration` | EF config — `degree_rule_required_courses` table, unique index on `(DegreeRuleId, CourseId)`. | Infrastructure/Persistence/Configurations/AcademicConfigurations.cs |
+| `DegreeAuditRepository` (full) | Implements `IDegreeAuditRepository`; `GetEarnedCreditsAsync` 3-way join. | Infrastructure/Repositories/DegreeAuditRepository.cs |
+
+### Application — Service + DTOs (Phase 17)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `IDegreeAuditService` | Service interface for audit, eligibility, rule CRUD, course type. | Application/Interfaces/IDegreeAuditService.cs |
+| `DegreeAuditService.GetAuditAsync` | Builds full degree audit for a student. | Application/Academic/DegreeAuditService.cs |
+| `DegreeAuditService.GetEligibilityListAsync` | Evaluates all students in a program for graduation eligibility. | Application/Academic/DegreeAuditService.cs |
+| `DegreeAuditService.CreateRuleAsync` / `UpdateRuleAsync` / `DeleteRuleAsync` | CRUD for degree rules. | Application/Academic/DegreeAuditService.cs |
+| `DegreeAuditService.SetCourseTypeAsync` | Tags a course as Core or Elective. | Application/Academic/DegreeAuditService.cs |
+| Phase 17 DTOs (8 types) | `DegreeAuditResponse`, `EarnedCourseRow`, `DegreeRuleResponse`, `RequiredCourseItem`, `CreateDegreeRuleRequest`, `UpdateDegreeRuleRequest`, `SetCourseTypeRequest`, `EligibilityListItem`. | Application/DTOs/Academic/DegreeAuditDTOs.cs |
+
+### API — Controller (Phase 17)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `DegreeAuditController` (9 endpoints) | GET my audit, GET student audit, GET eligible list, GET/POST/PUT/DELETE rule, PUT course type. | API/Controllers/DegreeAuditController.cs |
+
+### Web — EduApiClient + PortalController + Views (Phase 17)
+
+| Function Name | Type | Purpose | Location |
+|---|---|---|---|
+| Phase 17 interface + impl methods (9 methods) | Methods (new) | `GetMyDegreeAuditAsync`, `GetStudentDegreeAuditAsync`, `GetEligibilityListAsync`, `GetAllDegreeRulesAsync`, `GetDegreeRuleByProgramAsync`, `CreateDegreeRuleAsync`, `UpdateDegreeRuleAsync`, `DeleteDegreeRuleAsync`, `SetCourseTypeAsync`. | Web/Services/EduApiClient.cs |
+| Phase 17 web models (9 classes) | Classes (new) | `DegreeAuditWebModel`, `EarnedCourseRowWebItem`, `DegreeRuleWebModel`, `RequiredCourseWebItem`, `EligibilityListWebItem`, `CreateDegreeRuleWebRequest`, `UpdateDegreeRuleWebRequest`, `DegreeAuditPageModel`, `DegreeRulesPageModel`, `EligibilityPageModel`. | Web/Models/Portal/PortalViewModels.cs |
+| `DegreeAudit`, `GraduationEligibility`, `DegreeRules`, `DegreeRuleCreate`, `DegreeRuleDelete`, `CourseSetType` | Actions (new) | Portal controller actions for Phase 17. | Web/Controllers/PortalController.cs |
+| `DegreeAudit.cshtml` | View (new) | Student audit view with credit breakdown, completed courses table, eligibility badge. | Web/Views/Portal/DegreeAudit.cshtml |
+| `GraduationEligibility.cshtml` | View (new) | Eligibility list with View Audit links. | Web/Views/Portal/GraduationEligibility.cshtml |
+| `DegreeRules.cshtml` | View (new) | SuperAdmin rule management with create form. | Web/Views/Portal/DegreeRules.cshtml |

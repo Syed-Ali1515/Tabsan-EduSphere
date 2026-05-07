@@ -49,11 +49,11 @@ git push
 
 ## Current Execution Pointer
 - Plan Source: Docs/Enhancements.md
-- Active Phase: **Phase 16 — Faculty Grading System — FULLY COMPLETE ✅**
-- Active Stage: **Stages 16.1 + 16.2 + 16.3 done — Gradebook Grid, Rubric-Based Grading, Bulk CSV Import**
+- Active Phase: **Phase 17 — Degree Audit System — FULLY COMPLETE ✅**
+- Active Stage: **Stages 17.1 + 17.2 + 17.3 done — Credit Completion Tracking, Graduation Eligibility Checker, Elective vs Core Course Tagging**
 - Status: **0 build errors; 78/78 tests passed**
 - Last Updated: 2026-05-08
-- Next: Phase 17 — (see Enhancements.md)
+- Next: Phase 18 — (see Enhancements.md)
 
 ---
 
@@ -68,6 +68,7 @@ git push
 6. `20260507_Phase14_Helpdesk` — adds `support_tickets` + `support_ticket_messages` tables ✅
 7. `20260507133254_Phase15_EnrollmentRules` — adds `course_prerequisites` table with unique index ✅
 8. `Phase16_FacultyGrading` — adds `rubrics`, `rubric_criteria`, `rubric_levels`, `rubric_student_grades` tables ✅
+9. `Phase17_DegreeAudit` — adds `degree_rules`, `degree_rule_required_courses` tables + `course_type` column on `courses` ✅
 
 Database is fully synchronized with codebase.
 
@@ -157,8 +158,9 @@ Database is fully synchronized with codebase.
 - **Phase 13 — Global Search — COMPLETE ✅** (commit 00b7b64, 2026-05-08)
 - **Phase 14 — Helpdesk / Support Ticketing System — COMPLETE ✅** (commit 8576e44, 2026-05-09)
 - **Phase 15 — Enrollment Rules Engine — COMPLETE ✅** (commit 42f0993, 2026-05-08)
-- **Phase 16 — Faculty Grading System** — next planned phase (Docs/Enhancements.md for full spec)
-- Continue through Phases 16–21 per Docs/Enhancements.md priority order
+- **Phase 16 — Faculty Grading System — COMPLETE ✅** (commit `1f496f7`)
+- **Phase 17 — Degree Audit System — COMPLETE ✅** (78/78 tests passed)
+- Continue through Phases 18–21 per Docs/Enhancements.md priority order
 
 ## Pending Extra Tasks (Cross-Phase)
 - Keep Report Center menu visible by role and working links.

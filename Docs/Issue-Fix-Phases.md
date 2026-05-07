@@ -719,3 +719,13 @@ Enhancement phase tracked in `Docs/Enhancements.md`. Summary entry recorded here
 - Stage 16.3: Bulk CSV grade import; CSV template download, preview endpoint, confirm endpoint; bulk upload UI in `Gradebook.cshtml`.
 - Migration `Phase16_FacultyGrading` — adds 4 rubric tables.
 - Validation: 0 build errors; 78/78 tests passed.
+
+## Phase 17 — Degree Audit System ✅ Complete (2026-05-08)
+
+Enhancement phase tracked in `Docs/Enhancements.md`. Summary entry recorded here for cross-reference.
+
+- Stage 17.1: Credit completion tracking; `DegreeRule` + `DegreeRuleRequiredCourse` entities; `DegreeAuditRepository.GetEarnedCreditsAsync` (3-way join: Results → CourseOfferings → Courses); `DegreeAuditService.GetAuditAsync` deduplicates by CourseId; `DegreeAudit.cshtml`.
+- Stage 17.2: Graduation eligibility checker; `DegreeAuditService.GetEligibilityListAsync`; `GraduationEligibility.cshtml` with eligibility badges.
+- Stage 17.3: `CourseType` enum on `Course`; `SetCourseTypeAsync`; `DegreeRules.cshtml` SuperAdmin rule management.
+- Migration `Phase17_DegreeAudit` — adds `degree_rules`, `degree_rule_required_courses` tables + `course_type` column.
+- Validation: 0 build errors; 78/78 tests passed.

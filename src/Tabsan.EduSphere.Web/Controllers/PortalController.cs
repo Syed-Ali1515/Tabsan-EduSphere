@@ -3347,4 +3347,96 @@ public class PortalController : Controller
         catch (Exception ex) { model.Message = "Error: " + ex.Message; }
         return View(model);
     }
+
+    // ── Phase 17: Degree Audit System ─────────────────────────────────────────
+
+    // Final-Touches Phase 17 Stage 17.1 — student views own degree audit
+    public async Task<IActionResult> DegreeAudit(Guid? studentProfileId, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(Dashboard));
+        var model = new DegreeAuditPageModel();
+        try
+        {
+            if (studentProfileId.HasValue)
+            {
+                model.SelectedStudentProfileId = studentProfileId;
+                model.Audit = await _api.GetStudentDegreeAuditAsync(studentProfileId.Value, ct);
+            }
+            else
+            {
+                // Student self-audit
+                model.Audit = await _api.GetMyDegreeAuditAsync(ct);
+            }
+        }
+        catch (Exception ex) { TempData["Message"] = "Error: " + ex.Message; }
+        return View(model);
+    }
+
+    // Final-Touches Phase 17 Stage 17.2 — admin views eligibility list
+    public async Task<IActionResult> GraduationEligibility(Guid? departmentId, Guid? programId, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(Dashboard));
+        var model = new EligibilityPageModel { DepartmentId = departmentId, ProgramId = programId };
+        try
+        {
+            model.Items = await _api.GetEligibilityListAsync(departmentId, programId, ct);
+        }
+        catch (Exception ex) { TempData["Message"] = "Error: " + ex.Message; }
+        return View(model);
+    }
+
+    // Final-Touches Phase 17 Stage 17.2 — SuperAdmin manages degree rules
+    public async Task<IActionResult> DegreeRules(CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(Dashboard));
+        var model = new DegreeRulesPageModel();
+        try
+        {
+            model.Rules    = await _api.GetAllDegreeRulesAsync(ct);
+            model.Programs = await _api.GetProgramsAsync(null, ct);
+        }
+        catch (Exception ex) { TempData["Message"] = "Error: " + ex.Message; }
+        return View(model);
+    }
+
+    // Final-Touches Phase 17 Stage 17.2 — POST create degree rule
+    [HttpPost]
+    public async Task<IActionResult> DegreeRuleCreate(CreateDegreeRuleWebRequest request, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(Dashboard));
+        try
+        {
+            await _api.CreateDegreeRuleAsync(request, ct);
+            TempData["Message"] = "Degree rule created successfully.";
+        }
+        catch (Exception ex) { TempData["Message"] = "Error: " + ex.Message; }
+        return RedirectToAction(nameof(DegreeRules));
+    }
+
+    // Final-Touches Phase 17 Stage 17.2 — POST delete degree rule
+    [HttpPost]
+    public async Task<IActionResult> DegreeRuleDelete(Guid ruleId, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(Dashboard));
+        try
+        {
+            await _api.DeleteDegreeRuleAsync(ruleId, ct);
+            TempData["Message"] = "Degree rule deleted.";
+        }
+        catch (Exception ex) { TempData["Message"] = "Error: " + ex.Message; }
+        return RedirectToAction(nameof(DegreeRules));
+    }
+
+    // Final-Touches Phase 17 Stage 17.3 — AJAX POST to tag course type
+    [HttpPost]
+    public async Task<IActionResult> CourseSetType(Guid courseId, string courseType, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return Json(new { success = false });
+        try
+        {
+            await _api.SetCourseTypeAsync(courseId, courseType, ct);
+            return Json(new { success = true });
+        }
+        catch (Exception ex) { return Json(new { success = false, message = ex.Message }); }
+    }
 }

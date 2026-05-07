@@ -753,6 +753,7 @@ Stage 15.1 adds prerequisite-based enrollment blocking with detailed unmet-prere
 - [x] Phase 14 complete
 - [x] Phase 15 complete
 - [x] Phase 16 complete
+- [x] Phase 17 complete
 
 ## Phase 16 — Faculty Grading System ✅ (2026-05-08)
 
@@ -786,5 +787,32 @@ Stage 15.1 adds prerequisite-based enrollment blocking with detailed unmet-prere
 - [x] Migration `Phase16_FacultyGrading` created and applied
 - [x] 78/78 unit tests passing
 
+## Phase 17 — Degree Audit System ✅ (2026-05-08)
+
+### Stage 17.1 — Credit Completion Tracking
+- [x] `DegreeRule` entity + `DegreeRuleRequiredCourse` join entity
+- [x] `IDegreeAuditRepository` with `GetEarnedCreditsAsync` (3-way join: Results → CourseOfferings → Courses)
+- [x] `DegreeAuditRepository` EF implementation
+- [x] `DegreeAuditService.GetAuditAsync` — deduplicates credits by CourseId (highest GradePoint wins), aggregates totals
+- [x] `DegreeAuditController` — `GET /api/v1/degree-audit/me` (Student), `GET /{studentProfileId}` (Admin/Faculty/SuperAdmin)
+- [x] `DegreeAudit.cshtml` — credit breakdown cards, completed courses table, eligibility badge
+
+### Stage 17.2 — Graduation Eligibility Checker
+- [x] `DegreeAuditService.GetEligibilityListAsync` — evaluates all students in a program against DegreeRule
+- [x] `DegreeAuditController` — `GET /eligible` (Admin/SuperAdmin)
+- [x] `GraduationEligibility.cshtml` — eligibility list table with View Audit links
+
+### Stage 17.3 — Elective vs Core Course Tagging
+- [x] `CourseType` enum (`Core=1, Elective=2`) added to `Course` entity
+- [x] `Course.SetCourseType(courseType)` method
+- [x] `CourseConfiguration` — `course_type` column, default `Core`
+- [x] `DegreeAuditController` — `PUT /course/{courseId}/type` (Admin/SuperAdmin)
+- [x] `DegreeRules.cshtml` — SuperAdmin rule management with create form
+
+### Phase 17 DI + Migration
+- [x] Phase 17 DI in `Program.cs`: `IDegreeAuditRepository`, `IDegreeAuditService`
+- [x] Migration `Phase17_DegreeAudit` created and applied
+- [x] 78/78 unit tests passing
+
 ## Next Phase To Execute
-Phase 17 — (see Docs/Enhancements.md for full spec).
+Phase 18 — (see Docs/Enhancements.md for full spec).

@@ -2,6 +2,13 @@ using Tabsan.EduSphere.Domain.Common;
 
 namespace Tabsan.EduSphere.Domain.Academic;
 
+// Final-Touches Phase 17 Stage 17.3 — course type enum for degree audit elective/core classification
+public enum CourseType
+{
+    Core     = 1,
+    Elective = 2
+}
+
 /// <summary>
 /// Defines a course in the academic catalogue (e.g. "Introduction to Databases", "CS-301").
 /// A Course is the reusable definition; a CourseOffering ties it to a specific semester and faculty.
@@ -29,6 +36,10 @@ public class Course : AuditableEntity
     /// <summary>Controls whether the course can be offered in new semesters.</summary>
     public bool IsActive { get; private set; } = true;
 
+    // Final-Touches Phase 17 Stage 17.3 — core vs elective classification
+    /// <summary>Whether this course is a core requirement or an elective.</summary>
+    public CourseType CourseType { get; private set; } = CourseType.Core;
+
     private Course() { }
 
     public Course(string title, string code, int creditHours, Guid departmentId)
@@ -43,6 +54,14 @@ public class Course : AuditableEntity
     public void UpdateTitle(string newTitle)
     {
         Title = newTitle;
+        Touch();
+    }
+
+    // Final-Touches Phase 17 Stage 17.3 — set core/elective classification
+    /// <summary>Sets the course type (Core or Elective).</summary>
+    public void SetCourseType(CourseType courseType)
+    {
+        CourseType = courseType;
         Touch();
     }
 
