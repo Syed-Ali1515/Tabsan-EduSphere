@@ -238,6 +238,16 @@ public interface IEduApiClient
 
     // Phase 13: Global Search
     Task<SearchWebResponse> SearchAsync(string term, int limit, CancellationToken ct);
+
+    // Phase 14: Helpdesk
+    Task<List<TicketSummaryItem>> GetTicketsAsync(TicketStatusWeb? status, CancellationToken ct);
+    Task<TicketDetailItem?> GetTicketDetailAsync(Guid ticketId, CancellationToken ct);
+    Task<Guid> CreateTicketAsync(Guid? departmentId, TicketCategoryWeb category, string subject, string body, CancellationToken ct);
+    Task<Guid> AddTicketMessageAsync(Guid ticketId, string body, bool isInternalNote, CancellationToken ct);
+    Task AssignTicketAsync(Guid ticketId, Guid assignedToId, CancellationToken ct);
+    Task ResolveTicketAsync(Guid ticketId, CancellationToken ct);
+    Task CloseTicketAsync(Guid ticketId, CancellationToken ct);
+    Task ReopenTicketAsync(Guid ticketId, CancellationToken ct);
 }
 
 public class EduApiClient : IEduApiClient
@@ -2661,6 +2671,141 @@ public class EduApiClient : IEduApiClient
         public string? Label    { get; set; }
         public string? SubLabel { get; set; }
         public string? Url      { get; set; }
+    }
+
+    // ── Phase 14: Helpdesk / Support Ticketing ────────────────────────────────
+
+    public async Task<List<TicketSummaryItem>> GetTicketsAsync(TicketStatusWeb? status, CancellationToken ct)
+    {
+        var url = status.HasValue
+            ? $"api/v1/helpdesk/tickets?status={(int)status.Value}"
+            : "api/v1/helpdesk/tickets";
+        var raw = await GetAsync<List<TicketSummaryApiDto>>(url, ct);
+        return raw?.Select(MapSummary).ToList() ?? new();
+    }
+
+    public async Task<TicketDetailItem?> GetTicketDetailAsync(Guid ticketId, CancellationToken ct)
+    {
+        var raw = await GetAsync<TicketDetailApiDto>($"api/v1/helpdesk/tickets/{ticketId}", ct);
+        if (raw is null) return null;
+        return new TicketDetailItem
+        {
+            Id               = raw.Id,
+            Subject          = raw.Subject ?? "",
+            Body             = raw.Body ?? "",
+            Category         = (TicketCategoryWeb)raw.Category,
+            Status           = (TicketStatusWeb)raw.Status,
+            SubmitterId      = raw.SubmitterId,
+            SubmitterName    = raw.SubmitterName ?? "",
+            AssignedToId     = raw.AssignedToId,
+            AssigneeName     = raw.AssigneeName,
+            DepartmentId     = raw.DepartmentId,
+            CreatedAt        = raw.CreatedAt,
+            ResolvedAt       = raw.ResolvedAt,
+            ReopenWindowDays = raw.ReopenWindowDays,
+            CanReopen        = raw.CanReopen,
+            Messages         = raw.Messages?.Select(m => new TicketMessageItem
+            {
+                Id             = m.Id,
+                AuthorId       = m.AuthorId,
+                AuthorName     = m.AuthorName ?? "",
+                Body           = m.Body ?? "",
+                IsInternalNote = m.IsInternalNote,
+                CreatedAt      = m.CreatedAt
+            }).ToList() ?? new()
+        };
+    }
+
+    public async Task<Guid> CreateTicketAsync(Guid? departmentId, TicketCategoryWeb category,
+        string subject, string body, CancellationToken ct)
+    {
+        var req = new { departmentId, category = (int)category, subject, body };
+        var res = await PostAsync<object, TicketIdApiDto>("api/v1/helpdesk/tickets", req, ct);
+        return res?.Id ?? Guid.Empty;
+    }
+
+    public async Task<Guid> AddTicketMessageAsync(Guid ticketId, string body, bool isInternalNote, CancellationToken ct)
+    {
+        var req = new { body, isInternalNote };
+        var res = await PostAsync<object, TicketIdApiDto>($"api/v1/helpdesk/tickets/{ticketId}/messages", req, ct);
+        return res?.Id ?? Guid.Empty;
+    }
+
+    public Task AssignTicketAsync(Guid ticketId, Guid assignedToId, CancellationToken ct)
+    {
+        var req = new { assignedToId };
+        return PutAsync<object, object>($"api/v1/helpdesk/tickets/{ticketId}/assign", req, ct);
+    }
+
+    public Task ResolveTicketAsync(Guid ticketId, CancellationToken ct)
+        => PutAsync<object, object>($"api/v1/helpdesk/tickets/{ticketId}/resolve", new { }, ct);
+
+    public Task CloseTicketAsync(Guid ticketId, CancellationToken ct)
+        => PutAsync<object, object>($"api/v1/helpdesk/tickets/{ticketId}/close", new { }, ct);
+
+    public Task ReopenTicketAsync(Guid ticketId, CancellationToken ct)
+        => PutAsync<object, object>($"api/v1/helpdesk/tickets/{ticketId}/reopen", new { }, ct);
+
+    // ── Phase 14 API DTOs (private) ───────────────────────────────────────────
+
+    private static TicketSummaryItem MapSummary(TicketSummaryApiDto d) => new()
+    {
+        Id            = d.Id,
+        Subject       = d.Subject       ?? "",
+        Category      = (TicketCategoryWeb)d.Category,
+        Status        = (TicketStatusWeb)d.Status,
+        SubmitterId   = d.SubmitterId,
+        SubmitterName = d.SubmitterName ?? "",
+        AssignedToId  = d.AssignedToId,
+        AssigneeName  = d.AssigneeName,
+        DepartmentId  = d.DepartmentId,
+        CreatedAt     = d.CreatedAt,
+        ResolvedAt    = d.ResolvedAt,
+        MessageCount  = d.MessageCount
+    };
+
+    private sealed class TicketIdApiDto         { public Guid Id { get; set; } }
+    private sealed class TicketSummaryApiDto
+    {
+        public Guid    Id            { get; set; }
+        public string? Subject       { get; set; }
+        public int     Category      { get; set; }
+        public int     Status        { get; set; }
+        public Guid    SubmitterId   { get; set; }
+        public string? SubmitterName { get; set; }
+        public Guid?   AssignedToId  { get; set; }
+        public string? AssigneeName  { get; set; }
+        public Guid?   DepartmentId  { get; set; }
+        public DateTime CreatedAt   { get; set; }
+        public DateTime? ResolvedAt { get; set; }
+        public int     MessageCount  { get; set; }
+    }
+    private sealed class TicketDetailApiDto
+    {
+        public Guid    Id               { get; set; }
+        public string? Subject          { get; set; }
+        public string? Body             { get; set; }
+        public int     Category         { get; set; }
+        public int     Status           { get; set; }
+        public Guid    SubmitterId      { get; set; }
+        public string? SubmitterName    { get; set; }
+        public Guid?   AssignedToId     { get; set; }
+        public string? AssigneeName     { get; set; }
+        public Guid?   DepartmentId     { get; set; }
+        public DateTime  CreatedAt      { get; set; }
+        public DateTime? ResolvedAt     { get; set; }
+        public int     ReopenWindowDays { get; set; }
+        public bool    CanReopen        { get; set; }
+        public List<TicketMessageApiDto>? Messages { get; set; }
+    }
+    private sealed class TicketMessageApiDto
+    {
+        public Guid    Id             { get; set; }
+        public Guid    AuthorId       { get; set; }
+        public string? AuthorName     { get; set; }
+        public string? Body           { get; set; }
+        public bool    IsInternalNote { get; set; }
+        public DateTime CreatedAt    { get; set; }
     }
 }
 

@@ -68,6 +68,7 @@ Controllers/
  DepartmentController.cs
  EnrollmentController.cs
  FypController.cs
+ HelpdeskController.cs
  LicenseController.cs
  ModuleController.cs
  NotificationController.cs

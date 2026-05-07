@@ -80,6 +80,7 @@ DTOs/
   AuthDtos.cs
  CsvImportDtos.cs
  Fyp/FypDtos.cs
+ Helpdesk/HelpdeskDTOs.cs
  Notifications/NotificationDtos.cs
  Quizzes/QuizDtos.cs
  Reports/ReportDtos.cs
@@ -88,6 +89,7 @@ DTOs/
  StudentLifecycleDtos.cs
  TimetableDtos.cs
 Fyp/FypService.cs
+Helpdesk/HelpdeskService.cs
 Interfaces/
  IAcademicCalendarService.cs
  IAccountSecurityService.cs
@@ -102,6 +104,7 @@ Interfaces/
  IEmailTemplateRenderer.cs
  IEnrollmentService.cs
  IFypService.cs
+ IHelpdeskService.cs
  ILlmClient.cs
  IModuleEntitlementResolver.cs
  IModuleService.cs

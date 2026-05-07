@@ -471,6 +471,7 @@ Views/
   Enrollments.cshtml
   ForceChangePassword.cshtml
   Fyp.cshtml
+  Helpdesk.cshtml
   LicenseUpdate.cshtml
   ModuleSettings.cshtml
   Notifications.cshtml
@@ -502,6 +503,7 @@ Views/
   TimetableTeacher.cshtml
   UserImport.cshtml
   _SearchResultsList.cshtml
+  _TicketStatusBadge.cshtml
  Shared/
   Error.cshtml
   _Layout.cshtml
@@ -531,6 +533,7 @@ Views/
   Enrollments.cshtml
   ForceChangePassword.cshtml
   Fyp.cshtml
+  Helpdesk.cshtml
   LicenseUpdate.cshtml
   ModuleSettings.cshtml
   Notifications.cshtml
@@ -562,6 +565,7 @@ Views/
   TimetableTeacher.cshtml
   UserImport.cshtml
   _SearchResultsList.cshtml
+  _TicketStatusBadge.cshtml
  Shared/
   Error.cshtml
   _Layout.cshtml

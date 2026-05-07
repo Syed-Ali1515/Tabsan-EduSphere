@@ -87,6 +87,8 @@ Migrations/
  20260506_Phase4UserImport.Designer.cs
  20260507044625_20260507_Phase12AcademicCalendar.cs
  20260507044625_20260507_Phase12AcademicCalendar.Designer.cs
+ 20260507055009_Phase14_Helpdesk.cs
+ 20260507055009_Phase14_Helpdesk.Designer.cs
  20260507103000_PortalBrandingLogoValueMaxLength.cs
  20260507103000_PortalBrandingLogoValueMaxLength.Designer.cs
  ApplicationDbContextModelSnapshot.cs
@@ -119,6 +121,8 @@ Persistence/
   ResultCalculationConfigurations.cs
   RoleConfiguration.cs
   StudentAcademicConfigurations.cs
+  SupportTicketConfiguration.cs
+  SupportTicketMessageConfiguration.cs
   TeacherModificationRequestConfiguration.cs
   UserConfiguration.cs
   UserSessionConfiguration.cs
@@ -162,6 +166,7 @@ Repositories/
  BuildingRoomRepository.cs
  CourseRepository.cs
  DepartmentRepository.cs
+ HelpdeskRepository.cs
  LicenseRepository.cs
  ModuleRepository.cs
  NotificationAttendanceRepositories.cs

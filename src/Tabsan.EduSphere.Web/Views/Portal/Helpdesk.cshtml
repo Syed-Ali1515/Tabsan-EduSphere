@@ -1,0 +1,87 @@
+@model Tabsan.EduSphere.Web.Models.Portal.HelpdeskListPageModel
+@using Tabsan.EduSphere.Web.Models.Portal
+@{
+    ViewData["Title"] = "Support Tickets";
+    var isStaff = Model.CallerRole is "SuperAdmin" or "Admin";
+}
+
+@if (TempData["Message"] is string msg)
+{
+    var cls = msg.StartsWith("Error") ? "alert-danger" : "alert-success";
+    <div class="alert @cls alert-dismissible fade show" role="alert">
+        @msg <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (!Model.IsConnected)
+{
+    <div class="alert alert-warning">Not connected. <a asp-action="Dashboard">Configure API</a>.</div>
+}
+else
+{
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="d-flex gap-2 flex-wrap">
+            <a asp-action="Helpdesk" class="btn btn-sm @(Model.StatusFilter == null ? "btn-primary" : "btn-outline-secondary")">All</a>
+            @foreach (var s in Enum.GetValues<TicketStatusWeb>())
+            {
+                <a asp-action="Helpdesk" asp-route-status="@((int)s)"
+                   class="btn btn-sm @(Model.StatusFilter == s ? "btn-primary" : "btn-outline-secondary")">
+                    @s
+                </a>
+            }
+        </div>
+        <a asp-action="HelpdeskCreate" class="btn btn-sm btn-success">
+            <i class="bi bi-plus-lg me-1"></i>New Ticket
+        </a>
+    </div>
+
+    @if (!Model.Tickets.Any())
+    {
+        <div class="alert alert-secondary">No tickets found.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Subject</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                        <th>Submitted By</th>
+                        @if (isStaff) { <th>Assigned To</th> }
+                        <th>Created</th>
+                        <th>Messages</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var t in Model.Tickets)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@t.Subject</td>
+                            <td><span class="badge bg-secondary">@t.Category</span></td>
+                            <td>@Html.Partial("_TicketStatusBadge", t.Status)</td>
+                            <td>@t.SubmitterName</td>
+                            @if (isStaff)
+                            {
+                                <td>@(t.AssigneeName ?? "—")</td>
+                            }
+                            <td class="text-muted small">@t.CreatedAt.ToString("dd MMM yyyy")</td>
+                            <td class="text-center">
+                                @if (t.MessageCount > 0)
+                                {
+                                    <span class="badge bg-info text-dark">@t.MessageCount</span>
+                                }
+                            </td>
+                            <td>
+                                <a asp-action="HelpdeskDetail" asp-route-id="@t.Id"
+                                   class="btn btn-sm btn-outline-primary">View</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+}

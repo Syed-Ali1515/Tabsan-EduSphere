@@ -1,0 +1,13 @@
+@model Tabsan.EduSphere.Web.Models.Portal.TicketStatusWeb
+@using Tabsan.EduSphere.Web.Models.Portal
+@{
+    var (text, css) = Model switch
+    {
+        TicketStatusWeb.Open       => ("Open",        "bg-primary"),
+        TicketStatusWeb.InProgress => ("In Progress", "bg-warning text-dark"),
+        TicketStatusWeb.Resolved   => ("Resolved",    "bg-success"),
+        TicketStatusWeb.Closed     => ("Closed",      "bg-secondary"),
+        _                          => (Model.ToString(), "bg-secondary")
+    };
+}
+<span class="badge @css">@text</span>

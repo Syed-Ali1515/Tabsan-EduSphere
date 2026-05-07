@@ -1329,3 +1329,82 @@ public class SearchPageModel
     public static readonly IReadOnlyList<string> CategoryOrder =
         new[] { "Student", "Course", "CourseOffering", "Faculty", "Department" };
 }
+
+// ── Phase 14: Helpdesk / Support Ticketing ────────────────────────────────────
+
+public enum TicketCategoryWeb  { Academic = 1, Technical = 2, Administrative = 3 }
+public enum TicketStatusWeb    { Open = 1, InProgress = 2, Resolved = 3, Closed = 4 }
+
+public class TicketSummaryItem
+{
+    public Guid              Id            { get; set; }
+    public string            Subject       { get; set; } = "";
+    public TicketCategoryWeb Category      { get; set; }
+    public TicketStatusWeb   Status        { get; set; }
+    public Guid              SubmitterId   { get; set; }
+    public string            SubmitterName { get; set; } = "";
+    public Guid?             AssignedToId  { get; set; }
+    public string?           AssigneeName  { get; set; }
+    public Guid?             DepartmentId  { get; set; }
+    public DateTime          CreatedAt     { get; set; }
+    public DateTime?         ResolvedAt    { get; set; }
+    public int               MessageCount  { get; set; }
+}
+
+public class TicketMessageItem
+{
+    public Guid     Id             { get; set; }
+    public Guid     AuthorId       { get; set; }
+    public string   AuthorName     { get; set; } = "";
+    public string   Body           { get; set; } = "";
+    public bool     IsInternalNote { get; set; }
+    public DateTime CreatedAt      { get; set; }
+}
+
+public class TicketDetailItem
+{
+    public Guid                    Id               { get; set; }
+    public string                  Subject          { get; set; } = "";
+    public string                  Body             { get; set; } = "";
+    public TicketCategoryWeb        Category         { get; set; }
+    public TicketStatusWeb          Status           { get; set; }
+    public Guid                    SubmitterId      { get; set; }
+    public string                  SubmitterName    { get; set; } = "";
+    public Guid?                   AssignedToId     { get; set; }
+    public string?                 AssigneeName     { get; set; }
+    public Guid?                   DepartmentId     { get; set; }
+    public DateTime                CreatedAt        { get; set; }
+    public DateTime?               ResolvedAt       { get; set; }
+    public int                     ReopenWindowDays { get; set; }
+    public bool                    CanReopen        { get; set; }
+    public List<TicketMessageItem> Messages         { get; set; } = new();
+}
+
+public class HelpdeskListPageModel
+{
+    public bool                      IsConnected   { get; set; }
+    public string                    CallerRole    { get; set; } = "";
+    public Guid                      CallerId      { get; set; }
+    public TicketStatusWeb?          StatusFilter  { get; set; }
+    public List<TicketSummaryItem>   Tickets       { get; set; } = new();
+    public List<LookupItem>          StaffUsers    { get; set; } = new();
+}
+
+public class HelpdeskDetailPageModel
+{
+    public bool             IsConnected { get; set; }
+    public string           CallerRole  { get; set; } = "";
+    public Guid             CallerId    { get; set; }
+    public TicketDetailItem? Ticket     { get; set; }
+    public List<LookupItem> StaffUsers  { get; set; } = new();
+}
+
+public class HelpdeskCreatePageModel
+{
+    public bool                    IsConnected { get; set; }
+    public List<LookupItem>        Departments { get; set; } = new();
+    public TicketCategoryWeb        Category    { get; set; } = TicketCategoryWeb.Academic;
+    public string                  Subject     { get; set; } = "";
+    public string                  Body        { get; set; } = "";
+    public Guid?                   DepartmentId { get; set; }
+}

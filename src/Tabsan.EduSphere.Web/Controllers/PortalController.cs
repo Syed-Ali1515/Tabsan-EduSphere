@@ -2948,4 +2948,159 @@ public class PortalController : Controller
             return Json(new List<object>());
         }
     }
+
+    // ── Phase 14: Helpdesk / Support Ticketing ────────────────────────────────
+
+    [HttpGet]
+    public async Task<IActionResult> Helpdesk(TicketStatusWeb? status, CancellationToken ct = default)
+    {
+        var session = _api.GetSessionIdentity();
+        var model = new HelpdeskListPageModel
+        {
+            IsConnected  = _api.IsConnected(),
+            CallerRole   = session?.Roles.FirstOrDefault() ?? "",
+            CallerId     = session?.UserId ?? Guid.Empty,
+            StatusFilter = status
+        };
+
+        if (!model.IsConnected) return View(model);
+
+        try
+        {
+            model.Tickets = await _api.GetTicketsAsync(status, ct);
+            // Load staff users for assign dropdown (Admin/SuperAdmin only)
+            if (model.CallerRole is "SuperAdmin" or "Admin")
+                model.StaffUsers = await _api.GetFacultyAsync(ct)
+                    .ContinueWith(t => t.Result.Cast<LookupItem>().ToList(), ct);
+        }
+        catch (Exception ex) { TempData["Message"] = "Error: " + ex.Message; }
+
+        return View(model);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> HelpdeskCreate(CancellationToken ct = default)
+    {
+        var model = new HelpdeskCreatePageModel { IsConnected = _api.IsConnected() };
+        if (!model.IsConnected) return View(model);
+
+        model.Departments = await _api.GetDepartmentsAsync(ct);
+        return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> HelpdeskCreate(
+        Guid? departmentId, TicketCategoryWeb category,
+        string subject, string body, CancellationToken ct = default)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(Dashboard));
+        try
+        {
+            var id = await _api.CreateTicketAsync(departmentId, category, subject, body, ct);
+            TempData["Message"] = "Ticket submitted successfully.";
+            return RedirectToAction(nameof(HelpdeskDetail), new { id });
+        }
+        catch (Exception ex)
+        {
+            TempData["Message"] = "Error: " + ex.Message;
+            return RedirectToAction(nameof(HelpdeskCreate));
+        }
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> HelpdeskDetail(Guid id, CancellationToken ct = default)
+    {
+        var session = _api.GetSessionIdentity();
+        var model = new HelpdeskDetailPageModel
+        {
+            IsConnected = _api.IsConnected(),
+            CallerRole  = session?.Roles.FirstOrDefault() ?? "",
+            CallerId    = session?.UserId ?? Guid.Empty
+        };
+
+        if (!model.IsConnected) return View(model);
+
+        try
+        {
+            model.Ticket = await _api.GetTicketDetailAsync(id, ct);
+            if (model.CallerRole is "SuperAdmin" or "Admin")
+                model.StaffUsers = await _api.GetFacultyAsync(ct)
+                    .ContinueWith(t => t.Result.Cast<LookupItem>().ToList(), ct);
+        }
+        catch (Exception ex) { TempData["Message"] = "Error: " + ex.Message; }
+
+        return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> HelpdeskAddMessage(Guid ticketId, string body,
+        bool isInternalNote = false, CancellationToken ct = default)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(Dashboard));
+        try
+        {
+            await _api.AddTicketMessageAsync(ticketId, body, isInternalNote, ct);
+            TempData["Message"] = "Reply posted.";
+        }
+        catch (Exception ex) { TempData["Message"] = "Error: " + ex.Message; }
+        return RedirectToAction(nameof(HelpdeskDetail), new { id = ticketId });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> HelpdeskAssign(Guid ticketId, Guid assignedToId, CancellationToken ct = default)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(Dashboard));
+        try
+        {
+            await _api.AssignTicketAsync(ticketId, assignedToId, ct);
+            TempData["Message"] = "Ticket assigned.";
+        }
+        catch (Exception ex) { TempData["Message"] = "Error: " + ex.Message; }
+        return RedirectToAction(nameof(HelpdeskDetail), new { id = ticketId });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> HelpdeskResolve(Guid ticketId, CancellationToken ct = default)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(Dashboard));
+        try
+        {
+            await _api.ResolveTicketAsync(ticketId, ct);
+            TempData["Message"] = "Ticket resolved.";
+        }
+        catch (Exception ex) { TempData["Message"] = "Error: " + ex.Message; }
+        return RedirectToAction(nameof(HelpdeskDetail), new { id = ticketId });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> HelpdeskClose(Guid ticketId, CancellationToken ct = default)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(Dashboard));
+        try
+        {
+            await _api.CloseTicketAsync(ticketId, ct);
+            TempData["Message"] = "Ticket closed.";
+        }
+        catch (Exception ex) { TempData["Message"] = "Error: " + ex.Message; }
+        return RedirectToAction(nameof(HelpdeskDetail), new { id = ticketId });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> HelpdeskReopen(Guid ticketId, CancellationToken ct = default)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(Dashboard));
+        try
+        {
+            await _api.ReopenTicketAsync(ticketId, ct);
+            TempData["Message"] = "Ticket re-opened.";
+        }
+        catch (Exception ex) { TempData["Message"] = "Error: " + ex.Message; }
+        return RedirectToAction(nameof(HelpdeskDetail), new { id = ticketId });
+    }
 }

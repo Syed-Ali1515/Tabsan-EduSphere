@@ -5,6 +5,7 @@ using Tabsan.EduSphere.Domain.Assignments;
 using Tabsan.EduSphere.Domain.Attendance;
 using Tabsan.EduSphere.Domain.Auditing;
 using Tabsan.EduSphere.Domain.Fyp;
+using Tabsan.EduSphere.Domain.Helpdesk;
 using Tabsan.EduSphere.Domain.Identity;
 using Tabsan.EduSphere.Domain.Licensing;
 using Tabsan.EduSphere.Domain.Modules;
@@ -199,6 +200,12 @@ public class ApplicationDbContext : DbContext
     // ── Phase 12: Academic Calendar ────────────────────────────────────────────
     /// <summary>Named academic deadlines attached to semesters (census dates, exam periods, etc.).</summary>
     public DbSet<AcademicDeadline> AcademicDeadlines => Set<AcademicDeadline>();
+
+    // ── Phase 14: Helpdesk / Support Ticketing ─────────────────────────────────
+    /// <summary>Support tickets submitted by Students and Faculty.</summary>
+    public DbSet<SupportTicket> SupportTickets => Set<SupportTicket>();
+    /// <summary>Thread messages on support tickets.</summary>
+    public DbSet<SupportTicketMessage> SupportTicketMessages => Set<SupportTicketMessage>();
 
     /// <summary>
     /// Scans the current assembly for all IEntityTypeConfiguration implementations
