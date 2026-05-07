@@ -1565,11 +1565,28 @@ public class PortalController : Controller
 
                 if (submissionFile is { Length: > 0 })
                 {
+                    // Validate before writing to disk — size, extension, and MIME check
+                    const long maxSubmissionBytes = 5 * 1024 * 1024;
+                    var allowedSubmissionExts = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                        { ".pdf", ".jpg", ".jpeg", ".png", ".doc", ".docx" };
+
+                    if (submissionFile.Length > maxSubmissionBytes)
+                    {
+                        TempData["PortalMessage"] = "File exceeds the maximum allowed size of 5 MB.";
+                        return RedirectToAction(nameof(Assignments), new { offeringId, semesterName });
+                    }
+
+                    var submissionExt = Path.GetExtension(submissionFile.FileName);
+                    if (string.IsNullOrEmpty(submissionExt) || !allowedSubmissionExts.Contains(submissionExt))
+                    {
+                        TempData["PortalMessage"] = $"File type '{submissionExt}' is not permitted. Allowed: .pdf, .jpg, .jpeg, .png, .doc, .docx";
+                        return RedirectToAction(nameof(Assignments), new { offeringId, semesterName });
+                    }
+
                     var uploadsRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "assignment-submissions");
                     Directory.CreateDirectory(uploadsRoot);
 
-                    var extension = Path.GetExtension(submissionFile.FileName);
-                    var fileName = $"{Guid.NewGuid()}{extension}";
+                    var fileName = $"{Guid.NewGuid()}{submissionExt}";
                     var physicalPath = Path.Combine(uploadsRoot, fileName);
 
                     await using var stream = System.IO.File.Create(physicalPath);

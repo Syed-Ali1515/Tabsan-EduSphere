@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Tabsan.EduSphere.Application.Dtos;
 using Tabsan.EduSphere.Application.Interfaces;
+using Tabsan.EduSphere.API.Services;
 
 namespace Tabsan.EduSphere.API.Controllers;
 
@@ -50,17 +51,11 @@ public class PortalSettingsController : ControllerBase
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> UploadLogo(IFormFile file, CancellationToken ct)
     {
-        if (file is null || file.Length == 0)
-            return BadRequest(new { message = "No file supplied." });
+        var error = await FileUploadValidator.ValidateImageAsync(file);
+        if (error is not null)
+            return BadRequest(new { message = error });
 
-        const long maxBytes = 2 * 1024 * 1024; // 2 MB
-        if (file.Length > maxBytes)
-            return BadRequest(new { message = "Logo must be ≤ 2 MB." });
-
-        var allowed = new[] { ".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp" };
-        var ext     = Path.GetExtension(file.FileName).ToLowerInvariant();
-        if (!allowed.Contains(ext))
-            return BadRequest(new { message = "Allowed types: PNG, JPG, GIF, SVG, WEBP." });
+        var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
 
         await using var read = file.OpenReadStream();
         await using var ms = new MemoryStream();
@@ -77,7 +72,7 @@ public class PortalSettingsController : ControllerBase
             _ => "application/octet-stream"
         };
 
-        var b64 = Convert.ToBase64String(ms.ToArray());
+        var b64     = Convert.ToBase64String(ms.ToArray());
         var dataUri = $"data:{mime};base64,{b64}";
         return Ok(new { url = dataUri });
     }

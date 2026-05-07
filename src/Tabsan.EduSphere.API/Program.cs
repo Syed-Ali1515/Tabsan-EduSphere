@@ -31,8 +31,32 @@ using Tabsan.EduSphere.Infrastructure.Repositories;
 using Tabsan.EduSphere.Application.Services;
 using Tabsan.EduSphere.Infrastructure.Exporters;
 using Microsoft.AspNetCore.HttpOverrides;
+using Serilog;
+using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// ── Serilog (structured logging — console + rolling file) ───────────────────────
+builder.Host.UseSerilog((ctx, services, config) =>
+{
+    var isDev = ctx.HostingEnvironment.IsDevelopment();
+    var minLevel = isDev ? LogEventLevel.Debug : LogEventLevel.Warning;
+
+    config
+        .MinimumLevel.Is(minLevel)
+        .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+        .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
+        .Enrich.FromLogContext()
+        .Enrich.WithProperty("Application", "Tabsan.EduSphere.API")
+        .WriteTo.Console(outputTemplate:
+            "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
+        .WriteTo.File(
+            path: "logs/app-.log",
+            rollingInterval: RollingInterval.Day,
+            retainedFileCountLimit: 30,
+            outputTemplate:
+                "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}");
+});
 
 // ── Database ────────────────────────────────────────────────────────────────────
 // Reads the connection string from appsettings.json → ConnectionStrings:DefaultConnection.

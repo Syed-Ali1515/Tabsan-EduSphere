@@ -6,11 +6,17 @@ namespace Tabsan.EduSphere.API.Services;
 /// </summary>
 public static class FileUploadValidator
 {
-    private const long MaxFileSizeBytes = 5 * 1024 * 1024; // 5 MB
+    private const long MaxFileSizeBytes      = 5 * 1024 * 1024; // 5 MB
+    private const long MaxLogoSizeBytes      = 2 * 1024 * 1024; // 2 MB
 
     private static readonly HashSet<string> AllowedExtensions = new(StringComparer.OrdinalIgnoreCase)
     {
         ".pdf", ".jpg", ".jpeg", ".png", ".doc", ".docx"
+    };
+
+    private static readonly HashSet<string> AllowedLogoExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp"
     };
 
     private static readonly Dictionary<string, string[]> AllowedMimeTypes =
@@ -24,7 +30,18 @@ public static class FileUploadValidator
             [".docx"] = ["application/vnd.openxmlformats-officedocument.wordprocessingml.document"]
         };
 
-    // Magic bytes: extension → expected header bytes (null = wildcard byte)
+    private static readonly Dictionary<string, string[]> AllowedLogoMimeTypes =
+        new(StringComparer.OrdinalIgnoreCase)
+        {
+            [".png"]  = ["image/png"],
+            [".jpg"]  = ["image/jpeg"],
+            [".jpeg"] = ["image/jpeg"],
+            [".gif"]  = ["image/gif"],
+            [".svg"]  = ["image/svg+xml", "text/plain"],  // SVG sometimes served as text/plain
+            [".webp"] = ["image/webp"]
+        };
+
+    // Magic bytes: extension → expected header bytes
     private static readonly Dictionary<string, byte[][]> MagicBytes =
         new(StringComparer.OrdinalIgnoreCase)
         {
@@ -36,28 +53,53 @@ public static class FileUploadValidator
             [".docx"] = [[0x50, 0x4B, 0x03, 0x04]]                                       // ZIP (OOXML)
         };
 
+    private static readonly Dictionary<string, byte[][]> LogoMagicBytes =
+        new(StringComparer.OrdinalIgnoreCase)
+        {
+            [".png"]  = [[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]],            // PNG
+            [".jpg"]  = [[0xFF, 0xD8, 0xFF]],                                            // JPEG SOI
+            [".jpeg"] = [[0xFF, 0xD8, 0xFF]],
+            [".gif"]  = [[0x47, 0x49, 0x46, 0x38]],                                      // GIF8
+            [".webp"] = [[0x52, 0x49, 0x46, 0x46]]                                       // RIFF (WebP)
+            // SVG is XML/text — skip magic-bytes check; rely on extension + MIME
+        };
+
     /// <summary>
-    /// Validates the uploaded file. Returns null on success, or an error message on failure.
+    /// Validates an academic document upload (PDF, Word, JPEG, PNG). Returns null on success.
     /// </summary>
     public static async Task<string?> ValidateAsync(IFormFile file)
+        => await ValidateCoreAsync(file, AllowedExtensions, AllowedMimeTypes, MagicBytes, MaxFileSizeBytes);
+
+    /// <summary>
+    /// Validates a logo/image upload (PNG, JPG, GIF, SVG, WebP ≤ 2 MB). Returns null on success.
+    /// </summary>
+    public static async Task<string?> ValidateImageAsync(IFormFile file)
+        => await ValidateCoreAsync(file, AllowedLogoExtensions, AllowedLogoMimeTypes, LogoMagicBytes, MaxLogoSizeBytes);
+
+    private static async Task<string?> ValidateCoreAsync(
+        IFormFile file,
+        HashSet<string> allowedExtensions,
+        Dictionary<string, string[]> allowedMimes,
+        Dictionary<string, byte[][]> magicMap,
+        long maxBytes)
     {
         if (file is null || file.Length == 0)
             return "No file uploaded.";
 
-        if (file.Length > MaxFileSizeBytes)
-            return $"File exceeds the maximum allowed size of {MaxFileSizeBytes / (1024 * 1024)} MB.";
+        if (file.Length > maxBytes)
+            return $"File exceeds the maximum allowed size of {maxBytes / (1024 * 1024)} MB.";
 
         var ext = Path.GetExtension(file.FileName);
-        if (string.IsNullOrEmpty(ext) || !AllowedExtensions.Contains(ext))
-            return $"File type '{ext}' is not permitted. Allowed: {string.Join(", ", AllowedExtensions)}.";
+        if (string.IsNullOrEmpty(ext) || !allowedExtensions.Contains(ext))
+            return $"File type '{ext}' is not permitted. Allowed: {string.Join(", ", allowedExtensions)}.";
 
-        if (AllowedMimeTypes.TryGetValue(ext, out var mimes) &&
+        if (allowedMimes.TryGetValue(ext, out var mimes) &&
             !mimes.Any(m => file.ContentType.StartsWith(m, StringComparison.OrdinalIgnoreCase)))
         {
             return $"MIME type '{file.ContentType}' does not match the file extension '{ext}'.";
         }
 
-        if (MagicBytes.TryGetValue(ext, out var magicOptions))
+        if (magicMap.TryGetValue(ext, out var magicOptions))
         {
             var headerLength = magicOptions.Max(m => m.Length);
             var header       = new byte[headerLength];
