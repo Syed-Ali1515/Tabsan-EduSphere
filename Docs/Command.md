@@ -49,11 +49,11 @@ git push
 
 ## Current Execution Pointer
 - Plan Source: Docs/Enhancements.md
-- Active Phase: **Phase 13 — Global Search — FULLY COMPLETE ✅**
-- Active Stage: **Stages 13.1 + 13.2 done — Search API + Portal search bar + typeahead**
-- Status: **0 build errors; 78/78 tests passed (commit 00b7b64)**
-- Last Updated: 2026-05-08
-- Next: Phase 14 — Helpdesk / Support Ticketing System
+- Active Phase: **Phase 14 — Helpdesk / Support Ticketing System — FULLY COMPLETE ✅**
+- Active Stage: **Stages 14.1 + 14.2 + 14.3 done — Full ticket lifecycle, admin management, faculty responses**
+- Status: **0 build errors; 78/78 tests passed**
+- Last Updated: 2026-05-09
+- Next: Phase 15 — Enrollment Rules Engine
 
 ---
 
@@ -102,6 +102,12 @@ Database is fully synchronized with codebase.
 - Stage 13.2: Global search bar in portal header (`_Layout.cshtml`); typeahead dropdown (JS fetch); full results page (`Search.cshtml`) with Bootstrap category tabs; `_SearchResultsList.cshtml` partial; `PortalController` actions `Search` + `SearchTypeahead`
 - Validation: **0 build errors; 78/78 tests passed**
 
+✅ **Phase 14 — Helpdesk / Support Ticketing System (Stages 14.1–14.3) — 2026-05-09**
+- Stage 14.1: `SupportTicket` entity + `IHelpdeskRepository` + `HelpdeskRepository`; `IHelpdeskService` + `HelpdeskService`; `HelpdeskController` (GET tickets, GET ticket, POST create, POST message, POST assign/resolve/close/reopen); EF migration `20260507_Phase14_Helpdesk`; `HelpdeskDTOs`
+- Stage 14.2: Admin/SuperAdmin case management endpoints; ticket assignment to staff users; all roles scoped per department
+- Stage 14.3: Faculty reply support; `SupportTicketMessage` thread model; reopen within configurable window; `Helpdesk.cshtml` list, `HelpdeskCreate.cshtml` form, `HelpdeskDetail.cshtml` thread view, `_TicketStatusBadge.cshtml` partial; sidebar link + route/group maps; `Program.cs` Phase 14 DI registration
+- Validation: **0 build errors; 78/78 tests passed**
+
 ---
 
 ## Completed Work
@@ -139,7 +145,8 @@ Database is fully synchronized with codebase.
 ## Next Steps
 - **Phase 12 — Academic Calendar System — COMPLETE ✅** (commit 6e89af1, 2026-05-07)
 - **Phase 13 — Global Search — COMPLETE ✅** (commit 00b7b64, 2026-05-08)
-- **Phase 14 — Helpdesk / Support Ticketing System** — next planned phase (Docs/Enhancements.md for full spec)
+- **Phase 14 — Helpdesk / Support Ticketing System — COMPLETE ✅** (2026-05-09)
+- **Phase 15 — Enrollment Rules Engine** — next planned phase (Docs/Enhancements.md for full spec)
 - Continue through Phases 15–21 per Docs/Enhancements.md priority order
 
 ## Pending Extra Tasks (Cross-Phase)

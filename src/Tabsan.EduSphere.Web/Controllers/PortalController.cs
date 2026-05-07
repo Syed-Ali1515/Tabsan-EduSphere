@@ -2955,11 +2955,13 @@ public class PortalController : Controller
     public async Task<IActionResult> Helpdesk(TicketStatusWeb? status, CancellationToken ct = default)
     {
         var session = _api.GetSessionIdentity();
+        var callerIdStr = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        Guid.TryParse(callerIdStr, out var callerId);
         var model = new HelpdeskListPageModel
         {
             IsConnected  = _api.IsConnected(),
             CallerRole   = session?.Roles.FirstOrDefault() ?? "",
-            CallerId     = session?.UserId ?? Guid.Empty,
+            CallerId     = callerId,
             StatusFilter = status
         };
 
@@ -2970,8 +2972,9 @@ public class PortalController : Controller
             model.Tickets = await _api.GetTicketsAsync(status, ct);
             // Load staff users for assign dropdown (Admin/SuperAdmin only)
             if (model.CallerRole is "SuperAdmin" or "Admin")
-                model.StaffUsers = await _api.GetFacultyAsync(ct)
-                    .ContinueWith(t => t.Result.Cast<LookupItem>().ToList(), ct);
+                model.StaffUsers = (await _api.GetFacultyAsync(ct))
+                    .Select(f => new LookupItem { Id = f.Id, Name = f.DisplayName })
+                    .ToList();
         }
         catch (Exception ex) { TempData["Message"] = "Error: " + ex.Message; }
 
@@ -3012,11 +3015,13 @@ public class PortalController : Controller
     public async Task<IActionResult> HelpdeskDetail(Guid id, CancellationToken ct = default)
     {
         var session = _api.GetSessionIdentity();
+        var callerIdStr = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        Guid.TryParse(callerIdStr, out var callerId);
         var model = new HelpdeskDetailPageModel
         {
             IsConnected = _api.IsConnected(),
             CallerRole  = session?.Roles.FirstOrDefault() ?? "",
-            CallerId    = session?.UserId ?? Guid.Empty
+            CallerId    = callerId
         };
 
         if (!model.IsConnected) return View(model);
@@ -3025,8 +3030,9 @@ public class PortalController : Controller
         {
             model.Ticket = await _api.GetTicketDetailAsync(id, ct);
             if (model.CallerRole is "SuperAdmin" or "Admin")
-                model.StaffUsers = await _api.GetFacultyAsync(ct)
-                    .ContinueWith(t => t.Result.Cast<LookupItem>().ToList(), ct);
+                model.StaffUsers = (await _api.GetFacultyAsync(ct))
+                    .Select(f => new LookupItem { Id = f.Id, Name = f.DisplayName })
+                    .ToList();
         }
         catch (Exception ex) { TempData["Message"] = "Error: " + ex.Message; }
 

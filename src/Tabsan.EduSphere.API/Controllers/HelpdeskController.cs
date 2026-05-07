@@ -4,6 +4,7 @@ using System.Security.Claims;
 using Tabsan.EduSphere.Application.DTOs.Helpdesk;
 using Tabsan.EduSphere.Application.Interfaces;
 using Tabsan.EduSphere.Domain.Enums;
+using Tabsan.EduSphere.Domain.Interfaces;
 
 namespace Tabsan.EduSphere.API.Controllers;
 

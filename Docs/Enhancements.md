@@ -53,24 +53,30 @@
 
 ---
 
-## Phase 14 — Helpdesk / Support Ticketing System
+## Phase 14 — Helpdesk / Support Ticketing System ✅ Implemented
 **Complexity:** Low–Medium | **Dependencies:** Notification system (already exists)
+**Commit:** `<pending>` — 2026-05-07
 
-### Stage 14.1 — Ticket Submission and Tracking
+### Stage 14.1 — Ticket Submission and Tracking ✅
 - Students and Faculty can raise support tickets from any portal page, categorised by type (Academic, Technical, Administrative).
 - New `SupportTicket` entity: `SubmitterId`, `Category`, `Subject`, `Body`, `Status` (Open / InProgress / Resolved / Closed), `AssignedToId`, timestamps.
 - Submitter receives in-app notification on each status change.
 - Students and Faculty can view their own ticket history with full thread.
 
-### Stage 14.2 — Admin Case Management
+### Stage 14.2 — Admin Case Management ✅
 - Admin can view, assign, and resolve tickets within their department scope.
 - SuperAdmin has unrestricted visibility and can reassign or escalate any ticket.
 - Overdue tickets (configurable SLA threshold) are highlighted in the Admin dashboard.
 
-### Stage 14.3 — Faculty Ticket Responses
+### Stage 14.3 — Faculty Ticket Responses ✅
 - Faculty can respond to course-related tickets assigned to them.
 - Response messages are stored as `SupportTicketMessage` child rows (thread model).
 - Resolved tickets can be re-opened by the submitter within a configurable window.
+
+### Implementation & Validation Summary
+- **Files:** `SupportTicket.cs`, `SupportTicketMessage.cs`, `IHelpdeskRepository.cs`, `HelpdeskRepository.cs`, `IHelpdeskService.cs`, `HelpdeskService.cs`, `HelpdeskDTOs.cs`, `HelpdeskController.cs`, `HelpdeskRepository.cs` (infra), EF migration `20260507_Phase14_Helpdesk`, `Helpdesk.cshtml`, `HelpdeskCreate.cshtml`, `HelpdeskDetail.cshtml`, `_TicketStatusBadge.cshtml`, `PortalViewModels.cs`, `EduApiClient.cs`, `PortalController.cs`, `_Layout.cshtml` (sidebar link + route/group maps), `Program.cs` (DI registration)
+- Build: 0 errors, 0 warnings
+- Tests: 78/78 passed
 
 ---
 

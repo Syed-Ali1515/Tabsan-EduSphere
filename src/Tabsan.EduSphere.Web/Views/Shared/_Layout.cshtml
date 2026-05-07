@@ -126,6 +126,7 @@
         "results"           => ("Portal", "Results"),
         "quizzes"           => ("Portal", "Quizzes"),
         "fyp"               => ("Portal", "Fyp"),
+        "helpdesk"          => ("Portal", "Helpdesk"),
         "analytics"         => ("Portal", "Analytics"),
         "ai_chat"           => ("Portal", "AiChat"),
         "student_lifecycle" => ("Portal", "StudentLifecycle"),
@@ -159,6 +160,7 @@
         "results" => ("Student Related", 3),
         "quizzes" => ("Student Related", 3),
         "fyp" => ("Student Related", 3),
+        "helpdesk" => ("Student Related", 3),
         "ai_chat" => ("Student Related", 3),
         "student_lifecycle" => ("Student Related", 3),
 
@@ -356,6 +358,7 @@
                     {
                         <a class="menu-link" asp-controller="Portal" asp-action="Fyp">FYP</a>
                     }
+                    <a class="menu-link" asp-controller="Portal" asp-action="Helpdesk">Helpdesk</a>
 
                     @if (showAdminLinks || showFacultyLinks)
                     {

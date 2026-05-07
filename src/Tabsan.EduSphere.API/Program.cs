@@ -204,6 +204,10 @@ builder.Services.AddScoped<IAcademicCalendarService, AcademicCalendarService>();
 builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.ISearchRepository, Tabsan.EduSphere.Infrastructure.Repositories.SearchRepository>();
 builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.ISearchService, Tabsan.EduSphere.Application.Search.SearchService>();
 
+// ── Phase 14: Helpdesk / Support Ticketing ────────────────────────────────
+builder.Services.AddScoped<Tabsan.EduSphere.Domain.Interfaces.IHelpdeskRepository, Tabsan.EduSphere.Infrastructure.Repositories.HelpdeskRepository>();
+builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IHelpdeskService, Tabsan.EduSphere.Application.Helpdesk.HelpdeskService>();
+
 // ── Rate limiting (OWASP hardening) ─────────────────────────────────────
 builder.Services.AddRateLimiter(opts =>
 {

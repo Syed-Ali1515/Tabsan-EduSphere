@@ -61,7 +61,7 @@ else
                         <tr>
                             <td class="fw-semibold">@t.Subject</td>
                             <td><span class="badge bg-secondary">@t.Category</span></td>
-                            <td>@Html.Partial("_TicketStatusBadge", t.Status)</td>
+                            <td><partial name="_TicketStatusBadge" model="t.Status" /></td>
                             <td>@t.SubmitterName</td>
                             @if (isStaff)
                             {
