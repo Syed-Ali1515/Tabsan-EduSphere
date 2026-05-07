@@ -2,196 +2,222 @@
 
 **Source:** Gap Analysis PRD (May 2026)  
 **Scope:** Features identified as missing from the current system, organised into phases and stages using the same numbering scheme as `Issue-Fix-Phases.md` (continues from Phase 11).  
-**Status:** All phases are **Planned — Not Started**.
+**Phases are ordered by implementation sequence** — lowest complexity and fewest dependencies first.  
+**Status:** All phases are **Planned — Not Started** unless noted.
 
 ---
 
-## Phase 12 — Learning Management System (LMS)
+## Phase 12 — Academic Calendar System
+**Complexity:** Low–Medium | **Dependencies:** None (builds on existing `Semester` entity)
 
-### Stage 12.1 — Structured Course Content
-- Faculty can create weekly module/lecture units per course offering.
-- Each unit supports rich-text content, attachments, and ordering.
-- Students can access published units in order within their enrolled offerings.
-- SuperAdmin and Admin can configure which LMS modules are enabled per portal instance.
+### Stage 12.1 — Semester Timeline View
+- A calendar page visible to all roles shows all semesters with start/end dates and closed status.
+- SuperAdmin and Admin can add holiday/break periods as named date ranges within a semester.
+- Semester-scoped features (Assignments, Quizzes, Attendance) already respect semester boundaries — calendar is the display layer on top.
+- `Semester` entity (`Name`, `StartDate`, `EndDate`, `IsClosed`) already exists; no schema change needed for Stage 12.1.
 
-### Stage 12.2 — Video-Based Teaching
-- Faculty can upload or embed video lectures against a module unit.
-- Video playback is accessible from the student portal with progress tracking.
-- Storage limits and allowed formats are configurable by SuperAdmin.
-
-### Stage 12.3 — Discussion Forums
-- Each course offering has a threaded discussion forum.
-- Faculty can post announcements pinned to the top of the forum.
-- Students can create threads and reply; Faculty can moderate (pin, delete, close threads).
-- Notifications are sent on new replies to threads the user has participated in.
-
-### Stage 12.4 — Course Announcements
-- Faculty can post course-level announcements visible to all enrolled students.
-- Announcements appear on the student dashboard and generate in-app notifications.
-- Admin can post department-wide announcements visible to all students and faculty in that department.
+### Stage 12.2 — Key Deadlines Management
+- Admin can create named deadline entries attached to a semester (e.g. census date, exam period, assignment cutoff).
+- New `AcademicDeadline` entity: `SemesterId`, `Title`, `DeadlineDate`, `ReminderDaysBefore`, `IsActive`.
+- Deadlines appear on the student and faculty dashboard with a days-remaining indicator.
+- BackgroundJob checks daily and dispatches in-app notifications when `DeadlineDate - today <= ReminderDaysBefore`.
 
 ---
 
-## Phase 13 — Degree Audit System
+## Phase 13 — Global Search
+**Complexity:** Low | **Dependencies:** None
 
-### Stage 13.1 — Credit Completion Tracking
-- System tracks total credits earned per student across all completed semesters.
-- A credit summary breakdown (core vs elective) is visible to the student and their academic advisor (Faculty).
-- Admin can view credit summaries for all students in their assigned departments.
+### Stage 13.1 — Cross-Entity Search API
+- New `GET /api/v1/search?q={term}&limit={n}` endpoint accessible to all authenticated roles.
+- Searches across: students (name, roll number), courses (code, title), course offerings, faculty (name), departments.
+- Results are role-scoped: Admin sees only their assigned-department data; Faculty sees their dept + own offerings; Students see their own enrolled data.
+- Returns a typed result list: `{ type, id, label, subLabel, url }`.
 
-### Stage 13.2 — Graduation Eligibility Checker
-- SuperAdmin defines degree rules: minimum credits, required core courses, minimum GPA threshold.
-- System automatically flags students as graduation-eligible or ineligible based on current academic record.
-- Admin can view a dashboard of eligible vs ineligible students per department/program.
-- Students can view their own eligibility status and the outstanding requirements.
-
-### Stage 13.3 — Elective vs Core Validation
-- Courses are tagged as Core or Elective at the course/program level.
-- Degree audit validates that the student has satisfied core course requirements and a minimum elective credit count.
-- System surfaces specific unmet requirements to the student and their assigned Faculty advisor.
+### Stage 13.2 — Portal Search Bar
+- Global search input in the portal header (all pages, all roles).
+- Typeahead shows top 5 results inline; pressing Enter opens a full results page with category tabs.
+- Each result links directly to the relevant portal page (student profile, course detail, etc.).
 
 ---
 
-## Phase 14 — Enrollment Rules Engine
+## Phase 14 — Helpdesk / Support Ticketing System
+**Complexity:** Low–Medium | **Dependencies:** Notification system (already exists)
 
-### Stage 14.1 — Prerequisite Validation
-- Courses can have prerequisite courses configured by Admin or SuperAdmin.
-- Enrollment is blocked if the student has not passed the prerequisite course(s).
-- Student receives a clear message listing the unmet prerequisites when enrollment is rejected.
+### Stage 14.1 — Ticket Submission and Tracking
+- Students and Faculty can raise support tickets from any portal page, categorised by type (Academic, Technical, Administrative).
+- New `SupportTicket` entity: `SubmitterId`, `Category`, `Subject`, `Body`, `Status` (Open / InProgress / Resolved / Closed), `AssignedToId`, timestamps.
+- Submitter receives in-app notification on each status change.
+- Students and Faculty can view their own ticket history with full thread.
 
-### Stage 14.2 — Timetable Clash Detection
-- System checks for time slot conflicts across a student's selected course offerings before confirming enrollment.
-- Conflicting offerings are highlighted with the clashing schedule details.
-- Admin can override clash detection for exceptional cases with an audit log entry.
-
-### Stage 14.3 — Course Capacity Limits
-- Faculty or Admin can set a maximum enrollment capacity per course offering.
-- Enrollment is blocked when capacity is reached; student is shown current availability.
-- Admin can increase capacity or override the limit with a documented reason.
-
----
-
-## Phase 15 — Faculty Grading System
-
-### Stage 15.1 — Gradebook Grid View
-- Faculty have a spreadsheet-style gradebook showing all enrolled students as rows and assessment components (assignments, quizzes, exams) as columns.
-- Marks can be entered directly in the grid with inline save.
-- Gradebook auto-computes total/final grade per student based on configured weightings.
-
-### Stage 15.2 — Rubric-Based Grading
-- Faculty can define a rubric (criteria + performance levels + point values) per assessment.
-- When grading, Faculty select a performance level per criterion; system totals the marks automatically.
-- Students can view the rubric and their scored levels as part of their feedback.
-
-### Stage 15.3 — Bulk Grading
-- Faculty can upload a CSV of student marks for a given assessment component.
-- System validates the CSV (student IDs, mark ranges) and previews changes before applying.
-- Bulk submission triggers the same notifications as individual mark entry.
-
----
-
-## Phase 16 — Academic Calendar System
-
-### Stage 16.1 — Semester Timelines
-- SuperAdmin defines an academic calendar: semester start/end dates, holiday periods.
-- Calendar is visible to all roles as a portal-wide read-only view.
-- Semester-scoped features (Assignments, Quizzes, Attendance) respect the active semester boundaries.
-
-### Stage 16.2 — Key Deadlines Management
-- Admin can add named deadlines to the academic calendar (census date, exam period start/end, assignment cutoff).
-- Deadlines appear on student and faculty dashboards with days-remaining indicators.
-- System sends automated reminders at configurable intervals before each deadline.
-
----
-
-## Phase 17 — Study Planner
-
-### Stage 17.1 — Semester Planning Tool
-- Students can build a tentative course plan for future semesters by selecting available courses.
-- Planner validates prerequisites and credit load limits before confirming a plan.
-- Saved plans are visible to the student's assigned Faculty advisor.
-
-### Stage 17.2 — Course Recommendation Engine
-- System recommends courses for the next semester based on the student's current program, completed credits, and degree audit gaps.
-- Faculty advisors can endorse or modify recommendations before they are shown to the student.
-- SuperAdmin configures recommendation rules and weightings per program.
-
----
-
-## Phase 18 — Helpdesk / Support Ticketing System
-
-### Stage 18.1 — Ticket Submission and Tracking
-- Students and Faculty can raise support tickets categorised by type (academic, technical, administrative).
-- Each ticket has a status lifecycle: Open → In Progress → Resolved → Closed.
-- Submitter receives in-app notifications on each status change.
-
-### Stage 18.2 — Admin Case Management
+### Stage 14.2 — Admin Case Management
 - Admin can view, assign, and resolve tickets within their department scope.
-- SuperAdmin has full visibility across all departments and can reassign or escalate tickets.
-- SLA timers track time-to-resolution; overdue tickets are highlighted in the Admin dashboard.
+- SuperAdmin has unrestricted visibility and can reassign or escalate any ticket.
+- Overdue tickets (configurable SLA threshold) are highlighted in the Admin dashboard.
 
-### Stage 18.3 — Faculty Ticket Responses
+### Stage 14.3 — Faculty Ticket Responses
 - Faculty can respond to course-related tickets assigned to them.
-- Response threads are visible to the original submitter with full history.
+- Response messages are stored as `SupportTicketMessage` child rows (thread model).
 - Resolved tickets can be re-opened by the submitter within a configurable window.
 
 ---
 
-## Phase 19 — Global Search
+## Phase 15 — Enrollment Rules Engine
+**Complexity:** Medium | **Dependencies:** `Enrollment`, `CourseOffering`, `Result` entities (all exist)
 
-### Stage 19.1 — Cross-Entity Search
-- A global search bar is accessible from all portal pages for all roles.
-- Search covers students, courses, offerings, faculty, documents, and announcements.
-- Results are scoped to the caller's role and department assignments (Admin sees only their dept data).
+> **Stage 15.3 is already implemented** — `CourseOffering.MaxEnrollment` and capacity enforcement in `EnrollmentService` are in production. Mark complete when reaching this phase.
 
-### Stage 19.2 — Search Result Navigation
-- Each result links directly to the relevant portal page (student profile, course detail, document, etc.).
-- Recent searches are persisted per session for quick re-access.
-- SuperAdmin search is unrestricted across all departments and entities.
+### Stage 15.1 — Prerequisite Validation
+- Admin or SuperAdmin can attach prerequisite course(s) to a course via a new `CoursePrerequisite` entity (`CourseId`, `PrerequisiteCourseId`).
+- On enrollment, `EnrollmentService` checks that the student has a passing `Result` for every prerequisite.
+- Enrollment is rejected with a message listing the unmet prerequisites.
 
----
+### Stage 15.2 — Timetable Clash Detection
+- On enrollment, the system checks the student's existing enrolled offerings for time-slot overlap with the requested offering (using `TimetableEntry` data).
+- Conflicting offerings and their schedule details are returned in the rejection message.
+- Admin can override the clash check (persisted as an audit log entry with reason).
 
-## Phase 20 — External Integrations
-
-### Stage 20.1 — Library System Integration
-- Portal links to an external library catalogue (configurable URL and auth method by SuperAdmin).
-- Students and Faculty can browse and request library resources from within the portal.
-- Loan status and due dates are surfaced on the student dashboard.
-
-### Stage 20.2 — Government / Accreditation Reporting
-- SuperAdmin can trigger structured data exports (enrollment counts, completion rates, demographic summaries) in formats required by regulatory bodies.
-- Export templates are configurable; output is downloadable as CSV or PDF.
-- All export events are logged in the audit trail.
+### Stage 15.3 — Course Capacity Limits ✅ Already Implemented
+- `CourseOffering.MaxEnrollment` enforced by `EnrollmentService`; `UpdateMaxEnrollment` API action exists.
+- No work required.
 
 ---
 
-## Phase 21 — Graduation Workflow
+## Phase 16 — Faculty Grading System
+**Complexity:** Medium | **Dependencies:** `Result`, `ResultComponentRule`, `Assignment`, `Quiz` entities (all exist)
 
-### Stage 21.1 — Graduation Application Flow
-- Students who meet the degree audit eligibility criteria can submit a graduation application.
-- Application enters an approval workflow: Faculty validates results → Admin approves → SuperAdmin confirms.
-- Each approver receives a notification when the application reaches their stage.
+### Stage 16.1 — Gradebook Grid View
+- Faculty have a grid view per course offering: rows = enrolled students, columns = assessment components (assignments, quizzes, plus an exam/final column).
+- Each cell shows the current mark and is inline-editable with auto-save.
+- Totals column auto-computes the weighted final mark using `ResultComponentRule` weightings.
+- New `GET /api/v1/gradebook/{offeringId}` endpoint returns the grid data.
 
-### Stage 21.2 — Certificate Generation
-- Upon final approval, the system generates a graduation certificate PDF (configurable template set by SuperAdmin).
-- Certificate is stored against the student record and downloadable from the student portal.
-- Admin can re-issue or revoke a certificate with a documented reason and audit log entry.
+### Stage 16.2 — Rubric-Based Grading
+- Faculty can define a rubric for any assessment: `Rubric` entity → `RubricCriteria` rows (criterion name, max points) → `RubricLevel` rows (performance label, points awarded).
+- When grading a submission, Faculty select a level per criterion; system sums to the total mark.
+- Students can view the rubric breakdown and their awarded levels as part of feedback.
+
+### Stage 16.3 — Bulk Grading via CSV
+- Faculty can download a blank CSV template for a component (student ID + name columns pre-filled).
+- Faculty upload the completed CSV; system validates IDs and mark ranges, then previews changes before applying.
+- Bulk apply triggers the same result-update notifications as individual mark entry.
 
 ---
 
-## Implementation Priority Notes
+## Phase 17 — Degree Audit System
+**Complexity:** Medium | **Dependencies:** `Course.CreditHours`, `Result`, `AcademicProgram` (all exist — partial foundation)
 
-| Phase | Feature | Estimated Complexity | Suggested Order |
+> **Partial foundation:** `Course.CreditHours` and `StudentProfile.Cgpa` already exist. `ResultCalculationService` computes GPA. The audit layer (credit aggregation, eligibility rules, elective/core classification) is new.
+
+### Stage 17.1 — Credit Completion Tracking
+- New `GET /api/v1/degree-audit/{studentProfileId}` endpoint aggregates total credits earned from passing `Result` records.
+- Breaks down credits by Core vs Elective (requires Stage 17.3 course tagging).
+- Student can view their own credit progress; Faculty advisor and Admin (dept-scoped) can view any student.
+
+### Stage 17.2 — Graduation Eligibility Checker
+- SuperAdmin defines `DegreeRule` per `AcademicProgram`: minimum total credits, minimum GPA, required core course list.
+- System evaluates eligibility automatically against the student's current audit; exposes `IsEligible` flag and list of unmet requirements.
+- Admin can view a filtered list of eligible vs ineligible students per department/program.
+
+### Stage 17.3 — Elective vs Core Course Tagging
+- Add `CourseType` enum (`Core` / `Elective`) to `Course` entity; Admin or SuperAdmin sets the value per course.
+- Degree audit uses `CourseType` to validate minimum elective credit count alongside core requirements.
+- Migration: add `CourseType` column to `courses` table (default `Core`).
+
+---
+
+## Phase 18 — Graduation Workflow
+**Complexity:** Medium | **Dependencies:** Phase 17 (Degree Audit), existing `StudentLifecycleController`
+
+> **Partial foundation:** `StudentLifecycleController.GraduateStudent()` (admin batch action) and `StudentProfile.GraduatedDate` already exist. This phase adds the student-initiated application and multi-stage approval workflow on top.
+
+### Stage 18.1 — Graduation Application Flow
+- Students who are degree-audit eligible can submit a `GraduationApplication` from the portal.
+- Application enters a three-stage approval workflow: Faculty (verify results) → Admin (approve) → SuperAdmin (confirm).
+- Each approver sees a pending-applications list and receives an in-app notification when an application reaches their stage.
+- Application status: Draft → PendingFaculty → PendingAdmin → PendingFinalApproval → Approved / Rejected.
+
+### Stage 18.2 — Certificate Generation
+- On final SuperAdmin approval, system generates a graduation certificate PDF from a configurable HTML template (set by SuperAdmin in Portal Settings).
+- PDF is stored against the student record; student can download it from the portal.
+- Admin can re-issue or revoke a certificate with a documented reason — all actions are audit-logged.
+
+---
+
+## Phase 19 — Learning Management System (LMS)
+**Complexity:** High | **Dependencies:** `CourseOffering`, `Enrollment`, Notification system (all exist)
+
+> **Partial foundation for Stage 19.4:** `NotificationType.Announcement = 6` already exists in the notification enum. The announcement entity and dedicated portal page are new.
+
+### Stage 19.1 — Structured Course Content
+- New `CourseContentModule` entity: `OfferingId`, `Title`, `WeekNumber`, `Body` (rich text), `IsPublished`, ordering.
+- Faculty create and order weekly module units per offering; publish/unpublish individually.
+- Students enrolled in the offering can access published modules in order from the portal.
+- SuperAdmin and Admin can enable/disable the LMS feature per portal instance via Module Settings.
+
+### Stage 19.2 — Video-Based Teaching
+- Faculty can attach video references (upload or embed URL) to a `CourseContentModule`.
+- New `ContentVideo` entity: `ModuleId`, `Title`, `StorageUrl` or `EmbedUrl`, `DurationSeconds`.
+- Student portal shows video player (upload) or embedded iframe (URL) within the module view.
+- Storage limits and allowed formats are configurable by SuperAdmin in Portal Settings.
+
+### Stage 19.3 — Discussion Forums
+- New `DiscussionThread` entity per `CourseOffering`: `Title`, `AuthorId`, `IsPinned`, `IsClosed`.
+- New `DiscussionReply` child entity: `ThreadId`, `AuthorId`, `Body`, `CreatedAt`.
+- Faculty can pin, close, and delete threads; Students can create threads and reply.
+- Notification dispatched to all participants in a thread when a new reply is posted.
+
+### Stage 19.4 — Course Announcements
+- Faculty can post course-level announcements (distinct from discussion threads) visible to all enrolled students.
+- New `CourseAnnouncement` entity: `OfferingId`, `AuthorId`, `Title`, `Body`, `PostedAt`.
+- Announcement triggers an in-app notification (uses existing `NotificationType.Announcement = 6`) to all enrolled students.
+- Admin can post department-wide announcements targeting all students and faculty in their assigned departments.
+
+---
+
+## Phase 20 — Study Planner
+**Complexity:** Medium | **Dependencies:** Phase 17 (Degree Audit for prerequisite/credit validation)
+
+### Stage 20.1 — Semester Planning Tool
+- Students can build a tentative plan for future semesters by selecting available courses.
+- New `StudyPlan` entity: `StudentProfileId`, `PlannedSemesterName`; child `StudyPlanCourse` rows.
+- Planner validates prerequisites (Phase 15) and credit-load limits before saving.
+- Saved plans are visible to the student's assigned Faculty advisor.
+
+### Stage 20.2 — Course Recommendation Engine
+- System recommends courses for the next semester based on completed credits, degree audit gaps (Phase 17), and available offerings.
+- Faculty advisors can endorse or modify recommendations before they surface to the student.
+- SuperAdmin configures recommendation rules and credit-load weightings per `AcademicProgram`.
+
+---
+
+## Phase 21 — External Integrations
+**Complexity:** High | **Dependencies:** None (configurable by SuperAdmin)
+
+> **Partial foundation for Stage 21.2:** The Report Center already exports CSV/PDF for operational reports. Accreditation-specific templates and regulatory format handling are new.
+
+### Stage 21.1 — Library System Integration
+- SuperAdmin configures an external library catalogue URL and optional auth token in Portal Settings.
+- Portal embeds or links the library catalogue within a dedicated Library portal page.
+- Loan status and due dates are surfaced on the student dashboard via a configurable library API endpoint.
+
+### Stage 21.2 — Government / Accreditation Reporting
+- SuperAdmin can define named accreditation report templates (enrollment counts, completion rates, demographic summaries) with configurable field mappings.
+- Reports are generated on-demand as CSV or PDF in the required regulatory format.
+- All accreditation export events are written to the audit log with user, timestamp, and template name.
+
+---
+
+## Implementation Sequence Summary
+
+| Phase | Feature | Complexity | Status |
 |---|---|---|---|
-| 12 | LMS (Content + Video + Forums + Announcements) | High | 4th |
-| 13 | Degree Audit System | Medium | 3rd |
-| 14 | Enrollment Rules Engine | Medium | 2nd |
-| 15 | Faculty Grading System | Medium | 2nd |
-| 16 | Academic Calendar | Low–Medium | 1st |
-| 17 | Study Planner | Medium | 5th |
-| 18 | Helpdesk / Ticketing | Low–Medium | 1st |
-| 19 | Global Search | Low | 1st |
-| 20 | External Integrations | High | 6th |
-| 21 | Graduation Workflow | Medium | 3rd |
-
-**Recommended kick-off order:** Phase 16 (Calendar) → Phase 19 (Search) → Phase 18 (Helpdesk) → Phase 14 (Enrollment Rules) → Phase 15 (Grading) → Phase 13 (Degree Audit) → Phase 21 (Graduation) → Phase 12 (LMS) → Phase 17 (Study Planner) → Phase 20 (Integrations).
+| 12 | Academic Calendar (timelines + deadlines) | Low–Medium | Planned |
+| 13 | Global Search | Low | Planned |
+| 14 | Helpdesk / Support Ticketing | Low–Medium | Planned |
+| 15 | Enrollment Rules Engine | Medium | Planned (Stage 15.3 ✅ done) |
+| 16 | Faculty Grading System (gradebook, rubrics, bulk CSV) | Medium | Planned |
+| 17 | Degree Audit System | Medium | Planned (partial foundation) |
+| 18 | Graduation Workflow (application + certificate) | Medium | Planned (partial foundation) |
+| 19 | Learning Management System | High | Planned (Stage 19.4 partial) |
+| 20 | Study Planner | Medium | Planned |
+| 21 | External Integrations | High | Planned (Stage 21.2 partial) |
