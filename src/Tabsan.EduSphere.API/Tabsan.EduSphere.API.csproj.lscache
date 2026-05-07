@@ -89,6 +89,7 @@ Controllers/
  TimetableController.cs
  UserImportController.cs
 Middleware/
+ ExceptionHandlingMiddleware.cs
  LicenseDomainMiddleware.cs
  SecurityHeadersMiddleware.cs
 obj/Debug/net8.0/
@@ -97,6 +98,7 @@ obj/Debug/net8.0/
  Tabsan.EduSphere.API.GlobalUsings.g.cs
 Program.cs
 ProgramEntry.cs
+Services/FileUploadValidator.cs
 
 [metadataReferences]
 ../

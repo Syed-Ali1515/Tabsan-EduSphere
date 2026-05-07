@@ -30,6 +30,7 @@ using Tabsan.EduSphere.Infrastructure.Persistence;
 using Tabsan.EduSphere.Infrastructure.Repositories;
 using Tabsan.EduSphere.Application.Services;
 using Tabsan.EduSphere.Infrastructure.Exporters;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,7 +38,11 @@ var builder = WebApplication.CreateBuilder(args);
 // Reads the connection string from appsettings.json → ConnectionStrings:DefaultConnection.
 builder.Services.AddDbContext<ApplicationDbContext>(opts =>
     opts.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
-        sql => sql.MigrationsAssembly("Tabsan.EduSphere.Infrastructure")));
+        sql =>
+        {
+            sql.MigrationsAssembly("Tabsan.EduSphere.Infrastructure");
+            sql.EnableRetryOnFailure(3, TimeSpan.FromSeconds(30), null);
+        }));
 
 // ── JWT Authentication ──────────────────────────────────────────────────────────
 // Binds JwtSettings section from appsettings.json so options are strongly-typed.
@@ -188,6 +193,41 @@ builder.Services.AddRateLimiter(opts =>
     });
     opts.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 });
+
+// ── CORS (configured from AppSettings:CorsOrigins) ───────────────────────────
+var corsOrigins = builder.Configuration.GetSection("AppSettings:CorsOrigins").Get<string[]>() ?? [];
+if (corsOrigins.Length > 0)
+{
+    builder.Services.AddCors(corsOpts =>
+        corsOpts.AddPolicy("AllowConfiguredOrigins", policy =>
+            policy.WithOrigins(corsOrigins)
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials()));
+}
+
+// ── Forwarded headers (reverse proxy: IIS / nginx / Cloudflare) ──────────────
+if (!builder.Environment.IsDevelopment())
+{
+    builder.Services.Configure<ForwardedHeadersOptions>(fwdOpts =>
+    {
+        fwdOpts.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+        fwdOpts.KnownNetworks.Clear();
+        fwdOpts.KnownProxies.Clear();
+    });
+}
+
+// ── Health checks ─────────────────────────────────────────────────────────────
+builder.Services.AddHealthChecks();
+
+// ── Request body size limits (5 MB max — OWASP resource protection) ──────────
+builder.Services.Configure<Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions>(
+    opts => opts.Limits.MaxRequestBodySize = 5 * 1024 * 1024);
+builder.Services.Configure<IISServerOptions>(
+    opts => opts.MaxRequestBodySize = 5 * 1024 * 1024);
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(
+    opts => opts.MultipartBodyLengthLimit = 5 * 1024 * 1024);
+
 builder.Services.AddHostedService<LicenseCheckWorker>();
 builder.Services.AddHostedService<AttendanceAlertJob>();
 
@@ -228,13 +268,22 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+Console.WriteLine($"[Startup] Environment: {builder.Environment.EnvironmentName} | App: {builder.Environment.ApplicationName}");
+
 var app = builder.Build();
 
 // ── Seed database on startup ─────────────────────────────────────────────────────
 await DatabaseSeeder.SeedAsync(app.Services);
 
 // ── HTTP pipeline ────────────────────────────────────────────────────────────────
-if (app.Environment.IsDevelopment())
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseForwardedHeaders();
+}
+
+if (app.Environment.IsDevelopment() || app.Configuration.GetValue<bool>("AppSettings:EnableSwagger"))
 {
     app.UseSwagger();
     app.UseSwaggerUI();
@@ -254,41 +303,15 @@ app.UseStaticFiles(new StaticFileOptions
 });
 app.UseSecurityHeaders();
 app.UseRateLimiter();
+if (corsOrigins.Length > 0)
+{
+    app.UseCors("AllowConfiguredOrigins");
+}
 // P2-S3-02: Reject requests from domains that do not match the activated license domain.
 app.UseMiddleware<LicenseDomainMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHealthChecks("/health");
 
 app.Run();
-
-// ─────────────────────────────────────────────────────────────────────────────────
-// Placeholder kept to satisfy the default .NET scaffold test project reference.
-// Safe to remove once WeatherForecast is replaced.
-#pragma warning disable CS8321
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
-
-app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

@@ -11,10 +11,12 @@ builder.Services.AddHttpClient("EduApi");
 builder.Services.AddScoped<IEduApiClient, EduApiClient>();
 builder.Services.AddSession(options =>
 {
-    options.Cookie.Name = "Tabsan.EduSphere.Web.Session";
-    options.IdleTimeout = TimeSpan.FromHours(8);
-    options.Cookie.HttpOnly = true;
+    options.Cookie.Name       = "Tabsan.EduSphere.Web.Session";
+    options.IdleTimeout       = TimeSpan.FromHours(8);
+    options.Cookie.HttpOnly   = true;
     options.Cookie.IsEssential = true;
+    options.Cookie.SameSite   = SameSiteMode.Strict;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 });
 
 var app = builder.Build();

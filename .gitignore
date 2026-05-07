@@ -5,6 +5,20 @@
 
 # dotenv files
 .env
+.env.local
+.env.*.local
+
+# Sensitive configuration overrides (never commit real secrets)
+appsettings.*.local.json
+appsettings.*.secret.json
+secrets/
+
+# TLS certificates and key material
+*.pfx
+*.key
+
+# Runtime log directories
+logs/
 
 # User-specific files
 *.rsuser
