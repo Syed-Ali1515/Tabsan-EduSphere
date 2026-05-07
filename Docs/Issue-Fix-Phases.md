@@ -2,6 +2,38 @@
 
 This file tracks the reported portal issues as phased work items so they can be addressed in a controlled order.
 
+---
+
+## Refactoring-Hosting-Security — Part A + Part B
+**Status:** ✅ Mostly Complete (2026-05-07) | Commit: f56ccd9
+
+### Part A — Hosting Configuration ✅
+- [x] Created `appsettings.Production.json` for API, Web, BackgroundJobs
+- [x] Enriched `API/appsettings.Development.json` with Debug logging, CORS origins, flags
+- [x] Added `AppSettings` section to `API/appsettings.json`
+- [x] Added dev connection string to `BackgroundJobs/appsettings.Development.json`
+- [x] DB retry on failure in `AddDbContext` (`EnableRetryOnFailure`)
+- [x] CORS from config (`AppSettings:CorsOrigins`) — `AddCors` + `UseCors`
+- [x] `ForwardedHeaders` middleware for reverse-proxy deployments (non-dev)
+- [x] Health check at `/health`
+- [x] 5 MB request body limits (Kestrel + IIS + FormOptions)
+- [x] Startup environment log line
+- [x] Swagger gated by `AppSettings:EnableSwagger` config flag
+- [x] WeatherForecast scaffold boilerplate removed
+
+### Part B — Security Hardening ✅
+- [x] `ExceptionHandlingMiddleware` — global handler, maps to HTTP codes, no stack traces in prod
+- [x] `FileUploadValidator` — static validator with magic bytes, MIME, extension, 5 MB limit
+- [x] Web session cookie — `SameSite=Strict` + `SecurePolicy=Always`
+- [x] `.gitignore` — added `*.pfx`, `*.key`, `logs/`, `appsettings.*.local.json`, `secrets/`, `.env.local`
+
+### Pending (next session)
+- [ ] Serilog file sink — rolling log `logs/app-.txt`
+- [ ] `UserSecretsId` added to `API/Tabsan.EduSphere.API.csproj`
+- [ ] `FileUploadValidator.ValidateAsync()` called from `AssignmentController.Submit` and logo upload controller
+
+---
+
 ## Phase 1 - Super Admin and Admin Access Repair
 
 ### Stage 1.1 - Department Management

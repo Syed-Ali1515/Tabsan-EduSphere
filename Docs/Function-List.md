@@ -198,6 +198,51 @@
 | `CourseController.GetAll(departmentId, ct)` (admin scope) | Limits admin course list to assigned departments. | `API/Controllers/CourseController.cs` |
 | `CourseController.GetOfferings(semesterId, departmentId, ct)` (admin scope) | Limits admin offering list to assigned departments. | `API/Controllers/CourseController.cs` |
 | `CourseController.GetMyOfferings(ct)` (admin scope) | Limits admin "my offerings" list to assigned departments. | `API/Controllers/CourseController.cs` |
+
+## Refactoring-Hosting-Security — Part A + Part B (2026-05-07)
+
+### API — ExceptionHandlingMiddleware (Part B)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `ExceptionHandlingMiddleware.InvokeAsync(context)` | Global exception handler; catches all unhandled exceptions; logs full detail in all environments; maps exception types to HTTP status codes (400/401/404/405/503/500); returns sanitised JSON problem-detail response with no stack trace in production; includes `traceId` in every error response. | `API/Middleware/ExceptionHandlingMiddleware.cs` |
+| `ExceptionHandlingMiddleware.HandleExceptionAsync(context, exception)` | Builds `application/problem+json` response payload; exposes `detail`/`exception` only in Development environment; determines HTTP status from exception type. | `API/Middleware/ExceptionHandlingMiddleware.cs` |
+
+### API — FileUploadValidator (Part B)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `FileUploadValidator.ValidateAsync(file)` | Static async validator for uploaded files; checks file is present, size ≤ 5 MB, extension in allowlist (.pdf/.jpg/.jpeg/.png/.doc/.docx), MIME type matches extension, and magic bytes match expected binary header for the extension. Returns null on success or a user-facing error message on failure. | `API/Services/FileUploadValidator.cs` |
+
+### API — Program.cs Changes (Part A)
+
+| Change | Purpose | Location |
+|---|---|---|
+| DB retry on failure (`EnableRetryOnFailure(3, 30s, null)`) | Transient SQL Server failure recovery — retries up to 3 times with 30 s backoff. | `API/Program.cs` |
+| CORS from config (`AppSettings:CorsOrigins`) | Reads allowed origins from configuration; registers `AllowConfiguredOrigins` policy with credentials support; skips registration when array is empty. | `API/Program.cs` |
+| `ForwardedHeaders` middleware (non-dev) | Trusts `X-Forwarded-For` and `X-Forwarded-Proto` from reverse proxies (IIS/nginx/Cloudflare). | `API/Program.cs` |
+| Health check at `/health` | `AddHealthChecks()` + `MapHealthChecks("/health")` for uptime monitoring. | `API/Program.cs` |
+| Request body size limits (5 MB) | Configured on Kestrel, IIS, and FormOptions to reject over-limit requests. | `API/Program.cs` |
+| Startup environment log | `Console.WriteLine` emits environment name + application name on startup. | `API/Program.cs` |
+| Swagger gated by `AppSettings:EnableSwagger` | Swagger always on in Development; controlled by config flag in Production. | `API/Program.cs` |
+| WeatherForecast boilerplate removed | Dead scaffold code removed from bottom of file. | `API/Program.cs` |
+
+### Web — Program.cs Changes (Part B)
+
+| Change | Purpose | Location |
+|---|---|---|
+| Session cookie `SameSite=Strict` + `SecurePolicy=Always` | CSRF and HTTPS enforcement on the Web portal session cookie. | `Web/Program.cs` |
+
+### Configuration Files Added/Updated (Part A)
+
+| File | Purpose |
+|---|---|
+| `API/appsettings.Production.json` | Production placeholder config: Warning logging, production CORS origins, EnableSwagger=false, EnableDetailedErrors=false, Kestrel endpoint. |
+| `Web/appsettings.Production.json` | Production placeholder config: Warning logging, AllowedHosts, production EduApi BaseUrl. |
+| `BackgroundJobs/appsettings.Production.json` | Production placeholder config: Warning logging, production connection string placeholder. |
+| `API/appsettings.Development.json` | Updated: Debug logging, CORS origins for localhost:5063, EnableSwagger=true, EnableDetailedErrors=true. |
+| `API/appsettings.json` | Updated: Added `AppSettings` section (EnableSwagger, EnableDetailedErrors, CorsOrigins). |
+| `BackgroundJobs/appsettings.Development.json` | Updated: Added dev connection string for localhost. |
 | `EnforceAdminDepartmentScopeAsync(departmentId, courseOfferingId, ct)` | Enforces admin assigned-department + offering ownership-by-department guards across reporting endpoints. | `API/Controllers/ReportController.cs` |
 
 ## Issue-Fix Phase 5 — Reporting and Export Center (2026-05-06)

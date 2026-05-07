@@ -48,10 +48,10 @@ git push
 ---
 
 ## Current Execution Pointer
-- Plan Source: Issue-Fix-Phases.md
-- Active Phase: **All Issue-Fix Phases (1–6) COMPLETE ✅**
-- Active Stage: **No pending stage — awaiting new phase definition or Refactoring-Hosting-Security.md implementation**
-- Status: **0 build errors; 78/78 tests passed**
+- Plan Source: Docs/Refactoring-Hosting-Security.md
+- Active Phase: **Refactoring-Hosting-Security — Part A + Part B (COMPLETE ✅)**
+- Active Stage: **Remaining items: Serilog file sink, UserSecretsId in csproj, FileUploadValidator wired into upload controllers**
+- Status: **0 build errors; 69/69 tests passed (commit f56ccd9)**
 - Last Updated: 2026-05-07
 
 ---
@@ -124,10 +124,12 @@ Database is fully synchronized with codebase.
 - Phase 1 Remediation Batches 1–5: all complete
 
 ## Next Steps
+- **Refactoring-Hosting-Security.md remaining items (3 tasks):**
+  1. Serilog file sink — wire `Serilog.Sinks.File` + `Serilog.Sinks.Console` rolling logs in `API/Program.cs`
+  2. `UserSecretsId` — add `<UserSecretsId>tabsan-edusphere-api-dev</UserSecretsId>` to API `.csproj`
+  3. `FileUploadValidator` — call `FileUploadValidator.ValidateAsync()` from `AssignmentController.Submit` and logo upload controller action
 - **All Issue-Fix Phases (1–6) are complete.** No pending stages in Issue-Fix-Phases.md.
-- **Refactoring-Hosting-Security.md** — Part A (multi-environment hosting configuration) and Part B (security hardening, OWASP Top 10) are documented but not yet implemented in code.
 - **New issue phases** — If new bugs or features are observed, add them to `Docs/Observed-Issues.md` and define a new Issue-Fix Phase in `Docs/Issue-Fix-Phases.md`.
-- **Stage 5.4 Admin scope** — Admin reporting scope is fully enforced via Phase 6 department assignments (closed).
 - **Optional**: dedicated unit tests for `UserImportService` internals (from Phase 4 Option C backlog).
 
 ## Pending Extra Tasks (Cross-Phase)
@@ -153,6 +155,37 @@ When a phase is completed, update:
 ---
 
 ## Work Log
+
+### Entry 023 — 2026-05-07 — Refactoring-Hosting-Security Part A + Part B Delivery
+**Completed:**
+- **Part A — Hosting Configuration:**
+  - Created `appsettings.Production.json` for API, Web, BackgroundJobs (production-ready placeholders)
+  - Created `appsettings.Development.json` for BackgroundJobs (dev connection string)
+  - Updated `API/appsettings.Development.json`: debug logging, CORS origins `["https://localhost:5063", "http://localhost:5063"]`, EnableSwagger/EnableDetailedErrors flags
+  - Updated `API/appsettings.json`: added `AppSettings` section (EnableSwagger, EnableDetailedErrors, CorsOrigins array)
+  - `API/Program.cs` — DB retry on failure (3 attempts, 30 s backoff via `EnableRetryOnFailure`)
+  - `API/Program.cs` — CORS configured from `AppSettings:CorsOrigins` config key; `UseCors` added to pipeline
+  - `API/Program.cs` — `ForwardedHeaders` middleware registered and used in non-dev (IIS/nginx/Cloudflare support)
+  - `API/Program.cs` — Health check endpoint at `/health` (`AddHealthChecks` + `MapHealthChecks`)
+  - `API/Program.cs` — 5 MB request body size limits (Kestrel + IIS + FormOptions)
+  - `API/Program.cs` — Startup environment log line
+  - `API/Program.cs` — Swagger gated by `AppSettings:EnableSwagger` flag (dev always on)
+  - `API/Program.cs` — WeatherForecast boilerplate block removed
+- **Part B — Security Hardening:**
+  - Created `API/Middleware/ExceptionHandlingMiddleware.cs`: global exception handler; maps exception types to HTTP codes; no stack traces in production; TraceIdentifier in every error response
+  - Created `API/Services/FileUploadValidator.cs`: static validator with magic-bytes verification, MIME-type check, extension allowlist, 5 MB size limit
+  - `Web/Program.cs` — session cookie hardened: `SameSite=Strict`, `SecurePolicy=Always`
+  - `.gitignore` — added: `*.pfx`, `*.key`, `logs/`, `appsettings.*.local.json`, `appsettings.*.secret.json`, `secrets/`, `.env.local`, `.env.*.local`
+
+**Validation:**
+- `dotnet build Tabsan.EduSphere.API.csproj` — **0 errors, 0 warnings**
+- Full integration suite — **69/69 tests passed**
+- Commit: `f56ccd9` — pushed to `main`
+
+**Pending (next session):**
+- Serilog file sink (rolling log to `logs/app-.txt`)
+- `UserSecretsId` in API `.csproj`
+- Wire `FileUploadValidator.ValidateAsync()` into `AssignmentController.Submit` + logo upload controller
 
 ### Entry 022 — 2026-05-06 — Issue-Fix Phase 4 Option A/C Delivery (Web Import + Forced Password Change)
 **Completed:**

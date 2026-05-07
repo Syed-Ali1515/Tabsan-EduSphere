@@ -1,14 +1,34 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.28 (Phase 3 — License App Generator Alignment + File Security)  
+**Version:** 1.29 (Refactoring-Hosting-Security Part A + Part B)  
 **Status:** Approved  
 **Prepared By:** Product Team  
-**Last Updated:** 5 May 2026  
+**Last Updated:** 7 May 2026  
 
 ---
 
 ## 0. Implementation Update Log
+
+### 2026-05-07 — Refactoring-Hosting-Security Part A + Part B Complete
+- **Part A — Hosting Configuration:**
+  - Created `appsettings.Production.json` for API, Web, and BackgroundJobs projects with production-ready placeholder values
+  - Updated `API/appsettings.Development.json`: Debug logging, CORS origins for localhost:5063, `EnableSwagger=true`, `EnableDetailedErrors=true`
+  - Added `AppSettings` section to `API/appsettings.json` (EnableSwagger, EnableDetailedErrors, CorsOrigins)
+  - DB retry on failure: `EnableRetryOnFailure(3, 30 s, null)` in `AddDbContext`
+  - CORS from config: reads `AppSettings:CorsOrigins`; `AddCors` + `UseCors` wired in API pipeline
+  - `ForwardedHeaders` middleware registered for non-dev environments (IIS/nginx/Cloudflare)
+  - Health check endpoint at `/health` via `AddHealthChecks` + `MapHealthChecks`
+  - 5 MB request body size limits on Kestrel, IIS, and FormOptions
+  - Startup environment log: `Console.WriteLine` emits env + app name on start
+  - Swagger gated by `AppSettings:EnableSwagger` flag (always on in Development)
+  - WeatherForecast boilerplate removed from `API/Program.cs`
+- **Part B — Security Hardening:**
+  - `ExceptionHandlingMiddleware` created: maps exception types to HTTP codes; no stack traces in production; `traceId` in every error response; registered first in pipeline
+  - `FileUploadValidator` (static) created: magic-bytes, MIME, extension allowlist, 5 MB limit
+  - Web session cookie hardened: `SameSite=Strict`, `SecurePolicy=Always`
+  - `.gitignore` updated: `*.pfx`, `*.key`, `logs/`, `appsettings.*.local.json`, `secrets/`, `.env.local`
+- Validation: **0 build errors, 0 warnings; 69/69 integration tests passed; commit f56ccd9**
 
 ### 2026-05-07 — Issue-Fix Phase 3 Complete (Faculty Workflow Repair)
 - Resolved all 8 Faculty workflow issues (403 errors and empty dropdowns):

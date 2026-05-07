@@ -15,6 +15,41 @@ For **every completed phase**:
 
 ---
 
+## Refactoring-Hosting-Security — Part A + Part B
+**Status:** ✅ Mostly Complete (2026-05-07) — 3 remaining items in next session
+
+### Completion Mark
+- [x] Create `appsettings.Production.json` for API, Web, BackgroundJobs
+- [x] Update `API/appsettings.Development.json` — Debug logging, CORS origins, EnableSwagger/EnableDetailedErrors flags
+- [x] Update `BackgroundJobs/appsettings.Development.json` — add dev connection string
+- [x] Add `AppSettings` section to `API/appsettings.json`
+- [x] DB retry on failure — `EnableRetryOnFailure(3, 30s, null)` in AddDbContext
+- [x] CORS from config — reads `AppSettings:CorsOrigins`; `AddCors` + `UseCors` in pipeline
+- [x] `ForwardedHeaders` middleware — registered for non-dev (IIS/nginx/Cloudflare)
+- [x] Health check endpoint `/health`
+- [x] 5 MB request body limits — Kestrel + IIS + FormOptions
+- [x] Startup environment log line
+- [x] Swagger gated by `AppSettings:EnableSwagger`
+- [x] WeatherForecast boilerplate removed
+- [x] `ExceptionHandlingMiddleware` — global handler, no stack traces in prod, TraceId in response
+- [x] `FileUploadValidator` — magic bytes, MIME, extension, 5 MB limit
+- [x] Web session cookie — `SameSite=Strict` + `SecurePolicy=Always`
+- [x] `.gitignore` — `*.pfx`, `*.key`, `logs/`, `appsettings.*.local.json`, `secrets/`
+- [ ] Serilog file sink — rolling log `logs/app-.txt` (pending next session)
+- [ ] `UserSecretsId` in API `.csproj` (pending next session)
+- [ ] `FileUploadValidator` wired into `AssignmentController.Submit` + logo upload action (pending next session)
+
+### Implementation Summary
+- **Part A — Hosting:** Production config files for all 3 projects; Development config enriched with debug logging and CORS origins; base `appsettings.json` has `AppSettings` section; DB has transient-retry policy; CORS reads from config; ForwardedHeaders for reverse-proxy deployments; health check at `/health`; 5 MB body limits on all hosting stacks; startup env log; Swagger controlled by flag.
+- **Part B — Security:** `ExceptionHandlingMiddleware` first in pipeline — maps exception types to HTTP codes, returns `application/problem+json`, no exception details in production; `FileUploadValidator` static helper with magic-bytes + MIME + extension + size checks; session cookie now `SameSite=Strict` + `SecurePolicy=Always`; `.gitignore` excludes certificates, secrets, and log directories.
+
+### Validation Summary
+- `dotnet build Tabsan.EduSphere.API.csproj` — **0 errors, 0 warnings**
+- Integration test suite — **69/69 passed**
+- Commit: `f56ccd9` pushed to `main`
+
+---
+
 ## Issue-Fix Phase 3 — Faculty Workflow Repair
 **Status:** ✅ Complete (2026-05-07)
 
