@@ -7,20 +7,23 @@
 
 ---
 
-## Phase 12 — Academic Calendar System
+## Phase 12 — Academic Calendar System ✅ Implemented
 **Complexity:** Low–Medium | **Dependencies:** None (builds on existing `Semester` entity)
+**Commit:** `6e89af1` — 2026-05-07
 
-### Stage 12.1 — Semester Timeline View
-- A calendar page visible to all roles shows all semesters with start/end dates and closed status.
-- SuperAdmin and Admin can add holiday/break periods as named date ranges within a semester.
-- Semester-scoped features (Assignments, Quizzes, Attendance) already respect semester boundaries — calendar is the display layer on top.
-- `Semester` entity (`Name`, `StartDate`, `EndDate`, `IsClosed`) already exists; no schema change needed for Stage 12.1.
+### Stage 12.1 — Semester Timeline View ✅
+- `AcademicCalendar` portal page visible to all roles; semester filter dropdown.
+- Days-remaining color badges (green/yellow/red/grey).
+- Admin/SuperAdmin link to Manage Deadlines page.
 
-### Stage 12.2 — Key Deadlines Management
-- Admin can create named deadline entries attached to a semester (e.g. census date, exam period, assignment cutoff).
-- New `AcademicDeadline` entity: `SemesterId`, `Title`, `DeadlineDate`, `ReminderDaysBefore`, `IsActive`.
-- Deadlines appear on the student and faculty dashboard with a days-remaining indicator.
-- BackgroundJob checks daily and dispatches in-app notifications when `DeadlineDate - today <= ReminderDaysBefore`.
+### Stage 12.2 — Key Deadlines Management ✅
+- `AcademicDeadline` entity (`SemesterId`, `Title`, `Description`, `DeadlineDate`, `ReminderDaysBefore`, `IsActive`, `LastReminderSentAt`).
+- `IAcademicDeadlineRepository` + `AcademicDeadlineRepository` (EF Core, table `academic_deadlines`).
+- `IAcademicCalendarService` + `AcademicCalendarService` — full CRUD + `DispatchPendingRemindersAsync`.
+- EF migration: `20260507_Phase12AcademicCalendar`.
+- `CalendarController`: GET endpoints for all authenticated roles; POST/PUT/DELETE restricted to Admin/SuperAdmin.
+- `AcademicDeadlines` portal page (Admin/SuperAdmin only) with create/edit/delete modals.
+- `DeadlineReminderJob`: BackgroundService running daily, dispatches `NotificationType.System` notifications when reminder window arrives.
 
 ---
 
