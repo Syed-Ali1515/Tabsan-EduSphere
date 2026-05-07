@@ -2812,4 +2812,92 @@ public class PortalController : Controller
         }
         return RedirectToAction(nameof(DashboardSettings));
     }
+
+    // ── Phase 12: Academic Calendar ────────────────────────────────────────────
+
+    [HttpGet]
+    public async Task<IActionResult> AcademicCalendar(Guid? semesterId, CancellationToken ct)
+    {
+        ViewData["Title"] = "Academic Calendar";
+        var model = new AcademicCalendarPageModel
+        {
+            IsConnected        = _api.IsConnected(),
+            SelectedSemesterId = semesterId
+        };
+        if (!model.IsConnected) return View(model);
+        try
+        {
+            model.Semesters = await _api.GetSemestersAsync(ct);
+            model.Deadlines = await _api.GetCalendarDeadlinesAsync(semesterId, ct);
+        }
+        catch (Exception ex) { model.Message = ex.Message; }
+        return View(model);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> AcademicDeadlines(Guid? semesterId, CancellationToken ct)
+    {
+        ViewData["Title"] = "Manage Deadlines";
+        if (!_api.IsConnected()) return RedirectToAction(nameof(Dashboard));
+        var identity = _api.GetSessionIdentity();
+        if (identity is null || (!identity.IsAdmin && !identity.IsSuperAdmin))
+            return Forbid();
+
+        var model = new AcademicDeadlinesPageModel
+        {
+            IsConnected        = true,
+            SelectedSemesterId = semesterId
+        };
+        try
+        {
+            model.Semesters = await _api.GetSemestersAsync(ct);
+            model.Deadlines = await _api.GetCalendarDeadlinesAsync(semesterId, ct);
+            if (semesterId.HasValue)
+                model.Form.SemesterId = semesterId.Value;
+        }
+        catch (Exception ex) { model.Message = ex.Message; }
+        return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateDeadline(DeadlineFormModel form, Guid? semesterId, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(Dashboard));
+        try
+        {
+            await _api.CreateCalendarDeadlineAsync(form, ct);
+            TempData["Message"] = "Deadline created successfully.";
+        }
+        catch (Exception ex) { TempData["Message"] = "Error: " + ex.Message; }
+        return RedirectToAction(nameof(AcademicDeadlines), new { semesterId = form.SemesterId });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EditDeadline(Guid id, DeadlineFormModel form, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(Dashboard));
+        try
+        {
+            await _api.UpdateCalendarDeadlineAsync(id, form, ct);
+            TempData["Message"] = "Deadline updated successfully.";
+        }
+        catch (Exception ex) { TempData["Message"] = "Error: " + ex.Message; }
+        return RedirectToAction(nameof(AcademicDeadlines), new { semesterId = form.SemesterId });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteDeadline(Guid id, Guid? semesterId, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(Dashboard));
+        try
+        {
+            await _api.DeleteCalendarDeadlineAsync(id, ct);
+            TempData["Message"] = "Deadline deleted.";
+        }
+        catch (Exception ex) { TempData["Message"] = "Error: " + ex.Message; }
+        return RedirectToAction(nameof(AcademicDeadlines), new { semesterId });
+    }
 }

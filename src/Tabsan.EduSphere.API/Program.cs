@@ -196,6 +196,10 @@ builder.Services.AddScoped<IPasswordHistoryRepository, Tabsan.EduSphere.Infrastr
 builder.Services.AddScoped<Tabsan.EduSphere.Domain.Interfaces.IReportRepository, Tabsan.EduSphere.Infrastructure.Reporting.ReportRepository>();
 builder.Services.AddScoped<IReportService, Tabsan.EduSphere.Infrastructure.Reporting.ReportService>();
 
+// ── Phase 12: Academic Calendar ───────────────────────────────────────────
+builder.Services.AddScoped<IAcademicDeadlineRepository, AcademicDeadlineRepository>();
+builder.Services.AddScoped<IAcademicCalendarService, AcademicCalendarService>();
+
 // ── Rate limiting (OWASP hardening) ─────────────────────────────────────
 builder.Services.AddRateLimiter(opts =>
 {

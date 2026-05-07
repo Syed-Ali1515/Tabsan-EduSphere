@@ -456,6 +456,8 @@ Views/Home/
 Views/
  Login/Index.cshtml
  Portal/
+  AcademicCalendar.cshtml
+  AcademicDeadlines.cshtml
   AdminUsers.cshtml
   AiChat.cshtml
   Analytics.cshtml
@@ -512,6 +514,8 @@ Views/Home/
 Views/
  Login/Index.cshtml
  Portal/
+  AcademicCalendar.cshtml
+  AcademicDeadlines.cshtml
   AdminUsers.cshtml
   AiChat.cshtml
   Analytics.cshtml

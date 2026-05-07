@@ -54,6 +54,7 @@ TemporaryDependencyNodeTargetIdentifier=net8.0
 
 [sourceFiles]
 AttendanceAlertJob.cs
+DeadlineReminderJob.cs
 LicenseCheckWorker.cs
 LicenseExpiryWarningJob.cs
 obj/Debug/net8.0/

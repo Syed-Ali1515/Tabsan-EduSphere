@@ -54,6 +54,7 @@ TemporaryDependencyNodeTargetIdentifier=net8.0
 
 [sourceFiles]
 Academic/
+ AcademicCalendarService.cs
  EnrollmentService.cs
  StudentRegistrationService.cs
 AiChat/AiChatService.cs
@@ -63,8 +64,10 @@ Assignments/
  ResultService.cs
 Attendance/AttendanceService.cs
 Auth/AuthService.cs
+DTOs/Academic/
+ AcademicDeadlineDTOs.cs
+ AcademicDtos.cs
 DTOs/
- Academic/AcademicDtos.cs
  AccountSecurityDtos.cs
  AiChat/AiChatDtos.cs
  Analytics/AnalyticsDtos.cs
@@ -85,6 +88,7 @@ DTOs/
  TimetableDtos.cs
 Fyp/FypService.cs
 Interfaces/
+ IAcademicCalendarService.cs
  IAccountSecurityService.cs
  IAiChatService.cs
  IAnalyticsService.cs

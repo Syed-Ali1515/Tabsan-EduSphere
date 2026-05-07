@@ -228,6 +228,13 @@ public interface IEduApiClient
     Task<PortalBrandingWebModel> GetPortalBrandingAsync(CancellationToken ct);
     Task SavePortalBrandingAsync(PortalBrandingWebModel model, CancellationToken ct);
     Task<string?> UploadLogoAsync(Stream fileStream, string fileName, CancellationToken ct);
+
+    // Phase 12: Academic Calendar & Deadlines
+    Task<List<DeadlineWebItem>> GetCalendarDeadlinesAsync(Guid? semesterId, CancellationToken ct);
+    Task<DeadlineWebItem?> GetCalendarDeadlineByIdAsync(Guid id, CancellationToken ct);
+    Task CreateCalendarDeadlineAsync(DeadlineFormModel form, CancellationToken ct);
+    Task UpdateCalendarDeadlineAsync(Guid id, DeadlineFormModel form, CancellationToken ct);
+    Task DeleteCalendarDeadlineAsync(Guid id, CancellationToken ct);
 }
 
 public class EduApiClient : IEduApiClient
@@ -2574,5 +2581,47 @@ public class EduApiClient : IEduApiClient
         public string? FontFamily       { get; set; }
         public string? FontSize         { get; set; }
     }
+
+    // ── Phase 12: Academic Calendar & Deadlines ──────────────────────────────
+
+    public async Task<List<DeadlineWebItem>> GetCalendarDeadlinesAsync(Guid? semesterId, CancellationToken ct)
+    {
+        var path = semesterId.HasValue
+            ? $"api/v1/calendar/deadlines/by-semester/{semesterId.Value}"
+            : "api/v1/calendar/deadlines";
+        return await GetAsync<List<DeadlineWebItem>>(path, ct) ?? new();
+    }
+
+    public Task<DeadlineWebItem?> GetCalendarDeadlineByIdAsync(Guid id, CancellationToken ct)
+        => GetAsync<DeadlineWebItem>($"api/v1/calendar/deadlines/{id}", ct);
+
+    public async Task CreateCalendarDeadlineAsync(DeadlineFormModel form, CancellationToken ct)
+    {
+        var payload = new
+        {
+            semesterId         = form.SemesterId,
+            title              = form.Title,
+            description        = form.Description,
+            deadlineDate       = form.DeadlineDate,
+            reminderDaysBefore = form.ReminderDaysBefore
+        };
+        await PostAsync<object, object>("api/v1/calendar/deadlines", payload, ct);
+    }
+
+    public async Task UpdateCalendarDeadlineAsync(Guid id, DeadlineFormModel form, CancellationToken ct)
+    {
+        var payload = new
+        {
+            title              = form.Title,
+            description        = form.Description,
+            deadlineDate       = form.DeadlineDate,
+            reminderDaysBefore = form.ReminderDaysBefore,
+            isActive           = form.IsActive
+        };
+        await PutAsync<object, object>($"api/v1/calendar/deadlines/{id}", payload, ct);
+    }
+
+    public Task DeleteCalendarDeadlineAsync(Guid id, CancellationToken ct)
+        => DeleteAsync($"api/v1/calendar/deadlines/{id}", ct);
 }
 

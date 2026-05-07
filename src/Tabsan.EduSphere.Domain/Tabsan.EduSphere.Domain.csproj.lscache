@@ -54,6 +54,7 @@ TemporaryDependencyNodeTargetIdentifier=net8.0
 
 [sourceFiles]
 Academic/
+ AcademicDeadline.cs
  AcademicProgram.cs
  AdminDepartmentAssignment.cs
  Building.cs
@@ -92,6 +93,7 @@ Identity/
  User.cs
  UserSession.cs
 Interfaces/
+ IAcademicDeadlineRepository.cs
  IAcademicProgramRepository.cs
  IAdminAssignmentRepository.cs
  IAiChatRepository.cs

@@ -196,6 +196,10 @@ public class ApplicationDbContext : DbContext
     /// <summary>Append-only log of all outbound email send attempts and their outcome.</summary>
     public DbSet<OutboundEmailLog> OutboundEmailLogs => Set<OutboundEmailLog>();
 
+    // ── Phase 12: Academic Calendar ────────────────────────────────────────────
+    /// <summary>Named academic deadlines attached to semesters (census dates, exam periods, etc.).</summary>
+    public DbSet<AcademicDeadline> AcademicDeadlines => Set<AcademicDeadline>();
+
     /// <summary>
     /// Scans the current assembly for all IEntityTypeConfiguration implementations
     /// and applies them automatically. This keeps OnModelCreating clean as the

@@ -85,6 +85,8 @@ Migrations/
  20260505_Phase2LicenseConcurrency.Designer.cs
  20260506_Phase4UserImport.cs
  20260506_Phase4UserImport.Designer.cs
+ 20260507044625_20260507_Phase12AcademicCalendar.cs
+ 20260507044625_20260507_Phase12AcademicCalendar.Designer.cs
  20260507103000_PortalBrandingLogoValueMaxLength.cs
  20260507103000_PortalBrandingLogoValueMaxLength.Designer.cs
  ApplicationDbContextModelSnapshot.cs
@@ -97,6 +99,7 @@ Persistence/
  ApplicationDbContext.cs
  Configurations/
   AcademicConfigurations.cs
+  AcademicDeadlineConfiguration.cs
   AdminChangeRequestConfiguration.cs
   AiChatConfigurations.cs
   AssignmentConfigurations.cs
@@ -151,6 +154,7 @@ Reporting/
  ReportRepository.cs
  ReportService.cs
 Repositories/
+ AcademicDeadlineRepository.cs
  AcademicRepositories.cs
  AcademicSupportRepositories.cs
  AiChatRepository.cs

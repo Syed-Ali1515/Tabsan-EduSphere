@@ -63,6 +63,7 @@ Controllers/
  AttendanceController.cs
  AuthController.cs
  BuildingController.cs
+ CalendarController.cs
  CourseController.cs
  DepartmentController.cs
  EnrollmentController.cs

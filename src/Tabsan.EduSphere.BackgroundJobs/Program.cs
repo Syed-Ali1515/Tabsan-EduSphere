@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Tabsan.EduSphere.Application.Academic;
 using Tabsan.EduSphere.Application.Interfaces;
 using Tabsan.EduSphere.Application.Notifications;
 using Tabsan.EduSphere.BackgroundJobs;
@@ -20,9 +21,15 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IEmailSender, MailKitEmailSender>();
 builder.Services.AddSingleton<IEmailTemplateRenderer, EmailTemplateRenderer>();
 
+// ── Phase 12: Academic Calendar ───────────────────────────────────────────────
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IAcademicDeadlineRepository, AcademicDeadlineRepository>();
+builder.Services.AddScoped<IAcademicCalendarService, AcademicCalendarService>();
+
 // ── Background jobs ───────────────────────────────────────────────────────────
 builder.Services.AddHostedService<Worker>();
 builder.Services.AddHostedService<LicenseExpiryWarningJob>();
+builder.Services.AddHostedService<DeadlineReminderJob>();
 
 var host = builder.Build();
 host.Run();

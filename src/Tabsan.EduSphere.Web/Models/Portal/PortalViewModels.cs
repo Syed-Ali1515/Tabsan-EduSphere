@@ -1234,3 +1234,51 @@ public class DashboardSettingsPageModel
     public PortalBrandingWebModel  Branding { get; set; } = new();
     public Microsoft.AspNetCore.Http.IFormFile? LogoFile { get; set; }
 }
+
+// ── Phase 12: Academic Calendar ────────────────────────────────────────────────
+
+/// <summary>Flat DTO returned by the API calendar endpoints and used by Web views.</summary>
+public class DeadlineWebItem
+{
+    public Guid     Id                 { get; set; }
+    public Guid     SemesterId         { get; set; }
+    public string   SemesterName       { get; set; } = string.Empty;
+    public string   Title              { get; set; } = string.Empty;
+    public string?  Description        { get; set; }
+    public DateTime DeadlineDate       { get; set; }
+    public int      ReminderDaysBefore { get; set; }
+    public bool     IsActive           { get; set; }
+    public int      DaysUntilDeadline  { get; set; }
+}
+
+/// <summary>Form posted when creating or editing a deadline.</summary>
+public class DeadlineFormModel
+{
+    public Guid     SemesterId         { get; set; }
+    public string   Title              { get; set; } = string.Empty;
+    public string?  Description        { get; set; }
+    public DateTime DeadlineDate       { get; set; } = DateTime.Today.AddDays(7);
+    public int      ReminderDaysBefore { get; set; } = 3;
+    public bool     IsActive           { get; set; } = true;
+}
+
+/// <summary>View model for the Academic Calendar page (all roles).</summary>
+public class AcademicCalendarPageModel
+{
+    public bool                 IsConnected  { get; set; }
+    public string?              Message      { get; set; }
+    public List<LookupItem>     Semesters    { get; set; } = new();
+    public Guid?                SelectedSemesterId { get; set; }
+    public List<DeadlineWebItem> Deadlines   { get; set; } = new();
+}
+
+/// <summary>View model for the Admin Deadline Management page.</summary>
+public class AcademicDeadlinesPageModel
+{
+    public bool                 IsConnected  { get; set; }
+    public string?              Message      { get; set; }
+    public List<LookupItem>     Semesters    { get; set; } = new();
+    public Guid?                SelectedSemesterId { get; set; }
+    public List<DeadlineWebItem> Deadlines   { get; set; } = new();
+    public DeadlineFormModel    Form         { get; set; } = new();
+}

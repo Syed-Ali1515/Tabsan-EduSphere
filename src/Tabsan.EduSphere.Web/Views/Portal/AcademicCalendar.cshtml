@@ -1,0 +1,99 @@
+@model Tabsan.EduSphere.Web.Models.Portal.AcademicCalendarPageModel
+@{ ViewData["Title"] = "Academic Calendar"; }
+
+@if (TempData["Message"] is string msg)
+{
+    var cls = msg.StartsWith("Error") ? "alert-danger" : "alert-success";
+    <div class="alert @cls alert-dismissible fade show" role="alert">
+        @msg
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (!string.IsNullOrWhiteSpace(Model.Message))
+{
+    <div class="alert alert-warning">@Model.Message</div>
+}
+
+@if (!Model.IsConnected)
+{
+    <div class="alert alert-warning">Not connected. <a asp-action="Dashboard">Configure API</a>.</div>
+}
+else
+{
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+            <form method="get" asp-action="AcademicCalendar" class="row g-2 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Filter by Semester</label>
+                    <select name="semesterId" class="form-select" onchange="this.form.submit()">
+                        <option value="">All Semesters</option>
+                        @foreach (var s in Model.Semesters)
+                        {
+                            <option value="@s.Id" selected="@(Model.SelectedSemesterId == s.Id ? "selected" : null)">@s.Name</option>
+                        }
+                    </select>
+                </div>
+                @if (User.IsInRole("SuperAdmin") || User.IsInRole("Admin"))
+                {
+                    <div class="col-auto">
+                        <a asp-action="AcademicDeadlines" asp-route-semesterId="@Model.SelectedSemesterId"
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-cog"></i> Manage Deadlines
+                        </a>
+                    </div>
+                }
+            </form>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <h2 class="h5 mb-3">
+                Deadlines &amp; Key Dates
+                <span class="badge bg-secondary ms-1">@Model.Deadlines.Count</span>
+            </h2>
+            @if (Model.Deadlines.Count == 0)
+            {
+                <p class="text-muted">No deadlines found for the selected filter.</p>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Semester</th>
+                                <th>Title</th>
+                                <th>Date</th>
+                                <th>Days Remaining</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var d in Model.Deadlines)
+                            {
+                                var badgeClass = d.DaysUntilDeadline <= 0 ? "bg-secondary"
+                                              : d.DaysUntilDeadline <= 3 ? "bg-danger"
+                                              : d.DaysUntilDeadline <= 7 ? "bg-warning text-dark"
+                                              : "bg-success";
+                                <tr>
+                                    <td>@d.SemesterName</td>
+                                    <td><strong>@d.Title</strong></td>
+                                    <td>@d.DeadlineDate.ToString("dd MMM yyyy")</td>
+                                    <td>
+                                        <span class="badge @badgeClass">
+                                            @(d.DaysUntilDeadline <= 0 ? "Passed"
+                                              : d.DaysUntilDeadline == 1 ? "Tomorrow"
+                                              : $"{d.DaysUntilDeadline} days")
+                                        </span>
+                                    </td>
+                                    <td class="text-muted small">@d.Description</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+}
