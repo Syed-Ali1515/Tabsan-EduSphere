@@ -229,14 +229,14 @@ All 8 stages of Phase 3 Faculty Workflow Repair are now resolved:
 
 ## Phase 6 - Admin Department Assignment Model
 
-### Stage 6.1 - Multi-Department Admin Assignment UI
-- When SuperAdmin creates an admin user, there should be a checkbox list of all departments.
-- SuperAdmin should be able to select multiple departments for an admin user.
+### Stage 6.1 - Multi-Department Admin Assignment UI (Implemented)
+- SuperAdmin can assign multiple departments to an Admin via a dedicated Admin Users portal page and via the Departments management panel.
+- Department checkbox list with select-all / clear controls; searchable admin selector.
+- Quick navigation between Departments assignment panel and dedicated Admin Users page.
 
-### Stage 6.2 - Multi-Department Admin Assignment Rules
-- Admin can have more than one department assigned.
-- Supported examples include IT, Business, Education, Languages, and similar departments.
-- Assigned departments should control the admin's accessible data and filters throughout the portal.
+### Stage 6.2 - Multi-Department Admin Assignment Rules (Implemented)
+- Admin can have more than one department assigned (`AdminDepartmentAssignment` entity).
+- Assigned departments constrain all Admin-accessible data and filters: department list, course list, course offerings, and all 9 report endpoints.
 
 ### Phase 6 Progress Update - 2026-05-06 (Backend Delivery)
 - Implemented a new admin-to-department assignment model in backend:
@@ -681,15 +681,10 @@ Implemented student-side assignment workflow corrections in the web portal:
 - Full solution build succeeds after role-scope hardening updates.
 - Faculty cannot request report data for unassigned/unowned offerings (API now returns `Forbid`/validation error as appropriate).
 
-## Phase 6 - Progress Update
+## Phase 6 - Final Status (2026-05-07)
 
-### Stage 6.1 and 6.2 - Multi-Department Admin Assignment (Kickoff)
+### Stage 6.1 and 6.2 - Multi-Department Admin Assignment (Complete)
 
-- Phase 6 implementation has been queued as the immediate next step after reporting scope hardening.
-- Documentation-first checkpoint completed before code changes, per requested working flow.
-- Continuous documentation sync now enforced for: `Docs/Function-List.md`, `Docs/Command.md`, `Project startup Docs/PRD.md`, and `Docs/Issue-Fix-Phases.md`.
-- Planned implementation scope:
-	- allow SuperAdmin to assign multiple departments to an Admin at creation/update time,
-	- persist and manage multi-department admin assignments,
-	- use assigned departments to constrain Admin-accessible reporting filters and data.
-- Stage 5.4 completion depends on this Phase 6 delivery and will be finalized right after these changes are implemented.
+- Phase 6 fully delivered. Both backend rules and SuperAdmin UI are in production.
+- Stage 5.4 (Admin Reporting Scope) is also fully complete — portal UX guidance guards added to all 9 report pages.
+- No remaining work in Phase 6.
