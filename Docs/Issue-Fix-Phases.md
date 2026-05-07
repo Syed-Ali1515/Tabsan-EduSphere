@@ -27,10 +27,10 @@ This file tracks the reported portal issues as phased work items so they can be 
 - [x] Web session cookie — `SameSite=Strict` + `SecurePolicy=Always`
 - [x] `.gitignore` — added `*.pfx`, `*.key`, `logs/`, `appsettings.*.local.json`, `secrets/`, `.env.local`
 
-### Pending (next session)
-- [ ] Serilog file sink — rolling log `logs/app-.txt`
-- [ ] `UserSecretsId` added to `API/Tabsan.EduSphere.API.csproj`
-- [ ] `FileUploadValidator.ValidateAsync()` called from `AssignmentController.Submit` and logo upload controller
+### Remaining Items — ✅ Complete (2026-05-07) | Commit: 5e80bc9
+- [x] Serilog file sink — rolling daily log `logs/app-.log`; 30-file retention; env-aware min level (Debug dev / Warning prod)
+- [x] `UserSecretsId` added to `API/Tabsan.EduSphere.API.csproj` (`tabsan-edusphere-api-dev`)
+- [x] `FileUploadValidator` extended with `ValidateImageAsync` (PNG/JPG/GIF/SVG/WebP ≤ 2 MB + magic bytes); wired into `PortalSettingsController.UploadLogo` replacing manual checks; inline size + extension guard added to `Web/PortalController.SubmitAssignment`
 
 ---
 

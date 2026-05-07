@@ -212,7 +212,9 @@
 
 | Function Name | Purpose | Location |
 |---|---|---|
-| `FileUploadValidator.ValidateAsync(file)` | Static async validator for uploaded files; checks file is present, size ≤ 5 MB, extension in allowlist (.pdf/.jpg/.jpeg/.png/.doc/.docx), MIME type matches extension, and magic bytes match expected binary header for the extension. Returns null on success or a user-facing error message on failure. | `API/Services/FileUploadValidator.cs` |
+| `FileUploadValidator.ValidateAsync(file)` | Static async validator for uploaded academic documents; checks file is present, size ≤ 5 MB, extension in allowlist (.pdf/.jpg/.jpeg/.png/.doc/.docx), MIME type matches extension, and magic bytes match expected binary header. Returns null on success or user-facing error string on failure. | `API/Services/FileUploadValidator.cs` |
+| `FileUploadValidator.ValidateImageAsync(file)` | Static async validator for logo/image uploads; checks size ≤ 2 MB, extension in allowlist (.png/.jpg/.jpeg/.gif/.svg/.webp), MIME type matches, and magic bytes for raster types (SVG uses ext+MIME only). Returns null on success or user-facing error string on failure. | `API/Services/FileUploadValidator.cs` |
+| `FileUploadValidator.ValidateCoreAsync(file, allowedExts, allowedMimes, magicMap, maxBytes)` | Private shared core of both validate methods; applies size, extension, MIME, and magic-byte checks using caller-provided dictionaries and size limit. | `API/Services/FileUploadValidator.cs` |
 
 ### API — Program.cs Changes (Part A)
 
@@ -245,7 +247,27 @@
 | `BackgroundJobs/appsettings.Development.json` | Updated: Added dev connection string for localhost. |
 | `EnforceAdminDepartmentScopeAsync(departmentId, courseOfferingId, ct)` | Enforces admin assigned-department + offering ownership-by-department guards across reporting endpoints. | `API/Controllers/ReportController.cs` |
 
-## Issue-Fix Phase 5 — Reporting and Export Center (2026-05-06)
+## Refactoring-Hosting-Security — Remaining Items (2026-05-07) | Commit 5e80bc9
+
+### API — Program.cs (Serilog)
+
+| Change | Purpose | Location |
+|---|---|---|
+| `builder.Host.UseSerilog(...)` | Wires Serilog structured logging; env-aware min level (Debug dev / Warning prod); overrides Microsoft namespaces to Warning; console sink with timestamp; rolling daily file sink to `logs/app-.log` with 30-file retention. | `API/Program.cs` |
+
+### API — PortalSettingsController (Part B wiring)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `PortalSettingsController.UploadLogo(file, ct)` | Replaced scattered manual size/ext/MIME checks with single `FileUploadValidator.ValidateImageAsync(file)` call; returns `BadRequest` with validator error message if invalid; continues to build data URI from valid image bytes. | `API/Controllers/PortalSettingsController.cs` |
+
+### Web — PortalController (Part B wiring)
+
+| Change | Purpose | Location |
+|---|---|---|
+| `PortalController.SubmitAssignment` — inline file validation | Added guard before file is written to disk: size ≤ 5 MB check + extension against allowlist (.pdf/.jpg/.jpeg/.png/.doc/.docx); redirects with `TempData["PortalMessage"]` on violation. | `Web/Controllers/PortalController.cs` |
+
+
 
 ### Infrastructure — ReportService (Stage 5.2)
 

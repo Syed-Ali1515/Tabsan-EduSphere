@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.29 (Refactoring-Hosting-Security Part A + Part B)  
+**Version:** 1.30 (Refactoring-Hosting-Security — Fully Complete)  
 **Status:** Approved  
 **Prepared By:** Product Team  
 **Last Updated:** 7 May 2026  
@@ -9,6 +9,12 @@
 ---
 
 ## 0. Implementation Update Log
+
+### 2026-05-07 — Refactoring-Hosting-Security Remaining Items Complete (commit 5e80bc9)
+- Serilog rolling file sink wired in `API/Program.cs` (`logs/app-.log`, daily rolling, 30-file retention, env-aware min level)
+- `UserSecretsId` (`tabsan-edusphere-api-dev`) added to `API/Tabsan.EduSphere.API.csproj`
+- `FileUploadValidator` extended with `ValidateImageAsync` (PNG/JPG/GIF/SVG/WebP ≤ 2 MB + magic-byte checks); wired into `PortalSettingsController.UploadLogo`; inline size+extension guard added to `Web/PortalController.SubmitAssignment`
+- Validation: **0 build errors; 69/69 integration tests passed; commit 5e80bc9**
 
 ### 2026-05-07 — Refactoring-Hosting-Security Part A + Part B Complete
 - **Part A — Hosting Configuration:**

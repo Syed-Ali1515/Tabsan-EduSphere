@@ -16,7 +16,7 @@ For **every completed phase**:
 ---
 
 ## Refactoring-Hosting-Security — Part A + Part B
-**Status:** ✅ Mostly Complete (2026-05-07) — 3 remaining items in next session
+**Status:** ✅ Fully Complete (2026-05-07) | Commits: f56ccd9, 5e80bc9
 
 ### Completion Mark
 - [x] Create `appsettings.Production.json` for API, Web, BackgroundJobs
@@ -35,9 +35,9 @@ For **every completed phase**:
 - [x] `FileUploadValidator` — magic bytes, MIME, extension, 5 MB limit
 - [x] Web session cookie — `SameSite=Strict` + `SecurePolicy=Always`
 - [x] `.gitignore` — `*.pfx`, `*.key`, `logs/`, `appsettings.*.local.json`, `secrets/`
-- [ ] Serilog file sink — rolling log `logs/app-.txt` (pending next session)
-- [ ] `UserSecretsId` in API `.csproj` (pending next session)
-- [ ] `FileUploadValidator` wired into `AssignmentController.Submit` + logo upload action (pending next session)
+- [x] Serilog file sink — rolling daily log `logs/app-.log`; 30-file retention; env-aware min level (Debug dev / Warning prod)
+- [x] `UserSecretsId` in API `.csproj` (`tabsan-edusphere-api-dev`)
+- [x] `FileUploadValidator.ValidateImageAsync` added; wired into `PortalSettingsController.UploadLogo`; inline validation guard in `Web/PortalController.SubmitAssignment`
 
 ### Implementation Summary
 - **Part A — Hosting:** Production config files for all 3 projects; Development config enriched with debug logging and CORS origins; base `appsettings.json` has `AppSettings` section; DB has transient-retry policy; CORS reads from config; ForwardedHeaders for reverse-proxy deployments; health check at `/health`; 5 MB body limits on all hosting stacks; startup env log; Swagger controlled by flag.
@@ -46,7 +46,7 @@ For **every completed phase**:
 ### Validation Summary
 - `dotnet build Tabsan.EduSphere.API.csproj` — **0 errors, 0 warnings**
 - Integration test suite — **69/69 passed**
-- Commit: `f56ccd9` pushed to `main`
+- Commit: `f56ccd9` + `5e80bc9` pushed to `main`; 69/69 tests passed
 
 ---
 
