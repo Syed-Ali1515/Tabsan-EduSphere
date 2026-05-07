@@ -49,9 +49,9 @@ git push
 
 ## Current Execution Pointer
 - Plan Source: Issue-Fix-Phases.md
-- Active Phase: **Issue-Fix Phase 4 — Student Workflow Repair**
-- Active Stage: **4.1 (Assignment Submission) — COMPLETED ✅**
-- Status: **All 12 integration tests passed; 0 build errors**
+- Active Phase: **All Issue-Fix Phases (1–6) COMPLETE ✅**
+- Active Stage: **No pending stage — awaiting new phase definition or Refactoring-Hosting-Security.md implementation**
+- Status: **0 build errors; 78/78 tests passed**
 - Last Updated: 2026-05-07
 
 ---
@@ -66,50 +66,46 @@ git push
 
 Database is fully synchronized with codebase.
 
-## ⚡ Phase 4.1 Status — Assignment Submission Flow
+## ⚡ Phase Summary — All Issue-Fix Phases Complete
 
-✅ **COMPLETED** — Student assignment submission workflow is fully functional:
-- Students can view their enrolled course offerings in dropdowns
-- Students can view published assignments for their courses
-- Students can submit assignments with file uploads or text content
-- File submissions saved to `/uploads/assignment-submissions/` with GUID filenames
-- API endpoints: `POST /api/v1/assignment/submit`, `GET /api/v1/assignment/my-submissions` working
-- Portal UI: Submit modal in `Assignments.cshtml` fully functional
-- Controller: `SubmitAssignment` action in `PortalController` handles file upload + API call
-- **Validation: 12/12 integration tests passed**
+✅ **Issue-Fix Phase 4 — Student Workflow Repair (ALL 6 stages)**
+- Stage 4.1 — Assignment submission flow wired end-to-end (submit/view/grade)
+- Stage 4.2 — Timetable department auto-resolved from student profile; `Guid.Empty` guard added
+- Stage 4.3 — Assignments semester filter; semester-scoped offering dropdown for students
+- Stage 4.4 — Results semester filter; fallback to student-safe result endpoints on 403
+- Stage 4.5 — Quizzes semester filter; Upcoming/Pending/Completed status badges
+- Stage 4.6 — FYP menu gated to 8th semester; student completion-request; faculty approval; auto-complete when all approvers approve; FYP result row in Results
+- **Validation: 12/12 assignment integration tests passed; 0 build errors**
 
-### What Remains in Phase 4
+✅ **Issue-Fix Phase 5 — Reporting and Export Center (Stages 5.1–5.5)**
+- Stage 5.1 — Assignment and Quiz summary report APIs + portal pages
+- Stage 5.2 — CSV/PDF export for Attendance, Results, Assignments, Quizzes (Excel retained)
+- Stage 5.3 — SuperAdmin unrestricted report scope confirmed
+- Stage 5.4 — Admin reporting scope bounded by assigned departments (closed via Phase 6 data model)
+- Stage 5.5 — Faculty scope enforced on department/offering filters and report data/export endpoints
 
-All items in Observed-Issues.md are now **Done** (Phases 1–6). Options:
-
-**Option A — Add Web UI for Phase 4**
-- Status: Completed.
-- Implemented:
-  - User import page + upload result display in portal
-  - Web login handling of `MustChangePassword`
-  - Forced password change page + action + session enforcement redirect
-
-**Option B — Define new phases**
-Open `Observed-Issues.md` and add new Phase 5 items, then tell the assistant to begin.
-
-**Option C — Integration tests for Phase 4**
-- Status: Partially completed.
-- Added integration tests for:
-  - `POST /api/v1/user-import/csv` authorization
-  - End-to-end import + first-login forced password change flow
-- Remaining (optional): dedicated unit tests for `UserImportService` internals.
+✅ **Issue-Fix Phase 6 — Admin Multi-Department Assignment (Stages 6.1–6.2 + Extension)**
+- Backend: `AdminDepartmentAssignment` entity, repository, migration, API endpoints
+- UI: Departments page assignment panel; dedicated AdminUsers portal page
+- Admin create/update with multi-department checkbox list and assignment sync
 
 ---
 
 ## Completed Work
-- **Issue-Fix Phase 4.1 — Assignment Submission Flow (Stage 4.1 Done)** ✅ (2026-05-07)
-  - Student assignment submission via API endpoint `POST /api/v1/assignment/submit` fully functional
-  - File upload handling: saves to `/wwwroot/uploads/assignment-submissions/{guid}{ext}`
-  - Portal UI: Submit Assignment modal in `Assignments.cshtml` with file + text submission options
-  - Controller action: `SubmitAssignment` in `PortalController` validates and processes submissions
-  - API client: `SubmitAssignmentAsync` in `EduApiClient` sends to backend
-  - Student dropdown: `CourseController.GetMyOfferings` returns enrolled courses
-  - Validation: **12/12 integration tests passed**, 0 build errors
+- **Issue-Fix Phase 4 — Student Workflow Repair (ALL Stages 4.1–4.6 Done)** ✅ (2026-05-07)
+  - Stage 4.1: Assignment submission end-to-end — `POST /api/v1/assignment/submit`, file upload to GUID path, Submit modal, `SubmitAssignment` action
+  - Stage 4.2: Timetable department auto-resolved from student profile; `Guid.Empty` guard prevents bad requests; dashboard-config fallback retained
+  - Stage 4.3/4.4/4.5: Semester filter added to Assignments/Results/Quizzes portals; offering dropdowns are semester-scoped; Results fallback to student-safe endpoints on 403; Quiz status badges (Upcoming/Pending/Completed)
+  - Stage 4.6: FYP menu gated by `CurrentSemesterNumber >= 8`; `POST /api/v1/fyp/{id}/request-completion` (student) + `POST /api/v1/fyp/{id}/approve-completion` (faculty); auto-complete when all approvers done; FYP result row in Results; EF migration `Phase4FypCompletionApprovalFlow`
+  - Auth consistency: login flow now resolves API base URL before token acquisition to prevent intermittent student 401s
+  - Validation: **12/12 assignment tests passed; 78/78 full suite passed; 0 build errors**
+- **Issue-Fix Phase 5 — Reporting and Export Center (ALL Stages 5.1–5.5 Done)** ✅ (2026-05-07)
+  - Stage 5.1: Assignment + Quiz summary report APIs (`/api/v1/reports/assignment-summary`, `/api/v1/reports/quiz-summary`) + portal pages `ReportAssignments`, `ReportQuizzes`
+  - Stage 5.2: CSV + PDF export for Attendance/Results/Assignments/Quizzes (`/export/csv`, `/export/pdf` variants); Web portal proxy actions; Excel/CSV/PDF export buttons on all report pages
+  - Stage 5.3: SuperAdmin unrestricted report scope verified
+  - Stage 5.4: Admin report scope bounded by assigned departments (closed by Phase 6 data model)
+  - Stage 5.5: Faculty department/offering filter sources scoped; report data/export requires offering ownership validation
+  - Validation: 0 build errors after all export + scope changes
 - **Issue-Fix Phase 3 — Faculty Workflow Repair (ALL 8 stages Done)** ✅ (2026-05-07)
   - Stage 3.1: CourseController.GetAll + GetOfferings — replaced Forbid() with Ok(empty) for out-of-scope dept requests
   - Stage 3.2/3.5/3.6/3.7: CourseController.GetMyOfferings — changed from FacultyUserId filter to dept-scope filter; fixes all empty dropdowns
@@ -128,15 +124,11 @@ Open `Observed-Issues.md` and add new Phase 5 items, then tell the assistant to 
 - Phase 1 Remediation Batches 1–5: all complete
 
 ## Next Steps
-- **Phase 3**: Start Faculty Workflow Repair (Stages 3.1 through 3.8) after confirming role-specific validations with faculty credentials.
-- **P2-S1-01**: Implement concurrent user limit enforcement based on `LicenseInfo.MaxUsers` in license file. Track active sessions in DB or in-memory. Reject login (non-SuperAdmin) when count >= MaxUsers.
-- **P2-S1-02**: Exempt SuperAdmin role from all concurrency checks — SuperAdmin can always log in regardless of user count.
-- **P2-S2-01**: Support `MaxUsers = 0` (or special sentinel like `"All"`) to mean unlimited — skip all concurrency checks for that license.
-- **P2-S3-01**: Bind license to deployment domain on first activation. Store `ActivatedDomain` in DB; reject license on domain mismatch.
-- **P2-S3-02**: Force re-upload of license when app detects it is running on a new domain (ActivatedDomain missing or mismatch).
-- **P2-S3-03**: Add HMAC/signature verification to license file validation — reject if payload was tampered with even if structurally valid.
-
-- Phase 8 (Enrollments Completion — ✅ Complete)
+- **All Issue-Fix Phases (1–6) are complete.** No pending stages in Issue-Fix-Phases.md.
+- **Refactoring-Hosting-Security.md** — Part A (multi-environment hosting configuration) and Part B (security hardening, OWASP Top 10) are documented but not yet implemented in code.
+- **New issue phases** — If new bugs or features are observed, add them to `Docs/Observed-Issues.md` and define a new Issue-Fix Phase in `Docs/Issue-Fix-Phases.md`.
+- **Stage 5.4 Admin scope** — Admin reporting scope is fully enforced via Phase 6 department assignments (closed).
+- **Optional**: dedicated unit tests for `UserImportService` internals (from Phase 4 Option C backlog).
 
 ## Pending Extra Tasks (Cross-Phase)
 - Keep Report Center menu visible by role and working links.

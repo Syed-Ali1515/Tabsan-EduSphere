@@ -20,6 +20,30 @@
   - `Fyp.cshtml`: "Create Project" button + `createFypModal` now render for Faculty role
 - Validation: 0 build errors; 78/78 tests passed
 
+### 2026-05-07 — Issue-Fix Phase 4 Complete (Student Workflow Repair — Stages 4.1–4.6)
+- **Stage 4.1 (Assignment Submission — completed)**
+  - `POST /api/v1/assignment/submit` functional for students; validates file-or-text requirement
+  - `SubmitAssignment` portal action saves files to GUID-named path in `wwwroot/uploads/assignment-submissions/`
+  - `Assignments.cshtml` — Submit modal with file input and text area; submission status merged into rows
+  - `EduApiClient.SubmitAssignmentAsync` wired to API
+- **Stage 4.2 (Timetable Department Auto-Resolution — completed)**
+  - Student timetable now auto-resolves department from authenticated student profile
+  - `Guid.Empty` guard prevents invalid department lookups; falls back to dashboard config if profile unavailable
+- **Stage 4.3/4.4/4.5 (Semester-Scoped Views — completed)**
+  - Semester filter and semester-scoped offering dropdowns added to Assignments, Results, and Quizzes portal pages
+  - Results: fallback to student-safe endpoint on 403 from offering-level call
+  - Quizzes: Upcoming/Pending/Completed status badges based on availability windows
+- **Stage 4.6 (FYP Student Lifecycle — completed)**
+  - FYP sidebar menu gated: hidden until `CurrentSemesterNumber >= 8`
+  - Student can request FYP completion (`POST /api/v1/fyp/{id}/request-completion`)
+  - Faculty can approve completion (`POST /api/v1/fyp/{id}/approve-completion`); FYP auto-completes when all assigned faculty approve
+  - Approval progress counter shown in portal (`approved/required`)
+  - Completed FYP result row rendered inside student Results page
+  - EF migration `Phase4FypCompletionApprovalFlow` added for approval state persistence
+- **Auth consistency hardening**
+  - Login flow resolves portal API base URL before token acquisition, eliminating intermittent student-page 401s
+- Validation: 12/12 assignment integration tests passed; 78/78 full suite passed; 0 build errors
+
 ### 2026-05-06 — Issue-Fix Phase 4 Option A/C Complete (Web UI Import + Forced Password Change)
 - Added/validated portal user import flow:
   - User Import page + CSV upload form + import summary rendering

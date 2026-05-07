@@ -38,6 +38,63 @@
 |---|---|---|
 | `Fyp.cshtml` | Stage 3.8 — `createFypModal` condition and "Create Project" button extended to include `Faculty` role. | `Web/Views/Portal/Fyp.cshtml` |
 
+## Issue-Fix Phase 4 — Student Workflow Repair (2026-05-07)
+
+### API — AssignmentController (Stage 4.1)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `Submit(SubmitAssignmentRequest, ct)` | Stage 4.1 — Student submits assignment with optional file URL and text content; validates at-least-one rule. | `API/Controllers/AssignmentController.cs` |
+| `GetMySubmissions(ct)` | Stage 4.1 — Student retrieves their own submission list with status and marks. | `API/Controllers/AssignmentController.cs` |
+| `Grade(GradeSubmissionRequest, ct)` | Stage 4.1 — Faculty grades a submitted assignment with marks and optional feedback. | `API/Controllers/AssignmentController.cs` |
+
+### Web — PortalController (Stages 4.1–4.6)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `SubmitAssignment(assignmentId, offeringId, semesterName, textContent, submissionFile, ct)` | Stage 4.1 — Saves uploaded file with GUID filename to `wwwroot/uploads/assignment-submissions/`; calls `SubmitAssignmentAsync`; validates file-or-text requirement. | `Web/Controllers/PortalController.cs` |
+| `Timetable(departmentId, semesterId, ct)` (student branch) | Stage 4.2 — Auto-resolves student department from authenticated student profile; falls back to dashboard config; guards against `Guid.Empty`. | `Web/Controllers/PortalController.cs` |
+| `Assignments(offeringId, semesterName, ct)` (student branch) | Stage 4.3 — Adds semester filter and semester-scoped offering dropdown for students; merges submission state into assignment rows. | `Web/Controllers/PortalController.cs` |
+| `Results(offeringId, semesterName, ct)` (student branch) | Stage 4.4 — Adds semester filter; falls back to student-safe results endpoint when offering-level call returns 403. | `Web/Controllers/PortalController.cs` |
+| `Quizzes(offeringId, semesterName, ct)` (student branch) | Stage 4.5 — Adds semester filter; assigns Upcoming/Pending/Completed status badges based on availability windows. | `Web/Controllers/PortalController.cs` |
+| `Fyp(departmentId, ct)` (student branch, 4.6) | Stage 4.6 — Blocks students below 8th semester with redirect; shows `Request Completion` button for in-progress projects; shows approval progress. | `Web/Controllers/PortalController.cs` |
+| `RequestFypCompletion(fypId, ct)` | Stage 4.6 — Student action to request FYP completion approval from assigned faculty. | `Web/Controllers/PortalController.cs` |
+| `ApproveFypCompletion(fypId, ct)` | Stage 4.6 — Faculty action to approve FYP completion; FYP auto-completes when all approvers have approved. | `Web/Controllers/PortalController.cs` |
+
+### API — FypController (Stage 4.6)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `RequestCompletion(id, ct)` | Stage 4.6 — Student endpoint to submit FYP completion request; persists request state. | `API/Controllers/FypController.cs` |
+| `ApproveCompletion(id, ct)` | Stage 4.6 — Faculty endpoint to approve FYP completion; auto-transitions FYP to Completed when all assigned faculty have approved. | `API/Controllers/FypController.cs` |
+
+### Web — EduApiClient (Stages 4.1–4.6)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `SubmitAssignmentAsync(assignmentId, fileUrl, textContent, ct)` | Stage 4.1 — Posts submission payload to `POST /api/v1/assignment/submit`. | `Web/Services/EduApiClient.cs` |
+| `GetMySubmissionsAsync(ct)` | Stage 4.1 — Fetches student's own submissions list. | `Web/Services/EduApiClient.cs` |
+| `GetMyStudentProfileAsync(ct)` | Stage 4.2 — Fetches authenticated student profile to auto-resolve department for timetable. | `Web/Services/EduApiClient.cs` |
+| `RequestFypCompletionAsync(fypId, ct)` | Stage 4.6 — Calls `POST /api/v1/fyp/{id}/request-completion`. | `Web/Services/EduApiClient.cs` |
+| `ApproveFypCompletionAsync(fypId, ct)` | Stage 4.6 — Calls `POST /api/v1/fyp/{id}/approve-completion`. | `Web/Services/EduApiClient.cs` |
+
+### Web — Views (Stage 4.1–4.6)
+
+| View | Change | Location |
+|---|---|---|
+| `Assignments.cshtml` | Stage 4.1/4.3 — Added `submitAssignmentModal` with file input + text area; semester filter dropdown; semester-scoped offering selector; submission status column. | `Web/Views/Portal/Assignments.cshtml` |
+| `Results.cshtml` | Stage 4.4 — Added semester filter; handles student-safe results fallback rendering. | `Web/Views/Portal/Results.cshtml` |
+| `Quizzes.cshtml` | Stage 4.5 — Added semester filter; status badges for Upcoming/Pending/Completed. | `Web/Views/Portal/Quizzes.cshtml` |
+| `Fyp.cshtml` | Stage 4.6 — Added Request Completion and Approve Completion buttons; approval progress counter. | `Web/Views/Portal/Fyp.cshtml` |
+
+### Infrastructure / Domain (Stage 4.6)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `FypCompletionApproval` entity / migration | Stage 4.6 — Persists per-faculty approval records; EF migration `Phase4FypCompletionApprovalFlow`. | `Domain/Fyp/`, `Infrastructure/Migrations/` |
+
+---
+
 ## Issue-Fix Phase 4 — Web User Import + Forced Password Change (2026-05-06)
 
 ### Web — Login / Portal Flow

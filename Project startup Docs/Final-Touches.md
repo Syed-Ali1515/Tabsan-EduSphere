@@ -32,6 +32,54 @@ For **every completed phase**:
 
 ---
 
+## Issue-Fix Phase 4 — Student Workflow Repair
+**Status:** ✅ Complete (2026-05-07)
+
+### Completion Mark
+- [x] Stage 4.1 — Assignment submission end-to-end (file upload + text, status merge, submit modal)
+- [x] Stage 4.2 — Timetable department auto-resolved from student profile; `Guid.Empty` guard added
+- [x] Stage 4.3 — Assignments semester filter + semester-scoped offering dropdown
+- [x] Stage 4.4 — Results semester filter + fallback to student-safe endpoints on 403
+- [x] Stage 4.5 — Quizzes semester filter + Upcoming/Pending/Completed status badges
+- [x] Stage 4.6 — FYP menu gated to ≥8th semester; student completion-request; faculty approval; auto-complete; FYP result row in Results
+
+### Implementation Summary
+- **Stage 4.1**: `AssignmentController.Submit` + `PortalController.SubmitAssignment` (file → GUID path + API call); `Assignments.cshtml` submit modal; `EduApiClient.SubmitAssignmentAsync`.
+- **Stage 4.2**: `PortalController.Timetable` student branch resolves `DepartmentId` from `GetMyStudentProfileAsync`; `Guid.Empty` guard prevents bad API calls; falls back to dashboard config.
+- **Stage 4.3/4.4/4.5**: `Assignments.cshtml`, `Results.cshtml`, `Quizzes.cshtml` each have a semester selector that persists via route/query; offering dropdowns filtered to selected semester; Results falls back to student-safe endpoint on 403; Quizzes derive status from availability window dates.
+- **Stage 4.6**: `FypController.RequestCompletion` (student) + `FypController.ApproveCompletion` (faculty); `FypCompletionApproval` domain entity + EF migration `Phase4FypCompletionApprovalFlow`; auto-complete when all approvers approve; FYP row rendered in `Results.cshtml` for completed projects. FYP sidebar menu hidden until `CurrentSemesterNumber >= 8`.
+- **Auth consistency**: `EduApiClient` login flow resolves API base URL before token acquisition, removing intermittent student 401s.
+
+### Validation Summary
+- 12/12 assignment integration tests passed.
+- 78/78 full integration suite passed.
+- 0 build errors across all projects.
+
+---
+
+## Issue-Fix Phase 5 — Reporting and Export Center
+**Status:** ✅ Complete (2026-05-07)
+
+### Completion Mark
+- [x] Stage 5.1 — Assignment and Quiz summary report APIs + portal pages
+- [x] Stage 5.2 — CSV/PDF export for Attendance, Results, Assignments, Quizzes (Excel retained)
+- [x] Stage 5.3 — SuperAdmin unrestricted report scope verified
+- [x] Stage 5.4 — Admin report scope bounded by Phase 6 assigned departments (closed)
+- [x] Stage 5.5 — Faculty scope enforced on department/offering filters and report data/export endpoints
+
+### Implementation Summary
+- **Stage 5.1**: Added `GET /api/v1/reports/assignment-summary` and `GET /api/v1/reports/quiz-summary` with matching export endpoints. Added `ReportAssignments.cshtml` and `ReportQuizzes.cshtml` portal pages.
+- **Stage 5.2**: Added `/export/csv` and `/export/pdf` variants for all four report types in `ReportController` and `ReportService`. Web portal proxy actions + Excel/CSV/PDF export buttons on each report page.
+- **Stage 5.3**: SuperAdmin retains unrestricted catalog, data, and export scope.
+- **Stage 5.4**: Admin report scope enforced via Phase 6 `AdminDepartmentAssignment` model; `EnforceAdminDepartmentScopeAsync` guard in `ReportController`.
+- **Stage 5.5**: `DepartmentController.GetAll`, `CourseController.GetAll/GetOfferings/GetMyOfferings` return faculty-scoped data; `EnforceFacultyOfferingScopeAsync` guard rejects report requests for unowned offerings.
+
+### Validation Summary
+- `dotnet build Tabsan.EduSphere.sln` succeeded after all report + scope changes.
+- CSV export returns `text/csv`; PDF export returns `application/pdf` across all four report types.
+
+---
+
 ## Phase 1 - Navigation, Session Stability, Sidebar Structure
 **Status:** ✅ Complete
 
