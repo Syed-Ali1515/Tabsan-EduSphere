@@ -254,10 +254,10 @@ All 8 stages of Phase 3 Faculty Workflow Repair are now resolved:
 - Validation:
 	- `dotnet build Tabsan.EduSphere.sln` succeeded after changes.
 
-### Stage 5.4 Status Update - 2026-05-06
-- Stage 5.4 backend scope enforcement is now implemented via Phase 6 assignment model.
-- Remaining optional enhancement:
-	- add/create-edit UI checkbox list for SuperAdmin to assign multiple departments during Admin user creation/update flow.
+### Stage 5.4 Status Update - 2026-05-07
+- Stage 5.4 fully complete.
+- Backend API scope enforcement (Phase 6 assignment model) and portal UX guidance guards are both in place.
+- All 9 report portal pages display Admin-specific guidance when required filter is missing.
 
 ### Phase 6 Progress Update - 2026-05-06 (Stage 6.1 UI Delivery)
 - Delivered SuperAdmin assignment-management UI in Departments portal page:
@@ -658,10 +658,15 @@ Implemented student-side assignment workflow corrections in the web portal:
 - SuperAdmin continues to receive full report catalog visibility and unrestricted report filter data.
 - SuperAdmin report endpoints remain unrestricted across departments and courses.
 
-### Stage 5.4 - Admin Reporting Scope (Partial)
+### Stage 5.4 - Admin Reporting Scope (Implemented)
 
-- Current behavior allows Admin to view report data across departments/courses (same as SuperAdmin).
-- Full "assigned departments and assigned courses only" enforcement remains dependent on Phase 6 multi-department admin assignment data model.
+- API-level enforcement: `ReportController.EnforceAdminDepartmentScopeAsync` enforces Admin must provide `departmentId` or `courseOfferingId`; returns 400 if neither provided; validates requested IDs are within assigned departments.
+- Department and course/offering filter APIs scope to Admin-assigned departments (delivered via Phase 6).
+- Portal UX: all 9 report pages now show a friendly guidance message for Admin users when required filter (department or course offering) is not selected, preventing raw API 400 errors.
+  - `ReportAttendance`, `ReportResults`, `ReportAssignments`, `ReportQuizzes`: message when no department or offering selected.
+  - `ReportGpa`, `ReportEnrollment`, `ReportSemesterResults`, `ReportFypStatus`: message when no department selected.
+  - `ReportLowAttendance`: message when no department or offering selected.
+- Mirrors the Faculty guidance pattern already in place.
 
 ### Stage 5.5 - Faculty Reporting Scope (Implemented)
 

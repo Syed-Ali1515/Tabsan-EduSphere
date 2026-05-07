@@ -199,6 +199,20 @@
 | `CourseController.GetOfferings(semesterId, departmentId, ct)` (admin scope) | Limits admin offering list to assigned departments. | `API/Controllers/CourseController.cs` |
 | `CourseController.GetMyOfferings(ct)` (admin scope) | Limits admin "my offerings" list to assigned departments. | `API/Controllers/CourseController.cs` |
 
+### Web — PortalController Report Pages (Stage 5.4 portal UX completion)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `ReportAttendance(...)` (admin guard) | Stage 5.4 — Shows friendly guidance message for Admin when neither `departmentId` nor `offeringId` is selected; prevents raw API 400 error. | `Web/Controllers/PortalController.cs` |
+| `ReportResults(...)` (admin guard) | Stage 5.4 — Same isAdminOnly guidance pattern for Results report page. | `Web/Controllers/PortalController.cs` |
+| `ReportAssignments(...)` (admin guard) | Stage 5.4 — Same isAdminOnly guidance pattern for Assignments report page. | `Web/Controllers/PortalController.cs` |
+| `ReportQuizzes(...)` (admin guard) | Stage 5.4 — Same isAdminOnly guidance pattern for Quizzes report page. | `Web/Controllers/PortalController.cs` |
+| `ReportGpa(...)` (admin guard) | Stage 5.4 — Shows guidance message for Admin when no `departmentId` selected. | `Web/Controllers/PortalController.cs` |
+| `ReportEnrollment(...)` (admin guard) | Stage 5.4 — Shows guidance message for Admin when no `departmentId` selected; previously always-fired and returned raw 400. | `Web/Controllers/PortalController.cs` |
+| `ReportSemesterResults(...)` (admin guard) | Stage 5.4 — Shows guidance message for Admin when no `departmentId` selected (within semester gate). | `Web/Controllers/PortalController.cs` |
+| `ReportLowAttendance(...)` (admin guard) | Stage 5.4 — Shows guidance message for Admin when neither `departmentId` nor `courseOfferingId` selected. | `Web/Controllers/PortalController.cs` |
+| `ReportFypStatus(...)` (admin guard) | Stage 5.4 — Shows guidance message for Admin when no `departmentId` selected. | `Web/Controllers/PortalController.cs` |
+
 ## Refactoring-Hosting-Security — Part A + Part B (2026-05-07)
 
 ### API — ExceptionHandlingMiddleware (Part B)

@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.30 (Refactoring-Hosting-Security — Fully Complete)  
+**Version:** 1.31 (Stage 5.4 Admin Reporting Scope — Fully Complete)  
 **Status:** Approved  
 **Prepared By:** Product Team  
 **Last Updated:** 7 May 2026  
@@ -9,6 +9,15 @@
 ---
 
 ## 0. Implementation Update Log
+
+### 2026-05-07 — Stage 5.4 Admin Reporting Scope Portal UX Complete (commit ee9fb57)
+- Added `isAdminOnly` guidance guards to all 9 report portal page actions in `Web/PortalController.cs`.
+- `ReportAttendance`, `ReportResults`, `ReportAssignments`, `ReportQuizzes`: Admin receives friendly message when neither department nor offering filter is selected.
+- `ReportGpa`, `ReportEnrollment`, `ReportSemesterResults`, `ReportFypStatus`: Admin receives friendly message when no department is selected.
+- `ReportLowAttendance`: Admin receives friendly message when neither department nor offering is selected.
+- Mirrors Faculty guidance pattern already in place; closes the portal UX gap that surfaced raw API 400 errors for Admin.
+- API-level enforcement (`EnforceAdminDepartmentScopeAsync`) was already complete via Phase 6.
+- Validation: **0 build errors, 0 warnings; 78/78 integration tests passed; commit ee9fb57**
 
 ### 2026-05-07 — Refactoring-Hosting-Security Remaining Items Complete (commit 5e80bc9)
 - Serilog rolling file sink wired in `API/Program.cs` (`logs/app-.log`, daily rolling, 30-file retention, env-aware min level)
@@ -140,14 +149,14 @@
 - **Stage 5.5 (Faculty reporting scope - completed)**
   - Department list and course/offering filter sources are now faculty-scoped.
   - Faculty report data/export calls now require selected offering ownership validation.
-- **Stage 5.4 (Admin reporting scope - partial)**
-  - Full admin assigned-department/course enforcement deferred until Phase 6 multi-department admin assignment model is implemented.
+- **Stage 5.4 (Admin reporting scope - completed)**
+  - Admin report scope now fully bounded: API enforces assigned-department/offering constraints; portal shows friendly guidance before any API call is made.
+  - All 9 report pages patched with `isAdminOnly` guidance guards.
 - **Validation**
   - `dotnet build Tabsan.EduSphere.sln` succeeded after Stage 5.2 and scope hardening changes.
 
-### 2026-05-06 — Issue-Fix Phase 6 Kickoff (Admin Multi-Department Assignment)
-- Phase 6.1/6.2 implementation queued as immediate continuation.
-- Target outcome: allow assigning multiple departments to Admin and use those assignments to finalize Stage 5.4 scope enforcement.
+### 2026-05-06 — Issue-Fix Phase 6 Kickoff (Admin Multi-Department Assignment — now complete)
+- Phase 6.1/6.2 fully implemented. Admin multi-department assignment model delivers final Stage 5.4 scope enforcement.
 
 ### 2026-05-06 — Issue-Fix Phase 2 Complete (Shared Portal and Settings)
 - **Stage 2.1 (Branding and Asset Rendering - completed)**

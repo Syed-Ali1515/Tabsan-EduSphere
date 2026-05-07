@@ -106,7 +106,7 @@ For **every completed phase**:
 - **Stage 5.1**: Added `GET /api/v1/reports/assignment-summary` and `GET /api/v1/reports/quiz-summary` with matching export endpoints. Added `ReportAssignments.cshtml` and `ReportQuizzes.cshtml` portal pages.
 - **Stage 5.2**: Added `/export/csv` and `/export/pdf` variants for all four report types in `ReportController` and `ReportService`. Web portal proxy actions + Excel/CSV/PDF export buttons on each report page.
 - **Stage 5.3**: SuperAdmin retains unrestricted catalog, data, and export scope.
-- **Stage 5.4**: Admin report scope enforced via Phase 6 `AdminDepartmentAssignment` model; `EnforceAdminDepartmentScopeAsync` guard in `ReportController`.
+- **Stage 5.4**: Admin report scope enforced via Phase 6 `AdminDepartmentAssignment` model; `EnforceAdminDepartmentScopeAsync` guard in `ReportController`. All 9 report portal pages now show a friendly guidance message for Admin when the required department or offering filter is missing (mirrors Faculty guidance pattern).
 - **Stage 5.5**: `DepartmentController.GetAll`, `CourseController.GetAll/GetOfferings/GetMyOfferings` return faculty-scoped data; `EnforceFacultyOfferingScopeAsync` guard rejects report requests for unowned offerings.
 
 ### Validation Summary

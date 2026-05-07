@@ -82,7 +82,7 @@ Database is fully synchronized with codebase.
 - Stage 5.1 — Assignment and Quiz summary report APIs + portal pages
 - Stage 5.2 — CSV/PDF export for Attendance, Results, Assignments, Quizzes (Excel retained)
 - Stage 5.3 — SuperAdmin unrestricted report scope confirmed
-- Stage 5.4 — Admin reporting scope bounded by assigned departments (closed via Phase 6 data model)
+- Stage 5.4 — Admin reporting scope bounded by assigned departments (Phase 6 data model + portal guidance guards on all 9 report pages)
 - Stage 5.5 — Faculty scope enforced on department/offering filters and report data/export endpoints
 
 ✅ **Issue-Fix Phase 6 — Admin Multi-Department Assignment (Stages 6.1–6.2 + Extension)**
@@ -104,7 +104,7 @@ Database is fully synchronized with codebase.
   - Stage 5.1: Assignment + Quiz summary report APIs (`/api/v1/reports/assignment-summary`, `/api/v1/reports/quiz-summary`) + portal pages `ReportAssignments`, `ReportQuizzes`
   - Stage 5.2: CSV + PDF export for Attendance/Results/Assignments/Quizzes (`/export/csv`, `/export/pdf` variants); Web portal proxy actions; Excel/CSV/PDF export buttons on all report pages
   - Stage 5.3: SuperAdmin unrestricted report scope verified
-  - Stage 5.4: Admin report scope bounded by assigned departments (closed by Phase 6 data model)
+  - Stage 5.4: Admin report scope bounded by assigned departments (Phase 6 data model + portal UX guidance guards on all 9 report pages)
   - Stage 5.5: Faculty department/offering filter sources scoped; report data/export requires offering ownership validation
   - Validation: 0 build errors after all export + scope changes
 - **Issue-Fix Phase 3 — Faculty Workflow Repair (ALL 8 stages Done)** ✅ (2026-05-07)
@@ -125,11 +125,7 @@ Database is fully synchronized with codebase.
 - Phase 1 Remediation Batches 1–5: all complete
 
 ## Next Steps
-- **Refactoring-Hosting-Security.md remaining items (3 tasks):**
-  1. Serilog file sink — wire `Serilog.Sinks.File` + `Serilog.Sinks.Console` rolling logs in `API/Program.cs`
-  2. `UserSecretsId` — add `<UserSecretsId>tabsan-edusphere-api-dev</UserSecretsId>` to API `.csproj`
-  3. `FileUploadValidator` — call `FileUploadValidator.ValidateAsync()` from `AssignmentController.Submit` and logo upload controller action
-- **All Issue-Fix Phases (1–6) are complete.** No pending stages in Issue-Fix-Phases.md.
+- **All Issue-Fix Phases (1–6) and Refactoring-Hosting-Security items are complete.** No pending stages.
 - **New issue phases** — If new bugs or features are observed, add them to `Docs/Observed-Issues.md` and define a new Issue-Fix Phase in `Docs/Issue-Fix-Phases.md`.
 - **Optional**: dedicated unit tests for `UserImportService` internals (from Phase 4 Option C backlog).
 
@@ -156,6 +152,23 @@ When a phase is completed, update:
 ---
 
 ## Work Log
+
+### Entry 024 — 2026-05-07 — Stage 5.4 Admin Reporting Scope Portal UX Completion
+**Completed:**
+- Added `isAdminOnly` guidance guards to all 9 report portal page actions in `Web/Controllers/PortalController.cs`:
+  - `ReportAttendance`, `ReportResults`, `ReportAssignments`, `ReportQuizzes`: Admin receives friendly message when neither department nor offering is selected (mirrors existing Faculty guidance pattern).
+  - `ReportGpa`, `ReportEnrollment`, `ReportSemesterResults`, `ReportFypStatus`: Admin receives friendly message when no department is selected.
+  - `ReportLowAttendance`: Admin receives friendly message when neither department nor offering is selected.
+- `isAdminOnly` pattern: `identity?.IsAdmin == true && !identity.IsSuperAdmin` (avoids triggering for SuperAdmin who has `IsAdmin=true`).
+- No API changes needed — `EnforceAdminDepartmentScopeAsync` was already complete via Phase 6.
+
+**Validation:**
+- `dotnet build Tabsan.EduSphere.Web.csproj` — **0 errors, 0 warnings**
+- Full integration suite — **78/78 tests passed**
+- Commit: `ee9fb57` — pushed to `main`
+
+**Moved to:**
+- All phases and remediation items complete. No active pending work.
 
 ### Entry 023 — 2026-05-07 — Refactoring-Hosting-Security Part A + Part B Delivery
 **Completed:**
