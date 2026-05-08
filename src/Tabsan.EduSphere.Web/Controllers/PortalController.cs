@@ -171,6 +171,46 @@ public class PortalController : Controller
         return RedirectToAction(nameof(Dashboard));
     }
 
+    // ── Phase 24 — Module Composition Panel ────────────────────────────────
+
+    [HttpGet]
+    public async Task<IActionResult> ModuleComposition(CancellationToken ct)
+    {
+        var model = new DashboardCompositionModel { IsConnected = _api.IsConnected() };
+        if (!model.IsConnected) return View(model);
+        try
+        {
+            var modulesTask = _api.GetVisibleModulesAsync(ct);
+            var vocabTask   = _api.GetVocabularyAsync(ct);
+            var widgetsTask = _api.GetDashboardWidgetsAsync(ct);
+            await Task.WhenAll(modulesTask, vocabTask, widgetsTask);
+
+            model.Modules = modulesTask.Result.Select(m => new ModuleVisibilityItem
+            {
+                Key = m.Key, Name = m.Name,
+                IsActive = m.IsActive, IsAccessible = m.IsAccessible
+            }).ToList();
+
+            model.Widgets = widgetsTask.Result.Select(w => new WidgetItem
+            {
+                Key = w.Key, Title = w.Title,
+                Icon = w.Icon, Order = w.Order
+            }).ToList();
+
+            var vocab = vocabTask.Result;
+            if (vocab is not null)
+            {
+                model.PeriodLabel       = vocab.PeriodLabel;
+                model.ProgressionLabel  = vocab.ProgressionLabel;
+                model.GradingLabel      = vocab.GradingLabel;
+                model.CourseLabel       = vocab.CourseLabel;
+                model.StudentGroupLabel = vocab.StudentGroupLabel;
+            }
+        }
+        catch (Exception ex) { model.Message = ex.Message; }
+        return View(model);
+    }
+
     // ── Timetable Admin ─────────────────────────────────────────────────────
 
     [HttpGet]

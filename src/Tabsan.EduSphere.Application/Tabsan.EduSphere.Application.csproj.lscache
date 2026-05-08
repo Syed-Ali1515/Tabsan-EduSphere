@@ -122,6 +122,7 @@ Interfaces/
  ICourseGradingService.cs
  ICourseService.cs
  ICsvRegistrationImportService.cs
+ IDashboardCompositionService.cs
  IDegreeAuditService.cs
  IDiscussionService.cs
  IEmailSender.cs
@@ -132,10 +133,12 @@ Interfaces/
  IGraduationService.cs
  IHelpdeskService.cs
  IInstitutionPolicyService.cs
+ ILabelService.cs
  ILibraryService.cs
  ILlmClient.cs
  ILmsService.cs
  IModuleEntitlementResolver.cs
+ IModuleRegistryService.cs
  IModuleService.cs
  INotificationService.cs
  IPasswordHasher.cs
@@ -159,7 +162,10 @@ Lms/
  AnnouncementService.cs
  DiscussionService.cs
  LmsService.cs
-Modules/ModuleService.cs
+Modules/
+ ModuleRegistry.cs
+ ModuleRegistryService.cs
+ ModuleService.cs
 Notifications/NotificationService.cs
 obj/Debug/net8.0/
  .NETCoreApp,Version=v8.0.AssemblyAttributes.cs
@@ -172,7 +178,9 @@ Services/
  AccreditationService.cs
  BuildingRoomService.cs
  CsvRegistrationImportService.cs
+ DashboardCompositionService.cs
  InstitutionPolicyService.cs
+ LabelService.cs
  LibraryService.cs
  SettingsServices.cs
  StudentLifecycleService.cs

@@ -155,6 +155,7 @@ Lms/
  DiscussionThread.cs
 Modules/
  Module.cs
+ ModuleDescriptor.cs
  ModuleStatus.cs
 Notifications/
  Notification.cs

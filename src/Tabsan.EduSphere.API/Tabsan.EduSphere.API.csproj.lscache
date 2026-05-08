@@ -67,6 +67,7 @@ Controllers/
  BuildingController.cs
  CalendarController.cs
  CourseController.cs
+ DashboardCompositionController.cs
  DegreeAuditController.cs
  DepartmentController.cs
  DiscussionController.cs
@@ -77,10 +78,12 @@ Controllers/
  GraduationController.cs
  HelpdeskController.cs
  InstitutionPolicyController.cs
+ LabelController.cs
  LibraryController.cs
  LicenseController.cs
  LmsController.cs
  ModuleController.cs
+ ModuleRegistryController.cs
  NotificationController.cs
  PaymentReceiptController.cs
  PortalSettingsController.cs

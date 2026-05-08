@@ -249,7 +249,10 @@ builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IAccreditatio
 builder.Services.AddHttpClient<Tabsan.EduSphere.Application.Interfaces.ILibraryService, Tabsan.EduSphere.Application.Services.LibraryService>();
 // ── Phase 23: Core Policy Foundation ────────────────────────────────────────────
 builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IInstitutionPolicyService, Tabsan.EduSphere.Application.Services.InstitutionPolicyService>();
-// ── Rate limiting (OWASP hardening) ─────────────────────────────────────
+// ── Phase 24: Dynamic Module and UI Composition ───────────────────────────────
+builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IModuleRegistryService, Tabsan.EduSphere.Application.Modules.ModuleRegistryService>();
+builder.Services.AddSingleton<Tabsan.EduSphere.Application.Interfaces.ILabelService, Tabsan.EduSphere.Application.Services.LabelService>();
+builder.Services.AddSingleton<Tabsan.EduSphere.Application.Interfaces.IDashboardCompositionService, Tabsan.EduSphere.Application.Services.DashboardCompositionService>();// ── Rate limiting (OWASP hardening) ─────────────────────────────────────
 builder.Services.AddRateLimiter(opts =>
 {
     // Global sliding window: 100 requests per minute per IP.

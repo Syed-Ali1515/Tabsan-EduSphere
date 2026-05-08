@@ -491,6 +491,7 @@ Views/
   LibraryConfig.cshtml
   LicenseUpdate.cshtml
   LmsManage.cshtml
+  ModuleComposition.cshtml
   ModuleSettings.cshtml
   Notifications.cshtml
   Payments.cshtml
@@ -577,6 +578,7 @@ Views/
   LibraryConfig.cshtml
   LicenseUpdate.cshtml
   LmsManage.cshtml
+  ModuleComposition.cshtml
   ModuleSettings.cshtml
   Notifications.cshtml
   Payments.cshtml

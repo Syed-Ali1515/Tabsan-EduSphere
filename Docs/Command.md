@@ -55,11 +55,11 @@ cmd /c git -C "<repo-root>" push origin main
 
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
-- Active Phase: **Phase 23 — Core Policy Foundation — FULLY COMPLETE ✅**
-- Active Stage: **Stages 23.1 (Policy Kernel) + 23.2 (Institution Context Middleware) + 23.3 (Role-Rights Hardening) done**
-- Status: **0 build errors; 27/27 unit tests passed; no migration needed (uses portal_settings table)**
-- Last Updated: 2026-05-13
-- Next: Phase 24 (see Docs/Advance-Enhancements.md)
+- Active Phase: **Phase 24 — Dynamic Module and UI Composition — FULLY COMPLETE ✅**
+- Active Stage: **Stages 24.1 (Module Registry) + 24.2 (Dynamic Labels) + 24.3 (Dashboard Composition) done**
+- Status: **0 build errors; 44/44 unit tests passed; no migration needed**
+- Last Updated: 2026-05-09
+- Next: Phase 25 (see Docs/Advance-Enhancements.md)
 
 ---
 
@@ -1011,6 +1011,30 @@ git push origin main
 | 21.1 | DTOs, service interface + implementation, EF configs, repository | `Application/DTOs/StudyPlanner/StudyPlannerDTOs.cs`, `Application/Interfaces/IStudyPlanService.cs`, `Application/StudyPlanner/StudyPlanService.cs`, `Infrastructure/Persistence/Configurations/StudyPlanConfigurations.cs`, `Infrastructure/Repositories/StudyPlanRepository.cs` |
 | 21.2 | Recommendation engine (degree audit gaps + electives + prerequisite gating) | Part of `StudyPlanService.GetRecommendationsAsync` |
 | Cross-cutting | Controller, DI, DbContext DbSets, EduApiClient, PortalController, views, sidebar | `API/Controllers/StudyPlanController.cs`, `API/Program.cs`, `Infrastructure/Persistence/ApplicationDbContext.cs`, `Web/Services/EduApiClient.cs`, `Web/Controllers/PortalController.cs`, `Web/Views/Portal/StudyPlan.cshtml`, `Web/Views/Portal/StudyPlanDetail.cshtml`, `Web/Views/Portal/StudyPlanRecommendations.cshtml`, `Views/Shared/_Layout.cshtml` |
+
+---
+
+## Phase 24 — Dynamic Module and UI Composition
+
+**EF Migration:** Not required (no new tables)
+
+**Git Commit:**
+```powershell
+git add -A
+git commit -m "Phase 24 — Dynamic Module and UI Composition (Module Registry + Dynamic Labels + Dashboard Composition)"
+git pull --rebase origin main
+git push origin main
+```
+
+**Test Run:** 44/44 unit tests passed (build clean, 0 errors)
+**Status:** ✅ Complete
+
+### Stages Completed
+| Stage | Description | Files |
+|-------|-------------|-------|
+| 24.1 | Module Registry — static compile-time catalogue (key, roles, institution types, license gate) + registry service combining live activation with policy snapshot | `Domain/Modules/ModuleDescriptor.cs`, `Application/Modules/ModuleRegistry.cs`, `Application/Interfaces/IModuleRegistryService.cs`, `Application/Modules/ModuleRegistryService.cs`, `API/Controllers/ModuleRegistryController.cs` |
+| 24.2 | Dynamic Labels — institution-mode-aware vocabulary (Semester↔Grade↔Year, GPA/CGPA↔Percentage, Course↔Subject) | `Application/Interfaces/ILabelService.cs`, `Application/Services/LabelService.cs`, `API/Controllers/LabelController.cs` |
+| 24.3 | Dashboard Composition — ordered widget list by role + institution type, fed to web layer | `Application/Interfaces/IDashboardCompositionService.cs`, `Application/Services/DashboardCompositionService.cs`, `API/Controllers/DashboardCompositionController.cs`, `Web/Views/Portal/ModuleComposition.cshtml` |
 
 ---
 

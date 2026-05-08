@@ -2030,3 +2030,33 @@ public class RecommendationsPageModel
     public string?                ErrorMessage          { get; set; }
     public bool                   IsConnected           { get; set; }
 }
+
+// ── Phase 24 — Dynamic Module & UI Composition ────────────────────────────────
+public class DashboardCompositionModel
+{
+    public bool                              IsConnected   { get; set; }
+    public string?                           Message       { get; set; }
+    public List<ModuleVisibilityItem>        Modules       { get; set; } = new();
+    public List<WidgetItem>                  Widgets       { get; set; } = new();
+    public string PeriodLabel       { get; set; } = "Semester";
+    public string ProgressionLabel  { get; set; } = "Progression";
+    public string GradingLabel      { get; set; } = "GPA/CGPA";
+    public string CourseLabel       { get; set; } = "Course";
+    public string StudentGroupLabel { get; set; } = "Batch";
+}
+
+public class ModuleVisibilityItem
+{
+    public string Key          { get; set; } = "";
+    public string Name         { get; set; } = "";
+    public bool   IsActive     { get; set; }
+    public bool   IsAccessible { get; set; }
+}
+
+public class WidgetItem
+{
+    public string Key   { get; set; } = "";
+    public string Title { get; set; } = "";
+    public string Icon  { get; set; } = "";
+    public int    Order { get; set; }
+}

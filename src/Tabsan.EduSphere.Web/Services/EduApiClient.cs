@@ -364,6 +364,11 @@ public interface IEduApiClient
     // Phase 23 — Institution Policy
     Task<InstitutionPolicyApiModel?> GetInstitutionPolicyAsync(CancellationToken ct);
     Task SaveInstitutionPolicyAsync(InstitutionPolicyApiModel model, CancellationToken ct);
+
+    // Phase 24 — Dynamic Module & UI Composition
+    Task<List<ModuleVisibilityApiModel>> GetVisibleModulesAsync(CancellationToken ct);
+    Task<AcademicVocabularyApiModel?> GetVocabularyAsync(CancellationToken ct);
+    Task<List<WidgetDescriptorApiModel>> GetDashboardWidgetsAsync(CancellationToken ct);
 }
 
 public class EduApiClient : IEduApiClient
@@ -1552,6 +1557,18 @@ public class EduApiClient : IEduApiClient
 
     public async Task SaveInstitutionPolicyAsync(InstitutionPolicyApiModel model, CancellationToken ct)
         => await PutAsync<InstitutionPolicyApiModel, object?>("api/v1/institution-policy", model, ct);
+
+    // Phase 24 — Dynamic Module & UI Composition
+    public async Task<List<ModuleVisibilityApiModel>> GetVisibleModulesAsync(CancellationToken ct)
+        => await GetAsync<List<ModuleVisibilityApiModel>>("api/v1/module-registry/visible", ct)
+           ?? new();
+
+    public async Task<AcademicVocabularyApiModel?> GetVocabularyAsync(CancellationToken ct)
+        => await GetAsync<AcademicVocabularyApiModel>("api/v1/labels", ct);
+
+    public async Task<List<WidgetDescriptorApiModel>> GetDashboardWidgetsAsync(CancellationToken ct)
+        => await GetAsync<List<WidgetDescriptorApiModel>>("api/v1/dashboard/composition", ct)
+           ?? new();
 
     private sealed class CourseDetailDto
     {
@@ -3917,4 +3934,30 @@ public sealed class InstitutionPolicyApiModel
     public bool IncludeCollege    { get; set; }
     public bool IncludeUniversity { get; set; } = true;
     public bool IsValid           { get; set; }
+}
+
+// ── Phase 24 API models ───────────────────────────────────────────────────────
+public sealed class ModuleVisibilityApiModel
+{
+    public string Key          { get; set; } = "";
+    public string Name         { get; set; } = "";
+    public bool   IsActive     { get; set; }
+    public bool   IsAccessible { get; set; }
+}
+
+public sealed class AcademicVocabularyApiModel
+{
+    public string PeriodLabel       { get; set; } = "Semester";
+    public string ProgressionLabel  { get; set; } = "Progression";
+    public string GradingLabel      { get; set; } = "GPA/CGPA";
+    public string CourseLabel       { get; set; } = "Course";
+    public string StudentGroupLabel { get; set; } = "Batch";
+}
+
+public sealed class WidgetDescriptorApiModel
+{
+    public string Key   { get; set; } = "";
+    public string Title { get; set; } = "";
+    public string Icon  { get; set; } = "";
+    public int    Order { get; set; }
 }

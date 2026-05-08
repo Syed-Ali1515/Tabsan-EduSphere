@@ -263,7 +263,9 @@ FROM (VALUES
     (CAST(N'E22A0000-0000-0000-0000-000000000001' AS UNIQUEIDENTIFIER), N'Library Integration',    N'External library catalogue and loan proxy',   N'library_config',     31),
     (CAST(N'E22A0000-0000-0000-0000-000000000002' AS UNIQUEIDENTIFIER), N'Accreditation Reports',  N'Government / accreditation report templates', N'accreditation',      32),
     -- Phase 23: Institution Policy (SuperAdmin only)
-    (CAST(N'E23A0000-0000-0000-0000-000000000001' AS UNIQUEIDENTIFIER), N'Institution Type',       N'Configure School / College / University mode', N'institution_policy', 33)
+    (CAST(N'E23A0000-0000-0000-0000-000000000001' AS UNIQUEIDENTIFIER), N'Institution Type',       N'Configure School / College / University mode', N'institution_policy', 33),
+    -- Phase 24: Module Composition (SuperAdmin only)
+    (CAST(N'E24A0000-0000-0000-0000-000000000001' AS UNIQUEIDENTIFIER), N'Module Composition',     N'View module registry and dashboard widgets',   N'module_composition', 34)
 ) AS v([Id],[Name],[Purpose],[Key],[Ord])
 WHERE NOT EXISTS (SELECT 1 FROM [sidebar_menu_items] WHERE [Id] = v.[Id]);
 
@@ -307,6 +309,8 @@ WHERE NOT EXISTS (SELECT 1 FROM [sidebar_menu_items] WHERE [Id] = v.[Id]);
         (CAST(N'E22A0000-0000-0000-0000-000000000002' AS UNIQUEIDENTIFIER), N'SuperAdmin'),
         -- Phase 23
         (CAST(N'E23A0000-0000-0000-0000-000000000001' AS UNIQUEIDENTIFIER), N'SuperAdmin'),
+        -- Phase 24
+        (CAST(N'E24A0000-0000-0000-0000-000000000001' AS UNIQUEIDENTIFIER), N'SuperAdmin'),
         -- Admin
         (CAST(N'30A1025F-BAC8-4847-AE59-F0D1BAD8F506' AS UNIQUEIDENTIFIER), N'Admin'),
         (CAST(N'AFFC4796-6040-4FB4-BE44-BF49410F6F15' AS UNIQUEIDENTIFIER), N'Admin'),
