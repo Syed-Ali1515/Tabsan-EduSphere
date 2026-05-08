@@ -286,6 +286,77 @@
 
 ---
 
+## Phase 22 — External Integrations ✅ Implemented (commit `dddee69` — 2026-05-08)
+**Complexity:** High | **Dependencies:** None (SuperAdmin-configured); standalone phase
+
+### Stage 22.1 — Library System Integration ✅
+- SuperAdmin configures library catalogue URL + optional API token via `PUT /api/v1/library/config`.
+- `LibraryConfig` stored in `portal_settings` under the `library_` key prefix.
+- `GET /api/v1/library/loans` proxies request to external library API using calling user's username as identifier.
+- `GET /api/v1/library/loans/{studentIdentifier}` — Admin/SuperAdmin can look up any student's loans.
+- Portal view: `LibraryConfig.cshtml` (SuperAdmin) with catalogue URL + token inputs; sidebar entry `library_config` (group: Settings).
+
+### Stage 22.2 — Government / Accreditation Reporting ✅
+- `AccreditationTemplate` entity: `Name`, `Description`, `FieldMappingsJson`, `Format` (CSV/PDF), `IsActive`.
+- CRUD: `GET/POST/PUT/DELETE /api/v1/accreditation/{id}` — template management SuperAdmin-only.
+- `GET /api/v1/accreditation/{id}/generate` — Admin/SuperAdmin; generates and streams report file; writes to audit log.
+- `AccreditationService.GenerateAsync` serialises template field mappings, pulls live data from existing aggregations, formats as CSV or plain-text PDF.
+- Portal view: `AccreditationTemplates.cshtml` (SuperAdmin/Admin) — template list with generate buttons; sidebar entry `accreditation` (group: Settings).
+- EF Migration `Phase22_ExternalIntegrations` — adds `accreditation_templates` table.
+
+**Validation:** 0 build errors · no new unit tests (all integration-tested via existing suite) · migration `Phase22_ExternalIntegrations` applied
+
+---
+
+## Phase 23 — Core Policy Foundation ✅ Implemented (commit `28cac36` — 2026-05-09)
+**Complexity:** Medium | **Dependencies:** `portal_settings` (exists); `ISettingsRepository` (exists)
+
+### Stage 23.1 — License Policy Kernel ✅
+- `InstitutionType` enum: `University = 0` (default, backward-compatible), `School = 1`, `College = 2` — in `Domain/Enums/`.
+- `InstitutionPolicySnapshot` sealed record: `IncludeSchool`, `IncludeCollege`, `IncludeUniversity`; `IsEnabled(InstitutionType)` method; static `Default` = University-only.
+- `IInstitutionPolicyService` — `GetPolicyAsync`, `SavePolicyAsync`, `InvalidateCache`; values in `portal_settings` with 10-minute `IMemoryCache` backing.
+- `InstitutionPolicyService` implementation; `Microsoft.Extensions.Caching.Memory 8.0.1` added to Application project.
+- `InstitutionPolicyController` — `GET /api/v1/institution-policy` (all authenticated) + `PUT /api/v1/institution-policy` (SuperAdmin only).
+
+### Stage 23.2 — Institution Context Resolution ✅
+- `InstitutionContextMiddleware` — resolves `IInstitutionPolicyService` per-request, stores snapshot in `HttpContext.Items["InstitutionPolicy"]`.
+- Extension method `context.GetInstitutionPolicy()` — returns `InstitutionPolicySnapshot.Default` when not set; used by downstream controllers/services.
+- Registered after `UseAuthorization` in `Program.cs`.
+
+### Stage 23.3 — Role-Rights Hardening ✅
+- `GET /api/v1/institution-policy` read by all authenticated roles; PUT restricted to SuperAdmin.
+- Web: `PortalController.InstitutionPolicy` GET action; `InstitutionPolicy.cshtml` SuperAdmin config page.
+- Seed: sidebar module `institution_policy` (sort 33, SuperAdmin).
+
+**Validation:** 0 build errors · 27/27 unit tests passed · no migration needed
+
+---
+
+## Phase 24 — Dynamic Module and UI Composition ✅ Implemented (commit `391ac45` — 2026-05-09)
+**Complexity:** Medium | **Dependencies:** Phase 23 (`InstitutionPolicySnapshot`); `IModuleEntitlementResolver` (Application); `IModuleService` (Application)
+
+### Stage 24.1 — Module Registry ✅
+- `ModuleDescriptor` sealed record in `Domain/Modules/`: `Key`, `RequiredRoles[]`, `AllowedTypes[]?`, `IsLicenseGated`; `RoleMatches()` + `TypeMatches()` methods.
+- `ModuleRegistry` static class in `Application/Modules/`: catalogue of all 14 module descriptors (e.g. `fyp` = University-only, `ai_chat` = license-gated, `advanced_audit` = SuperAdmin-only).
+- `IModuleRegistryService` + `ModuleRegistryService` — combines registry with live activation (`IModuleEntitlementResolver`) + institution policy to produce `ModuleVisibilityResult(Key, Name, IsActive, IsAccessible)` list.
+- `ModuleRegistryController` — `GET api/v1/module-registry/visible` (all authenticated).
+
+### Stage 24.2 — Dynamic Labels ✅
+- `AcademicVocabulary` sealed record: `PeriodLabel`, `ProgressionLabel`, `GradingLabel`, `CourseLabel`, `StudentGroupLabel`; static `Default` = University vocab.
+- `ILabelService` / `LabelService` (singleton) — returns institution-mode-appropriate vocabulary (University: Semester/GPA/Course/Batch; School: Grade/Percentage/Subject/Class; College: Year/Percentage/Subject/Year-Group).
+- `LabelController` — `GET api/v1/labels` (all authenticated).
+
+### Stage 24.3 — Dashboard Composition ✅
+- `WidgetDescriptor` sealed record: `Key`, `Title`, `Icon`, `Order`.
+- `IDashboardCompositionService` / `DashboardCompositionService` (singleton) — 10-widget catalogue filtered by role + institution type (`fyp_panel` University-only; `system_health` SuperAdmin-only; `ai_assistant` all roles).
+- `DashboardCompositionController` — `GET api/v1/dashboard/composition` (all authenticated).
+- Web: `ModuleComposition.cshtml` SuperAdmin page showing vocabulary tiles, widget cards, and full module registry table.
+- Seed: sidebar module `module_composition` (sort 34, SuperAdmin).
+
+**Validation:** 0 build errors · 44/44 unit tests passed (17 new Phase 24 tests) · no migration needed
+
+---
+
 ## Implementation Sequence Summary
 
 | Phase | Feature | Complexity | Status |
@@ -296,8 +367,13 @@
 | 15 | Enrollment Rules Engine | Medium | ✅ Implemented |
 | 16 | Faculty Grading System (gradebook, rubrics, bulk CSV) | Medium | ✅ Implemented |
 | 17 | Degree Audit System | Medium | ✅ Implemented |
-| 18 | Graduation Workflow (application + certificate) | Medium | Planned (partial foundation) |
-| 19 | Advanced Course Creation & Result Configuration | Medium–High | Planned |
+| 18 | Graduation Workflow (application + certificate) | Medium | ✅ Implemented |
+| 19 | Advanced Course Creation & Result Configuration | Medium–High | ✅ Implemented |
 | 20 | Learning Management System | High | ✅ Implemented (commit `ecf4d91`) |
-| 21 | Study Planner | Medium | Planned |
-| 22 | External Integrations | High | Planned (Stage 22.2 partial) |
+| 21 | Study Planner | Medium | ✅ Implemented |
+| 22 | External Integrations | High | ✅ Implemented (commit `dddee69`) |
+| 23 | Core Policy Foundation | Medium | ✅ Implemented (commit `28cac36`) |
+| 24 | Dynamic Module and UI Composition | Medium | ✅ Implemented (commit `391ac45`) |
+| 25 | Academic Engine Unification | High | Planned |
+| 26 | School and College Functional Expansion | High | Planned |
+| 27 | University Portal Parity and Student Experience | High | Planned |

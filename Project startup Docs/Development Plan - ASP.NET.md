@@ -554,3 +554,77 @@ A feature is complete only when:
 **Validation:** 0 build errors · 7/7 unit tests · migration applied
 
 ---
+
+### 2026-05-08 — Phase 22 External Integrations Complete
+
+**Changes:**
+- `Domain/Settings/AccreditationTemplate.cs` — `AccreditationTemplate` entity + `AccreditationTemplateConfiguration` EF config.
+- `Application/DTOs/External/LibraryDTOs.cs` — `SaveLibraryConfigCommand`, `LibraryConfigDto`, `LibraryLoanDto`.
+- `Application/DTOs/External/AccreditationDTOs.cs` — `CreateAccreditationTemplateCommand`, `UpdateAccreditationTemplateCommand`, `AccreditationTemplateDto`, `GeneratedReport`.
+- `Application/Interfaces/ILibraryService.cs` + `Application/Services/LibraryService.cs` — `GetConfigAsync`, `SaveConfigAsync`, `GetLoansAsync`.
+- `Application/Interfaces/IAccreditationService.cs` + `Application/Services/AccreditationService.cs` — full CRUD + `GenerateAsync` (field mapping materialisation + CSV/PDF export + audit log).
+- `Domain/Interfaces/IAccreditationRepository.cs` + `Infrastructure/Repositories/AccreditationRepository.cs`.
+- `Infrastructure/Persistence/Configurations/AccreditationTemplateConfiguration.cs`.
+- `Infrastructure/Persistence/ApplicationDbContext.cs` — `AccreditationTemplates` DbSet added.
+- `API/Controllers/LibraryController.cs` — 4 endpoints (`GET/PUT config`, `GET loans`, `GET loans/{id}`).
+- `API/Controllers/AccreditationController.cs` — 6 endpoints (CRUD + generate/stream).
+- `API/Program.cs` Phase 22 DI block: `LibraryService` (scoped), `AccreditationService` (scoped), `AccreditationRepository` (scoped).
+- `Web/Services/EduApiClient.cs` — 11 new methods + API models.
+- `Web/Controllers/PortalController.cs` — 9 new actions.
+- `Web/Views/Portal/LibraryConfig.cshtml` — library URL + token config view.
+- `Web/Views/Portal/AccreditationTemplates.cshtml` — template list with CRUD modals + generate buttons.
+- `_Layout.cshtml` sidebar entries: `library_config`, `accreditation` (Settings group).
+- EF Migration `Phase22_ExternalIntegrations` — adds `accreditation_templates` table.
+- `Scripts/1-MinimalSeed.sql` — adds sidebar seed entries for `library_config` (sort 31, SuperAdmin) and `accreditation` (sort 32, Admin+SuperAdmin).
+
+**Validation:** 0 build errors · migration `Phase22_ExternalIntegrations` applied · commit `dddee69` pushed
+
+---
+
+### 2026-05-09 — Phase 23 Core Policy Foundation Complete
+
+**Changes:**
+- `Domain/Enums/InstitutionType.cs` — `InstitutionType` enum (`University=0`, `School=1`, `College=2`).
+- `Application/Interfaces/IInstitutionPolicyService.cs` — `InstitutionPolicySnapshot` sealed record + `SaveInstitutionPolicyCommand` + `IInstitutionPolicyService` interface.
+- `Application/Services/InstitutionPolicyService.cs` — implementation with `IMemoryCache` (10-min TTL) + `ISettingsRepository` persistence.
+- `Tabsan.EduSphere.Application.csproj` — added `Microsoft.Extensions.Caching.Memory 8.0.1`.
+- `API/Middleware/InstitutionContextMiddleware.cs` — resolves snapshot per-request; `GetInstitutionPolicy()` extension method with `Default` fallback.
+- `API/Controllers/InstitutionPolicyController.cs` — `GET api/v1/institution-policy` (all authenticated) + `PUT api/v1/institution-policy` (SuperAdmin only).
+- `API/Program.cs` — `IInstitutionPolicyService` scoped DI; `InstitutionContextMiddleware` after `UseAuthorization`.
+- `Web/Services/EduApiClient.cs` — `GetInstitutionPolicyAsync`, `SaveInstitutionPolicyAsync`.
+- `Web/Controllers/PortalController.cs` — `InstitutionPolicy` GET/POST actions.
+- `Web/Views/Portal/InstitutionPolicy.cshtml` — three-flag toggle config form.
+- `_Layout.cshtml` sidebar entry `institution_policy` (Settings group).
+- `Scripts/1-MinimalSeed.sql` — sidebar seed `institution_policy` (sort 33, SuperAdmin).
+- `tests/Tabsan.EduSphere.UnitTests/InstitutionPolicyTests.cs` — 13 new tests (27 total).
+
+**Validation:** 0 build errors · 27/27 unit tests · no migration needed · commit `28cac36` pushed
+
+---
+
+### 2026-05-09 — Phase 24 Dynamic Module and UI Composition Complete
+
+**Changes:**
+- `Domain/Modules/ModuleDescriptor.cs` — `ModuleDescriptor` sealed record: `Key`, `RequiredRoles[]`, `AllowedTypes[]?`, `IsLicenseGated`; `RoleMatches()` + `TypeMatches()` methods.
+- `Application/Modules/ModuleRegistry.cs` — static catalogue of all 14 module descriptors.
+- `Application/Interfaces/IModuleRegistryService.cs` — `ModuleVisibilityResult` record + interface with `GetVisibleModulesAsync` + `IsAccessibleAsync`.
+- `Application/Modules/ModuleRegistryService.cs` — combines registry + `IModuleEntitlementResolver` + institution policy.
+- `Application/Interfaces/ILabelService.cs` — `AcademicVocabulary` sealed record + `ILabelService.GetVocabulary(policy)`.
+- `Application/Services/LabelService.cs` — stateless singleton (University/School/College vocab branches).
+- `Application/Interfaces/IDashboardCompositionService.cs` — `WidgetDescriptor` sealed record + `IDashboardCompositionService.GetWidgets(role, policy)`.
+- `Application/Services/DashboardCompositionService.cs` — 10-widget catalogue, role + institution-type filtered.
+- `API/Controllers/ModuleRegistryController.cs` — `GET api/v1/module-registry/visible`.
+- `API/Controllers/LabelController.cs` — `GET api/v1/labels`.
+- `API/Controllers/DashboardCompositionController.cs` — `GET api/v1/dashboard/composition`.
+- `API/Program.cs` Phase 24 DI block: `ModuleRegistryService` (scoped), `LabelService` (singleton), `DashboardCompositionService` (singleton).
+- `Web/Services/EduApiClient.cs` — `GetVisibleModulesAsync`, `GetVocabularyAsync`, `GetDashboardWidgetsAsync` + 3 API response models.
+- `Web/Controllers/PortalController.cs` — `ModuleComposition` GET action (parallel `Task.WhenAll`).
+- `Web/Models/Portal/PortalViewModels.cs` — `DashboardCompositionModel`, `ModuleVisibilityItem`, `WidgetItem`.
+- `Web/Views/Portal/ModuleComposition.cshtml` — vocabulary tiles, widget cards, module registry table.
+- `_Layout.cshtml` sidebar entry `module_composition` (Settings group).
+- `Scripts/1-MinimalSeed.sql` — sidebar seed `module_composition` (sort 34, SuperAdmin).
+- `tests/Tabsan.EduSphere.UnitTests/Phase24Tests.cs` — 17 new tests (44 total).
+
+**Validation:** 0 build errors · 44/44 unit tests · no migration needed · commit `391ac45` pushed
+
+---

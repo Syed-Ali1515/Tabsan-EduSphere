@@ -1052,3 +1052,93 @@ Enables students to build tentative semester plans with prerequisite and credit-
 - **Validation:** 0 build errors · 7/7 unit tests · migration applied
 
 ---
+
+## Phase 22 — External Integrations ✅ Implemented (2026-05-08)
+
+### 22.A Overview
+Connects the portal to external third-party systems (library catalogue) and enables on-demand accreditation/government reporting. Both integration surfaces are configurable by SuperAdmin without code deployment.
+
+### 22.B Functional Requirements
+
+#### Stage 22.1 — Library System Integration
+- SuperAdmin configures library catalogue URL + optional API token via `PUT /api/v1/library/config`.
+- Authenticated users retrieve their own loan status via `GET /api/v1/library/loans` (proxied to external API).
+- Admin/SuperAdmin can look up any student's loans via `GET /api/v1/library/loans/{studentIdentifier}`.
+- Portal view: `LibraryConfig.cshtml` for SuperAdmin configuration.
+
+#### Stage 22.2 — Government / Accreditation Reporting
+- SuperAdmin defines `AccreditationTemplate` entries (name, description, field mappings, format, active state).
+- `GET /api/v1/accreditation/{id}/generate` materialises data, streams report as CSV or plain-text PDF, and writes an audit-log entry.
+- All template CRUD restricted to SuperAdmin; report generation accessible to Admin + SuperAdmin.
+
+### 22.C Technical Implementation
+- **Domain:** `AccreditationTemplate` entity (`Domain/Settings/AccreditationTemplate.cs`); `AccreditationTemplateConfiguration` EF config.
+- **Persistence:** Table `accreditation_templates`; EF migration `Phase22_ExternalIntegrations`.
+- **Application:** `ILibraryService` + `LibraryService`; `IAccreditationService` + `AccreditationService`; `IAccreditationRepository`; DTOs in `Application/DTOs/External/`.
+- **API:** `LibraryController` (`api/v1/library`); `AccreditationController` (`api/v1/accreditation`).
+- **Web:** `LibraryConfig.cshtml`, `AccreditationTemplates.cshtml`; sidebar entries `library_config` + `accreditation` (Settings group).
+- **Validation:** 0 build errors · migration applied · commit `dddee69`
+
+---
+
+## Phase 23 — Core Policy Foundation ✅ Implemented (2026-05-09)
+
+### 23.A Overview
+Establishes the institution-type policy kernel so every downstream feature can adapt behaviour to School, College, or University mode without duplicating logic. Provides a cached, per-request policy snapshot consumed by middleware and downstream services.
+
+### 23.B Functional Requirements
+
+#### Stage 23.1 — License Policy Kernel
+- `InstitutionType` enum: `University = 0` (default), `School = 1`, `College = 2`.
+- `IInstitutionPolicyService` with 10-minute `IMemoryCache` backing and `portal_settings` persistence.
+- SuperAdmin controls which institution types are enabled; at least one must always be active.
+- `GET /api/v1/institution-policy` (all authenticated); `PUT /api/v1/institution-policy` (SuperAdmin only).
+
+#### Stage 23.2 — Institution Context Resolution
+- `InstitutionContextMiddleware` resolves snapshot per-request and stores it in `HttpContext.Items`.
+- Extension method `GetInstitutionPolicy()` provides safe access with `Default` fallback (University-only).
+
+#### Stage 23.3 — Role-Rights Hardening
+- SuperAdmin portal page `InstitutionPolicy.cshtml` — three-flag toggle form.
+- Sidebar module `institution_policy` (sort 33, SuperAdmin).
+
+### 23.C Technical Implementation
+- **Domain:** `Domain/Enums/InstitutionType.cs`.
+- **Application:** `IInstitutionPolicyService` + `InstitutionPolicySnapshot` + `SaveInstitutionPolicyCommand`; `InstitutionPolicyService`; `Microsoft.Extensions.Caching.Memory 8.0.1` added.
+- **API:** `InstitutionPolicyController`; `InstitutionContextMiddleware` (registered after `UseAuthorization`).
+- **Web:** `PortalController.InstitutionPolicy`; `InstitutionPolicy.cshtml`; `EduApiClient` 2 new methods.
+- **Persistence:** No migration — uses existing `portal_settings` table.
+- **Validation:** 0 build errors · 27/27 unit tests · commit `28cac36`
+
+---
+
+## Phase 24 — Dynamic Module and UI Composition ✅ Implemented (2026-05-09)
+
+### 24.A Overview
+Adds compile-time module descriptors (role + institution-type + license-gate constraints), institution-aware academic vocabulary labels, and role-filtered dashboard widget composition — all driven by the Phase-23 policy snapshot at runtime.
+
+### 24.B Functional Requirements
+
+#### Stage 24.1 — Module Registry
+- `ModuleDescriptor` sealed record: `Key`, `RequiredRoles[]`, `AllowedTypes[]?`, `IsLicenseGated`.
+- `ModuleRegistry` static catalogue of all 14 modules; `IModuleRegistryService` combines registry with live activation + institution policy.
+- `GET api/v1/module-registry/visible` returns per-user module visibility list.
+
+#### Stage 24.2 — Dynamic Labels
+- `ILabelService` / `LabelService` returns institution-appropriate `AcademicVocabulary` (Semester↔Grade↔Year, GPA↔Percentage, Course↔Subject, Batch↔Class↔Year-Group).
+- `GET api/v1/labels` — all authenticated roles.
+
+#### Stage 24.3 — Dashboard Composition
+- `IDashboardCompositionService` / `DashboardCompositionService` — 10-widget catalogue filtered by role + institution type.
+- `GET api/v1/dashboard/composition` — all authenticated roles.
+- Portal: `ModuleComposition.cshtml` SuperAdmin page showing vocabulary tiles, widget cards, module registry table.
+
+### 24.C Technical Implementation
+- **Domain:** `ModuleDescriptor` sealed record (`Domain/Modules/`).
+- **Application:** `ModuleRegistry`; `ModuleRegistryService`; `LabelService`; `DashboardCompositionService`; interfaces for all three.
+- **API:** `ModuleRegistryController`, `LabelController`, `DashboardCompositionController`.
+- **Web:** `ModuleComposition.cshtml`; `EduApiClient` 3 methods + 3 API models; `PortalController.ModuleComposition` (parallel `Task.WhenAll`).
+- **Persistence:** No migration required.
+- **Validation:** 0 build errors · 44/44 unit tests · commit `391ac45`
+
+---

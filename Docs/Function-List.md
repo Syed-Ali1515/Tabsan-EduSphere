@@ -3824,3 +3824,193 @@ New themes added to site.css and ThemeSettingsPageModel: `neon_mint`, `sakura_pi
 | `StudyPlanRecommendations.cshtml` | View (new) | Recommended courses table |
 | `StudyPlanCourseItem` / `StudyPlanItem` / `StudyPlanPageModel` / `StudyPlanDetailPageModel` | View models (new) | Study plan portal view models |
 | `RecommendationItem` / `RecommendationsPageModel` | View models (new) | Recommendation portal view models |
+
+---
+
+## Final-Touches Phase 22 — External Integrations (2026-05-08) | Commit `dddee69`
+
+### API — LibraryController (Stage 22.1)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetConfig(ct)` | Returns current library connection config (catalogue URL + token). SuperAdmin only. | `API/Controllers/LibraryController.cs` |
+| `SaveConfig(cmd, ct)` | Saves library connection settings to portal_settings. SuperAdmin only. | `API/Controllers/LibraryController.cs` |
+| `GetLoans(ct)` | Proxies loan-status request to external library API using the calling user's username. All authenticated. | `API/Controllers/LibraryController.cs` |
+| `GetLoansForStudent(studentIdentifier, ct)` | Proxies loan-status request for a specific student. Admin/SuperAdmin only. | `API/Controllers/LibraryController.cs` |
+
+### API — AccreditationController (Stage 22.2)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetAll(ct)` | Returns all accreditation report templates. Admin/SuperAdmin. | `API/Controllers/AccreditationController.cs` |
+| `GetById(id, ct)` | Returns a single accreditation template by ID. Admin/SuperAdmin. | `API/Controllers/AccreditationController.cs` |
+| `Create(cmd, ct)` | Creates a new accreditation template. SuperAdmin only. | `API/Controllers/AccreditationController.cs` |
+| `Update(id, cmd, ct)` | Updates an existing template. SuperAdmin only. | `API/Controllers/AccreditationController.cs` |
+| `Delete(id, ct)` | Deletes a template. SuperAdmin only. | `API/Controllers/AccreditationController.cs` |
+| `Generate(id, ct)` | Generates and streams the accreditation report for a template; writes to audit log. Admin/SuperAdmin. | `API/Controllers/AccreditationController.cs` |
+
+### Application — ILibraryService / LibraryService (Stage 22.1)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetConfigAsync(ct)` | Returns current library connection configuration from portal_settings. | `Application/Interfaces/ILibraryService.cs`, `Application/Services/LibraryService.cs` |
+| `SaveConfigAsync(cmd, ct)` | Persists library URL + token to portal_settings. | `Application/Interfaces/ILibraryService.cs`, `Application/Services/LibraryService.cs` |
+| `GetLoansAsync(studentIdentifier, ct)` | Calls external library API with configured auth and returns loan list. | `Application/Interfaces/ILibraryService.cs`, `Application/Services/LibraryService.cs` |
+
+### Application — IAccreditationService / AccreditationService (Stage 22.2)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetTemplatesAsync(ct)` | Returns all accreditation templates. | `Application/Interfaces/IAccreditationService.cs`, `Application/Services/AccreditationService.cs` |
+| `GetByIdAsync(id, ct)` | Returns one template by ID; throws `KeyNotFoundException` when missing. | `Application/Interfaces/IAccreditationService.cs`, `Application/Services/AccreditationService.cs` |
+| `CreateAsync(cmd, ct)` | Creates and persists a new accreditation template. | `Application/Interfaces/IAccreditationService.cs`, `Application/Services/AccreditationService.cs` |
+| `UpdateAsync(id, cmd, ct)` | Updates name, description, field mappings, format, active state. | `Application/Interfaces/IAccreditationService.cs`, `Application/Services/AccreditationService.cs` |
+| `DeleteAsync(id, ct)` | Soft-deletes a template. | `Application/Interfaces/IAccreditationService.cs`, `Application/Services/AccreditationService.cs` |
+| `GenerateAsync(id, actorUserId, ct)` | Materialises data for the template field mappings; formats as CSV or PDF; writes audit-log entry; returns `GeneratedReport(Content, ContentType, FileName)`. | `Application/Interfaces/IAccreditationService.cs`, `Application/Services/AccreditationService.cs` |
+
+### Infrastructure — AccreditationRepository (Stage 22.2)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetAllAsync(ct)` | Fetches all active accreditation templates. | `Infrastructure/Repositories/AccreditationRepository.cs` |
+| `GetByIdAsync(id, ct)` | Fetches single template or null. | `Infrastructure/Repositories/AccreditationRepository.cs` |
+| `AddAsync(template, ct)` | Queues template insert. | `Infrastructure/Repositories/AccreditationRepository.cs` |
+| `Update(template)` | Marks template as modified. | `Infrastructure/Repositories/AccreditationRepository.cs` |
+| `SaveChangesAsync(ct)` | Commits pending template mutations. | `Infrastructure/Repositories/AccreditationRepository.cs` |
+
+### Web — EduApiClient (Phase 22)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetLibraryConfigAsync(ct)` | Fetches library connection config. | `Web/Services/EduApiClient.cs` |
+| `SaveLibraryConfigAsync(url, token, ct)` | Saves library URL + token. | `Web/Services/EduApiClient.cs` |
+| `GetLibraryLoansAsync(ct)` | Fetches current user's loan list from library proxy. | `Web/Services/EduApiClient.cs` |
+| `GetAccreditationTemplatesAsync(ct)` | Fetches all templates. | `Web/Services/EduApiClient.cs` |
+| `CreateAccreditationTemplateAsync(cmd, ct)` | Creates a template. | `Web/Services/EduApiClient.cs` |
+| `UpdateAccreditationTemplateAsync(id, cmd, ct)` | Updates a template. | `Web/Services/EduApiClient.cs` |
+| `DeleteAccreditationTemplateAsync(id, ct)` | Deletes a template. | `Web/Services/EduApiClient.cs` |
+| `GenerateAccreditationReportAsync(id, ct)` | Calls generate endpoint and returns raw bytes + content type. | `Web/Services/EduApiClient.cs` |
+
+### Web — PortalController / Views (Phase 22)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `LibraryConfig(ct)` | Loads library configuration portal page (SuperAdmin). | `Web/Controllers/PortalController.cs` |
+| `SaveLibraryConfig(url, token, ct)` | Saves library config from portal form. | `Web/Controllers/PortalController.cs` |
+| `AccreditationTemplates(ct)` | Loads accreditation templates page (SuperAdmin/Admin). | `Web/Controllers/PortalController.cs` |
+| `CreateAccreditationTemplate(...)` | Creates template from portal form. | `Web/Controllers/PortalController.cs` |
+| `UpdateAccreditationTemplate(...)` | Updates template from portal form. | `Web/Controllers/PortalController.cs` |
+| `DeleteAccreditationTemplate(id, ct)` | Deletes template from portal. | `Web/Controllers/PortalController.cs` |
+| `DownloadAccreditationReport(id, ct)` | Proxies generated report download from portal. | `Web/Controllers/PortalController.cs` |
+| `LibraryConfig.cshtml` | View — library URL + token configuration form. | `Web/Views/Portal/LibraryConfig.cshtml` |
+| `AccreditationTemplates.cshtml` | View — template list with create/edit/delete/generate actions. | `Web/Views/Portal/AccreditationTemplates.cshtml` |
+
+---
+
+## Final-Touches Phase 23 — Core Policy Foundation (2026-05-09) | Commit `28cac36`
+
+### Domain — InstitutionType Enum (Stage 23.1)
+
+| Symbol | Type | Notes |
+|--------|------|-------|
+| `InstitutionType` | Enum | `University = 0` (default, backward-compatible), `School = 1`, `College = 2` | `Domain/Enums/InstitutionType.cs` |
+
+### Application — IInstitutionPolicyService / InstitutionPolicyService (Stages 23.1–23.2)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetPolicyAsync(ct)` | Returns current `InstitutionPolicySnapshot`; reads from 10-minute `IMemoryCache`; falls back to `portal_settings`; returns `Default` (University-only) when unset. | `Application/Interfaces/IInstitutionPolicyService.cs`, `Application/Services/InstitutionPolicyService.cs` |
+| `SavePolicyAsync(cmd, ct)` | Persists institution type flags to `portal_settings`; invalidates cache; throws `InvalidOperationException` when all three flags are false. | `Application/Interfaces/IInstitutionPolicyService.cs`, `Application/Services/InstitutionPolicyService.cs` |
+| `InvalidateCache()` | Evicts the `IMemoryCache` entry so the next call reloads from storage. | `Application/Interfaces/IInstitutionPolicyService.cs`, `Application/Services/InstitutionPolicyService.cs` |
+| `InstitutionPolicySnapshot` | Sealed record — `IncludeSchool`, `IncludeCollege`, `IncludeUniversity`; `IsEnabled(InstitutionType)` method; static `Default`. | `Application/Interfaces/IInstitutionPolicyService.cs` |
+| `SaveInstitutionPolicyCommand` | Command record carried by the PUT endpoint. | `Application/Interfaces/IInstitutionPolicyService.cs` |
+
+### API — InstitutionPolicyController (Stages 23.1–23.3)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `Get(ct)` | Returns current institution policy flags as `InstitutionPolicyResponse`. All authenticated roles. | `API/Controllers/InstitutionPolicyController.cs` |
+| `Save(request, ct)` | Updates institution type flags. SuperAdmin only. Returns 400 when all flags are false. | `API/Controllers/InstitutionPolicyController.cs` |
+
+### API — InstitutionContextMiddleware (Stage 23.2)
+
+| Symbol | Purpose | Location |
+|--------|---------|----------|
+| `InstitutionContextMiddleware.InvokeAsync(context)` | Resolves `IInstitutionPolicyService` per-request; stores snapshot in `HttpContext.Items["InstitutionPolicy"]`; skips for anonymous requests. Registered after `UseAuthorization`. | `API/Middleware/InstitutionContextMiddleware.cs` |
+| `HttpContextExtensions.GetInstitutionPolicy(context)` | Extension method to read the snapshot from `HttpContext.Items`; returns `InstitutionPolicySnapshot.Default` if not set. | `API/Middleware/InstitutionContextMiddleware.cs` |
+
+### Web — EduApiClient (Phase 23)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetInstitutionPolicyAsync(ct)` | Fetches current institution policy flags from API. | `Web/Services/EduApiClient.cs` |
+| `SaveInstitutionPolicyAsync(school, college, university, ct)` | Calls PUT endpoint to update institution type flags. | `Web/Services/EduApiClient.cs` |
+
+### Web — PortalController / Views (Phase 23)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `InstitutionPolicy(ct)` | Loads institution policy config page (SuperAdmin). | `Web/Controllers/PortalController.cs` |
+| `SaveInstitutionPolicy(school, college, university, ct)` | Saves institution flags from portal form; redirects with success/error message. | `Web/Controllers/PortalController.cs` |
+| `InstitutionPolicy.cshtml` | SuperAdmin config view — three toggle checkboxes with save form and current-state display. | `Web/Views/Portal/InstitutionPolicy.cshtml` |
+
+---
+
+## Final-Touches Phase 24 — Dynamic Module and UI Composition (2026-05-09) | Commit `391ac45`
+
+### Domain — ModuleDescriptor (Stage 24.1)
+
+| Symbol | Type | Notes |
+|--------|------|-------|
+| `ModuleDescriptor` | Sealed record | `Key`, `RequiredRoles[]`, `AllowedTypes[]?`, `IsLicenseGated`; `RoleMatches(role)` + `TypeMatches(type)` methods. | `Domain/Modules/ModuleDescriptor.cs` |
+
+### Application — ModuleRegistry (Stage 24.1)
+
+| Symbol | Type | Notes |
+|--------|------|-------|
+| `ModuleRegistry` | Static class | Compile-time catalogue of all 14 module `ModuleDescriptor` entries keyed by module key. Notable: `fyp` = University-only; `ai_chat` = license-gated; `advanced_audit` = SuperAdmin-only. | `Application/Modules/ModuleRegistry.cs` |
+
+### Application — IModuleRegistryService / ModuleRegistryService (Stage 24.1)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetVisibleModulesAsync(role, policy, ct)` | Returns `IReadOnlyList<ModuleVisibilityResult>` for a given role and institution policy — combines registry descriptor role/type check with live `IsActiveAsync`. | `Application/Interfaces/IModuleRegistryService.cs`, `Application/Modules/ModuleRegistryService.cs` |
+| `IsAccessibleAsync(key, role, policy, ct)` | Returns `bool` — checks whether a specific module key is accessible for the given role and policy. | `Application/Interfaces/IModuleRegistryService.cs`, `Application/Modules/ModuleRegistryService.cs` |
+| `ModuleVisibilityResult` | Sealed record — `Key`, `Name`, `IsActive`, `IsAccessible`. | `Application/Interfaces/IModuleRegistryService.cs` |
+
+### Application — ILabelService / LabelService (Stage 24.2)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetVocabulary(policy)` | Returns `AcademicVocabulary` appropriate for the active institution type (University → Semester/GPA/Course/Batch; School → Grade/Percentage/Subject/Class; College → Year/Percentage/Subject/Year-Group). | `Application/Interfaces/ILabelService.cs`, `Application/Services/LabelService.cs` |
+| `AcademicVocabulary` | Sealed record — `PeriodLabel`, `ProgressionLabel`, `GradingLabel`, `CourseLabel`, `StudentGroupLabel`; static `Default` = University vocab. | `Application/Interfaces/ILabelService.cs` |
+
+### Application — IDashboardCompositionService / DashboardCompositionService (Stage 24.3)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetWidgets(role, policy)` | Returns ordered `IReadOnlyList<WidgetDescriptor>` filtered by role + institution type. `fyp_panel` = Faculty/Student + University only; `system_health` = SuperAdmin only; `ai_assistant` = all roles. | `Application/Interfaces/IDashboardCompositionService.cs`, `Application/Services/DashboardCompositionService.cs` |
+| `WidgetDescriptor` | Sealed record — `Key`, `Title`, `Icon`, `Order`. | `Application/Interfaces/IDashboardCompositionService.cs` |
+
+### API — ModuleRegistryController / LabelController / DashboardCompositionController (Stage 24.1–24.3)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `ModuleRegistryController.GetVisible(ct)` | `GET api/v1/module-registry/visible` — returns visible module list for the authenticated user's role and institution policy. All authenticated. | `API/Controllers/ModuleRegistryController.cs` |
+| `LabelController.Get(ct)` | `GET api/v1/labels` — returns institution-appropriate academic vocabulary. All authenticated. | `API/Controllers/LabelController.cs` |
+| `DashboardCompositionController.Get(ct)` | `GET api/v1/dashboard/composition` — returns ordered widget list for the authenticated user's role and institution policy. All authenticated. | `API/Controllers/DashboardCompositionController.cs` |
+
+### Web — EduApiClient (Phase 24)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetVisibleModulesAsync(ct)` | `GET api/v1/module-registry/visible` — fetches visible module list. | `Web/Services/EduApiClient.cs` |
+| `GetVocabularyAsync(ct)` | `GET api/v1/labels` — fetches academic vocabulary for current institution mode. | `Web/Services/EduApiClient.cs` |
+| `GetDashboardWidgetsAsync(ct)` | `GET api/v1/dashboard/composition` — fetches ordered widget list. | `Web/Services/EduApiClient.cs` |
+
+### Web — PortalController / Views (Phase 24)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `ModuleComposition(ct)` | Parallel-fetches visible modules, vocabulary, and widgets via `Task.WhenAll`; renders composition page. SuperAdmin. | `Web/Controllers/PortalController.cs` |
+| `ModuleComposition.cshtml` | SuperAdmin view — vocabulary label tiles, widget cards, full module registry table (key, roles, institution types, license gate, accessible state). | `Web/Views/Portal/ModuleComposition.cshtml` |

@@ -687,3 +687,32 @@ Course line items within a study plan.
 - UQ_study_plan_courses_plan_course (study_plan_id, course_id)
 
 ---
+
+### accreditation_templates
+Accreditation / government report templates. Phase 22 — External Integrations.
+EF migration: `Phase22_ExternalIntegrations`.
+
+- id (UUID, PK)
+- name (nvarchar 200)
+- description (nvarchar 1000, nullable)
+- field_mappings_json (nvarchar max) — JSON array of field mapping objects
+- format (nvarchar 20) — "CSV" or "PDF"
+- is_active (bool, default true)
+- is_deleted (bool, default false)
+- deleted_at (datetime, nullable)
+- created_at / updated_at / row_version
+
+---
+
+### Phase 23 — Core Policy Foundation (no new tables)
+Institution type flags stored as rows in `portal_settings` under the keys:
+- `institution_policy_school` (value: "true"/"false")
+- `institution_policy_college` (value: "true"/"false")
+- `institution_policy_university` (value: "true"/"false")
+
+No EF migration required — reuses the existing `portal_settings` key-value store.
+
+---
+
+### Phase 24 — Dynamic Module and UI Composition (no new tables)
+All Phase 24 services (`ModuleRegistryService`, `LabelService`, `DashboardCompositionService`) are stateless / in-process. No new tables were added.

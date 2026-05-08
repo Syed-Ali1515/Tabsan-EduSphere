@@ -864,3 +864,53 @@ Phase 20 — (see Docs/Enhancements.md for full spec).
 - [x] `_Layout.cshtml` sidebar: `study_plan` → `(Portal, StudyPlan)` (group: Student Related, weight 3).
 - [x] EF Migration `Phase21_StudyPlanner` applied — tables `study_plans`, `study_plan_courses`; `MaxCreditLoadPerSemester` column on `academic_programs`.
 - [x] 7/7 unit tests passing (build clean).
+
+---
+
+## Phase 22 — External Integrations ✅ Complete (2026-05-08) | Commit: `dddee69`
+
+### Completion Mark
+- [x] Stage 22.1 — Library system integration: `LibraryConfig` stored in `portal_settings`; `LibraryController` (config GET/PUT, loans GET by self and by student ID); `LibraryService` proxies external library API; portal `LibraryConfig.cshtml`.
+- [x] Stage 22.2 — Accreditation reporting: `AccreditationTemplate` entity + EF migration `Phase22_ExternalIntegrations`; `AccreditationController` (CRUD + generate/stream); `AccreditationService.GenerateAsync` formats as CSV/PDF and writes audit-log entry; portal `AccreditationTemplates.cshtml`; `IAccreditationRepository` + `AccreditationRepository`.
+
+### Implementation Summary
+- **Stage 22.1**: `ILibraryService` + `LibraryService` (scoped); `LibraryController` at `api/v1/library`; `Web/PortalController` 2 actions + `LibraryConfig.cshtml`; `EduApiClient` 3 new methods; sidebar entry `library_config` (Settings).
+- **Stage 22.2**: `AccreditationTemplate` domain entity with `AccreditationTemplateConfiguration` EF config; `IAccreditationRepository` + `AccreditationRepository`; `IAccreditationService` + `AccreditationService`; `AccreditationController` at `api/v1/accreditation`; `Web/PortalController` 7 new actions + `AccreditationTemplates.cshtml`; `EduApiClient` 8 new methods; sidebar entry `accreditation` (Settings).
+
+### Validation Summary
+- `dotnet build Tabsan.EduSphere.sln` — 0 errors, 0 warnings.
+- EF Migration `Phase22_ExternalIntegrations` applied successfully.
+
+---
+
+## Phase 23 — Core Policy Foundation ✅ Complete (2026-05-09) | Commit: `28cac36`
+
+### Completion Mark
+- [x] Stage 23.1 — `InstitutionType` enum (`University=0`, `School=1`, `College=2`) in `Domain/Enums/`.
+- [x] Stage 23.1 — `InstitutionPolicySnapshot` sealed record + `SaveInstitutionPolicyCommand` + `IInstitutionPolicyService` + `InstitutionPolicyService` (10-min IMemoryCache; `portal_settings` persistence; throws when all flags false).
+- [x] Stage 23.1 — `Microsoft.Extensions.Caching.Memory 8.0.1` added to `Application.csproj`.
+- [x] Stage 23.2 — `InstitutionContextMiddleware` stores snapshot per-request in `HttpContext.Items`; extension method `GetInstitutionPolicy()` returns `Default` if absent.
+- [x] Stage 23.3 — `InstitutionPolicyController` (`GET` all authenticated + `PUT` SuperAdmin); registered in `Program.cs` after `UseAuthorization`.
+- [x] Web: `PortalController.InstitutionPolicy` GET/POST; `InstitutionPolicy.cshtml`; `EduApiClient` 2 new methods; sidebar seed `institution_policy` (sort 33, SuperAdmin).
+- [x] Tests: 27/27 unit tests passed (13 new Phase-23 tests in `InstitutionPolicyTests.cs`).
+
+### Validation Summary
+- `dotnet build Tabsan.EduSphere.sln` — 0 errors, 5 pre-existing nullable warnings.
+- No EF migration required (uses existing `portal_settings` table).
+- 27/27 unit tests passed.
+
+---
+
+## Phase 24 — Dynamic Module and UI Composition ✅ Complete (2026-05-09) | Commit: `391ac45`
+
+### Completion Mark
+- [x] Stage 24.1 — `ModuleDescriptor` sealed record (`Domain/Modules/`); `ModuleRegistry` static catalogue (14 modules); `IModuleRegistryService` + `ModuleRegistryService`; `ModuleRegistryController` `GET api/v1/module-registry/visible`.
+- [x] Stage 24.2 — `AcademicVocabulary` sealed record; `ILabelService` + `LabelService` (singleton); `LabelController` `GET api/v1/labels`.
+- [x] Stage 24.3 — `WidgetDescriptor` sealed record; `IDashboardCompositionService` + `DashboardCompositionService` (singleton); `DashboardCompositionController` `GET api/v1/dashboard/composition`.
+- [x] Web: `PortalController.ModuleComposition` (parallel `Task.WhenAll`); `ModuleComposition.cshtml`; `EduApiClient` 3 methods + 3 API models; sidebar seed `module_composition` (sort 34, SuperAdmin).
+- [x] Tests: 44/44 unit tests passed (17 new Phase-24 tests in `Phase24Tests.cs`).
+
+### Validation Summary
+- `dotnet build Tabsan.EduSphere.sln` — 0 errors, 5 pre-existing nullable warnings.
+- No EF migration required.
+- 44/44 unit tests passed.
