@@ -1142,3 +1142,48 @@ Adds compile-time module descriptors (role + institution-type + license-gate con
 - **Validation:** 0 build errors · 44/44 unit tests · commit `391ac45`
 
 ---
+
+## Phase 25 — Academic Engine Unification ✅ Implemented (2026-05-09)
+
+### 25.A Overview
+Adds a pluggable result-calculation engine that supports GPA-based (University) and percentage-based (School/College) grading in parallel, alongside configurable institution grading profiles stored in the database and a student progression/promotion service that honours institution-specific pass thresholds.
+
+### 25.B Functional Requirements
+
+#### Stage 25.1 — Result Calculation Strategy Pattern
+- `IResultCalculationStrategy` contract: converts component marks + configuration → `ResultSummary` (score, grade point, percentage, grade label, isPassing).
+- `GpaResultStrategy` (University): weighted percentage → GPA on 0.0–4.0 scale. Pass = GPA ≥ threshold.
+- `PercentageResultStrategy` (School/College): weighted percentage → grade band label. Built-in A+/A/B+/B/C/D/F bands; overridable via JSON. Pass = % ≥ threshold.
+- `IResultStrategyResolver` / `ResultStrategyResolver` (singleton DI): maps `InstitutionType` → strategy. Zero changes to existing `ResultService`.
+
+#### Stage 25.2 — Institution Grading Profiles
+- `InstitutionGradingProfile` entity: one per institution type (unique index). Stores `PassThreshold` and `GradeRangesJson`.
+- Threshold validation: University 0–4.0; School/College 0–100.
+- `IInstitutionGradingService` / `InstitutionGradingService`: `GetAllAsync`, `GetByTypeAsync`, `UpsertAsync` (create-or-update semantics).
+- `InstitutionGradingProfileController`:
+  - `GET api/v1/institution-grading-profiles` — Admin+
+  - `GET api/v1/institution-grading-profiles/{type}` — Admin+
+  - `PUT api/v1/institution-grading-profiles/{type}` — SuperAdmin only
+
+#### Stage 25.3 — Progression / Promotion Logic
+- `IProgressionService` / `ProgressionService`:
+  - University: CGPA ≥ pass threshold; period = "Semester N".
+  - School: `CurrentSemesterGpa` (as %) ≥ pass threshold; period = "Grade N".
+  - College: `CurrentSemesterGpa` (as %) ≥ pass threshold; period = "Year N".
+  - Default thresholds if no profile: 2.0 (University), 40 (School/College).
+- `EvaluateAsync`: read-only evaluation returning `ProgressionDecision`.
+- `PromoteAsync`: evaluate + advance student semester; throws `InvalidOperationException` if not eligible.
+- `ProgressionController`:
+  - `POST api/v1/progression/evaluate` — Admin+
+  - `POST api/v1/progression/promote` — Admin+
+  - `GET api/v1/progression/me/{type}` — Student (self-view)
+
+### 25.C Technical Implementation
+- **Domain:** `InstitutionGradingProfile` entity; `IInstitutionGradingProfileRepository`.
+- **Application:** `IResultCalculationStrategy`, `GpaResultStrategy`, `PercentageResultStrategy`, `ResultStrategyResolver`; `InstitutionGradingService`; `ProgressionService`; DTOs in `DTOs/Academic/`.
+- **Infrastructure:** `InstitutionGradingProfileRepository`; EF config `InstitutionGradingProfileConfiguration`; migration `20260508152906_Phase25_AcademicEngineUnification`.
+- **API:** `InstitutionGradingProfileController`, `ProgressionController`; Phase 25 DI registrations in `Program.cs`.
+- **Tests:** 29 new unit tests in `Phase25Tests.cs`; 144/144 total passing.
+- **Validation:** 0 build errors · 144/144 unit tests · commit `d2aabd3`
+
+---

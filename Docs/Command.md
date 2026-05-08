@@ -55,18 +55,18 @@ cmd /c git -C "<repo-root>" push origin main
 
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
-- Active Phase: **Phase 24 — Dynamic Module and UI Composition — FULLY COMPLETE ✅**
-- Active Stage: **Stages 24.1 (Module Registry) + 24.2 (Dynamic Labels) + 24.3 (Dashboard Composition) done**
-- Status: **0 build errors; 44/44 unit tests passed; no migration needed**
+- Active Phase: **Phase 25 — Academic Engine Unification — FULLY COMPLETE ✅**
+- Active Stage: **Stages 25.1 (Strategy Pattern) + 25.2 (Grading Profiles) + 25.3 (Progression Logic) done**
+- Status: **0 build errors; 144/144 unit tests passed; migration `Phase25_AcademicEngineUnification` created**
 - Last Updated: 2026-05-09
-- Next: **Phase 25 — Academic Engine Unification (School/College/University)** (see Docs/Advance-Enhancements.md)
-- Docs Updated: ✅ All 8 tracking files updated for Phases 22, 23, 24 (2026-05-09)
+- Next: **Phase 26 — Multi-Campus / Multi-Branch Support** (see Docs/Advance-Enhancements.md)
+- Docs Updated: ✅ All 8 tracking files updated for Phase 25 (2026-05-09)
 
 ---
 
 ## ⚡ Database & Migration Status
 
-✅ **All pending migrations applied successfully** (2026-05-08):
+✅ **All pending migrations applied successfully** (2026-05-09):
 1. `20260505_Phase2LicenseConcurrency` — adds `MaxUsers` + `ActivatedDomain` to `license_state` ✅
 2. `20260506_Phase4UserImport` — adds `MustChangePassword` to `users` ✅
 3. `20260507103000_PortalBrandingLogoValueMaxLength` — alters `portal_settings.Value` to `nvarchar(max)` ✅
@@ -76,6 +76,8 @@ cmd /c git -C "<repo-root>" push origin main
 7. `20260507133254_Phase15_EnrollmentRules` — adds `course_prerequisites` table with unique index ✅
 8. `Phase16_FacultyGrading` — adds `rubrics`, `rubric_criteria`, `rubric_levels`, `rubric_student_grades` tables ✅
 9. `Phase17_DegreeAudit` — adds `degree_rules`, `degree_rule_required_courses` tables + `course_type` column on `courses` ✅
+10. `20260508132355_Phase22_ExternalIntegrations` — adds `accreditation_templates` table ✅
+11. `20260508152906_Phase25_AcademicEngineUnification` — adds `institution_grading_profiles` table ✅
 
 Database is fully synchronized with codebase.
 
@@ -168,7 +170,14 @@ Database is fully synchronized with codebase.
 - **Phase 16 — Faculty Grading System — COMPLETE ✅** (commit `1f496f7`)
 - **Phase 17 — Degree Audit System — COMPLETE ✅** (78/78 tests passed)
 - **Phase 18 — Graduation Workflow — COMPLETE ✅** (78/78 tests passed; migration `Phase18_GraduationWorkflow`)
-- Continue through Phases 19–21 per Docs/Enhancements.md priority order
+- **Phase 19 — Advanced Course Creation & Grading Config — COMPLETE ✅**
+- **Phase 20 — Learning Management System (LMS) — COMPLETE ✅**
+- **Phase 21 — Study Planner — COMPLETE ✅** (migration `Phase21_StudyPlanner`)
+- **Phase 22 — External Integrations — COMPLETE ✅** (commit `dddee69`; migration `Phase22_ExternalIntegrations`)
+- **Phase 23 — Core Policy Foundation — COMPLETE ✅** (commit `28cac36`; 27/27 tests passed)
+- **Phase 24 — Dynamic Module and UI Composition — COMPLETE ✅** (commit `391ac45`; 44/44 tests passed)
+- **Phase 25 — Academic Engine Unification — COMPLETE ✅** (commit `d2aabd3`; 144/144 tests passed; migration `Phase25_AcademicEngineUnification`)
+- Continue through Phase 26+ per Docs/Advance-Enhancements.md
 
 ## Pending Extra Tasks (Cross-Phase)
 - Keep Report Center menu visible by role and working links.

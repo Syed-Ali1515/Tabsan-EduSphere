@@ -769,3 +769,33 @@ Enhancement phase tracked in `Docs/Enhancements.md`. Summary entry recorded here
 - `StudyPlanController` (9 endpoints); portal views `StudyPlan.cshtml`, `StudyPlanDetail.cshtml`.
 - Stage 21.2: Recommendation engine — degree audit gaps + eligible electives, prerequisite-gated; `StudyPlanRecommendations.cshtml`.
 - Validation: 0 build errors; 7/7 unit tests passed.
+
+## Phase 22 — External Integrations ✅ Complete (2026-05-08) | Commit: `dddee69`
+
+Enhancement phase tracked in `Docs/Enhancements.md`. No regressions introduced.
+
+- Library system integration (`LibraryService`, `ILibraryService`) and accreditation reporting (`AccreditationReport`, `AccreditationRepository`).
+- Migration: `Phase22_ExternalIntegrations` (`accreditation_templates` table).
+- Validation: 0 build errors; no existing tests broken.
+
+## Phase 23 — Core Policy Foundation ✅ Complete (2026-05-08) | Commit: `28cac36`
+
+Enhancement phase tracked in `Docs/Enhancements.md`. No regressions introduced.
+
+- `InstitutionPolicySnapshot` sealed record; `InstitutionType` enum; `IInstitutionPolicyService` / `InstitutionPolicyService`.
+- 27/27 unit tests passed.
+
+## Phase 24 — Dynamic Module and UI Composition ✅ Complete (2026-05-09) | Commit: `391ac45`
+
+Enhancement phase tracked in `Docs/Enhancements.md`. No regressions introduced.
+
+- `ModuleRegistry`, `IModuleRegistryService`, `ILabelService`, `IDashboardCompositionService` — no DB changes, no migration.
+- 44/44 unit tests passed.
+
+## Phase 25 — Academic Engine Unification ✅ Complete (2026-05-09) | Commit: `d2aabd3`
+
+Enhancement phase tracked in `Docs/Enhancements.md`. No regressions introduced. No existing tests broken.
+
+- Strategy Pattern for result calculation; Institution Grading Profiles; Progression/Promotion Logic.
+- Migration: `20260508152906_Phase25_AcademicEngineUnification` (`institution_grading_profiles` table).
+- 29 new unit tests added; 144/144 total tests passed.

@@ -4014,3 +4014,75 @@ New themes added to site.css and ThemeSettingsPageModel: `neon_mint`, `sakura_pi
 |---|---|---|
 | `ModuleComposition(ct)` | Parallel-fetches visible modules, vocabulary, and widgets via `Task.WhenAll`; renders composition page. SuperAdmin. | `Web/Controllers/PortalController.cs` |
 | `ModuleComposition.cshtml` | SuperAdmin view — vocabulary label tiles, widget cards, full module registry table (key, roles, institution types, license gate, accessible state). | `Web/Views/Portal/ModuleComposition.cshtml` |
+
+---
+
+## Phase 25 — Academic Engine Unification (2026-05-09)
+
+### Application — IResultCalculationStrategy / GpaResultStrategy / PercentageResultStrategy (Stage 25.1)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `IResultCalculationStrategy.Calculate(marks, gpaRules, threshold, gradeRangesJson)` | Strategy contract: converts component marks into a `ResultSummary` (score, GPA, percentage, grade label, pass/fail). | `Application/Interfaces/IResultCalculationStrategy.cs` |
+| `GpaResultStrategy.Calculate(...)` | University mode: weighted percentage → GPA lookup on configured scale; pass = GPA ≥ threshold. | `Application/Academic/GpaResultStrategy.cs` |
+| `PercentageResultStrategy.Calculate(...)` | School/College mode: weighted percentage → grade band lookup (custom JSON or built-in defaults); pass = % ≥ threshold. | `Application/Academic/PercentageResultStrategy.cs` |
+| `ComponentMark` (record) | Input value type: component name, marks obtained/max, weightage. | `Application/Interfaces/IResultCalculationStrategy.cs` |
+| `ResultSummary` (record) | Output value type: total score, grade point, percentage, grade label, isPassing. | `Application/Interfaces/IResultCalculationStrategy.cs` |
+| `GpaScaleRuleEntry` (record) | Lightweight GPA scale entry for strategy calculations (no EF dependency). | `Application/Interfaces/IResultCalculationStrategy.cs` |
+| `GradeBandEntry` (record) | Lightweight grade band for percentage strategies. | `Application/Interfaces/IResultCalculationStrategy.cs` |
+
+### Application — IResultStrategyResolver / ResultStrategyResolver (Stage 25.1)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `IResultStrategyResolver.Resolve(institutionType)` | Returns the appropriate strategy for the given institution type. | `Application/Interfaces/IResultStrategyResolver.cs` |
+| `ResultStrategyResolver.Resolve(institutionType)` | Maps University → GpaResultStrategy; School/College → PercentageResultStrategy. Singleton. | `Application/Academic/ResultStrategyResolver.cs` |
+
+### Domain — InstitutionGradingProfile (Stage 25.2)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `InstitutionGradingProfile(type, threshold, json)` | Creates a new profile; validates threshold (0–4.0 for University, 0–100 for School/College). | `Domain/Academic/InstitutionGradingProfile.cs` |
+| `InstitutionGradingProfile.Update(threshold, json, isActive)` | Updates threshold, grade bands JSON, and active state. | `Domain/Academic/InstitutionGradingProfile.cs` |
+
+### Domain — IInstitutionGradingProfileRepository (Stage 25.2)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetAllAsync(ct)` | Returns all grading profiles. | `Domain/Interfaces/IInstitutionGradingProfileRepository.cs` |
+| `GetByTypeAsync(type, ct)` | Returns the active profile for the given institution type, or null. | `Domain/Interfaces/IInstitutionGradingProfileRepository.cs` |
+| `GetByIdAsync(id, ct)` | Returns a profile by ID, or null. | `Domain/Interfaces/IInstitutionGradingProfileRepository.cs` |
+| `AddAsync / Update / SaveChangesAsync` | Standard CRUD + persistence. | `Domain/Interfaces/IInstitutionGradingProfileRepository.cs` |
+
+### Application — IInstitutionGradingService / InstitutionGradingService (Stage 25.2)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetAllAsync(ct)` | Returns all institution grading profiles as DTOs. | `Application/Interfaces/IInstitutionGradingService.cs` |
+| `GetByTypeAsync(type, ct)` | Returns the grading profile for the given type, or null. | `Application/Interfaces/IInstitutionGradingService.cs` |
+| `UpsertAsync(type, request, ct)` | Creates or updates the grading profile for the given institution type. | `Application/Academic/InstitutionGradingService.cs` |
+
+### Application — IProgressionService / ProgressionService (Stage 25.3)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `EvaluateAsync(request, ct)` | Evaluates whether a student can progress; returns `ProgressionDecision` without side effects. | `Application/Interfaces/IProgressionService.cs` |
+| `PromoteAsync(request, ct)` | Evaluates then advances the student's `CurrentSemesterNumber` if eligible; throws on failure. | `Application/Academic/ProgressionService.cs` |
+| `ProgressionDecision` (record) | Output: studentId, institutionType, canProgress, period labels, achieved/required scores, remarks. | `Application/DTOs/Academic/ProgressionDtos.cs` |
+| `ProgressionEvaluationRequest` (record) | Input: studentProfileId + institutionType. | `Application/DTOs/Academic/ProgressionDtos.cs` |
+
+### API — InstitutionGradingProfileController (Stage 25.2)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetAll(ct)` | `GET api/v1/institution-grading-profiles` — returns all profiles. Admin+. | `API/Controllers/InstitutionGradingProfileController.cs` |
+| `GetByType(type, ct)` | `GET api/v1/institution-grading-profiles/{type}` — returns profile for type or 404. Admin+. | `API/Controllers/InstitutionGradingProfileController.cs` |
+| `Upsert(type, request, ct)` | `PUT api/v1/institution-grading-profiles/{type}` — creates/updates profile. SuperAdmin only. | `API/Controllers/InstitutionGradingProfileController.cs` |
+
+### API — ProgressionController (Stage 25.3)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `Evaluate(request, ct)` | `POST api/v1/progression/evaluate` — returns progression decision without changes. Admin+. | `API/Controllers/ProgressionController.cs` |
+| `Promote(request, ct)` | `POST api/v1/progression/promote` — advances student if eligible; 400 on failure. Admin+. | `API/Controllers/ProgressionController.cs` |
+| `GetMyProgression(type, ct)` | `GET api/v1/progression/me/{type}` — student self-view of progression eligibility. Student+. | `API/Controllers/ProgressionController.cs` |

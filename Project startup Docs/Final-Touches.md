@@ -914,3 +914,50 @@ Phase 20 — (see Docs/Enhancements.md for full spec).
 - `dotnet build Tabsan.EduSphere.sln` — 0 errors, 5 pre-existing nullable warnings.
 - No EF migration required.
 - 44/44 unit tests passed.
+
+---
+
+## Phase 25 — Academic Engine Unification ✅ Complete (2026-05-09) | Commit: `d2aabd3`
+
+### Completion Mark
+- [x] Stage 25.1 — `IResultCalculationStrategy` interface + `ComponentMark`, `ResultSummary`, `GpaScaleRuleEntry`, `GradeBandEntry` value types (`Application/Interfaces/IResultCalculationStrategy.cs`).
+- [x] Stage 25.1 — `GpaResultStrategy` (University GPA 0.0–4.0); `PercentageResultStrategy` (School/College % + grade bands; custom JSON or built-in defaults).
+- [x] Stage 25.1 — `IResultStrategyResolver` + `ResultStrategyResolver` (singleton). Zero changes to existing `ResultService`.
+- [x] Stage 25.2 — `InstitutionGradingProfile` entity; `IInstitutionGradingProfileRepository` + `InstitutionGradingProfileRepository`.
+- [x] Stage 25.2 — `IInstitutionGradingService` + `InstitutionGradingService` (upsert semantics); DTOs `InstitutionGradingProfileDto` / `SaveInstitutionGradingProfileRequest`.
+- [x] Stage 25.2 — `InstitutionGradingProfileConfiguration` EF config (`institution_grading_profiles`, `decimal(5,2)`, unique index on `InstitutionType`).
+- [x] Stage 25.2 — Migration `20260508152906_Phase25_AcademicEngineUnification` applied.
+- [x] Stage 25.2 — `InstitutionGradingProfileController` (`GET /`, `GET /{type}` Admin+; `PUT /{type}` SuperAdmin).
+- [x] Stage 25.3 — `IProgressionService` + `ProgressionService` (University CGPA; School/College %; default thresholds 2.0/40).
+- [x] Stage 25.3 — `ProgressionDecision` + `ProgressionEvaluationRequest` DTOs.
+- [x] Stage 25.3 — `ProgressionController` (`POST /evaluate` Admin+, `POST /promote` Admin+, `GET /me/{type}` Student+).
+- [x] DI: `IResultStrategyResolver` (singleton), `IInstitutionGradingProfileRepository` (scoped), `IInstitutionGradingService` (scoped), `IProgressionService` (scoped).
+- [x] Tests: 144/144 unit tests passed (29 new Phase-25 tests in `Phase25Tests.cs` covering strategy, resolver, entity, and progression service).
+
+### New Files (Phase 25)
+| File | Description |
+|---|---|
+| `Application/Interfaces/IResultCalculationStrategy.cs` | Strategy interface + value types |
+| `Application/Academic/GpaResultStrategy.cs` | University GPA strategy |
+| `Application/Academic/PercentageResultStrategy.cs` | School/College percentage strategy |
+| `Application/Interfaces/IResultStrategyResolver.cs` | Resolver interface |
+| `Application/Academic/ResultStrategyResolver.cs` | Resolver implementation |
+| `Domain/Academic/InstitutionGradingProfile.cs` | Grading profile entity |
+| `Domain/Interfaces/IInstitutionGradingProfileRepository.cs` | Repository interface |
+| `Application/Interfaces/IInstitutionGradingService.cs` | Service interface |
+| `Application/Academic/InstitutionGradingService.cs` | Service implementation |
+| `Application/DTOs/Academic/InstitutionGradingDtos.cs` | Grading profile DTOs |
+| `Application/Interfaces/IProgressionService.cs` | Progression service interface |
+| `Application/Academic/ProgressionService.cs` | Progression/promotion implementation |
+| `Application/DTOs/Academic/ProgressionDtos.cs` | Progression DTOs |
+| `Infrastructure/Repositories/InstitutionGradingProfileRepository.cs` | EF repository |
+| `Infrastructure/Persistence/Configurations/InstitutionGradingProfileConfiguration.cs` | EF config |
+| `Infrastructure/Migrations/20260508152906_Phase25_AcademicEngineUnification.cs` | EF migration |
+| `API/Controllers/InstitutionGradingProfileController.cs` | Grading profile API |
+| `API/Controllers/ProgressionController.cs` | Progression API |
+| `tests/.../Phase25Tests.cs` | 29 unit tests |
+
+### Validation Summary
+- `dotnet build Tabsan.EduSphere.sln` — 0 errors, 5 pre-existing nullable warnings.
+- EF Migration `20260508152906_Phase25_AcademicEngineUnification` applied.
+- 144/144 unit tests passed (29 new).

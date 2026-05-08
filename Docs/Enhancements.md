@@ -357,6 +357,39 @@
 
 ---
 
+## Phase 25 — Academic Engine Unification ✅ (commit `d2aabd3`, 2026-05-09)
+
+### Stage 25.1 — Result Calculation Strategy Pattern ✅
+- `IResultCalculationStrategy` interface: `AppliesTo`, `Calculate(marks, gpaRules, threshold, gradeRangesJson)` → `ResultSummary`.
+- Value types: `ComponentMark`, `ResultSummary`, `GpaScaleRuleEntry`, `GradeBandEntry`.
+- `GpaResultStrategy` (University): weighted percentage → GPA lookup via configured scale; pass = GPA ≥ threshold.
+- `PercentageResultStrategy` (School/College): weighted percentage → grade band resolution (custom JSON or built-in A+/A/B+/B/C/D/F defaults); pass = % ≥ threshold. Throws if instantiated for University.
+- `IResultStrategyResolver` / `ResultStrategyResolver` (singleton): maps `InstitutionType` → strategy. Existing `ResultService` unchanged (University GPA flow unaffected).
+
+### Stage 25.2 — Institution Grading Profiles ✅
+- `InstitutionGradingProfile` domain entity: `InstitutionType`, `PassThreshold`, `GradeRangesJson`, `IsActive`. One profile per type (unique index).
+- Threshold validation: University 0–4.0, School/College 0–100.
+- `IInstitutionGradingProfileRepository` + `InstitutionGradingProfileRepository` (EF).
+- `IInstitutionGradingService` / `InstitutionGradingService`: `GetAllAsync`, `GetByTypeAsync`, `UpsertAsync` (create-or-update).
+- DTOs: `InstitutionGradingProfileDto`, `SaveInstitutionGradingProfileRequest`.
+- `InstitutionGradingProfileController`: `GET /api/v1/institution-grading-profiles` (Admin+), `GET /{type}` (Admin+), `PUT /{type}` (SuperAdmin only).
+- EF config (`institution_grading_profiles`) + migration `20260508152906_Phase25_AcademicEngineUnification`.
+
+### Stage 25.3 — Progression / Promotion Logic ✅
+- `IProgressionService` / `ProgressionService`: institution-type-aware evaluation of student progression eligibility.
+  - University: CGPA ≥ pass threshold.
+  - School: `CurrentSemesterGpa` (treated as %) ≥ pass threshold.
+  - College: `CurrentSemesterGpa` (treated as %) ≥ pass threshold; labels expressed as "Year N".
+- Defaults when no profile configured: 2.0 (University), 40 (School/College).
+- `EvaluateAsync`: returns `ProgressionDecision` with no side effects.
+- `PromoteAsync`: calls evaluate then calls `student.AdvanceSemester()` if eligible; throws `InvalidOperationException` otherwise.
+- `ProgressionController`: `POST /evaluate` (Admin+), `POST /promote` (Admin+), `GET /me/{type}` (Student+).
+- DTOs: `ProgressionDecision`, `ProgressionEvaluationRequest`.
+
+**Validation:** 0 build errors · 144/144 unit tests passed (29 new Phase 25 tests: strategy, resolver, entity, progression service)
+
+---
+
 ## Implementation Sequence Summary
 
 | Phase | Feature | Complexity | Status |
@@ -374,6 +407,6 @@
 | 22 | External Integrations | High | ✅ Implemented (commit `dddee69`) |
 | 23 | Core Policy Foundation | Medium | ✅ Implemented (commit `28cac36`) |
 | 24 | Dynamic Module and UI Composition | Medium | ✅ Implemented (commit `391ac45`) |
-| 25 | Academic Engine Unification | High | Planned |
+| 25 | Academic Engine Unification | High | ✅ Implemented (commit `d2aabd3`) |
 | 26 | School and College Functional Expansion | High | Planned |
 | 27 | University Portal Parity and Student Experience | High | Planned |

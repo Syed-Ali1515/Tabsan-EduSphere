@@ -628,3 +628,36 @@ A feature is complete only when:
 **Validation:** 0 build errors · 44/44 unit tests · no migration needed · commit `391ac45` pushed
 
 ---
+
+### 2026-05-09 — Phase 25 Academic Engine Unification Complete
+
+**Stage 25.1 — Result Calculation Strategy Pattern:**
+- `Application/Interfaces/IResultCalculationStrategy.cs` — `IResultCalculationStrategy` interface + value types: `ComponentMark`, `ResultSummary`, `GpaScaleRuleEntry`, `GradeBandEntry`.
+- `Application/Academic/GpaResultStrategy.cs` — University: weighted % → GPA 0.0–4.0 scale lookup. `AppliesTo = InstitutionType.University`.
+- `Application/Academic/PercentageResultStrategy.cs` — School/College: weighted % → grade band label (custom JSON or built-in A+/A/B+/B/C/D/F). Throws if constructed for University.
+- `Application/Interfaces/IResultStrategyResolver.cs` — `Resolve(InstitutionType)` contract.
+- `Application/Academic/ResultStrategyResolver.cs` — singleton resolver: University→GpaResultStrategy, School/College→PercentageResultStrategy. Registered as Singleton.
+
+**Stage 25.2 — Institution Grading Profiles:**
+- `Domain/Academic/InstitutionGradingProfile.cs` — entity with `InstitutionType`, `PassThreshold` (validated), `GradeRangesJson`, `IsActive`. `Update()` method.
+- `Domain/Interfaces/IInstitutionGradingProfileRepository.cs` — `GetAllAsync`, `GetByTypeAsync`, `GetByIdAsync`, `AddAsync`, `Update`, `SaveChangesAsync`.
+- `Application/Interfaces/IInstitutionGradingService.cs` — `GetAllAsync`, `GetByTypeAsync`, `UpsertAsync`.
+- `Application/Academic/InstitutionGradingService.cs` — upsert (create if missing, update if exists). Maps to `InstitutionGradingProfileDto`.
+- `Application/DTOs/Academic/InstitutionGradingDtos.cs` — `InstitutionGradingProfileDto`, `SaveInstitutionGradingProfileRequest`.
+- `Infrastructure/Repositories/InstitutionGradingProfileRepository.cs` — EF Core implementation.
+- `Infrastructure/Persistence/Configurations/InstitutionGradingProfileConfiguration.cs` — table `institution_grading_profiles`, `decimal(5,2)` for threshold, unique index on `InstitutionType`.
+- `Infrastructure/Persistence/ApplicationDbContext.cs` — `DbSet<InstitutionGradingProfile> InstitutionGradingProfiles`.
+- `Infrastructure/Migrations/20260508152906_Phase25_AcademicEngineUnification.cs` — creates `institution_grading_profiles` table.
+- `API/Controllers/InstitutionGradingProfileController.cs` — `GET /` (Admin+), `GET /{type}` (Admin+), `PUT /{type}` (SuperAdmin).
+
+**Stage 25.3 — Progression / Promotion Logic:**
+- `Application/Interfaces/IProgressionService.cs` — `EvaluateAsync`, `PromoteAsync`.
+- `Application/Academic/ProgressionService.cs` — institution-aware evaluation; `PromoteAsync` calls `student.AdvanceSemester()`. Default thresholds: 2.0 (University), 40 (School/College).
+- `Application/DTOs/Academic/ProgressionDtos.cs` — `ProgressionDecision`, `ProgressionEvaluationRequest`.
+- `API/Controllers/ProgressionController.cs` — `POST /evaluate` (Admin+), `POST /promote` (Admin+), `GET /me/{type}` (Student+).
+- `API/Program.cs` Phase 25 DI: `IResultStrategyResolver` (singleton), `IInstitutionGradingProfileRepository` (scoped), `IInstitutionGradingService` (scoped), `IProgressionService` (scoped).
+- `tests/Tabsan.EduSphere.UnitTests/Phase25Tests.cs` — 29 new tests (144 total): `GpaResultStrategyTests`, `PercentageResultStrategyTests`, `ResultStrategyResolverTests`, `InstitutionGradingProfileTests`, `ProgressionServiceTests`.
+
+**Validation:** 0 build errors · 144/144 unit tests · migration `20260508152906_Phase25_AcademicEngineUnification` · commit `d2aabd3` pushed
+
+---

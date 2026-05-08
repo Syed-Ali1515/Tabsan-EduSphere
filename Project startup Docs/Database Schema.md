@@ -716,3 +716,19 @@ No EF migration required — reuses the existing `portal_settings` key-value sto
 
 ### Phase 24 — Dynamic Module and UI Composition (no new tables)
 All Phase 24 services (`ModuleRegistryService`, `LabelService`, `DashboardCompositionService`) are stateless / in-process. No new tables were added.
+
+---
+
+### institution_grading_profiles
+Per-institution-type grading configuration (pass threshold and grade bands). Phase 25 — Academic Engine Unification.
+EF migration: `20260508152906_Phase25_AcademicEngineUnification`.
+
+- id (UUID, PK)
+- institution_type (int) — `InstitutionType` enum: 0=University, 1=School, 2=College
+- pass_threshold (decimal(5,2)) — 0–4.0 for University; 0–100 for School/College
+- grade_ranges_json (nvarchar max, nullable) — JSON grade band array, e.g. `[{"From":90,"To":100,"Label":"A+"},...]`; null uses built-in defaults
+- is_active (bool, default true)
+- created_at / updated_at
+
+**Indexes:**
+- `IX_institution_grading_profiles_type` — unique on `institution_type` (one profile per type)
