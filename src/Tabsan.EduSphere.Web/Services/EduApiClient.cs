@@ -349,6 +349,17 @@ public interface IEduApiClient
     Task DeleteStudyPlanAsync(Guid planId, CancellationToken ct);
     Task AdvisePlanAsync(Guid planId, bool isEndorsed, string? advisorNotes, CancellationToken ct);
     Task<StudyPlanRecommendationApiModel?> GetStudyPlanRecommendationsAsync(Guid studentProfileId, string plannedSemesterName, CancellationToken ct);
+
+    // Final-Touches Phase 22 — External Integrations
+    Task<LibraryConfigApiModel?> GetLibraryConfigAsync(CancellationToken ct);
+    Task SaveLibraryConfigAsync(LibraryConfigApiModel model, CancellationToken ct);
+    Task<LibraryLoansApiModel?> GetMyLibraryLoansAsync(CancellationToken ct);
+    Task<List<AccreditationTemplateApiModel>> GetAccreditationTemplatesAsync(CancellationToken ct);
+    Task<AccreditationTemplateApiModel?> GetAccreditationTemplateAsync(Guid id, CancellationToken ct);
+    Task<AccreditationTemplateApiModel?> CreateAccreditationTemplateAsync(CreateAccreditationTemplateForm form, CancellationToken ct);
+    Task<AccreditationTemplateApiModel?> UpdateAccreditationTemplateAsync(Guid id, UpdateAccreditationTemplateForm form, CancellationToken ct);
+    Task DeleteAccreditationTemplateAsync(Guid id, CancellationToken ct);
+    Task<(byte[]? Content, string ContentType, string FileName)> GenerateAccreditationReportAsync(Guid id, CancellationToken ct);
 }
 
 public class EduApiClient : IEduApiClient
@@ -1489,6 +1500,47 @@ public class EduApiClient : IEduApiClient
 
     public Task DeleteOfferingAsync(Guid id, CancellationToken ct)
         => DeleteAsync($"api/v1/course/offerings/{id}", ct);
+
+    // ── Phase 22: External Integrations ─────────────────────────────────────────
+
+    // Library config
+    public Task<LibraryConfigApiModel?> GetLibraryConfigAsync(CancellationToken ct)
+        => GetAsync<LibraryConfigApiModel>("api/v1/library/config", ct);
+
+    public Task SaveLibraryConfigAsync(LibraryConfigApiModel model, CancellationToken ct)
+        => PutAsync<LibraryConfigApiModel, object>("api/v1/library/config", model, ct);
+
+    public async Task<LibraryLoansApiModel?> GetMyLibraryLoansAsync(CancellationToken ct)
+        => await GetAsync<LibraryLoansApiModel>("api/v1/library/loans", ct);
+
+    // Accreditation templates
+    public Task<List<AccreditationTemplateApiModel>> GetAccreditationTemplatesAsync(CancellationToken ct)
+        => GetAsync<List<AccreditationTemplateApiModel>>("api/v1/accreditation", ct)
+           .ContinueWith(t => t.Result ?? new List<AccreditationTemplateApiModel>(), TaskScheduler.Default);
+
+    public Task<AccreditationTemplateApiModel?> GetAccreditationTemplateAsync(Guid id, CancellationToken ct)
+        => GetAsync<AccreditationTemplateApiModel>($"api/v1/accreditation/{id}", ct);
+
+    public Task<AccreditationTemplateApiModel?> CreateAccreditationTemplateAsync(CreateAccreditationTemplateForm form, CancellationToken ct)
+        => PostAsync<CreateAccreditationTemplateForm, AccreditationTemplateApiModel>("api/v1/accreditation", form, ct);
+
+    public Task<AccreditationTemplateApiModel?> UpdateAccreditationTemplateAsync(Guid id, UpdateAccreditationTemplateForm form, CancellationToken ct)
+        => PutAsync<UpdateAccreditationTemplateForm, AccreditationTemplateApiModel>($"api/v1/accreditation/{id}", form, ct);
+
+    public Task DeleteAccreditationTemplateAsync(Guid id, CancellationToken ct)
+        => DeleteAsync($"api/v1/accreditation/{id}", ct);
+
+    public async Task<(byte[]? Content, string ContentType, string FileName)> GenerateAccreditationReportAsync(Guid id, CancellationToken ct)
+    {
+        var client   = CreateClient();
+        var response = await client.GetAsync($"api/v1/accreditation/{id}/generate", ct);
+        if (!response.IsSuccessStatusCode) return (null, "", "");
+        var bytes       = await response.Content.ReadAsByteArrayAsync(ct);
+        var contentType = response.Content.Headers.ContentType?.MediaType ?? "application/octet-stream";
+        var fileName    = response.Content.Headers.ContentDisposition?.FileName?.Trim('"')
+                          ?? "report.csv";
+        return (bytes, contentType, fileName);
+    }
 
     private sealed class CourseDetailDto
     {
@@ -3792,4 +3844,57 @@ public sealed class StudyPlanRecommendationApiModel
     public int                               MaxCreditLoad           { get; set; }
     public int                               RecommendedTotalCredits { get; set; }
     public List<RecommendedCourseApiModel>   Recommendations         { get; set; } = new();
+}
+
+// ── Phase 22: External Integrations ─────────────────────────────────────────
+
+public sealed class LibraryConfigApiModel
+{
+    public string? CatalogueUrl { get; set; }
+    public string? ApiToken     { get; set; }
+    public string? LoanApiUrl   { get; set; }
+}
+
+public sealed class LibraryLoanItemApiModel
+{
+    public string    Title     { get; set; } = string.Empty;
+    public string?   Author    { get; set; }
+    public DateTime? DueDate   { get; set; }
+    public string    Status    { get; set; } = string.Empty;
+    public bool      IsOverdue { get; set; }
+}
+
+public sealed class LibraryLoansApiModel
+{
+    public bool                          IsConfigured  { get; set; }
+    public string?                       ErrorMessage  { get; set; }
+    public List<LibraryLoanItemApiModel> Loans         { get; set; } = new();
+}
+
+public sealed class AccreditationTemplateApiModel
+{
+    public Guid      Id                { get; set; }
+    public string    Name              { get; set; } = string.Empty;
+    public string?   Description       { get; set; }
+    public string    Format            { get; set; } = "CSV";
+    public string?   FieldMappingsJson { get; set; }
+    public bool      IsActive          { get; set; }
+    public DateTime  CreatedAt         { get; set; }
+}
+
+public sealed class CreateAccreditationTemplateForm
+{
+    public string  Name              { get; set; } = string.Empty;
+    public string? Description       { get; set; }
+    public string  Format            { get; set; } = "CSV";
+    public string? FieldMappingsJson { get; set; }
+}
+
+public sealed class UpdateAccreditationTemplateForm
+{
+    public string  Name              { get; set; } = string.Empty;
+    public string? Description       { get; set; }
+    public string  Format            { get; set; } = "CSV";
+    public string? FieldMappingsJson { get; set; }
+    public bool    IsActive          { get; set; }
 }

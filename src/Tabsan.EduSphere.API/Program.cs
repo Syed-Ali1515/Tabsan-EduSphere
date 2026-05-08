@@ -243,6 +243,11 @@ builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IAnnouncement
 builder.Services.AddScoped<Tabsan.EduSphere.Domain.Interfaces.IStudyPlanRepository, Tabsan.EduSphere.Infrastructure.Repositories.StudyPlanRepository>();
 builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IStudyPlanService, Tabsan.EduSphere.Application.StudyPlanner.StudyPlanService>();
 
+// ── Phase 22: External Integrations ──────────────────────────────────────────
+builder.Services.AddScoped<Tabsan.EduSphere.Domain.Interfaces.IAccreditationRepository, Tabsan.EduSphere.Infrastructure.Repositories.AccreditationRepository>();
+builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IAccreditationService, Tabsan.EduSphere.Application.Services.AccreditationService>();
+builder.Services.AddHttpClient<Tabsan.EduSphere.Application.Interfaces.ILibraryService, Tabsan.EduSphere.Application.Services.LibraryService>();
+
 // ── Rate limiting (OWASP hardening) ─────────────────────────────────────
 builder.Services.AddRateLimiter(opts =>
 {

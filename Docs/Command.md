@@ -55,11 +55,11 @@ cmd /c git -C "<repo-root>" push origin main
 
 ## Current Execution Pointer
 - Plan Source: Docs/Enhancements.md
-- Active Phase: **Phase 21 — Study Planner — FULLY COMPLETE ✅**
-- Active Stage: **Stages 20.1 + 20.2 + 20.3 + 20.4 done — Course Content Modules, Videos, Discussion Forum, Announcements**
-- Status: **0 build errors; 7/7 unit tests passed; migration Phase20_LMS applied**
-- Last Updated: 2026-05-08
-- Next: Phase 21 — Study Planner (see Enhancements.md)
+- Active Phase: **Phase 22 — External Integrations — FULLY COMPLETE ✅**
+- Active Stage: **Stages 22.1 (Library System Integration) + 22.2 (Accreditation Reporting) done**
+- Status: **0 build errors; 7/7 unit tests passed; migration Phase22_ExternalIntegrations applied**
+- Last Updated: 2026-05-09
+- Next: Phase 23 (see Docs/Advance-Enhancements.md)
 
 ---
 
@@ -1011,3 +1011,31 @@ git push origin main
 | 21.1 | DTOs, service interface + implementation, EF configs, repository | `Application/DTOs/StudyPlanner/StudyPlannerDTOs.cs`, `Application/Interfaces/IStudyPlanService.cs`, `Application/StudyPlanner/StudyPlanService.cs`, `Infrastructure/Persistence/Configurations/StudyPlanConfigurations.cs`, `Infrastructure/Repositories/StudyPlanRepository.cs` |
 | 21.2 | Recommendation engine (degree audit gaps + electives + prerequisite gating) | Part of `StudyPlanService.GetRecommendationsAsync` |
 | Cross-cutting | Controller, DI, DbContext DbSets, EduApiClient, PortalController, views, sidebar | `API/Controllers/StudyPlanController.cs`, `API/Program.cs`, `Infrastructure/Persistence/ApplicationDbContext.cs`, `Web/Services/EduApiClient.cs`, `Web/Controllers/PortalController.cs`, `Web/Views/Portal/StudyPlan.cshtml`, `Web/Views/Portal/StudyPlanDetail.cshtml`, `Web/Views/Portal/StudyPlanRecommendations.cshtml`, `Views/Shared/_Layout.cshtml` |
+
+---
+
+## Phase 22 — External Integrations
+
+**EF Migration:**
+```powershell
+dotnet ef migrations add Phase22_ExternalIntegrations --project src/Tabsan.EduSphere.Infrastructure --startup-project src/Tabsan.EduSphere.API
+dotnet ef database update --project src/Tabsan.EduSphere.Infrastructure --startup-project src/Tabsan.EduSphere.API -- --environment Development
+```
+
+**Git Commit:**
+```powershell
+git add -A
+git commit -m "Phase 22 — External Integrations (Library System Integration + Accreditation Reporting)"
+git pull --rebase origin main
+git push origin main
+```
+
+**Test Run:** 7/7 unit tests passed (build clean)
+**Status:** ✅ Complete
+
+### Stages Completed
+| Stage | Description | Files |
+|-------|-------------|-------|
+| 22.1 | Library System Integration — config + loan proxy | `Domain/`, `Application/DTOs/External/LibraryDTOs.cs`, `Application/Interfaces/ILibraryService.cs`, `Application/Services/LibraryService.cs`, `API/Controllers/LibraryController.cs` |
+| 22.2 | Accreditation Reporting — template CRUD + report generation (CSV/TXT) | `Domain/Settings/AccreditationTemplate.cs`, `Domain/Interfaces/IAccreditationRepository.cs`, `Infrastructure/Repositories/AccreditationRepository.cs`, `Infrastructure/Persistence/Configurations/AccreditationTemplateConfiguration.cs`, `Application/DTOs/External/AccreditationDTOs.cs`, `Application/Interfaces/IAccreditationService.cs`, `Application/Services/AccreditationService.cs`, `API/Controllers/AccreditationController.cs` |
+| Cross-cutting | DI, DbContext DbSet, EduApiClient, PortalController, views, sidebar, seed SQL | `API/Program.cs`, `Infrastructure/Persistence/ApplicationDbContext.cs`, `Web/Services/EduApiClient.cs`, `Web/Controllers/PortalController.cs`, `Web/Views/Portal/LibraryConfig.cshtml`, `Web/Views/Portal/AccreditationTemplates.cshtml`, `Views/Shared/_Layout.cshtml`, `Scripts/1-MinimalSeed.sql` |

@@ -222,6 +222,49 @@ public class ForceChangePasswordPageModel
     public string? Message { get; set; }
 }
 
+// =============================================================================
+// Phase 22: External Integrations
+// =============================================================================
+
+public class LibraryConfigPageModel
+{
+    public bool IsConnected { get; set; }
+    public string? Message  { get; set; }
+    public string? CatalogueUrl { get; set; }
+    public string? ApiToken     { get; set; }
+    public string? LoanApiUrl   { get; set; }
+}
+
+public class AccreditationTemplatesPageModel
+{
+    public bool IsConnected { get; set; }
+    public string? Message  { get; set; }
+    public List<AccreditationTemplateRow> Templates { get; set; } = new();
+    public AccreditationTemplateFormModel CreateForm { get; set; } = new();
+    public AccreditationTemplateFormModel? EditForm  { get; set; }
+}
+
+public class AccreditationTemplateRow
+{
+    public Guid     Id                { get; set; }
+    public string   Name              { get; set; } = string.Empty;
+    public string?  Description       { get; set; }
+    public string   Format            { get; set; } = "CSV";
+    public string?  FieldMappingsJson { get; set; }
+    public bool     IsActive          { get; set; }
+    public DateTime CreatedAt         { get; set; }
+}
+
+public class AccreditationTemplateFormModel
+{
+    public Guid?   Id                { get; set; }
+    public string  Name              { get; set; } = string.Empty;
+    public string? Description       { get; set; }
+    public string  Format            { get; set; } = "CSV";
+    public string? FieldMappingsJson { get; set; }
+    public bool    IsActive          { get; set; } = true;
+}
+
 public class StudentProfileSummaryItem
 {
     public Guid Id { get; set; }

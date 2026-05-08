@@ -258,7 +258,10 @@ FROM (VALUES
     (CAST(N'55F6615E-D38F-4825-BA54-2603B3D7E539' AS UNIQUEIDENTIFIER), N'Dashboard Settings',     N'Customise portal branding and name',          N'dashboard_settings', 27),
     (CAST(N'C16DBE1D-7A79-4BC8-B6DA-1A4B72DE6987' AS UNIQUEIDENTIFIER), N'Report Settings',        N'Report access control',                       N'report_settings',    28),
     (CAST(N'A55B6BEF-A288-4ABB-9ED6-65C319B67C1B' AS UNIQUEIDENTIFIER), N'Buildings',              N'Manage buildings',                            N'buildings',          29),
-    (CAST(N'1C2312DD-1C86-4FD0-A9F1-54026BE5A0FB' AS UNIQUEIDENTIFIER), N'Rooms',                  N'Manage rooms',                                N'rooms',              30)
+    (CAST(N'1C2312DD-1C86-4FD0-A9F1-54026BE5A0FB' AS UNIQUEIDENTIFIER), N'Rooms',                  N'Manage rooms',                                N'rooms',              30),
+    -- Phase 22: External Integrations
+    (CAST(N'E22A0000-0000-0000-0000-000000000001' AS UNIQUEIDENTIFIER), N'Library Integration',    N'External library catalogue and loan proxy',   N'library_config',     31),
+    (CAST(N'E22A0000-0000-0000-0000-000000000002' AS UNIQUEIDENTIFIER), N'Accreditation Reports',  N'Government / accreditation report templates', N'accreditation',      32)
 ) AS v([Id],[Name],[Purpose],[Key],[Ord])
 WHERE NOT EXISTS (SELECT 1 FROM [sidebar_menu_items] WHERE [Id] = v.[Id]);
 
@@ -297,6 +300,9 @@ WHERE NOT EXISTS (SELECT 1 FROM [sidebar_menu_items] WHERE [Id] = v.[Id]);
         (CAST(N'C16DBE1D-7A79-4BC8-B6DA-1A4B72DE6987' AS UNIQUEIDENTIFIER), N'SuperAdmin'),
         (CAST(N'A55B6BEF-A288-4ABB-9ED6-65C319B67C1B' AS UNIQUEIDENTIFIER), N'SuperAdmin'),
         (CAST(N'1C2312DD-1C86-4FD0-A9F1-54026BE5A0FB' AS UNIQUEIDENTIFIER), N'SuperAdmin'),
+        -- Phase 22
+        (CAST(N'E22A0000-0000-0000-0000-000000000001' AS UNIQUEIDENTIFIER), N'SuperAdmin'),
+        (CAST(N'E22A0000-0000-0000-0000-000000000002' AS UNIQUEIDENTIFIER), N'SuperAdmin'),
         -- Admin
         (CAST(N'30A1025F-BAC8-4847-AE59-F0D1BAD8F506' AS UNIQUEIDENTIFIER), N'Admin'),
         (CAST(N'AFFC4796-6040-4FB4-BE44-BF49410F6F15' AS UNIQUEIDENTIFIER), N'Admin'),
@@ -317,6 +323,8 @@ WHERE NOT EXISTS (SELECT 1 FROM [sidebar_menu_items] WHERE [Id] = v.[Id]);
         (CAST(N'78409D30-E31D-42D0-AE44-A6CAFA45C02A' AS UNIQUEIDENTIFIER), N'Admin'),
         (CAST(N'A55B6BEF-A288-4ABB-9ED6-65C319B67C1B' AS UNIQUEIDENTIFIER), N'Admin'),
         (CAST(N'1C2312DD-1C86-4FD0-A9F1-54026BE5A0FB' AS UNIQUEIDENTIFIER), N'Admin'),
+        -- Phase 22
+        (CAST(N'E22A0000-0000-0000-0000-000000000002' AS UNIQUEIDENTIFIER), N'Admin'),
         -- Faculty
         (CAST(N'30A1025F-BAC8-4847-AE59-F0D1BAD8F506' AS UNIQUEIDENTIFIER), N'Faculty'),
         (CAST(N'ACD69922-A686-4E1E-B8DE-2DDB76810E97' AS UNIQUEIDENTIFIER), N'Faculty'),

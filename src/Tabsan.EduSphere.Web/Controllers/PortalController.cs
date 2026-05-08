@@ -4095,4 +4095,133 @@ public class PortalController : Controller
         }).ToList(),
         CreatedAt = p.CreatedAt
     };
+
+    // ── Phase 22: External Integrations ─────────────────────────────────────────────
+
+    [HttpGet]
+    public async Task<IActionResult> LibraryConfig(CancellationToken ct)
+    {
+        var model = new LibraryConfigPageModel { IsConnected = _api.IsConnected() };
+        if (!model.IsConnected) return View(model);
+        try
+        {
+            var config = await _api.GetLibraryConfigAsync(ct);
+            model.CatalogueUrl = config?.CatalogueUrl;
+            model.ApiToken     = config?.ApiToken;
+            model.LoanApiUrl   = config?.LoanApiUrl;
+        }
+        catch (Exception ex) { model.Message = ex.Message; }
+        return View(model);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> LibraryConfig(LibraryConfigPageModel form, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(LibraryConfig));
+        try
+        {
+            await _api.SaveLibraryConfigAsync(new LibraryConfigApiModel
+            {
+                CatalogueUrl = form.CatalogueUrl,
+                ApiToken     = form.ApiToken,
+                LoanApiUrl   = form.LoanApiUrl
+            }, ct);
+            TempData["Success"] = "Library configuration saved.";
+        }
+        catch (Exception ex) { TempData["Error"] = ex.Message; }
+        return RedirectToAction(nameof(LibraryConfig));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> AccreditationTemplates(CancellationToken ct)
+    {
+        var model = new AccreditationTemplatesPageModel { IsConnected = _api.IsConnected() };
+        if (!model.IsConnected) return View(model);
+        try
+        {
+            var items = await _api.GetAccreditationTemplatesAsync(ct);
+            model.Templates = items.Select(t => new AccreditationTemplateRow
+            {
+                Id                = t.Id,
+                Name              = t.Name,
+                Description       = t.Description,
+                Format            = t.Format,
+                FieldMappingsJson = t.FieldMappingsJson,
+                IsActive          = t.IsActive,
+                CreatedAt         = t.CreatedAt
+            }).ToList();
+        }
+        catch (Exception ex) { model.Message = ex.Message; }
+        return View(model);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> CreateAccreditationTemplate(AccreditationTemplateFormModel form, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(AccreditationTemplates));
+        try
+        {
+            await _api.CreateAccreditationTemplateAsync(new CreateAccreditationTemplateForm
+            {
+                Name              = form.Name,
+                Description       = form.Description,
+                Format            = form.Format,
+                FieldMappingsJson = form.FieldMappingsJson
+            }, ct);
+            TempData["Success"] = "Accreditation template created.";
+        }
+        catch (Exception ex) { TempData["Error"] = ex.Message; }
+        return RedirectToAction(nameof(AccreditationTemplates));
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> UpdateAccreditationTemplate(AccreditationTemplateFormModel form, CancellationToken ct)
+    {
+        if (!_api.IsConnected() || form.Id == null) return RedirectToAction(nameof(AccreditationTemplates));
+        try
+        {
+            await _api.UpdateAccreditationTemplateAsync(form.Id.Value, new UpdateAccreditationTemplateForm
+            {
+                Name              = form.Name,
+                Description       = form.Description,
+                Format            = form.Format,
+                FieldMappingsJson = form.FieldMappingsJson,
+                IsActive          = form.IsActive
+            }, ct);
+            TempData["Success"] = "Accreditation template updated.";
+        }
+        catch (Exception ex) { TempData["Error"] = ex.Message; }
+        return RedirectToAction(nameof(AccreditationTemplates));
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> DeleteAccreditationTemplate(Guid id, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(AccreditationTemplates));
+        try
+        {
+            await _api.DeleteAccreditationTemplateAsync(id, ct);
+            TempData["Success"] = "Accreditation template deleted.";
+        }
+        catch (Exception ex) { TempData["Error"] = ex.Message; }
+        return RedirectToAction(nameof(AccreditationTemplates));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> DownloadAccreditationReport(Guid id, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(AccreditationTemplates));
+        try
+        {
+            var (content, contentType, fileName) = await _api.GenerateAccreditationReportAsync(id, ct);
+            if (content == null) return RedirectToAction(nameof(AccreditationTemplates));
+            return File(content, contentType, fileName);
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = ex.Message;
+            return RedirectToAction(nameof(AccreditationTemplates));
+        }
+    }
 }
+

@@ -254,14 +254,12 @@ public class ApplicationDbContext : DbContext
     // Final-Touches Phase 21 Stage 21.1 — Study Planner
     /// <summary>Student semester study plans.</summary>
     public DbSet<StudyPlan> StudyPlans => Set<StudyPlan>();
-    /// <summary>Course rows within a study plan.</summary>
-    public DbSet<StudyPlanCourse> StudyPlanCourses => Set<StudyPlanCourse>();
-
-    // Final-Touches Phase 21 Stage 21.1 — Study Planner
-    /// <summary>Student semester study plans.</summary>
-    public DbSet<StudyPlan> StudyPlans => Set<StudyPlan>();
     /// <summary>Course line items within a student study plan.</summary>
     public DbSet<StudyPlanCourse> StudyPlanCourses => Set<StudyPlanCourse>();
+
+    // ── Phase 22: External Integrations ───────────────────────────────────────
+    /// <summary>Accreditation / government report templates defined by SuperAdmin.</summary>
+    public DbSet<AccreditationTemplate> AccreditationTemplates => Set<AccreditationTemplate>();
 
     /// <summary>
     /// Scans the current assembly for all IEntityTypeConfiguration implementations
