@@ -3615,4 +3615,316 @@ public class PortalController : Controller
         catch (Exception ex) { TempData["ErrorMessage"] = ex.Message; }
         return RedirectToAction(nameof(GraduationApplicationDetail), new { id });
     }
+
+    // ── Phase 20: Learning Management System (LMS) ────────────────────────────
+
+    // Final-Touches Phase 20 Stage 20.1 — student LMS view
+    [HttpGet]
+    public async Task<IActionResult> CourseLms(Guid offeringId, CancellationToken ct)
+    {
+        ViewData["Title"] = "Course Content";
+        var model = new CourseLmsPageModel { OfferingId = offeringId, IsConnected = _api.IsConnected() };
+        if (!model.IsConnected) return View(model);
+        try
+        {
+            var identity = _api.GetSessionIdentity();
+            bool isStudent = identity?.Role == "Student";
+            var modules = await _api.GetLmsModulesAsync(offeringId, isStudent, ct);
+            model.Modules = modules.Select(m => new LmsModuleItem
+            {
+                Id = m.Id, OfferingId = m.OfferingId, Title = m.Title,
+                WeekNumber = m.WeekNumber, Body = m.Body,
+                IsPublished = m.IsPublished, PublishedAt = m.PublishedAt,
+                Videos = m.Videos.Select(v => new LmsVideoItem
+                {
+                    Id = v.Id, ModuleId = v.ModuleId, Title = v.Title,
+                    StorageUrl = v.StorageUrl, EmbedUrl = v.EmbedUrl,
+                    DurationSeconds = v.DurationSeconds
+                }).ToList()
+            }).ToList();
+        }
+        catch (Exception ex) { ViewData["Error"] = ex.Message; }
+        return View(model);
+    }
+
+    // Final-Touches Phase 20 Stage 20.1 — faculty LMS management view
+    [HttpGet]
+    public async Task<IActionResult> LmsManage(Guid offeringId, CancellationToken ct)
+    {
+        ViewData["Title"] = "Manage Course Content";
+        var model = new LmsManagePageModel
+        {
+            OfferingId     = offeringId,
+            IsConnected    = _api.IsConnected(),
+            SuccessMessage = TempData["SuccessMessage"]?.ToString(),
+            ErrorMessage   = TempData["ErrorMessage"]?.ToString()
+        };
+        if (!model.IsConnected) return View(model);
+        try
+        {
+            var modules = await _api.GetLmsModulesAsync(offeringId, false, ct);
+            model.Modules = modules.Select(m => new LmsModuleItem
+            {
+                Id = m.Id, OfferingId = m.OfferingId, Title = m.Title,
+                WeekNumber = m.WeekNumber, Body = m.Body,
+                IsPublished = m.IsPublished, PublishedAt = m.PublishedAt,
+                Videos = m.Videos.Select(v => new LmsVideoItem
+                {
+                    Id = v.Id, ModuleId = v.ModuleId, Title = v.Title,
+                    StorageUrl = v.StorageUrl, EmbedUrl = v.EmbedUrl,
+                    DurationSeconds = v.DurationSeconds
+                }).ToList()
+            }).ToList();
+        }
+        catch (Exception ex) { model.ErrorMessage = ex.Message; }
+        return View(model);
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateLmsModule(Guid offeringId, string title, int weekNumber, string? body, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.CreateLmsModuleAsync(offeringId, title, weekNumber, body, ct); TempData["SuccessMessage"] = "Module created."; }
+            catch (Exception ex) { TempData["ErrorMessage"] = ex.Message; }
+        }
+        return RedirectToAction(nameof(LmsManage), new { offeringId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateLmsModule(Guid moduleId, Guid offeringId, string title, int weekNumber, string? body, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.UpdateLmsModuleAsync(moduleId, title, weekNumber, body, ct); TempData["SuccessMessage"] = "Module updated."; }
+            catch (Exception ex) { TempData["ErrorMessage"] = ex.Message; }
+        }
+        return RedirectToAction(nameof(LmsManage), new { offeringId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> PublishLmsModule(Guid moduleId, Guid offeringId, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.PublishLmsModuleAsync(moduleId, ct); TempData["SuccessMessage"] = "Module published."; }
+            catch (Exception ex) { TempData["ErrorMessage"] = ex.Message; }
+        }
+        return RedirectToAction(nameof(LmsManage), new { offeringId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> UnpublishLmsModule(Guid moduleId, Guid offeringId, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.UnpublishLmsModuleAsync(moduleId, ct); TempData["SuccessMessage"] = "Module unpublished."; }
+            catch (Exception ex) { TempData["ErrorMessage"] = ex.Message; }
+        }
+        return RedirectToAction(nameof(LmsManage), new { offeringId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteLmsModule(Guid moduleId, Guid offeringId, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.DeleteLmsModuleAsync(moduleId, ct); TempData["SuccessMessage"] = "Module deleted."; }
+            catch (Exception ex) { TempData["ErrorMessage"] = ex.Message; }
+        }
+        return RedirectToAction(nameof(LmsManage), new { offeringId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> AddLmsVideo(Guid moduleId, Guid offeringId, string title, string? storageUrl, string? embedUrl, int? durationSeconds, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.AddLmsVideoAsync(moduleId, title, storageUrl, embedUrl, durationSeconds, ct); TempData["SuccessMessage"] = "Video added."; }
+            catch (Exception ex) { TempData["ErrorMessage"] = ex.Message; }
+        }
+        return RedirectToAction(nameof(LmsManage), new { offeringId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteLmsVideo(Guid videoId, Guid offeringId, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.DeleteLmsVideoAsync(videoId, ct); TempData["SuccessMessage"] = "Video deleted."; }
+            catch (Exception ex) { TempData["ErrorMessage"] = ex.Message; }
+        }
+        return RedirectToAction(nameof(LmsManage), new { offeringId });
+    }
+
+    // Final-Touches Phase 20 Stage 20.3 — discussion forum
+    [HttpGet]
+    public async Task<IActionResult> Discussion(Guid offeringId, CancellationToken ct)
+    {
+        ViewData["Title"] = "Discussion";
+        var model = new DiscussionPageModel
+        {
+            OfferingId     = offeringId,
+            IsConnected    = _api.IsConnected(),
+            SuccessMessage = TempData["SuccessMessage"]?.ToString(),
+            ErrorMessage   = TempData["ErrorMessage"]?.ToString()
+        };
+        if (!model.IsConnected) return View(model);
+        try
+        {
+            var threads = await _api.GetDiscussionThreadsAsync(offeringId, ct);
+            model.Threads = threads.Select(t => new DiscussionThreadItem
+            {
+                Id = t.Id, OfferingId = t.OfferingId, Title = t.Title,
+                AuthorName = t.AuthorName, IsPinned = t.IsPinned,
+                IsClosed = t.IsClosed, ReplyCount = t.ReplyCount, CreatedAt = t.CreatedAt
+            }).ToList();
+        }
+        catch (Exception ex) { model.ErrorMessage = ex.Message; }
+        return View(model);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> DiscussionThreadDetail(Guid threadId, Guid offeringId, CancellationToken ct)
+    {
+        ViewData["Title"] = "Thread";
+        var model = new DiscussionDetailPageModel
+        {
+            OfferingId  = offeringId,
+            IsConnected = _api.IsConnected(),
+            SuccessMessage = TempData["SuccessMessage"]?.ToString(),
+            ErrorMessage   = TempData["ErrorMessage"]?.ToString()
+        };
+        if (!model.IsConnected) return View(model);
+        try
+        {
+            var t = await _api.GetDiscussionThreadAsync(threadId, ct);
+            if (t is not null)
+            {
+                model.Thread = new DiscussionThreadItem
+                {
+                    Id = t.Id, OfferingId = t.OfferingId, Title = t.Title,
+                    AuthorName = t.AuthorName, IsPinned = t.IsPinned,
+                    IsClosed = t.IsClosed, ReplyCount = t.ReplyCount, CreatedAt = t.CreatedAt,
+                    Replies = t.Replies.Select(r => new DiscussionReplyItem
+                    {
+                        Id = r.Id, ThreadId = r.ThreadId, AuthorId = r.AuthorId,
+                        AuthorName = r.AuthorName, Body = r.Body, CreatedAt = r.CreatedAt
+                    }).ToList()
+                };
+            }
+        }
+        catch (Exception ex) { model.ErrorMessage = ex.Message; }
+        return View(model);
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateDiscussionThread(Guid offeringId, string title, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try
+            {
+                var identity = _api.GetSessionIdentity();
+                var authorId = identity?.UserId ?? Guid.Empty;
+                await _api.CreateDiscussionThreadAsync(offeringId, authorId, title, ct);
+                TempData["SuccessMessage"] = "Thread created.";
+            }
+            catch (Exception ex) { TempData["ErrorMessage"] = ex.Message; }
+        }
+        return RedirectToAction(nameof(Discussion), new { offeringId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> AddDiscussionReply(Guid threadId, Guid offeringId, string body, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try
+            {
+                var identity = _api.GetSessionIdentity();
+                var authorId = identity?.UserId ?? Guid.Empty;
+                await _api.AddDiscussionReplyAsync(threadId, authorId, body, ct);
+                TempData["SuccessMessage"] = "Reply posted.";
+            }
+            catch (Exception ex) { TempData["ErrorMessage"] = ex.Message; }
+        }
+        return RedirectToAction(nameof(DiscussionThreadDetail), new { threadId, offeringId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteDiscussionThread(Guid threadId, Guid offeringId, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.DeleteDiscussionThreadAsync(threadId, ct); TempData["SuccessMessage"] = "Thread deleted."; }
+            catch (Exception ex) { TempData["ErrorMessage"] = ex.Message; }
+        }
+        return RedirectToAction(nameof(Discussion), new { offeringId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteDiscussionReply(Guid replyId, Guid threadId, Guid offeringId, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.DeleteDiscussionReplyAsync(replyId, ct); TempData["SuccessMessage"] = "Reply deleted."; }
+            catch (Exception ex) { TempData["ErrorMessage"] = ex.Message; }
+        }
+        return RedirectToAction(nameof(DiscussionThreadDetail), new { threadId, offeringId });
+    }
+
+    // Final-Touches Phase 20 Stage 20.4 — announcements
+    [HttpGet]
+    public async Task<IActionResult> Announcements(Guid offeringId, CancellationToken ct)
+    {
+        ViewData["Title"] = "Announcements";
+        var model = new AnnouncementsPageModel
+        {
+            OfferingId     = offeringId,
+            IsConnected    = _api.IsConnected(),
+            SuccessMessage = TempData["SuccessMessage"]?.ToString(),
+            ErrorMessage   = TempData["ErrorMessage"]?.ToString()
+        };
+        if (!model.IsConnected) return View(model);
+        try
+        {
+            var items = await _api.GetAnnouncementsAsync(offeringId, ct);
+            model.Announcements = items.Select(a => new AnnouncementItem
+            {
+                Id = a.Id, OfferingId = a.OfferingId, Title = a.Title,
+                Body = a.Body, AuthorName = a.AuthorName, PostedAt = a.PostedAt
+            }).ToList();
+        }
+        catch (Exception ex) { model.ErrorMessage = ex.Message; }
+        return View(model);
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateAnnouncement(Guid offeringId, string title, string body, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try
+            {
+                var identity = _api.GetSessionIdentity();
+                var authorId = identity?.UserId ?? Guid.Empty;
+                await _api.CreateAnnouncementAsync(offeringId, authorId, title, body, ct);
+                TempData["SuccessMessage"] = "Announcement posted.";
+            }
+            catch (Exception ex) { TempData["ErrorMessage"] = ex.Message; }
+        }
+        return RedirectToAction(nameof(Announcements), new { offeringId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteAnnouncement(Guid announcementId, Guid offeringId, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try { await _api.DeleteAnnouncementAsync(announcementId, ct); TempData["SuccessMessage"] = "Announcement deleted."; }
+            catch (Exception ex) { TempData["ErrorMessage"] = ex.Message; }
+        }
+        return RedirectToAction(nameof(Announcements), new { offeringId });
+    }
 }

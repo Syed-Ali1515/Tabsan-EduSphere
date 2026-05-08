@@ -59,6 +59,7 @@ Controllers/
  AdminUserController.cs
  AiChatController.cs
  AnalyticsController.cs
+ AnnouncementController.cs
  AssignmentController.cs
  AttendanceController.cs
  AuthController.cs
@@ -67,6 +68,7 @@ Controllers/
  CourseController.cs
  DegreeAuditController.cs
  DepartmentController.cs
+ DiscussionController.cs
  EnrollmentController.cs
  FypController.cs
  GradebookController.cs
@@ -74,6 +76,7 @@ Controllers/
  GraduationController.cs
  HelpdeskController.cs
  LicenseController.cs
+ LmsController.cs
  ModuleController.cs
  NotificationController.cs
  PaymentReceiptController.cs

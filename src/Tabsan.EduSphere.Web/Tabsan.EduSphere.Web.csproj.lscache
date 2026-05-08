@@ -461,15 +461,19 @@ Views/
   AdminUsers.cshtml
   AiChat.cshtml
   Analytics.cshtml
+  Announcements.cshtml
   Assignments.cshtml
   Attendance.cshtml
   Buildings.cshtml
+  CourseLms.cshtml
   Courses.cshtml
   Dashboard.cshtml
   DashboardSettings.cshtml
   DegreeAudit.cshtml
   DegreeRules.cshtml
   Departments.cshtml
+  Discussion.cshtml
+  DiscussionThread.cshtml
   Enrollments.cshtml
   ForceChangePassword.cshtml
   Fyp.cshtml
@@ -483,6 +487,7 @@ Views/
   HelpdeskCreate.cshtml
   HelpdeskDetail.cshtml
   LicenseUpdate.cshtml
+  LmsManage.cshtml
   ModuleSettings.cshtml
   Notifications.cshtml
   Payments.cshtml
@@ -536,15 +541,19 @@ Views/
   AdminUsers.cshtml
   AiChat.cshtml
   Analytics.cshtml
+  Announcements.cshtml
   Assignments.cshtml
   Attendance.cshtml
   Buildings.cshtml
+  CourseLms.cshtml
   Courses.cshtml
   Dashboard.cshtml
   DashboardSettings.cshtml
   DegreeAudit.cshtml
   DegreeRules.cshtml
   Departments.cshtml
+  Discussion.cshtml
+  DiscussionThread.cshtml
   Enrollments.cshtml
   ForceChangePassword.cshtml
   Fyp.cshtml
@@ -558,6 +567,7 @@ Views/
   HelpdeskCreate.cshtml
   HelpdeskDetail.cshtml
   LicenseUpdate.cshtml
+  LmsManage.cshtml
   ModuleSettings.cshtml
   Notifications.cshtml
   Payments.cshtml

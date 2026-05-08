@@ -1,0 +1,73 @@
+@model Tabsan.EduSphere.Web.Models.Portal.AnnouncementsPageModel
+@{
+    ViewData["Title"]     = "Announcements";
+    ViewData["PageTitle"] = "Course Announcements";
+    ViewData["ActivePage"] = "announcements";
+}
+
+@* Final-Touches Phase 20 Stage 20.4 — course announcements page *@
+
+@if (!Model.IsConnected)
+{
+    <div class="alert alert-warning">API is not available.</div>
+    return;
+}
+
+@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        @Model.SuccessMessage <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        @Model.ErrorMessage <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card mb-4">
+    <div class="card-header"><strong>Post Announcement</strong></div>
+    <div class="card-body">
+        <form asp-action="CreateAnnouncement" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="offeringId" value="@Model.OfferingId" />
+            <div class="mb-2">
+                <input name="title" class="form-control" placeholder="Announcement title..." required />
+            </div>
+            <div class="mb-2">
+                <textarea name="body" class="form-control" rows="3" placeholder="Message..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Post</button>
+        </form>
+    </div>
+</div>
+
+@if (!Model.Announcements.Any())
+{
+    <div class="alert alert-info">No announcements for this course.</div>
+}
+else
+{
+    @foreach (var a in Model.Announcements)
+    {
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>@a.Title</strong>
+                <div>
+                    <small class="text-muted me-3">@a.AuthorName &mdash; @a.PostedAt.ToString("MMM dd, yyyy HH:mm")</small>
+                    <form asp-action="DeleteAnnouncement" method="post" class="d-inline"
+                          onsubmit="return confirm('Delete announcement?')">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="announcementId" value="@a.Id" />
+                        <input type="hidden" name="offeringId" value="@Model.OfferingId" />
+                        <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                    </form>
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="mb-0">@a.Body</p>
+            </div>
+        </div>
+    }
+}

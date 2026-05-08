@@ -834,3 +834,13 @@ Stage 15.1 adds prerequisite-based enrollment blocking with detailed unmet-prere
 
 ## Next Phase To Execute
 Phase 20 — (see Docs/Enhancements.md for full spec).
+
+## Phase 20 — Learning Management System (LMS) ✅ Complete
+
+- [x] Stage 20.1: `CourseContentModule` + `ContentVideo` domain entities; `ILmsRepository` + `LmsRepository`; `ILmsService` + `LmsService`; `LmsController` (`GET/POST/PUT/DELETE /api/v1/lms/...`); `CourseLms.cshtml` (student view) + `LmsManage.cshtml` (faculty view).
+- [x] Stage 20.2: `LmsConfigurations.cs` — EF table/FK/query-filter configs for CourseContentModule and ContentVideo.
+- [x] Stage 20.3: `DiscussionThread` + `DiscussionReply` domain entities; `IDiscussionRepository` + `DiscussionRepository`; `IDiscussionService` + `DiscussionService`; `DiscussionController`; `Discussion.cshtml` + `DiscussionThread.cshtml` portal views.
+- [x] Stage 20.4: `CourseAnnouncement` domain entity; `IAnnouncementRepository` + `AnnouncementRepository`; `IAnnouncementService` + `AnnouncementService` (with fan-out notification to enrolled students); `AnnouncementController`; `Announcements.cshtml` portal view.
+- [x] ApplicationDbContext updated with 5 new DbSets; `_Layout.cshtml` sidebar entries added (`lms_manage`, `discussion`, `announcements`).
+- [x] EF Migration `Phase20_LMS` — tables `course_content_modules`, `content_videos`, `discussion_threads`, `discussion_replies`, `course_announcements`.
+- [x] 7/7 unit tests passing (build clean; only pre-existing nullability warnings).

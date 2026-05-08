@@ -1,0 +1,148 @@
+@model Tabsan.EduSphere.Web.Models.Portal.LmsManagePageModel
+@{
+    ViewData["Title"]     = "Manage Course Content";
+    ViewData["PageTitle"] = "Manage Course Content";
+    ViewData["ActivePage"] = "lms_manage";
+}
+
+@* Final-Touches Phase 20 Stage 20.1/20.2 — faculty LMS management page *@
+
+@if (!Model.IsConnected)
+{
+    <div class="alert alert-warning">API is not available.</div>
+    return;
+}
+
+@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        @Model.SuccessMessage <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        @Model.ErrorMessage <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card mb-4">
+    <div class="card-header"><strong>Add New Module</strong></div>
+    <div class="card-body">
+        <form asp-action="CreateLmsModule" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="offeringId" value="@Model.OfferingId" />
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Title</label>
+                    <input name="title" class="form-control" required />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Week #</label>
+                    <input name="weekNumber" type="number" min="1" class="form-control" required />
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Body (HTML allowed)</label>
+                    <textarea name="body" class="form-control" rows="3"></textarea>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">Add Module</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@foreach (var module in Model.Modules.OrderBy(m => m.WeekNumber))
+{
+    <div class="card mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span><strong>Week @module.WeekNumber — @module.Title</strong>
+                @if (module.IsPublished)
+                {
+                    <span class="badge bg-success ms-2">Published</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary ms-2">Draft</span>
+                }
+            </span>
+            <div class="btn-group btn-group-sm">
+                @if (module.IsPublished)
+                {
+                    <form asp-action="UnpublishLmsModule" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="moduleId" value="@module.Id" />
+                        <input type="hidden" name="offeringId" value="@Model.OfferingId" />
+                        <button type="submit" class="btn btn-warning btn-sm">Unpublish</button>
+                    </form>
+                }
+                else
+                {
+                    <form asp-action="PublishLmsModule" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="moduleId" value="@module.Id" />
+                        <input type="hidden" name="offeringId" value="@Model.OfferingId" />
+                        <button type="submit" class="btn btn-success btn-sm">Publish</button>
+                    </form>
+                }
+                <form asp-action="DeleteLmsModule" method="post" class="d-inline"
+                      onsubmit="return confirm('Delete this module?')">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="moduleId" value="@module.Id" />
+                    <input type="hidden" name="offeringId" value="@Model.OfferingId" />
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+            </div>
+        </div>
+        <div class="card-body">
+            @if (!string.IsNullOrEmpty(module.Body))
+            {
+                <div class="mb-2 text-muted small">@Html.Raw(module.Body)</div>
+            }
+
+            @if (module.Videos.Any())
+            {
+                <h6>Videos</h6>
+                <ul class="list-group list-group-flush mb-3">
+                    @foreach (var video in module.Videos)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>@video.Title</span>
+                            <form asp-action="DeleteLmsVideo" method="post"
+                                  onsubmit="return confirm('Delete video?')">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="videoId" value="@video.Id" />
+                                <input type="hidden" name="offeringId" value="@Model.OfferingId" />
+                                <button type="submit" class="btn btn-outline-danger btn-sm">Remove</button>
+                            </form>
+                        </li>
+                    }
+                </ul>
+            }
+
+            <details>
+                <summary class="btn btn-sm btn-outline-secondary mb-2">Add Video</summary>
+                <form asp-action="AddLmsVideo" method="post" class="mt-2">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="moduleId" value="@module.Id" />
+                    <input type="hidden" name="offeringId" value="@Model.OfferingId" />
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <input name="title" class="form-control form-control-sm" placeholder="Video title" required />
+                        </div>
+                        <div class="col-md-4">
+                            <input name="embedUrl" class="form-control form-control-sm" placeholder="Embed URL (e.g. YouTube)" />
+                        </div>
+                        <div class="col-md-3">
+                            <input name="durationSeconds" type="number" class="form-control form-control-sm" placeholder="Duration (sec)" />
+                        </div>
+                        <div class="col-md-1">
+                            <button type="submit" class="btn btn-primary btn-sm">Add</button>
+                        </div>
+                    </div>
+                </form>
+            </details>
+        </div>
+    </div>
+}

@@ -101,6 +101,8 @@ Migrations/
  20260508003259_Phase18_GraduationWorkflow.Designer.cs
  20260508043559_Phase19_CourseTypeAndGrading.cs
  20260508043559_Phase19_CourseTypeAndGrading.Designer.cs
+ 20260508050712_Phase20_LMS.cs
+ 20260508050712_Phase20_LMS.Designer.cs
  ApplicationDbContextModelSnapshot.cs
 Modules/ModuleEntitlementResolver.cs
 obj/Debug/net8.0/
@@ -121,6 +123,7 @@ Persistence/
   DepartmentConfiguration.cs
   FypConfigurations.cs
   LicenseStateConfiguration.cs
+  LmsConfigurations.cs
   ModuleConfiguration.cs
   NotificationConfigurations.cs
   OutboundEmailLogConfiguration.cs
@@ -173,16 +176,19 @@ Repositories/
  AcademicRepositories.cs
  AcademicSupportRepositories.cs
  AiChatRepository.cs
+ AnnouncementRepository.cs
  AssignmentResultRepositories.cs
  BuildingRoomRepository.cs
  CourseGradingRepository.cs
  CourseRepository.cs
  DegreeAuditRepository.cs
  DepartmentRepository.cs
+ DiscussionRepository.cs
  GradebookRubricRepositories.cs
  GraduationRepository.cs
  HelpdeskRepository.cs
  LicenseRepository.cs
+ LmsRepository.cs
  ModuleRepository.cs
  NotificationAttendanceRepositories.cs
  PasswordHistoryRepository.cs

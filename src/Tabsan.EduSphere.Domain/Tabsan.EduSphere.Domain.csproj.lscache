@@ -107,6 +107,7 @@ Interfaces/
  IAcademicProgramRepository.cs
  IAdminAssignmentRepository.cs
  IAiChatRepository.cs
+ IAnnouncementRepository.cs
  IAssignmentRepository.cs
  IAttendanceRepository.cs
  IAuditService.cs
@@ -115,6 +116,7 @@ Interfaces/
  ICourseRepository.cs
  IDegreeAuditRepository.cs
  IDepartmentRepository.cs
+ IDiscussionRepository.cs
  IEnrollmentRepository.cs
  IFacultyAssignmentRepository.cs
  IFypRepository.cs
@@ -122,6 +124,7 @@ Interfaces/
  IGraduationRepository.cs
  IHelpdeskRepository.cs
  ILicenseRepository.cs
+ ILmsRepository.cs
  IModuleRepository.cs
  INotificationRepository.cs
  IPasswordHistoryRepository.cs
@@ -141,6 +144,12 @@ Licensing/
  ConsumedVerificationKey.cs
  LicenseEnums.cs
  LicenseState.cs
+Lms/
+ ContentVideo.cs
+ CourseAnnouncement.cs
+ CourseContentModule.cs
+ DiscussionReply.cs
+ DiscussionThread.cs
 Modules/
  Module.cs
  ModuleStatus.cs

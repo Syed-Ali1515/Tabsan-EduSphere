@@ -231,6 +231,14 @@ builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.ICourseServic
 builder.Services.AddScoped<Tabsan.EduSphere.Domain.Interfaces.ICourseGradingRepository, Tabsan.EduSphere.Infrastructure.Repositories.CourseGradingRepository>();
 builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.ICourseGradingService, Tabsan.EduSphere.Application.Academic.CourseGradingService>();
 
+// ── Phase 20: Learning Management System (LMS) ─────────────────────────────
+builder.Services.AddScoped<Tabsan.EduSphere.Domain.Interfaces.ILmsRepository, Tabsan.EduSphere.Infrastructure.Repositories.LmsRepository>();
+builder.Services.AddScoped<Tabsan.EduSphere.Domain.Interfaces.IDiscussionRepository, Tabsan.EduSphere.Infrastructure.Repositories.DiscussionRepository>();
+builder.Services.AddScoped<Tabsan.EduSphere.Domain.Interfaces.IAnnouncementRepository, Tabsan.EduSphere.Infrastructure.Repositories.AnnouncementRepository>();
+builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.ILmsService, Tabsan.EduSphere.Application.Lms.LmsService>();
+builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IDiscussionService, Tabsan.EduSphere.Application.Lms.DiscussionService>();
+builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IAnnouncementService, Tabsan.EduSphere.Application.Lms.AnnouncementService>();
+
 // ── Rate limiting (OWASP hardening) ─────────────────────────────────────
 builder.Services.AddRateLimiter(opts =>
 {

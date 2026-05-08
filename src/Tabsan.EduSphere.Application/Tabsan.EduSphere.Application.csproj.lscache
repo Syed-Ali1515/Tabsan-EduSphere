@@ -93,6 +93,7 @@ DTOs/
  CsvImportDtos.cs
  Fyp/FypDtos.cs
  Helpdesk/HelpdeskDTOs.cs
+ Lms/LmsDTOs.cs
  Notifications/NotificationDtos.cs
  Quizzes/QuizDtos.cs
  Reports/ReportDtos.cs
@@ -107,6 +108,7 @@ Interfaces/
  IAccountSecurityService.cs
  IAiChatService.cs
  IAnalyticsService.cs
+ IAnnouncementService.cs
  IAssignmentService.cs
  IAttendanceService.cs
  IAuthService.cs
@@ -116,6 +118,7 @@ Interfaces/
  ICourseService.cs
  ICsvRegistrationImportService.cs
  IDegreeAuditService.cs
+ IDiscussionService.cs
  IEmailSender.cs
  IEmailTemplateRenderer.cs
  IEnrollmentService.cs
@@ -124,6 +127,7 @@ Interfaces/
  IGraduationService.cs
  IHelpdeskService.cs
  ILlmClient.cs
+ ILmsService.cs
  IModuleEntitlementResolver.cs
  IModuleService.cs
  INotificationService.cs
@@ -143,6 +147,10 @@ Interfaces/
  ITokenService.cs
  IUserImportService.cs
  IUserSessionRepository.cs
+Lms/
+ AnnouncementService.cs
+ DiscussionService.cs
+ LmsService.cs
 Modules/ModuleService.cs
 Notifications/NotificationService.cs
 obj/Debug/net8.0/

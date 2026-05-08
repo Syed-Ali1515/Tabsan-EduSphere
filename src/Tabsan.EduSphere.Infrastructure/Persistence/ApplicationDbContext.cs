@@ -12,6 +12,7 @@ using Tabsan.EduSphere.Domain.Modules;
 using Tabsan.EduSphere.Domain.Notifications;
 using Tabsan.EduSphere.Domain.Quizzes;
 using Tabsan.EduSphere.Domain.Settings;
+using Tabsan.EduSphere.Domain.Lms;
 using Tabsan.EduSphere.Domain.StudentLifecycle;
 
 namespace Tabsan.EduSphere.Infrastructure.Persistence;
@@ -236,6 +237,18 @@ public class ApplicationDbContext : DbContext
     // ── Phase 19: Advanced Course Creation & Grading Config ────────────────────
     /// <summary>Per-course grading configurations (pass threshold, grade ranges).</summary>
     public DbSet<CourseGradingConfig> CourseGradingConfigs => Set<CourseGradingConfig>();
+
+    // ── Phase 20: Learning Management System (LMS) ─────────────────────────────
+    /// <summary>Week-based course content modules for a course offering.</summary>
+    public DbSet<CourseContentModule> CourseContentModules => Set<CourseContentModule>();
+    /// <summary>Video attachments for a course content module.</summary>
+    public DbSet<ContentVideo> ContentVideos => Set<ContentVideo>();
+    /// <summary>Forum discussion threads per course offering.</summary>
+    public DbSet<DiscussionThread> DiscussionThreads => Set<DiscussionThread>();
+    /// <summary>Replies within a discussion thread.</summary>
+    public DbSet<DiscussionReply> DiscussionReplies => Set<DiscussionReply>();
+    /// <summary>Announcements for a course offering or department-wide.</summary>
+    public DbSet<CourseAnnouncement> CourseAnnouncements => Set<CourseAnnouncement>();
 
     /// <summary>
     /// Scans the current assembly for all IEntityTypeConfiguration implementations

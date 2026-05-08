@@ -1809,3 +1809,107 @@ public class GradingConfigPageModel
     public string?              ErrorMessage       { get; set; }
     public bool                 IsConnected        { get; set; }
 }
+
+// ── Phase 20: Learning Management System (LMS) ─────────────────────────────────────────────
+
+public class LmsVideoItem
+{
+    public Guid    Id              { get; set; }
+    public Guid    ModuleId        { get; set; }
+    public string  Title           { get; set; } = string.Empty;
+    public string? StorageUrl      { get; set; }
+    public string? EmbedUrl        { get; set; }
+    public int?    DurationSeconds { get; set; }
+}
+
+public class LmsModuleItem
+{
+    public Guid           Id          { get; set; }
+    public Guid           OfferingId  { get; set; }
+    public string         Title       { get; set; } = string.Empty;
+    public int            WeekNumber  { get; set; }
+    public string?        Body        { get; set; }
+    public bool           IsPublished { get; set; }
+    public DateTime?      PublishedAt { get; set; }
+    public List<LmsVideoItem> Videos  { get; set; } = new();
+}
+
+public class CourseLmsPageModel
+{
+    public Guid               OfferingId    { get; set; }
+    public string             OfferingTitle { get; set; } = string.Empty;
+    public List<LmsModuleItem> Modules      { get; set; } = new();
+    public bool               IsConnected   { get; set; }
+}
+
+public class LmsManagePageModel
+{
+    public Guid               OfferingId    { get; set; }
+    public string             OfferingTitle { get; set; } = string.Empty;
+    public List<LmsModuleItem> Modules      { get; set; } = new();
+    public string?            SuccessMessage { get; set; }
+    public string?            ErrorMessage   { get; set; }
+    public bool               IsConnected    { get; set; }
+}
+
+public class DiscussionReplyItem
+{
+    public Guid     Id         { get; set; }
+    public Guid     ThreadId   { get; set; }
+    public Guid     AuthorId   { get; set; }
+    public string   AuthorName { get; set; } = string.Empty;
+    public string   Body       { get; set; } = string.Empty;
+    public DateTime CreatedAt  { get; set; }
+}
+
+public class DiscussionThreadItem
+{
+    public Guid     Id         { get; set; }
+    public Guid     OfferingId { get; set; }
+    public string   Title      { get; set; } = string.Empty;
+    public string   AuthorName { get; set; } = string.Empty;
+    public bool     IsPinned   { get; set; }
+    public bool     IsClosed   { get; set; }
+    public int      ReplyCount { get; set; }
+    public DateTime CreatedAt  { get; set; }
+    public List<DiscussionReplyItem> Replies { get; set; } = new();
+}
+
+public class DiscussionPageModel
+{
+    public Guid   OfferingId    { get; set; }
+    public string OfferingTitle { get; set; } = string.Empty;
+    public List<DiscussionThreadItem> Threads { get; set; } = new();
+    public string? SuccessMessage { get; set; }
+    public string? ErrorMessage   { get; set; }
+    public bool    IsConnected    { get; set; }
+}
+
+public class DiscussionDetailPageModel
+{
+    public Guid                OfferingId { get; set; }
+    public DiscussionThreadItem? Thread   { get; set; }
+    public string?             SuccessMessage { get; set; }
+    public string?             ErrorMessage   { get; set; }
+    public bool                IsConnected    { get; set; }
+}
+
+public class AnnouncementItem
+{
+    public Guid     Id         { get; set; }
+    public Guid?    OfferingId { get; set; }
+    public string   Title      { get; set; } = string.Empty;
+    public string   Body       { get; set; } = string.Empty;
+    public string   AuthorName { get; set; } = string.Empty;
+    public DateTime PostedAt   { get; set; }
+}
+
+public class AnnouncementsPageModel
+{
+    public Guid   OfferingId    { get; set; }
+    public string OfferingTitle { get; set; } = string.Empty;
+    public List<AnnouncementItem> Announcements { get; set; } = new();
+    public string? SuccessMessage { get; set; }
+    public string? ErrorMessage   { get; set; }
+    public bool    IsConnected    { get; set; }
+}

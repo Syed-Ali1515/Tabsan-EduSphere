@@ -1,0 +1,83 @@
+@model Tabsan.EduSphere.Web.Models.Portal.CourseLmsPageModel
+@{
+    ViewData["Title"]     = "Course Content";
+    ViewData["PageTitle"] = "Course Content";
+    ViewData["ActivePage"] = "lms";
+}
+
+@* Final-Touches Phase 20 Stage 20.1/20.2 — student course LMS view *@
+
+@if (!Model.IsConnected)
+{
+    <div class="alert alert-warning">API is not available.</div>
+    return;
+}
+
+@if (!Model.Modules.Any())
+{
+    <div class="alert alert-info">No content has been published for this course yet.</div>
+}
+else
+{
+    <div class="accordion" id="lmsAccordion">
+        @foreach (var module in Model.Modules.OrderBy(m => m.WeekNumber))
+        {
+            var collapseId = $"collapse-{module.Id}";
+            <div class="accordion-item mb-2 border">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#@collapseId">
+                        Week @module.WeekNumber &mdash; @module.Title
+                    </button>
+                </h2>
+                <div id="@collapseId" class="accordion-collapse collapse">
+                    <div class="accordion-body">
+                        @if (!string.IsNullOrEmpty(module.Body))
+                        {
+                            <div class="mb-3">@Html.Raw(module.Body)</div>
+                        }
+                        @if (module.Videos.Any())
+                        {
+                            <h6 class="mt-3">Videos</h6>
+                            <ul class="list-group">
+                                @foreach (var video in module.Videos)
+                                {
+                                    <li class="list-group-item">
+                                        <strong>@video.Title</strong>
+                                        @if (!string.IsNullOrEmpty(video.EmbedUrl))
+                                        {
+                                            <div class="ratio ratio-16x9 mt-2">
+                                                <iframe src="@video.EmbedUrl" allowfullscreen></iframe>
+                                            </div>
+                                        }
+                                        else if (!string.IsNullOrEmpty(video.StorageUrl))
+                                        {
+                                            <div class="mt-2">
+                                                <a href="@video.StorageUrl" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-play-circle"></i> Watch Video
+                                                </a>
+                                            </div>
+                                        }
+                                        @if (video.DurationSeconds.HasValue)
+                                        {
+                                            <small class="text-muted d-block mt-1">Duration: @(video.DurationSeconds / 60)m @(video.DurationSeconds % 60)s</small>
+                                        }
+                                    </li>
+                                }
+                            </ul>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<div class="mt-3">
+    <a asp-action="Discussion" asp-route-offeringId="@Model.OfferingId" class="btn btn-outline-secondary me-2">
+        <i class="bi bi-chat-dots"></i> Discussion
+    </a>
+    <a asp-action="Announcements" asp-route-offeringId="@Model.OfferingId" class="btn btn-outline-secondary">
+        <i class="bi bi-megaphone"></i> Announcements
+    </a>
+</div>

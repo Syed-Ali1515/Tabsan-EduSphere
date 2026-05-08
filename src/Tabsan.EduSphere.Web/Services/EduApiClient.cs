@@ -145,6 +145,33 @@ public interface IEduApiClient
     Task<GradingConfigApiModel?> GetCourseGradingConfigAsync(Guid courseId, CancellationToken ct);
     Task<GradingConfigApiModel?> SaveCourseGradingConfigAsync(Guid courseId, decimal passThreshold, string gradingType, string? gradeRangesJson, CancellationToken ct);
 
+    // Final-Touches Phase 20 Stage 20.1/20.2 — LMS content modules and videos
+    Task<List<LmsModuleApiModel>> GetLmsModulesAsync(Guid offeringId, bool publishedOnly, CancellationToken ct);
+    Task<LmsModuleApiModel?> GetLmsModuleAsync(Guid moduleId, CancellationToken ct);
+    Task<LmsModuleApiModel?> CreateLmsModuleAsync(Guid offeringId, string title, int weekNumber, string? body, CancellationToken ct);
+    Task UpdateLmsModuleAsync(Guid moduleId, string title, int weekNumber, string? body, CancellationToken ct);
+    Task PublishLmsModuleAsync(Guid moduleId, CancellationToken ct);
+    Task UnpublishLmsModuleAsync(Guid moduleId, CancellationToken ct);
+    Task DeleteLmsModuleAsync(Guid moduleId, CancellationToken ct);
+    Task<LmsVideoApiModel?> AddLmsVideoAsync(Guid moduleId, string title, string? storageUrl, string? embedUrl, int? durationSeconds, CancellationToken ct);
+    Task DeleteLmsVideoAsync(Guid videoId, CancellationToken ct);
+
+    // Final-Touches Phase 20 Stage 20.3 — discussion forum
+    Task<List<DiscussionThreadApiModel>> GetDiscussionThreadsAsync(Guid offeringId, CancellationToken ct);
+    Task<DiscussionThreadApiModel?> GetDiscussionThreadAsync(Guid threadId, CancellationToken ct);
+    Task<DiscussionThreadApiModel?> CreateDiscussionThreadAsync(Guid offeringId, Guid authorId, string title, CancellationToken ct);
+    Task SetThreadPinnedAsync(Guid threadId, bool pinned, CancellationToken ct);
+    Task CloseDiscussionThreadAsync(Guid threadId, CancellationToken ct);
+    Task ReopenDiscussionThreadAsync(Guid threadId, CancellationToken ct);
+    Task DeleteDiscussionThreadAsync(Guid threadId, CancellationToken ct);
+    Task<DiscussionReplyApiModel?> AddDiscussionReplyAsync(Guid threadId, Guid authorId, string body, CancellationToken ct);
+    Task DeleteDiscussionReplyAsync(Guid replyId, CancellationToken ct);
+
+    // Final-Touches Phase 20 Stage 20.4 — announcements
+    Task<List<AnnouncementApiModel>> GetAnnouncementsAsync(Guid offeringId, CancellationToken ct);
+    Task<AnnouncementApiModel?> CreateAnnouncementAsync(Guid? offeringId, Guid authorId, string title, string body, CancellationToken ct);
+    Task DeleteAnnouncementAsync(Guid announcementId, CancellationToken ct);
+
     // Assignments
     Task<List<AssignmentItem>> GetMyAssignmentsAsync(CancellationToken ct);
     Task<List<MyAssignmentSubmissionItem>> GetMyAssignmentSubmissionsAsync(CancellationToken ct);
@@ -1329,6 +1356,79 @@ public class EduApiClient : IEduApiClient
         await PutAsync<object, object>($"api/v1/grading-config/{courseId}", new { passThreshold, gradingType, gradeRangesJson }, ct);
         return await GetCourseGradingConfigAsync(courseId, ct);
     }
+
+    // ── Phase 20: LMS content modules ──────────────────────────────────────────
+
+    public async Task<List<LmsModuleApiModel>> GetLmsModulesAsync(Guid offeringId, bool publishedOnly, CancellationToken ct)
+        => await GetAsync<List<LmsModuleApiModel>>($"api/v1/lms/modules/{offeringId}?publishedOnly={publishedOnly}", ct) ?? new();
+
+    public Task<LmsModuleApiModel?> GetLmsModuleAsync(Guid moduleId, CancellationToken ct)
+        => GetAsync<LmsModuleApiModel>($"api/v1/lms/module/{moduleId}", ct);
+
+    public async Task<LmsModuleApiModel?> CreateLmsModuleAsync(Guid offeringId, string title, int weekNumber, string? body, CancellationToken ct)
+    {
+        await PostAsync<object, object>("api/v1/lms/module", new { offeringId, title, weekNumber, body }, ct);
+        var modules = await GetLmsModulesAsync(offeringId, false, ct);
+        return modules.OrderByDescending(m => m.WeekNumber).FirstOrDefault();
+    }
+
+    public Task UpdateLmsModuleAsync(Guid moduleId, string title, int weekNumber, string? body, CancellationToken ct)
+        => PutAsync<object, object>($"api/v1/lms/module/{moduleId}", new { title, weekNumber, body }, ct);
+
+    public Task PublishLmsModuleAsync(Guid moduleId, CancellationToken ct)
+        => PostAsync<object, object>($"api/v1/lms/module/{moduleId}/publish", new { }, ct);
+
+    public Task UnpublishLmsModuleAsync(Guid moduleId, CancellationToken ct)
+        => PostAsync<object, object>($"api/v1/lms/module/{moduleId}/unpublish", new { }, ct);
+
+    public Task DeleteLmsModuleAsync(Guid moduleId, CancellationToken ct)
+        => DeleteAsync($"api/v1/lms/module/{moduleId}", ct);
+
+    public Task<LmsVideoApiModel?> AddLmsVideoAsync(Guid moduleId, string title, string? storageUrl, string? embedUrl, int? durationSeconds, CancellationToken ct)
+        => PostAsync<object, LmsVideoApiModel>("api/v1/lms/video", new { moduleId, title, storageUrl, embedUrl, durationSeconds }, ct);
+
+    public Task DeleteLmsVideoAsync(Guid videoId, CancellationToken ct)
+        => DeleteAsync($"api/v1/lms/video/{videoId}", ct);
+
+    // ── Phase 20: Discussion forum ──────────────────────────────────────────────
+
+    public async Task<List<DiscussionThreadApiModel>> GetDiscussionThreadsAsync(Guid offeringId, CancellationToken ct)
+        => await GetAsync<List<DiscussionThreadApiModel>>($"api/v1/discussion/{offeringId}/threads", ct) ?? new();
+
+    public Task<DiscussionThreadApiModel?> GetDiscussionThreadAsync(Guid threadId, CancellationToken ct)
+        => GetAsync<DiscussionThreadApiModel>($"api/v1/discussion/thread/{threadId}", ct);
+
+    public Task<DiscussionThreadApiModel?> CreateDiscussionThreadAsync(Guid offeringId, Guid authorId, string title, CancellationToken ct)
+        => PostAsync<object, DiscussionThreadApiModel>("api/v1/discussion/thread", new { offeringId, authorId, title }, ct);
+
+    public Task SetThreadPinnedAsync(Guid threadId, bool pinned, CancellationToken ct)
+        => PostAsync<object, object>($"api/v1/discussion/thread/{threadId}/pin?pinned={pinned}", new { }, ct);
+
+    public Task CloseDiscussionThreadAsync(Guid threadId, CancellationToken ct)
+        => PostAsync<object, object>($"api/v1/discussion/thread/{threadId}/close", new { }, ct);
+
+    public Task ReopenDiscussionThreadAsync(Guid threadId, CancellationToken ct)
+        => PostAsync<object, object>($"api/v1/discussion/thread/{threadId}/reopen", new { }, ct);
+
+    public Task DeleteDiscussionThreadAsync(Guid threadId, CancellationToken ct)
+        => DeleteAsync($"api/v1/discussion/thread/{threadId}", ct);
+
+    public Task<DiscussionReplyApiModel?> AddDiscussionReplyAsync(Guid threadId, Guid authorId, string body, CancellationToken ct)
+        => PostAsync<object, DiscussionReplyApiModel>("api/v1/discussion/reply", new { threadId, authorId, body }, ct);
+
+    public Task DeleteDiscussionReplyAsync(Guid replyId, CancellationToken ct)
+        => DeleteAsync($"api/v1/discussion/reply/{replyId}", ct);
+
+    // ── Phase 20: Announcements ─────────────────────────────────────────────────
+
+    public async Task<List<AnnouncementApiModel>> GetAnnouncementsAsync(Guid offeringId, CancellationToken ct)
+        => await GetAsync<List<AnnouncementApiModel>>($"api/v1/announcement/{offeringId}", ct) ?? new();
+
+    public Task<AnnouncementApiModel?> CreateAnnouncementAsync(Guid? offeringId, Guid authorId, string title, string body, CancellationToken ct)
+        => PostAsync<object, AnnouncementApiModel>("api/v1/announcement", new { offeringId, authorId, title, body }, ct);
+
+    public Task DeleteAnnouncementAsync(Guid announcementId, CancellationToken ct)
+        => DeleteAsync($"api/v1/announcement/{announcementId}", ct);
 
     public Task CreateOfferingAsync(Guid courseId, Guid semesterId, int maxEnrollment, Guid? facultyUserId, CancellationToken ct)
         => PostAsync<object, object>("api/v1/course/offerings", new { courseId, semesterId, maxEnrollment, facultyUserId }, ct);
@@ -3538,3 +3638,62 @@ public sealed class GradingConfigApiModel
     public string? GradeRangesJson { get; set; }
 }
 
+// ── Phase 20: LMS API models ───────────────────────────────────────────────────
+
+public sealed class LmsVideoApiModel
+{
+    public Guid    Id              { get; set; }
+    public Guid    ModuleId        { get; set; }
+    public string  Title           { get; set; } = string.Empty;
+    public string? StorageUrl      { get; set; }
+    public string? EmbedUrl        { get; set; }
+    public int?    DurationSeconds { get; set; }
+}
+
+public sealed class LmsModuleApiModel
+{
+    public Guid    Id          { get; set; }
+    public Guid    OfferingId  { get; set; }
+    public string  Title       { get; set; } = string.Empty;
+    public int     WeekNumber  { get; set; }
+    public string? Body        { get; set; }
+    public bool    IsPublished { get; set; }
+    public DateTime? PublishedAt { get; set; }
+    public List<LmsVideoApiModel> Videos { get; set; } = new();
+}
+
+public sealed class DiscussionReplyApiModel
+{
+    public Guid     Id         { get; set; }
+    public Guid     ThreadId   { get; set; }
+    public Guid     AuthorId   { get; set; }
+    public string   AuthorName { get; set; } = string.Empty;
+    public string   Body       { get; set; } = string.Empty;
+    public DateTime CreatedAt  { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+}
+
+public sealed class DiscussionThreadApiModel
+{
+    public Guid     Id         { get; set; }
+    public Guid     OfferingId { get; set; }
+    public string   Title      { get; set; } = string.Empty;
+    public Guid     AuthorId   { get; set; }
+    public string   AuthorName { get; set; } = string.Empty;
+    public bool     IsPinned   { get; set; }
+    public bool     IsClosed   { get; set; }
+    public int      ReplyCount { get; set; }
+    public DateTime CreatedAt  { get; set; }
+    public List<DiscussionReplyApiModel> Replies { get; set; } = new();
+}
+
+public sealed class AnnouncementApiModel
+{
+    public Guid     Id         { get; set; }
+    public Guid?    OfferingId { get; set; }
+    public Guid     AuthorId   { get; set; }
+    public string   AuthorName { get; set; } = string.Empty;
+    public string   Title      { get; set; } = string.Empty;
+    public string   Body       { get; set; } = string.Empty;
+    public DateTime PostedAt   { get; set; }
+}

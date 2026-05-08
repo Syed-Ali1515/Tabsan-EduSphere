@@ -1,0 +1,103 @@
+namespace Tabsan.EduSphere.Application.DTOs.Lms;
+
+// Final-Touches Phase 20 — LMS Data Transfer Objects
+
+// ── Stage 20.1 — Course Content Modules ──────────────────────────────────────
+
+public sealed record CreateModuleRequest(
+    Guid   OfferingId,
+    string Title,
+    int    WeekNumber,
+    string? Body = null);
+
+public sealed record UpdateModuleRequest(
+    string  Title,
+    int     WeekNumber,
+    string? Body);
+
+public sealed class CourseContentModuleDto
+{
+    public Guid     Id          { get; set; }
+    public Guid     OfferingId  { get; set; }
+    public string   Title       { get; set; } = "";
+    public int      WeekNumber  { get; set; }
+    public string?  Body        { get; set; }
+    public bool     IsPublished { get; set; }
+    public DateTime? PublishedAt { get; set; }
+    public List<ContentVideoDto> Videos { get; set; } = new();
+}
+
+// ── Stage 20.2 — Content Videos ──────────────────────────────────────────────
+
+public sealed record AddVideoRequest(
+    Guid    ModuleId,
+    string  Title,
+    string? StorageUrl,
+    string? EmbedUrl,
+    int?    DurationSeconds = null);
+
+public sealed class ContentVideoDto
+{
+    public Guid    Id              { get; set; }
+    public Guid    ModuleId        { get; set; }
+    public string  Title           { get; set; } = "";
+    public string? StorageUrl      { get; set; }
+    public string? EmbedUrl        { get; set; }
+    public int?    DurationSeconds { get; set; }
+}
+
+// ── Stage 20.3 — Discussion Threads & Replies ────────────────────────────────
+
+public sealed record CreateThreadRequest(
+    Guid   OfferingId,
+    Guid   AuthorId,
+    string Title);
+
+public sealed record AddReplyRequest(
+    Guid   ThreadId,
+    Guid   AuthorId,
+    string Body);
+
+public sealed class DiscussionThreadDto
+{
+    public Guid     Id         { get; set; }
+    public Guid     OfferingId { get; set; }
+    public string   Title      { get; set; } = "";
+    public Guid     AuthorId   { get; set; }
+    public string   AuthorName { get; set; } = "";
+    public bool     IsPinned   { get; set; }
+    public bool     IsClosed   { get; set; }
+    public int      ReplyCount { get; set; }
+    public DateTime CreatedAt  { get; set; }
+    public List<DiscussionReplyDto> Replies { get; set; } = new();
+}
+
+public sealed class DiscussionReplyDto
+{
+    public Guid     Id         { get; set; }
+    public Guid     ThreadId   { get; set; }
+    public Guid     AuthorId   { get; set; }
+    public string   AuthorName { get; set; } = "";
+    public string   Body       { get; set; } = "";
+    public DateTime  CreatedAt  { get; set; }
+    public DateTime? UpdatedAt  { get; set; }
+}
+
+// ── Stage 20.4 — Course Announcements ────────────────────────────────────────
+
+public sealed record CreateAnnouncementRequest(
+    Guid?  OfferingId,
+    Guid   AuthorId,
+    string Title,
+    string Body);
+
+public sealed class CourseAnnouncementDto
+{
+    public Guid     Id         { get; set; }
+    public Guid?    OfferingId { get; set; }
+    public Guid     AuthorId   { get; set; }
+    public string   AuthorName { get; set; } = "";
+    public string   Title      { get; set; } = "";
+    public string   Body       { get; set; } = "";
+    public DateTime PostedAt   { get; set; }
+}
