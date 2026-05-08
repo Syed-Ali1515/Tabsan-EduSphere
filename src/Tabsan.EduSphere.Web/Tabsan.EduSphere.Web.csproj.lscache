@@ -515,6 +515,9 @@ Views/
   SidebarSettings.cshtml
   StudentLifecycle.cshtml
   Students.cshtml
+  StudyPlan.cshtml
+  StudyPlanDetail.cshtml
+  StudyPlanRecommendations.cshtml
   ThemeSettings.cshtml
   TimetableAdmin.cshtml
   TimetableStudent.cshtml
@@ -595,6 +598,9 @@ Views/
   SidebarSettings.cshtml
   StudentLifecycle.cshtml
   Students.cshtml
+  StudyPlan.cshtml
+  StudyPlanDetail.cshtml
+  StudyPlanRecommendations.cshtml
   ThemeSettings.cshtml
   TimetableAdmin.cshtml
   TimetableStudent.cshtml

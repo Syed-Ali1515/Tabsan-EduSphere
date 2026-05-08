@@ -138,6 +138,7 @@ Interfaces/
  ISettingsRepository.cs
  IStudentLifecycleRepository.cs
  IStudentProfileRepository.cs
+ IStudyPlanRepository.cs
  ITimetableRepository.cs
  IUserRepository.cs
 Licensing/
@@ -176,6 +177,9 @@ StudentLifecycle/
  AdminChangeRequest.cs
  PaymentReceipt.cs
  TeacherModificationRequest.cs
+StudyPlanner/
+ StudyPlan.cs
+ StudyPlanCourse.cs
 
 [metadataReferences]
 <DOTNET>/packs/Microsoft.NETCore.App.Ref/8.0.26/ref/net8.0/

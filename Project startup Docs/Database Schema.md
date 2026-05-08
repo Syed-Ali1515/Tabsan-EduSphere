@@ -662,3 +662,28 @@ Course-level announcements posted by faculty; triggers fan-out notification to e
 - created_at / updated_at / row_version
 
 ---
+
+### study_plans
+Student semester study plans. Phase 21 — Study Planner.
+
+- id (UUID, PK)
+- student_profile_id (FK → student_profiles.id, ON DELETE CASCADE)
+- planned_semester_name (varchar 100)
+- notes (nvarchar 2000, nullable)
+- advisor_status (int, default 0 — 0=Pending, 1=Endorsed, 2=Rejected)
+- advisor_notes (nvarchar 2000, nullable)
+- reviewed_by_user_id (UUID, nullable)
+- is_deleted (bool, default false)
+- deleted_at (datetime, nullable)
+- created_at / updated_at / row_version
+
+### study_plan_courses
+Course line items within a study plan.
+
+- id (UUID, PK)
+- study_plan_id (FK → study_plans.id, ON DELETE CASCADE)
+- course_id (FK → courses.id, ON DELETE RESTRICT)
+- created_at / updated_at / row_version
+- UQ_study_plan_courses_plan_course (study_plan_id, course_id)
+
+---

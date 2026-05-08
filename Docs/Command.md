@@ -55,7 +55,7 @@ cmd /c git -C "<repo-root>" push origin main
 
 ## Current Execution Pointer
 - Plan Source: Docs/Enhancements.md
-- Active Phase: **Phase 20 — Learning Management System (LMS) — FULLY COMPLETE ✅**
+- Active Phase: **Phase 21 — Study Planner — FULLY COMPLETE ✅**
 - Active Stage: **Stages 20.1 + 20.2 + 20.3 + 20.4 done — Course Content Modules, Videos, Discussion Forum, Announcements**
 - Status: **0 build errors; 7/7 unit tests passed; migration Phase20_LMS applied**
 - Last Updated: 2026-05-08
@@ -983,3 +983,31 @@ git push origin main
 | 20.4 | Course announcements with notification fan-out | `Domain/Lms/CourseAnnouncement.cs`, `Domain/Interfaces/IAnnouncementRepository.cs`, `Application/Interfaces/IAnnouncementService.cs`, `Application/Lms/AnnouncementService.cs`, `Infrastructure/Repositories/AnnouncementRepository.cs`, `API/Controllers/AnnouncementController.cs`, `Web/Views/Portal/Announcements.cshtml` |
 | Cross-cutting | DTOs, DI, DbContext, EduApiClient, PortalController, PortalViewModels, sidebar | `Application/DTOs/Lms/LmsDTOs.cs`, `API/Program.cs`, `Infrastructure/Persistence/ApplicationDbContext.cs`, `Web/Services/EduApiClient.cs`, `Web/Controllers/PortalController.cs`, `Web/Models/Portal/PortalViewModels.cs`, `Views/Shared/_Layout.cshtml` |
 
+---
+
+## Phase 21 — Study Planner
+
+**EF Migration:**
+```powershell
+dotnet ef migrations add Phase21_StudyPlanner --project src/Tabsan.EduSphere.Infrastructure --startup-project src/Tabsan.EduSphere.API -- --environment Development
+dotnet ef database update --project src/Tabsan.EduSphere.Infrastructure --startup-project src/Tabsan.EduSphere.API -- --environment Development
+```
+
+**Git Commit:**
+```powershell
+git add -A
+git commit -m "Phase 21 — Study Planner (Semester Planning Tool + Recommendation Engine)"
+git pull --rebase origin main
+git push origin main
+```
+
+**Test Run:** 7/7 unit tests passed (build clean)
+**Status:** ✅ Complete
+
+### Stages Completed
+| Stage | Description | Files |
+|-------|-------------|-------|
+| 21.1 | StudyPlan + StudyPlanCourse domain entities, MaxCreditLoadPerSemester on AcademicProgram | `Domain/StudyPlanner/StudyPlan.cs`, `Domain/StudyPlanner/StudyPlanCourse.cs`, `Domain/Interfaces/IStudyPlanRepository.cs` |
+| 21.1 | DTOs, service interface + implementation, EF configs, repository | `Application/DTOs/StudyPlanner/StudyPlannerDTOs.cs`, `Application/Interfaces/IStudyPlanService.cs`, `Application/StudyPlanner/StudyPlanService.cs`, `Infrastructure/Persistence/Configurations/StudyPlanConfigurations.cs`, `Infrastructure/Repositories/StudyPlanRepository.cs` |
+| 21.2 | Recommendation engine (degree audit gaps + electives + prerequisite gating) | Part of `StudyPlanService.GetRecommendationsAsync` |
+| Cross-cutting | Controller, DI, DbContext DbSets, EduApiClient, PortalController, views, sidebar | `API/Controllers/StudyPlanController.cs`, `API/Program.cs`, `Infrastructure/Persistence/ApplicationDbContext.cs`, `Web/Services/EduApiClient.cs`, `Web/Controllers/PortalController.cs`, `Web/Views/Portal/StudyPlan.cshtml`, `Web/Views/Portal/StudyPlanDetail.cshtml`, `Web/Views/Portal/StudyPlanRecommendations.cshtml`, `Views/Shared/_Layout.cshtml` |

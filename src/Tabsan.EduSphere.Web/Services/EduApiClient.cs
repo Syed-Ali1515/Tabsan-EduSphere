@@ -338,6 +338,17 @@ public interface IEduApiClient
     Task<byte[]?> DownloadCertificateAsync(Guid applicationId, CancellationToken ct);
     // Final-Touches Phase 18 Stage 18.2 — regenerate certificate
     Task<string?> RegenerateCertificateAsync(Guid applicationId, CancellationToken ct);
+
+    // Final-Touches Phase 21 Stage 21.1/21.2 — Study Planner
+    Task<List<StudyPlanApiModel>> GetStudyPlansAsync(Guid studentProfileId, CancellationToken ct);
+    Task<List<StudyPlanApiModel>> GetStudyPlansByDepartmentAsync(Guid departmentId, CancellationToken ct);
+    Task<StudyPlanApiModel?> GetStudyPlanAsync(Guid planId, CancellationToken ct);
+    Task<StudyPlanApiModel?> CreateStudyPlanAsync(Guid studentProfileId, string plannedSemesterName, string? notes, CancellationToken ct);
+    Task<StudyPlanApiModel?> AddStudyPlanCourseAsync(Guid planId, Guid courseId, CancellationToken ct);
+    Task RemoveStudyPlanCourseAsync(Guid planId, Guid courseId, CancellationToken ct);
+    Task DeleteStudyPlanAsync(Guid planId, CancellationToken ct);
+    Task AdvisePlanAsync(Guid planId, bool isEndorsed, string? advisorNotes, CancellationToken ct);
+    Task<StudyPlanRecommendationApiModel?> GetStudyPlanRecommendationsAsync(Guid studentProfileId, string plannedSemesterName, CancellationToken ct);
 }
 
 public class EduApiClient : IEduApiClient
@@ -1429,6 +1440,46 @@ public class EduApiClient : IEduApiClient
 
     public Task DeleteAnnouncementAsync(Guid announcementId, CancellationToken ct)
         => DeleteAsync($"api/v1/announcement/{announcementId}", ct);
+
+    // ── Phase 21: Study Planner ─────────────────────────────────────────────────
+
+    public async Task<List<StudyPlanApiModel>> GetStudyPlansAsync(Guid studentProfileId, CancellationToken ct)
+        => await GetAsync<List<StudyPlanApiModel>>($"api/v1/study-plan/plans/{studentProfileId}", ct) ?? new();
+
+    public async Task<List<StudyPlanApiModel>> GetStudyPlansByDepartmentAsync(Guid departmentId, CancellationToken ct)
+        => await GetAsync<List<StudyPlanApiModel>>($"api/v1/study-plan/plans/department/{departmentId}", ct) ?? new();
+
+    public Task<StudyPlanApiModel?> GetStudyPlanAsync(Guid planId, CancellationToken ct)
+        => GetAsync<StudyPlanApiModel>($"api/v1/study-plan/plan/{planId}", ct);
+
+    public Task<StudyPlanApiModel?> CreateStudyPlanAsync(Guid studentProfileId, string plannedSemesterName, string? notes, CancellationToken ct)
+        => PostAsync<object, StudyPlanApiModel>("api/v1/study-plan/plan",
+            new { studentProfileId, plannedSemesterName, notes }, ct);
+
+    public async Task<StudyPlanApiModel?> AddStudyPlanCourseAsync(Guid planId, Guid courseId, CancellationToken ct)
+    {
+        var client  = CreateClient();
+        var json    = System.Text.Json.JsonSerializer.Serialize(courseId);
+        var content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
+        using var response = await client.PostAsync($"api/v1/study-plan/plan/{planId}/course", content, ct);
+        if (!response.IsSuccessStatusCode) return null;
+        var body = await response.Content.ReadAsStringAsync(ct);
+        return System.Text.Json.JsonSerializer.Deserialize<StudyPlanApiModel>(body, _jsonOptions);
+    }
+
+    public Task RemoveStudyPlanCourseAsync(Guid planId, Guid courseId, CancellationToken ct)
+        => DeleteAsync($"api/v1/study-plan/plan/{planId}/course/{courseId}", ct);
+
+    public Task DeleteStudyPlanAsync(Guid planId, CancellationToken ct)
+        => DeleteAsync($"api/v1/study-plan/plan/{planId}", ct);
+
+    public Task AdvisePlanAsync(Guid planId, bool isEndorsed, string? advisorNotes, CancellationToken ct)
+        => PostAsync<object, object>($"api/v1/study-plan/plan/{planId}/advise",
+            new { planId, isEndorsed, advisorNotes }, ct);
+
+    public async Task<StudyPlanRecommendationApiModel?> GetStudyPlanRecommendationsAsync(Guid studentProfileId, string plannedSemesterName, CancellationToken ct)
+        => await GetAsync<StudyPlanRecommendationApiModel>(
+            $"api/v1/study-plan/recommendations/{studentProfileId}?plannedSemesterName={Uri.EscapeDataString(plannedSemesterName)}", ct);
 
     public Task CreateOfferingAsync(Guid courseId, Guid semesterId, int maxEnrollment, Guid? facultyUserId, CancellationToken ct)
         => PostAsync<object, object>("api/v1/course/offerings", new { courseId, semesterId, maxEnrollment, facultyUserId }, ct);
@@ -3696,4 +3747,49 @@ public sealed class AnnouncementApiModel
     public string   Title      { get; set; } = string.Empty;
     public string   Body       { get; set; } = string.Empty;
     public DateTime PostedAt   { get; set; }
+}
+
+// ── Phase 21: Study Planner API models ──────────────────────────────────────
+
+public sealed class StudyPlanCourseApiModel
+{
+    public Guid   CourseId    { get; set; }
+    public string CourseCode  { get; set; } = string.Empty;
+    public string CourseTitle { get; set; } = string.Empty;
+    public int    CreditHours { get; set; }
+    public string CourseType  { get; set; } = string.Empty;
+}
+
+public sealed class StudyPlanApiModel
+{
+    public Guid                          Id                  { get; set; }
+    public Guid                          StudentProfileId    { get; set; }
+    public string                        PlannedSemesterName { get; set; } = string.Empty;
+    public string?                       Notes               { get; set; }
+    public string                        AdvisorStatus       { get; set; } = string.Empty;
+    public string?                       AdvisorNotes        { get; set; }
+    public Guid?                         ReviewedByUserId    { get; set; }
+    public int                           TotalCreditHours    { get; set; }
+    public List<StudyPlanCourseApiModel> Courses             { get; set; } = new();
+    public DateTime                      CreatedAt           { get; set; }
+    public DateTime?                     UpdatedAt           { get; set; }
+}
+
+public sealed class RecommendedCourseApiModel
+{
+    public Guid   CourseId    { get; set; }
+    public string CourseCode  { get; set; } = string.Empty;
+    public string CourseTitle { get; set; } = string.Empty;
+    public int    CreditHours { get; set; }
+    public string CourseType  { get; set; } = string.Empty;
+    public string Reason      { get; set; } = string.Empty;
+}
+
+public sealed class StudyPlanRecommendationApiModel
+{
+    public Guid                              StudentProfileId        { get; set; }
+    public string                            PlannedSemesterName     { get; set; } = string.Empty;
+    public int                               MaxCreditLoad           { get; set; }
+    public int                               RecommendedTotalCredits { get; set; }
+    public List<RecommendedCourseApiModel>   Recommendations         { get; set; } = new();
 }

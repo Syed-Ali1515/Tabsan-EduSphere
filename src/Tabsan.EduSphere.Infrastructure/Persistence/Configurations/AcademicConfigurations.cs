@@ -15,6 +15,9 @@ public class AcademicProgramConfiguration : IEntityTypeConfiguration<AcademicPro
         builder.Property(p => p.Code).IsRequired().HasMaxLength(20);
         builder.Property(p => p.RowVersion).IsRowVersion();
 
+        // Final-Touches Phase 21 Stage 21.1 — credit-load limit per programme
+        builder.Property(p => p.MaxCreditLoadPerSemester).HasDefaultValue(18);
+
         // Unique programme code per department.
         builder.HasIndex(p => p.Code)
                .IsUnique()

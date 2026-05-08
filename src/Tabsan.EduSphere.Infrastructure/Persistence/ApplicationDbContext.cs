@@ -14,6 +14,7 @@ using Tabsan.EduSphere.Domain.Quizzes;
 using Tabsan.EduSphere.Domain.Settings;
 using Tabsan.EduSphere.Domain.Lms;
 using Tabsan.EduSphere.Domain.StudentLifecycle;
+using Tabsan.EduSphere.Domain.StudyPlanner;
 
 namespace Tabsan.EduSphere.Infrastructure.Persistence;
 
@@ -249,6 +250,18 @@ public class ApplicationDbContext : DbContext
     public DbSet<DiscussionReply> DiscussionReplies => Set<DiscussionReply>();
     /// <summary>Announcements for a course offering or department-wide.</summary>
     public DbSet<CourseAnnouncement> CourseAnnouncements => Set<CourseAnnouncement>();
+
+    // Final-Touches Phase 21 Stage 21.1 — Study Planner
+    /// <summary>Student semester study plans.</summary>
+    public DbSet<StudyPlan> StudyPlans => Set<StudyPlan>();
+    /// <summary>Course rows within a study plan.</summary>
+    public DbSet<StudyPlanCourse> StudyPlanCourses => Set<StudyPlanCourse>();
+
+    // Final-Touches Phase 21 Stage 21.1 — Study Planner
+    /// <summary>Student semester study plans.</summary>
+    public DbSet<StudyPlan> StudyPlans => Set<StudyPlan>();
+    /// <summary>Course line items within a student study plan.</summary>
+    public DbSet<StudyPlanCourse> StudyPlanCourses => Set<StudyPlanCourse>();
 
     /// <summary>
     /// Scans the current assembly for all IEntityTypeConfiguration implementations

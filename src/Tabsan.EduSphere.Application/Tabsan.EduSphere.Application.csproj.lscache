@@ -100,6 +100,7 @@ DTOs/
  Search/SearchDTOs.cs
  SettingsDtos.cs
  StudentLifecycleDtos.cs
+ StudyPlanner/StudyPlannerDTOs.cs
  TimetableDtos.cs
 Fyp/FypService.cs
 Helpdesk/HelpdeskService.cs
@@ -142,6 +143,7 @@ Interfaces/
  ISettingsServices.cs
  IStudentLifecycleService.cs
  IStudentRegistrationService.cs
+ IStudyPlanService.cs
  ITimetableExporters.cs
  ITimetableService.cs
  ITokenService.cs
@@ -167,6 +169,7 @@ Services/
  StudentLifecycleService.cs
  TimetableService.cs
  UserImportService.cs
+StudyPlanner/StudyPlanService.cs
 Validators/AuthValidators.cs
 
 [metadataReferences]

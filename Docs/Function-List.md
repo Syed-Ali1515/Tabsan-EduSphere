@@ -3730,3 +3730,97 @@ New themes added to site.css and ThemeSettingsPageModel: `neon_mint`, `sakura_pi
 | `LmsVideoItem` / `LmsModuleItem` / `CourseLmsPageModel` / `LmsManagePageModel` | View models (new) | LMS portal view models |
 | `DiscussionReplyItem` / `DiscussionThreadItem` / `DiscussionPageModel` / `DiscussionDetailPageModel` | View models (new) | Discussion portal view models |
 | `AnnouncementItem` / `AnnouncementsPageModel` | View models (new) | Announcement portal view models |
+
+---
+
+## Final-Touches Phase 21 — Study Planner (2026-05-08)
+
+### Domain — Entities (Phase 21)
+
+| Symbol | Type | Notes |
+|--------|------|-------|
+| `StudyPlan` | Entity (`AuditableEntity`) | Student semester study plan; has `AdvisorStatus (Pending/Endorsed/Rejected)`, endorsement workflow methods |
+| `StudyPlanCourse` | Entity (`BaseEntity`) | Course line item in a plan; FK to `StudyPlan` + `Course` |
+| `StudyPlanStatus` | Enum | `Pending=0 / Endorsed=1 / Rejected=2` |
+| `AcademicProgram.MaxCreditLoadPerSemester` | Property (added) | Max credit hours per semester plan; default 18 |
+| `AcademicProgram.SetMaxCreditLoad()` | Method (added) | Updates max credit load |
+
+### Domain — Repository Interfaces (Phase 21)
+
+| Symbol | Type | Notes |
+|--------|------|-------|
+| `IStudyPlanRepository` | Interface (new) | `GetByStudentAsync`, `GetByDepartmentAsync`, `GetByIdAsync`, `AddAsync`, `Update`, `GetPlannedCreditHoursAsync`, `SaveChangesAsync` |
+
+### Application — DTOs (Phase 21)
+
+| Symbol | Type | Notes |
+|--------|------|-------|
+| `CreateStudyPlanRequest` / `AddPlanCourseRequest` / `AdvisePlanRequest` / `SetMaxCreditLoadRequest` | Records (new) | Request DTOs |
+| `StudyPlanCourseDto` / `StudyPlanDto` | Records (new) | Response DTOs |
+| `RecommendedCourseDto` / `StudyPlanRecommendationDto` | Records (new) | Recommendation response DTOs |
+
+### Application — Service Interfaces (Phase 21)
+
+| Symbol | Type | Notes |
+|--------|------|-------|
+| `IStudyPlanService` | Interface (new) | Full CRUD + advisor workflow + recommendations |
+
+### Application — Service Implementations (Phase 21)
+
+| Symbol | Type | Notes |
+|--------|------|-------|
+| `StudyPlanService` | Class (new) | Validates prerequisites, credit load; recommendation engine (degree gaps + electives) |
+
+### Infrastructure — EF Configurations (Phase 21)
+
+| Symbol | Type | Notes |
+|--------|------|-------|
+| `StudyPlanConfiguration` | Config (new) | Table `study_plans`; HasQueryFilter `!IsDeleted`; cascade delete from student_profiles |
+| `StudyPlanCourseConfiguration` | Config (new) | Table `study_plan_courses`; unique index per plan+course; restrict delete from courses |
+| `AcademicProgramConfiguration` | Config (updated) | Added `MaxCreditLoadPerSemester` column (default 18) |
+
+### Infrastructure — Repositories (Phase 21)
+
+| Symbol | Type | Notes |
+|--------|------|-------|
+| `StudyPlanRepository` | Class (new) | EF implementation of `IStudyPlanRepository`; includes Courses + Course nav properties |
+
+### API — Controllers (Phase 21)
+
+| Symbol | Type | Notes |
+|--------|------|-------|
+| `StudyPlanController` | Controller (new) | Route `api/v1/study-plan`; 9 endpoints |
+| `GET plans/{studentProfileId}` | Endpoint | Student/Faculty/Admin/SuperAdmin |
+| `GET plans/department/{departmentId}` | Endpoint | Faculty/Admin/SuperAdmin |
+| `GET plan/{planId}` | Endpoint | All authenticated |
+| `POST plan` | Endpoint | Student/Admin/SuperAdmin |
+| `POST plan/{planId}/course` | Endpoint | Student/Admin/SuperAdmin — validates prereqs + credit load |
+| `DELETE plan/{planId}/course/{courseId}` | Endpoint | Student/Admin/SuperAdmin |
+| `DELETE plan/{planId}` | Endpoint | Student/Admin/SuperAdmin |
+| `POST plan/{planId}/advise` | Endpoint | Faculty/Admin/SuperAdmin |
+| `GET recommendations/{studentProfileId}` | Endpoint | Student/Faculty/Admin/SuperAdmin |
+
+### Web — EduApiClient (Phase 21)
+
+| Symbol | Type | Notes |
+|--------|------|-------|
+| `GetStudyPlansAsync` / `GetStudyPlansByDepartmentAsync` / `GetStudyPlanAsync` | Methods (new) | GET study plans |
+| `CreateStudyPlanAsync` / `AddStudyPlanCourseAsync` / `RemoveStudyPlanCourseAsync` / `DeleteStudyPlanAsync` | Methods (new) | CRUD study plans |
+| `AdvisePlanAsync` | Method (new) | Faculty advisor decision |
+| `GetStudyPlanRecommendationsAsync` | Method (new) | Recommendation engine call |
+| `StudyPlanApiModel` / `StudyPlanCourseApiModel` / `StudyPlanRecommendationApiModel` / `RecommendedCourseApiModel` | Classes (new) | API response models |
+
+### Web — PortalController + Views (Phase 21)
+
+| Symbol | Type | Notes |
+|--------|------|-------|
+| `StudyPlan(GET)` | Action (new) | Student's plan list |
+| `StudyPlanDetail(GET)` | Action (new) | Plan detail + course management |
+| `StudyPlanRecommendations(GET)` | Action (new) | Recommendation page |
+| `CreateStudyPlan` / `AddStudyPlanCourse` / `RemoveStudyPlanCourse` / `DeleteStudyPlan` | Actions (new) | Plan CRUD POST actions |
+| `AdvisePlan` | Action (new) | Faculty advisor POST action |
+| `StudyPlan.cshtml` | View (new) | Plan list + create form + recommendations link |
+| `StudyPlanDetail.cshtml` | View (new) | Plan detail + add/remove courses + advisor panel |
+| `StudyPlanRecommendations.cshtml` | View (new) | Recommended courses table |
+| `StudyPlanCourseItem` / `StudyPlanItem` / `StudyPlanPageModel` / `StudyPlanDetailPageModel` | View models (new) | Study plan portal view models |
+| `RecommendationItem` / `RecommendationsPageModel` | View models (new) | Recommendation portal view models |

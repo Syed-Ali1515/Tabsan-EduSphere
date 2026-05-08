@@ -1,0 +1,136 @@
+@model Tabsan.EduSphere.Web.Models.Portal.StudyPlanDetailPageModel
+@{
+    ViewData["Title"]     = "Study Plan Detail";
+    ViewData["PageTitle"] = "Study Plan — " + Model.Plan.PlannedSemesterName;
+    ViewData["ActivePage"] = "study_plan";
+}
+
+@* Final-Touches Phase 21 Stage 21.1 — study plan detail & course management *@
+
+@if (!Model.IsConnected)
+{
+    <div class="alert alert-warning">API is not available.</div>
+    return;
+}
+
+@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        @Model.SuccessMessage <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        @Model.ErrorMessage <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <strong>@Model.Plan.PlannedSemesterName</strong>
+        @{
+            var badgeClass = Model.Plan.AdvisorStatus switch
+            {
+                "Endorsed" => "bg-success",
+                "Rejected" => "bg-danger",
+                _          => "bg-secondary"
+            };
+        }
+        <span class="badge @badgeClass">@Model.Plan.AdvisorStatus</span>
+    </div>
+    <div class="card-body">
+        <p><strong>Total Credit Hours:</strong> @Model.Plan.TotalCreditHours</p>
+        @if (!string.IsNullOrEmpty(Model.Plan.Notes))
+        {
+            <p><strong>Notes:</strong> @Model.Plan.Notes</p>
+        }
+        @if (!string.IsNullOrEmpty(Model.Plan.AdvisorNotes))
+        {
+            <p><strong>Advisor Notes:</strong> @Model.Plan.AdvisorNotes</p>
+        }
+    </div>
+</div>
+
+@* Course list *@
+<div class="card mb-4">
+    <div class="card-header"><strong>Planned Courses</strong></div>
+    <div class="card-body p-0">
+        @if (!Model.Plan.Courses.Any())
+        {
+            <p class="p-3 mb-0 text-muted">No courses added yet.</p>
+        }
+        else
+        {
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Code</th><th>Course</th><th>Credits</th><th>Type</th><th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var c in Model.Plan.Courses)
+                {
+                    <tr>
+                        <td>@c.CourseCode</td>
+                        <td>@c.CourseTitle</td>
+                        <td>@c.CreditHours</td>
+                        <td>@c.CourseType</td>
+                        <td>
+                            <form asp-action="RemoveStudyPlanCourse" method="post" class="d-inline"
+                                  onsubmit="return confirm('Remove this course from the plan?');">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="planId"   value="@Model.Plan.Id" />
+                                <input type="hidden" name="courseId" value="@c.CourseId" />
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Remove</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+@* Add course by ID *@
+<div class="card mb-4">
+    <div class="card-header"><strong>Add Course</strong></div>
+    <div class="card-body">
+        <form asp-action="AddStudyPlanCourse" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="planId"           value="@Model.Plan.Id" />
+            <input type="hidden" name="studentProfileId" value="@Model.Plan.StudentProfileId" />
+            <div class="row g-2">
+                <div class="col-md-8">
+                    <input name="courseId" class="form-control" placeholder="Course GUID" required />
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary w-100">Add</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@* Faculty advisor panel *@
+<div class="card mb-4">
+    <div class="card-header"><strong>Faculty Advisor Decision</strong></div>
+    <div class="card-body">
+        <form asp-action="AdvisePlan" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="planId" value="@Model.Plan.Id" />
+            <div class="mb-2">
+                <textarea name="advisorNotes" class="form-control" rows="2"
+                          placeholder="Advisor notes (required when rejecting)..."></textarea>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" name="isEndorsed" value="true"  class="btn btn-success">Endorse</button>
+                <button type="submit" name="isEndorsed" value="false" class="btn btn-danger">Reject</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<a href="@Url.Action("StudyPlan", "Portal", new { studentProfileId = Model.Plan.StudentProfileId })"
+   class="btn btn-outline-secondary">← Back to Plans</a>

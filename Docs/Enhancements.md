@@ -244,20 +244,27 @@
 
 ---
 
-## Phase 21 — Study Planner
+## Phase 21 — Study Planner ✅ Implemented
 **Complexity:** Medium | **Dependencies:** Phase 17 ✅ (Degree Audit), Phase 15 ✅ (Prerequisites); benefits from `HasSemesters` flag introduced in Phase 19
 
-### Stage 21.1 — Semester Planning Tool
-- Students can build a tentative plan for future semesters by selecting available courses.
-- New `StudyPlan` entity: `StudentProfileId`, `PlannedSemesterName`; child `StudyPlanCourse` rows.
-- Planner validates prerequisites (Phase 15) and credit-load limits before saving.
-- Course picker respects `HasSemesters` (Phase 19) — only semester-based courses appear in semester planning.
-- Saved plans are visible to the student's assigned Faculty advisor.
+### Stage 21.1 — Semester Planning Tool ✅
+- `StudyPlan` entity: `StudentProfileId`, `PlannedSemesterName`, `Notes`, `AdvisorStatus (Pending/Endorsed/Rejected)`, `AdvisorNotes`, `ReviewedByUserId`.
+- `StudyPlanCourse` child entity: `StudyPlanId`, `CourseId`; unique constraint per plan+course.
+- Service validates: course `HasSemesters == true` and `IsActive`; all prerequisites passed; credit load ≤ `AcademicProgram.MaxCreditLoadPerSemester` (default 18).
+- `AcademicProgram.MaxCreditLoadPerSemester` property added + `SetMaxCreditLoad()` method; EF config updated.
+- `IStudyPlanRepository` + `StudyPlanRepository`; `IStudyPlanService` + `StudyPlanService`.
+- `StudyPlanController` (`api/v1/study-plan`): CRUD plans, add/remove courses, advise endpoint.
+- Faculty advisors can endorse or reject plans with notes (advisor workflow).
+- Portal views: `StudyPlan.cshtml` (list), `StudyPlanDetail.cshtml` (detail + course management + advisor panel).
+- Sidebar: `study_plan` → `(Portal, StudyPlan)` group: Student Related.
 
-### Stage 21.2 — Course Recommendation Engine
-- System recommends courses for the next semester based on completed credits, degree audit gaps (Phase 17), and available offerings.
-- Recommendations filter by `HasSemesters` (Phase 19) so non-semester short courses are excluded from semester-based recommendations.
-- Faculty advisors can endorse or modify recommendations before they surface to the student.
+### Stage 21.2 — Course Recommendation Engine ✅
+- `GetRecommendationsAsync`: fetches earned credits → degree rule required course gaps → department `HasSemesters=true` courses → prerequisite-gated candidates → credits-limited recommendation list with reasons.
+- Required courses flagged "Required by your degree plan"; electives flagged "Elective available in your department".
+- `StudyPlanRecommendations.cshtml` portal view with semester-picker form.
+- API endpoint: `GET api/v1/study-plan/recommendations/{studentProfileId}?plannedSemesterName=...`.
+
+**Validation:** 0 build errors · 7/7 unit tests passed · migration `Phase21_StudyPlanner` applied
 - SuperAdmin configures recommendation rules and credit-load weightings per `AcademicProgram`.
 
 ---

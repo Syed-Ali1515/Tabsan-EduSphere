@@ -31,6 +31,13 @@ public class AcademicProgram : AuditableEntity
     /// <summary>Whether the programme is open for new student enrolment.</summary>
     public bool IsActive { get; private set; } = true;
 
+    // Final-Touches Phase 21 Stage 21.1 — Study Planner: max credit load per semester per programme
+    /// <summary>
+    /// Maximum total credit hours a student in this programme may load per planned semester.
+    /// Defaults to 18. SuperAdmin can adjust per programme.
+    /// </summary>
+    public int MaxCreditLoadPerSemester { get; private set; } = 18;
+
     private AcademicProgram() { }
 
     public AcademicProgram(string name, string code, Guid departmentId, int totalSemesters)
@@ -59,6 +66,16 @@ public class AcademicProgram : AuditableEntity
     public void Activate()
     {
         IsActive = true;
+        Touch();
+    }
+
+    // Final-Touches Phase 21 Stage 21.1 — Study Planner: set max credit load per semester
+    /// <summary>Sets the maximum credit hours a student may plan per semester for this programme.</summary>
+    public void SetMaxCreditLoad(int maxCreditHours)
+    {
+        if (maxCreditHours < 1)
+            throw new ArgumentOutOfRangeException(nameof(maxCreditHours), "Max credit load must be at least 1.");
+        MaxCreditLoadPerSemester = maxCreditHours;
         Touch();
     }
 }

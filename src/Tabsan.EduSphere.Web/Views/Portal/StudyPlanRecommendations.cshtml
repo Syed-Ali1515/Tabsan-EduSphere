@@ -1,0 +1,79 @@
+@model Tabsan.EduSphere.Web.Models.Portal.RecommendationsPageModel
+@{
+    ViewData["Title"]     = "Course Recommendations";
+    ViewData["PageTitle"] = "Recommended Courses — " + Model.PlannedSemesterName;
+    ViewData["ActivePage"] = "study_plan";
+}
+
+@* Final-Touches Phase 21 Stage 21.2 — course recommendation engine *@
+
+@if (!Model.IsConnected)
+{
+    <div class="alert alert-warning">API is not available.</div>
+    return;
+}
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        @Model.ErrorMessage <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@* Semester selector *@
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get">
+            <input type="hidden" name="studentProfileId" value="@Model.StudentProfileId" />
+            <div class="row g-2">
+                <div class="col-md-6">
+                    <input name="plannedSemesterName" class="form-control"
+                           value="@Model.PlannedSemesterName"
+                           placeholder="Semester name (e.g. Fall 2026)" />
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary w-100">Get Recommendations</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (Model.Recommendations.Any())
+{
+    <div class="alert alert-info">
+        Showing <strong>@Model.Recommendations.Count</strong> recommended courses
+        (@Model.RecommendedTotalCredits cr / max @Model.MaxCreditLoad cr)
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Code</th><th>Course</th><th>Credits</th><th>Type</th><th>Reason</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var r in Model.Recommendations)
+            {
+                <tr>
+                    <td>@r.CourseCode</td>
+                    <td>@r.CourseTitle</td>
+                    <td>@r.CreditHours</td>
+                    <td>@r.CourseType</td>
+                    <td><span class="badge bg-info text-dark">@r.Reason</span></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}
+else if (Model.IsConnected)
+{
+    <div class="alert alert-success">
+        All required courses have been planned or passed — no additional recommendations.
+    </div>
+}
+
+<a href="@Url.Action("StudyPlan", "Portal", new { studentProfileId = Model.StudentProfileId })"
+   class="btn btn-outline-secondary mt-2">← Back to Plans</a>

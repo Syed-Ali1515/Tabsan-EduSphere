@@ -1,0 +1,107 @@
+@model Tabsan.EduSphere.Web.Models.Portal.StudyPlanPageModel
+@{
+    ViewData["Title"]     = "Study Plans";
+    ViewData["PageTitle"] = "My Study Plans";
+    ViewData["ActivePage"] = "study_plan";
+}
+
+@* Final-Touches Phase 21 Stage 21.1 — study plan list page *@
+
+@if (!Model.IsConnected)
+{
+    <div class="alert alert-warning">API is not available.</div>
+    return;
+}
+
+@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        @Model.SuccessMessage <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        @Model.ErrorMessage <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card mb-4">
+    <div class="card-header"><strong>Create New Study Plan</strong></div>
+    <div class="card-body">
+        <form asp-action="CreateStudyPlan" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="studentProfileId" value="@Model.StudentProfileId" />
+            <div class="row g-2">
+                <div class="col-md-4">
+                    <input name="plannedSemesterName" class="form-control" placeholder="Semester (e.g. Fall 2026)" required />
+                </div>
+                <div class="col-md-6">
+                    <input name="notes" class="form-control" placeholder="Optional notes..." />
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">Create</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (!Model.Plans.Any())
+{
+    <div class="alert alert-info">No study plans yet. Create one above.</div>
+}
+else
+{
+    <div class="row g-3">
+    @foreach (var plan in Model.Plans)
+    {
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <strong>@plan.PlannedSemesterName</strong>
+                    @{
+                        var badgeClass = plan.AdvisorStatus switch
+                        {
+                            "Endorsed" => "bg-success",
+                            "Rejected" => "bg-danger",
+                            _          => "bg-secondary"
+                        };
+                    }
+                    <span class="badge @badgeClass">@plan.AdvisorStatus</span>
+                </div>
+                <div class="card-body">
+                    <p class="mb-1"><strong>Total Credits:</strong> @plan.TotalCreditHours</p>
+                    <p class="mb-1"><strong>Courses:</strong> @plan.Courses.Count</p>
+                    @if (!string.IsNullOrEmpty(plan.Notes))
+                    {
+                        <p class="text-muted small mb-1">@plan.Notes</p>
+                    }
+                    @if (!string.IsNullOrEmpty(plan.AdvisorNotes))
+                    {
+                        <p class="text-muted small mb-1"><strong>Advisor:</strong> @plan.AdvisorNotes</p>
+                    }
+                </div>
+                <div class="card-footer d-flex gap-2">
+                    <a href="@Url.Action("StudyPlanDetail", "Portal", new { planId = plan.Id })"
+                       class="btn btn-sm btn-outline-primary">View / Edit</a>
+                    <form asp-action="DeleteStudyPlan" method="post" class="d-inline"
+                          onsubmit="return confirm('Delete this plan?');">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="planId" value="@plan.Id" />
+                        <input type="hidden" name="studentProfileId" value="@Model.StudentProfileId" />
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+    </div>
+}
+
+<div class="mt-3">
+    <a href="@Url.Action("StudyPlanRecommendations", "Portal", new { studentProfileId = Model.StudentProfileId })"
+       class="btn btn-outline-secondary">
+        <i class="bi bi-lightbulb"></i> Get Course Recommendations
+    </a>
+</div>

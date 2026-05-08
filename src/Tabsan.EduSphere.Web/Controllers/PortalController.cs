@@ -3628,7 +3628,7 @@ public class PortalController : Controller
         try
         {
             var identity = _api.GetSessionIdentity();
-            bool isStudent = identity?.Role == "Student";
+            bool isStudent = identity?.IsStudent == true;
             var modules = await _api.GetLmsModulesAsync(offeringId, isStudent, ct);
             model.Modules = modules.Select(m => new LmsModuleItem
             {
@@ -3825,9 +3825,7 @@ public class PortalController : Controller
         {
             try
             {
-                var identity = _api.GetSessionIdentity();
-                var authorId = identity?.UserId ?? Guid.Empty;
-                await _api.CreateDiscussionThreadAsync(offeringId, authorId, title, ct);
+                await _api.CreateDiscussionThreadAsync(offeringId, Guid.Empty, title, ct);
                 TempData["SuccessMessage"] = "Thread created.";
             }
             catch (Exception ex) { TempData["ErrorMessage"] = ex.Message; }
@@ -3842,9 +3840,7 @@ public class PortalController : Controller
         {
             try
             {
-                var identity = _api.GetSessionIdentity();
-                var authorId = identity?.UserId ?? Guid.Empty;
-                await _api.AddDiscussionReplyAsync(threadId, authorId, body, ct);
+                await _api.AddDiscussionReplyAsync(threadId, Guid.Empty, body, ct);
                 TempData["SuccessMessage"] = "Reply posted.";
             }
             catch (Exception ex) { TempData["ErrorMessage"] = ex.Message; }
@@ -3907,9 +3903,7 @@ public class PortalController : Controller
         {
             try
             {
-                var identity = _api.GetSessionIdentity();
-                var authorId = identity?.UserId ?? Guid.Empty;
-                await _api.CreateAnnouncementAsync(offeringId, authorId, title, body, ct);
+                await _api.CreateAnnouncementAsync(offeringId, Guid.Empty, title, body, ct);
                 TempData["SuccessMessage"] = "Announcement posted.";
             }
             catch (Exception ex) { TempData["ErrorMessage"] = ex.Message; }
@@ -3927,4 +3921,178 @@ public class PortalController : Controller
         }
         return RedirectToAction(nameof(Announcements), new { offeringId });
     }
+
+    // ── Phase 21 Stage 21.1/21.2 — Study Planner ─────────────────────────────
+
+    [HttpGet]
+    public async Task<IActionResult> StudyPlan(Guid studentProfileId, CancellationToken ct)
+    {
+        ViewData["Title"] = "Study Plans";
+        var model = new StudyPlanPageModel { StudentProfileId = studentProfileId, IsConnected = _api.IsConnected() };
+        if (TempData["SuccessMessage"] is string s) model.SuccessMessage = s;
+        if (TempData["ErrorMessage"]   is string e) model.ErrorMessage   = e;
+        if (_api.IsConnected())
+        {
+            try
+            {
+                var plans = await _api.GetStudyPlansAsync(studentProfileId, ct);
+                model.Plans = plans.Select(p => MapStudyPlanItem(p)).ToList();
+            }
+            catch (Exception ex) { model.ErrorMessage = ex.Message; }
+        }
+        return View(model);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> StudyPlanDetail(Guid planId, CancellationToken ct)
+    {
+        ViewData["Title"] = "Study Plan Detail";
+        var model = new StudyPlanDetailPageModel { IsConnected = _api.IsConnected() };
+        if (TempData["SuccessMessage"] is string s) model.SuccessMessage = s;
+        if (TempData["ErrorMessage"]   is string e) model.ErrorMessage   = e;
+        if (_api.IsConnected())
+        {
+            try
+            {
+                var plan = await _api.GetStudyPlanAsync(planId, ct);
+                if (plan is null) return NotFound();
+                model.Plan = MapStudyPlanItem(plan);
+            }
+            catch (Exception ex) { model.ErrorMessage = ex.Message; }
+        }
+        return View(model);
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateStudyPlan(Guid studentProfileId, string plannedSemesterName, string? notes, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try
+            {
+                await _api.CreateStudyPlanAsync(studentProfileId, plannedSemesterName, notes, ct);
+                TempData["SuccessMessage"] = "Study plan created.";
+            }
+            catch (Exception ex) { TempData["ErrorMessage"] = ex.Message; }
+        }
+        return RedirectToAction(nameof(StudyPlan), new { studentProfileId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> AddStudyPlanCourse(Guid planId, Guid courseId, Guid studentProfileId, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try
+            {
+                await _api.AddStudyPlanCourseAsync(planId, courseId, ct);
+                TempData["SuccessMessage"] = "Course added to plan.";
+            }
+            catch (Exception ex) { TempData["ErrorMessage"] = ex.Message; }
+        }
+        return RedirectToAction(nameof(StudyPlanDetail), new { planId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> RemoveStudyPlanCourse(Guid planId, Guid courseId, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try
+            {
+                await _api.RemoveStudyPlanCourseAsync(planId, courseId, ct);
+                TempData["SuccessMessage"] = "Course removed from plan.";
+            }
+            catch (Exception ex) { TempData["ErrorMessage"] = ex.Message; }
+        }
+        return RedirectToAction(nameof(StudyPlanDetail), new { planId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteStudyPlan(Guid planId, Guid studentProfileId, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try
+            {
+                await _api.DeleteStudyPlanAsync(planId, ct);
+                TempData["SuccessMessage"] = "Study plan deleted.";
+            }
+            catch (Exception ex) { TempData["ErrorMessage"] = ex.Message; }
+        }
+        return RedirectToAction(nameof(StudyPlan), new { studentProfileId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> AdvisePlan(Guid planId, bool isEndorsed, string? advisorNotes, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try
+            {
+                await _api.AdvisePlanAsync(planId, isEndorsed, advisorNotes, ct);
+                TempData["SuccessMessage"] = isEndorsed ? "Plan endorsed." : "Plan rejected.";
+            }
+            catch (Exception ex) { TempData["ErrorMessage"] = ex.Message; }
+        }
+        return RedirectToAction(nameof(StudyPlanDetail), new { planId });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> StudyPlanRecommendations(Guid studentProfileId, string plannedSemesterName = "Next Semester", CancellationToken ct = default)
+    {
+        ViewData["Title"] = "Course Recommendations";
+        var model = new RecommendationsPageModel
+        {
+            StudentProfileId    = studentProfileId,
+            PlannedSemesterName = plannedSemesterName,
+            IsConnected         = _api.IsConnected()
+        };
+        if (_api.IsConnected())
+        {
+            try
+            {
+                var rec = await _api.GetStudyPlanRecommendationsAsync(studentProfileId, plannedSemesterName, ct);
+                if (rec is not null)
+                {
+                    model.MaxCreditLoad            = rec.MaxCreditLoad;
+                    model.RecommendedTotalCredits   = rec.RecommendedTotalCredits;
+                    model.Recommendations = rec.Recommendations.Select(r => new RecommendationItem
+                    {
+                        CourseId    = r.CourseId,
+                        CourseCode  = r.CourseCode,
+                        CourseTitle = r.CourseTitle,
+                        CreditHours = r.CreditHours,
+                        CourseType  = r.CourseType,
+                        Reason      = r.Reason
+                    }).ToList();
+                }
+            }
+            catch (Exception ex) { model.ErrorMessage = ex.Message; }
+        }
+        return View(model);
+    }
+
+    // ── Phase 21 helper ───────────────────────────────────────────────────────
+
+    private static StudyPlanItem MapStudyPlanItem(StudyPlanApiModel p) => new()
+    {
+        Id                  = p.Id,
+        StudentProfileId    = p.StudentProfileId,
+        PlannedSemesterName = p.PlannedSemesterName,
+        Notes               = p.Notes,
+        AdvisorStatus       = p.AdvisorStatus,
+        AdvisorNotes        = p.AdvisorNotes,
+        ReviewedByUserId    = p.ReviewedByUserId,
+        TotalCreditHours    = p.TotalCreditHours,
+        Courses             = p.Courses.Select(c => new StudyPlanCourseItem
+        {
+            CourseId    = c.CourseId,
+            CourseCode  = c.CourseCode,
+            CourseTitle = c.CourseTitle,
+            CreditHours = c.CreditHours,
+            CourseType  = c.CourseType
+        }).ToList(),
+        CreatedAt = p.CreatedAt
+    };
 }

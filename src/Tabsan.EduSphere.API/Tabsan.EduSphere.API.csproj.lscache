@@ -96,6 +96,7 @@ Controllers/
  SidebarMenuController.cs
  StudentController.cs
  StudentLifecycleController.cs
+ StudyPlanController.cs
  TeacherModificationController.cs
  ThemeController.cs
  TimetableController.cs

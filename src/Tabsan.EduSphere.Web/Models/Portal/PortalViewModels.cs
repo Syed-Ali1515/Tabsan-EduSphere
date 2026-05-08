@@ -1913,3 +1913,67 @@ public class AnnouncementsPageModel
     public string? ErrorMessage   { get; set; }
     public bool    IsConnected    { get; set; }
 }
+
+// ── Phase 21: Study Planner ─────────────────────────────────────────────────
+
+public class StudyPlanCourseItem
+{
+    public Guid   CourseId    { get; set; }
+    public string CourseCode  { get; set; } = string.Empty;
+    public string CourseTitle { get; set; } = string.Empty;
+    public int    CreditHours { get; set; }
+    public string CourseType  { get; set; } = string.Empty;
+}
+
+public class StudyPlanItem
+{
+    public Guid                    Id                  { get; set; }
+    public Guid                    StudentProfileId    { get; set; }
+    public string                  PlannedSemesterName { get; set; } = string.Empty;
+    public string?                 Notes               { get; set; }
+    public string                  AdvisorStatus       { get; set; } = string.Empty;
+    public string?                 AdvisorNotes        { get; set; }
+    public Guid?                   ReviewedByUserId    { get; set; }
+    public int                     TotalCreditHours    { get; set; }
+    public List<StudyPlanCourseItem> Courses           { get; set; } = new();
+    public DateTime                CreatedAt           { get; set; }
+}
+
+public class StudyPlanPageModel
+{
+    public Guid              StudentProfileId { get; set; }
+    public List<StudyPlanItem> Plans          { get; set; } = new();
+    public string?           SuccessMessage   { get; set; }
+    public string?           ErrorMessage     { get; set; }
+    public bool              IsConnected      { get; set; }
+}
+
+public class StudyPlanDetailPageModel
+{
+    public StudyPlanItem Plan           { get; set; } = new();
+    public string?       SuccessMessage { get; set; }
+    public string?       ErrorMessage   { get; set; }
+    public bool          IsConnected    { get; set; }
+}
+
+public class RecommendationItem
+{
+    public Guid   CourseId    { get; set; }
+    public string CourseCode  { get; set; } = string.Empty;
+    public string CourseTitle { get; set; } = string.Empty;
+    public int    CreditHours { get; set; }
+    public string CourseType  { get; set; } = string.Empty;
+    public string Reason      { get; set; } = string.Empty;
+}
+
+public class RecommendationsPageModel
+{
+    public Guid                   StudentProfileId      { get; set; }
+    public string                 PlannedSemesterName   { get; set; } = string.Empty;
+    public int                    MaxCreditLoad         { get; set; }
+    public int                    RecommendedTotalCredits { get; set; }
+    public List<RecommendationItem> Recommendations     { get; set; } = new();
+    public string?                SuccessMessage        { get; set; }
+    public string?                ErrorMessage          { get; set; }
+    public bool                   IsConnected           { get; set; }
+}

@@ -844,3 +844,23 @@ Phase 20 — (see Docs/Enhancements.md for full spec).
 - [x] ApplicationDbContext updated with 5 new DbSets; `_Layout.cshtml` sidebar entries added (`lms_manage`, `discussion`, `announcements`).
 - [x] EF Migration `Phase20_LMS` — tables `course_content_modules`, `content_videos`, `discussion_threads`, `discussion_replies`, `course_announcements`.
 - [x] 7/7 unit tests passing (build clean; only pre-existing nullability warnings).
+
+## Phase 21 — Study Planner ✅ Complete (2026-05-08)
+
+- [x] Stage 21.1: `StudyPlan` aggregate (AuditableEntity, `StudyPlanStatus` enum, `Endorse/Reject/ResetAdvisorStatus` methods); `StudyPlanCourse` child entity (BaseEntity, physical delete).
+- [x] `AcademicProgram.MaxCreditLoadPerSemester` property + `SetMaxCreditLoad()` method added.
+- [x] `IStudyPlanRepository` interface + `StudyPlanRepository` EF Core implementation.
+- [x] `StudyPlannerDTOs.cs` — 4 request + 4 response records.
+- [x] `IStudyPlanService` + `StudyPlanService`: CRUD; prerequisite validation (Phase 15); credit-load validation; `AdvisePlanAsync` (Faculty/Admin workflow).
+- [x] Stage 21.2: `GetRecommendationsAsync` — degree audit gap detection + eligible electives; prerequisite-gated; credit-load-capped; per-course `Reason`.
+- [x] `StudyPlanConfigurations.cs` — `StudyPlanConfiguration` + `StudyPlanCourseConfiguration`; `AcademicProgramConfiguration` updated for `MaxCreditLoadPerSemester`.
+- [x] `ApplicationDbContext` — `StudyPlans` + `StudyPlanCourses` DbSets added.
+- [x] `StudyPlanController` (`api/v1/study-plan`) — 9 endpoints.
+- [x] `API/Program.cs` Phase 21 DI block — 2 scoped registrations.
+- [x] `EduApiClient` — 9 new methods + 4 API response models.
+- [x] `PortalController` — 9 new actions + `MapStudyPlanItem` helper.
+- [x] `PortalViewModels.cs` — `StudyPlanCourseItem`, `StudyPlanItem`, `StudyPlanPageModel`, `StudyPlanDetailPageModel`, `RecommendationItem`, `RecommendationsPageModel`.
+- [x] Portal views: `StudyPlan.cshtml`, `StudyPlanDetail.cshtml`, `StudyPlanRecommendations.cshtml`.
+- [x] `_Layout.cshtml` sidebar: `study_plan` → `(Portal, StudyPlan)` (group: Student Related, weight 3).
+- [x] EF Migration `Phase21_StudyPlanner` applied — tables `study_plans`, `study_plan_courses`; `MaxCreditLoadPerSemester` column on `academic_programs`.
+- [x] 7/7 unit tests passing (build clean).

@@ -739,3 +739,33 @@ Enhancement phase tracked in `Docs/Enhancements.md`. Summary entry recorded here
 - Web portal: `GraduationApply`, `GraduationApplications`, `GraduationApplicationDetail` views + controller actions + EduApiClient methods.
 - Migration `Phase18_GraduationWorkflow` — adds `graduation_applications`, `graduation_application_approvals` tables.
 - Validation: 0 build errors; 78/78 tests passed.
+
+## Phase 19 — Course Type & Grading Config Refactor ✅ Complete (2026-05-08)
+
+Enhancement phase tracked in `Docs/Enhancements.md`. Summary entry recorded here for cross-reference.
+
+- Stage 19.1: `CourseType` enum (SemesterBased/ShortCourse), `HasSemesters` flag on Course; auto-semester generation; `CourseGradingConfig` per offering.
+- Stage 19.2: Smart filtering in result calculation — only `HasSemesters` courses show in semester result UI.
+- Migration `Phase19_CourseTypeGrading`. 0 build errors; unit tests passed.
+
+## Phase 20 — Learning Management System (LMS) ✅ Complete (2026-05-08, commit `ecf4d91`)
+
+Enhancement phase tracked in `Docs/Enhancements.md`. Summary entry recorded here for cross-reference.
+
+- Stage 20.1: `CourseContentModule` entity; faculty weekly module management; student view.
+- Stage 20.2: `ContentVideo` child entity per module; faculty attach/delete video references.
+- Stage 20.3: `DiscussionThread` + `DiscussionReply`; faculty pin/close/reopen; all participants create/reply.
+- Stage 20.4: `CourseAnnouncement`; fan-out notification on creation; `Announcements.cshtml` portal view.
+- EF config in `LmsConfigurations.cs`; migration `Phase20_LMS`.
+- Validation: 0 build errors; 7/7 unit tests passed.
+
+## Phase 21 — Study Planner ✅ Complete (2026-05-08)
+
+Enhancement phase tracked in `Docs/Enhancements.md`. Summary entry recorded here for cross-reference.
+
+- Stage 21.1: `StudyPlan` aggregate (`AdvisorStatus`, endorsement workflow); `StudyPlanCourse` child entity; `AcademicProgram.MaxCreditLoadPerSemester`.
+- Service validates prerequisites (Phase 15) + credit load; course picker restricted to `HasSemesters=true` (Phase 19).
+- EF config in `StudyPlanConfigurations.cs`; migration `Phase21_StudyPlanner`.
+- `StudyPlanController` (9 endpoints); portal views `StudyPlan.cshtml`, `StudyPlanDetail.cshtml`.
+- Stage 21.2: Recommendation engine — degree audit gaps + eligible electives, prerequisite-gated; `StudyPlanRecommendations.cshtml`.
+- Validation: 0 build errors; 7/7 unit tests passed.

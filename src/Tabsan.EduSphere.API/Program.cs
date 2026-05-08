@@ -239,6 +239,10 @@ builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.ILmsService, 
 builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IDiscussionService, Tabsan.EduSphere.Application.Lms.DiscussionService>();
 builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IAnnouncementService, Tabsan.EduSphere.Application.Lms.AnnouncementService>();
 
+// ── Phase 21: Study Planner ──────────────────────────────────────────────────
+builder.Services.AddScoped<Tabsan.EduSphere.Domain.Interfaces.IStudyPlanRepository, Tabsan.EduSphere.Infrastructure.Repositories.StudyPlanRepository>();
+builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IStudyPlanService, Tabsan.EduSphere.Application.StudyPlanner.StudyPlanService>();
+
 // ── Rate limiting (OWASP hardening) ─────────────────────────────────────
 builder.Services.AddRateLimiter(opts =>
 {

@@ -103,6 +103,8 @@ Migrations/
  20260508043559_Phase19_CourseTypeAndGrading.Designer.cs
  20260508050712_Phase20_LMS.cs
  20260508050712_Phase20_LMS.Designer.cs
+ 20260508054215_Phase21_StudyPlanner.cs
+ 20260508054215_Phase21_StudyPlanner.Designer.cs
  ApplicationDbContextModelSnapshot.cs
 Modules/ModuleEntitlementResolver.cs
 obj/Debug/net8.0/
@@ -135,6 +137,7 @@ Persistence/
   RoleConfiguration.cs
   RubricConfigurations.cs
   StudentAcademicConfigurations.cs
+  StudyPlanConfigurations.cs
   SupportTicketConfiguration.cs
   SupportTicketMessageConfiguration.cs
   TeacherModificationRequestConfiguration.cs
@@ -197,6 +200,7 @@ Repositories/
  SearchRepository.cs
  SettingsRepository.cs
  StudentLifecycleRepository.cs
+ StudyPlanRepository.cs
  TimetableRepository.cs
  UserRepository.cs
  UserSessionRepository.cs

@@ -529,3 +529,28 @@ A feature is complete only when:
 **Validation:** 0 build errors · 7/7 unit tests · migration applied · commit `ecf4d91` pushed
 
 ---
+
+### 2026-05-08 — Phase 21 Study Planner Complete
+
+**Changes:**
+- `Domain/StudyPlanner/StudyPlan.cs` — aggregate root; `StudyPlanStatus` enum; endorsement workflow methods.
+- `Domain/StudyPlanner/StudyPlanCourse.cs` — child entity (physical delete).
+- `AcademicProgram.MaxCreditLoadPerSemester` property + `SetMaxCreditLoad()` method.
+- `Domain/Interfaces/IStudyPlanRepository.cs` — 7 methods.
+- `Application/DTOs/StudyPlanner/StudyPlannerDTOs.cs` — 4 requests + 4 response records.
+- `Application/Interfaces/IStudyPlanService.cs` + `Application/StudyPlanner/StudyPlanService.cs` — CRUD + prerequisite/credit-load validation + recommendation engine.
+- `Infrastructure/Persistence/Configurations/StudyPlanConfigurations.cs` — `StudyPlanConfiguration` + `StudyPlanCourseConfiguration`.
+- `Infrastructure/Repositories/StudyPlanRepository.cs`.
+- `Infrastructure/Persistence/ApplicationDbContext.cs` — `StudyPlans` + `StudyPlanCourses` DbSets.
+- `API/Controllers/StudyPlanController.cs` — 9 endpoints.
+- `API/Program.cs` Phase 21 DI block: 2 scoped registrations.
+- `Web/Services/EduApiClient.cs` — 9 new methods + 4 API models.
+- `Web/Controllers/PortalController.cs` — 9 new actions + `MapStudyPlanItem` helper.
+- `Web/Models/Portal/PortalViewModels.cs` — 6 new view models.
+- `_Layout.cshtml` sidebar: `study_plan` → `(Portal, StudyPlan)` (group: Student Related).
+- Views: `StudyPlan.cshtml`, `StudyPlanDetail.cshtml`, `StudyPlanRecommendations.cshtml`.
+- Migration `Phase21_StudyPlanner` applied.
+
+**Validation:** 0 build errors · 7/7 unit tests · migration applied
+
+---

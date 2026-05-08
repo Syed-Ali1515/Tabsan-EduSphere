@@ -1026,3 +1026,29 @@ Delivers structured digital learning content, discussion forums, and course anno
 - **Validation:** 0 build errors · 7/7 unit tests · commit `ecf4d91`
 
 ---
+
+## Phase 21 — Study Planner ✅ Implemented (2026-05-08)
+
+### 21.A Overview
+Enables students to build tentative semester plans with prerequisite and credit-load validation. A recommendation engine surfaces eligible courses based on degree audit gaps and available electives. Faculty advisors can endorse or reject plans.
+
+### 21.B Functional Requirements
+
+#### Stage 21.1 — Semester Planning Tool
+- Students create `StudyPlan` entries per planned semester; add/remove `StudyPlanCourse` rows.
+- Course picker restricted to `HasSemesters=true` (Phase 19) and `IsActive=true` courses.
+- Service validates: all prerequisites passed in earned credits; total credit load ≤ `AcademicProgram.MaxCreditLoadPerSemester` (default 18).
+- Faculty advisors endorse or reject plans with optional notes; status is `Pending / Endorsed / Rejected`.
+
+#### Stage 21.2 — Course Recommendation Engine
+- Required degree-plan gaps and eligible electives surfaced, prerequisite-gated, credit-load-capped.
+- Per-course `Reason` string explains each recommendation.
+
+### 21.C Technical Implementation
+- **Domain:** `StudyPlan` (AuditableEntity, `StudyPlanStatus`, endorsement workflow), `StudyPlanCourse` (BaseEntity), `AcademicProgram.MaxCreditLoadPerSemester`.
+- **Persistence:** Tables `study_plans`, `study_plan_courses`; EF migration `Phase21_StudyPlanner`.
+- **API:** `StudyPlanController` (`api/v1/study-plan`) — 9 endpoints.
+- **Web:** `StudyPlan.cshtml`, `StudyPlanDetail.cshtml`, `StudyPlanRecommendations.cshtml`; sidebar `study_plan` (Student Related).
+- **Validation:** 0 build errors · 7/7 unit tests · migration applied
+
+---
