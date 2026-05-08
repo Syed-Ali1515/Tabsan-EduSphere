@@ -3439,4 +3439,131 @@ public class PortalController : Controller
         }
         catch (Exception ex) { return Json(new { success = false, message = ex.Message }); }
     }
+
+    // ── Phase 18: Graduation Workflow ─────────────────────────────────────────
+
+    // Final-Touches Phase 18 Stage 18.1 — student views own graduation applications + submit form
+    public async Task<IActionResult> GraduationApply(CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction("Connect", "Home");
+        var model = new GraduationApplyPageModel();
+        try
+        {
+            model.Applications = await _api.GetMyGraduationApplicationsAsync(ct) ?? new();
+            model.CanSubmitNew = model.Applications.All(a =>
+                a.Status == "Rejected" || a.Status == "Approved");
+
+            if (TempData["SuccessMessage"] is string s) model.SuccessMessage = s;
+            if (TempData["ErrorMessage"]   is string e) model.ErrorMessage   = e;
+        }
+        catch { model.ErrorMessage = "Could not load applications."; }
+        return View(model);
+    }
+
+    // Final-Touches Phase 18 Stage 18.1 — POST: student submits graduation application
+    [HttpPost]
+    public async Task<IActionResult> GraduationSubmit(string? studentNote, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction("Connect", "Home");
+        try
+        {
+            await _api.SubmitGraduationApplicationAsync(studentNote, ct);
+            TempData["SuccessMessage"] = "Application submitted successfully.";
+        }
+        catch (Exception ex) { TempData["ErrorMessage"] = ex.Message; }
+        return RedirectToAction(nameof(GraduationApply));
+    }
+
+    // Final-Touches Phase 18 Stage 18.1 — admin/faculty views application list
+    public async Task<IActionResult> GraduationApplications(string? status, Guid? departmentId, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction("Connect", "Home");
+        var model = new GraduationApplicationsPageModel
+        {
+            StatusFilter     = status,
+            DepartmentFilter = departmentId
+        };
+        try
+        {
+            model.Applications = await _api.GetGraduationApplicationsAsync(departmentId, status, ct) ?? new();
+            var depts = await _api.GetDepartmentsAsync(ct);
+            model.Departments = depts.Select(d => new LookupItem { Id = d.Id, Name = d.Name }).ToList();
+        }
+        catch { }
+        return View(model);
+    }
+
+    // Final-Touches Phase 18 Stage 18.1/18.2 — view application detail
+    public async Task<IActionResult> GraduationApplicationDetail(Guid id, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction("Connect", "Home");
+        var model = new GraduationApplicationDetailPageModel();
+        try
+        {
+            model.Application  = await _api.GetGraduationApplicationDetailAsync(id, ct);
+            if (TempData["SuccessMessage"] is string s) model.SuccessMessage = s;
+            if (TempData["ErrorMessage"]   is string e) model.ErrorMessage   = e;
+        }
+        catch (Exception ex) { model.ErrorMessage = ex.Message; }
+        return View(model);
+    }
+
+    // Final-Touches Phase 18 Stage 18.1 — POST: approve or reject at the right stage
+    [HttpPost]
+    public async Task<IActionResult> GraduationApprove(Guid id, string action, string? note, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction("Connect", "Home");
+        bool isApproved = action == "approve";
+        var roleClaim = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "";
+        try
+        {
+            if (roleClaim == "Faculty")
+                await _api.FacultyApproveApplicationAsync(id, isApproved, note, ct);
+            else if (roleClaim == "SuperAdmin" && isApproved)
+                await _api.FinalApproveApplicationAsync(id, isApproved, note, ct);
+            else
+                await _api.AdminApproveApplicationAsync(id, isApproved, note, ct);
+
+            TempData["SuccessMessage"] = isApproved ? "Application approved." : "Application rejected.";
+        }
+        catch (Exception ex) { TempData["ErrorMessage"] = ex.Message; }
+        return RedirectToAction(nameof(GraduationApplicationDetail), new { id });
+    }
+
+    // Final-Touches Phase 18 Stage 18.1 — POST: explicit reject
+    [HttpPost]
+    public async Task<IActionResult> GraduationReject(Guid id, string? reason, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction("Connect", "Home");
+        try
+        {
+            await _api.RejectApplicationAsync(id, reason, ct);
+            TempData["SuccessMessage"] = "Application rejected.";
+        }
+        catch (Exception ex) { TempData["ErrorMessage"] = ex.Message; }
+        return RedirectToAction(nameof(GraduationApplicationDetail), new { id });
+    }
+
+    // Final-Touches Phase 18 Stage 18.2 — download certificate
+    public async Task<IActionResult> GraduationCertificateDownload(Guid id, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction("Connect", "Home");
+        var bytes = await _api.DownloadCertificateAsync(id, ct);
+        if (bytes is null) return NotFound("Certificate not found.");
+        return File(bytes, "application/pdf", $"certificate_{id}.pdf");
+    }
+
+    // Final-Touches Phase 18 Stage 18.2 — POST: regenerate certificate (admin)
+    [HttpPost]
+    public async Task<IActionResult> GraduationRegenerateCertificate(Guid id, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction("Connect", "Home");
+        try
+        {
+            await _api.RegenerateCertificateAsync(id, ct);
+            TempData["SuccessMessage"] = "Certificate regenerated.";
+        }
+        catch (Exception ex) { TempData["ErrorMessage"] = ex.Message; }
+        return RedirectToAction(nameof(GraduationApplicationDetail), new { id });
+    }
 }

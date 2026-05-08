@@ -3476,3 +3476,62 @@ New themes added to site.css and ThemeSettingsPageModel: `neon_mint`, `sakura_pi
 | `DegreeAudit.cshtml` | View (new) | Student audit view with credit breakdown, completed courses table, eligibility badge. | Web/Views/Portal/DegreeAudit.cshtml |
 | `GraduationEligibility.cshtml` | View (new) | Eligibility list with View Audit links. | Web/Views/Portal/GraduationEligibility.cshtml |
 | `DegreeRules.cshtml` | View (new) | SuperAdmin rule management with create form. | Web/Views/Portal/DegreeRules.cshtml |
+
+## Final-Touches Phase 18 — Graduation Workflow
+
+### Domain — Entities (Phase 18)
+| Entity/Type | Purpose |
+|---|---|
+| `GraduationApplication` | Core entity — tracks student application with multi-stage status and certificate path |
+| `GraduationApplicationApproval` | Approval record per stage (Faculty/Admin/SuperAdmin) |
+| `GraduationApplicationStatus` enum | Draft, PendingFaculty, PendingAdmin, PendingFinalApproval, Approved, Rejected |
+
+### Domain Interfaces (Phase 18)
+| Interface | Method Count |
+|---|---|
+| `IGraduationRepository` | 13 methods (CRUD + student/faculty/admin lookup helpers) |
+
+### Application (Phase 18)
+| Function/Type | Purpose |
+|---|---|
+| `ICertificateGenerator.GeneratePdfAsync` | Abstraction keeping QuestPDF out of Application layer |
+| `GraduationService.SubmitApplicationAsync` | Student submits; guards duplicate active applications |
+| `GraduationService.FacultyApproveAsync` | Faculty approve/reject + notifies student |
+| `GraduationService.AdminApproveAsync` | Admin approve/reject |
+| `GraduationService.FinalApproveAsync` | SuperAdmin final approve → auto-generates PDF cert + marks student Graduated |
+| `GraduationService.RejectAsync` | Any approver rejects + notifies student |
+| `GraduationService.GenerateCertificateAsync` | Reads portal setting headline, generates QuestPDF, writes to wwwroot/certificates/ |
+| `GraduationService.DownloadCertificateAsync` | Returns certificate bytes with ownership validation |
+| Phase 18 DTOs (5 types) | `SubmitGraduationApplicationRequest`, `GraduationApprovalRequest`, `GraduationApplicationSummary`, `GraduationApplicationDetail`, `ApprovalHistoryItem` |
+
+### Infrastructure (Phase 18)
+| Component | Purpose |
+|---|---|
+| `CertificateGenerator` | QuestPDF A4 Landscape PDF with student name, reg. number, program, date |
+| `GraduationRepository` | EF Core implementation with Include chains for approvals |
+| `GraduationApplicationConfiguration` | EF config — `graduation_applications` table + soft-delete global filter |
+| `GraduationApplicationApprovalConfiguration` | EF config — `graduation_application_approvals` table |
+
+### API — Controller (Phase 18)
+| Endpoint | Role | Purpose |
+|---|---|---|
+| `GET /api/v1/graduation/my` | Student | Student's own applications |
+| `GET /api/v1/graduation` | Admin/SuperAdmin | All applications with optional filters |
+| `GET /api/v1/graduation/{id}` | Any auth | Application detail |
+| `POST /api/v1/graduation/submit` | Student | Submit application |
+| `POST /api/v1/graduation/{id}/faculty-approve` | Faculty | Faculty approve/reject |
+| `POST /api/v1/graduation/{id}/admin-approve` | Admin/SuperAdmin | Admin approve/reject |
+| `POST /api/v1/graduation/{id}/final-approve` | SuperAdmin | Final approval + cert generation |
+| `POST /api/v1/graduation/{id}/reject` | Faculty/Admin/SuperAdmin | Reject |
+| `GET /api/v1/graduation/{id}/certificate` | Student/Admin/SuperAdmin | Download certificate PDF |
+| `POST /api/v1/graduation/{id}/regenerate-certificate` | Admin/SuperAdmin | Regenerate certificate |
+
+### Web — EduApiClient + PortalController + Views (Phase 18)
+| Component | Type | Details |
+|---|---|---|
+| Phase 18 interface + impl methods (10 methods) | Methods (new) | `GetMyGraduationApplicationsAsync`, `GetGraduationApplicationDetailAsync`, `GetGraduationApplicationsAsync`, `SubmitGraduationApplicationAsync`, `FacultyApproveApplicationAsync`, `AdminApproveApplicationAsync`, `FinalApproveApplicationAsync`, `RejectApplicationAsync`, `DownloadCertificateAsync`, `RegenerateCertificateAsync` |
+| Phase 18 web models (6 classes) | Classes (new) | `GraduationApplicationWebModel`, `ApprovalHistoryWebItem`, `GraduationApplicationDetailWebModel`, `GraduationApplyPageModel`, `GraduationApplicationsPageModel`, `GraduationApplicationDetailPageModel` |
+| Phase 18 portal actions (8) | Actions (new) | `GraduationApply`, `GraduationSubmit`, `GraduationApplications`, `GraduationApplicationDetail`, `GraduationApprove`, `GraduationReject`, `GraduationCertificateDownload`, `GraduationRegenerateCertificate` |
+| `GraduationApply.cshtml` | View (new) | Student apply/status page with existing applications table and submit form |
+| `GraduationApplications.cshtml` | View (new) | Staff application list with status/department filters |
+| `GraduationApplicationDetail.cshtml` | View (new) | Full detail with approval history timeline, certificate download, approve/reject actions |

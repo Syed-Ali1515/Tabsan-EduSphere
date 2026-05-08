@@ -159,86 +159,22 @@
 
 ---
 
-## Phase 19 — Learning Management System (LMS)
-**Complexity:** High | **Dependencies:** `CourseOffering`, `Enrollment`, Notification system (all exist)
+## Phase 19 — Advanced Course Creation & Result Configuration
+**Complexity:** Medium–High | **Dependencies:** `Course`, `AcademicProgram`, `Semester`, `Result`, `ResultComponentRule` (all exist); graduation trigger introduced in Phase 18
 
-> **Partial foundation for Stage 19.4:** `NotificationType.Announcement = 6` already exists in the notification enum. The announcement entity and dedicated portal page are new.
+> **Objective:** Extend the course creation flow and result calculation system to natively distinguish semester-based degree programs from short-duration non-semester courses. Introduce auto-semester generation, per-course grading configuration, and smart course filtering in the result calculation interface. This phase stabilises the `Course` entity before the LMS (Phase 20) and Study Planner (Phase 21) build on top of it.
 
-### Stage 19.1 — Structured Course Content
-- New `CourseContentModule` entity: `OfferingId`, `Title`, `WeekNumber`, `Body` (rich text), `IsPublished`, ordering.
-- Faculty create and order weekly module units per offering; publish/unpublish individually.
-- Students enrolled in the offering can access published modules in order from the portal.
-- SuperAdmin and Admin can enable/disable the LMS feature per portal instance via Module Settings.
-
-### Stage 19.2 — Video-Based Teaching
-- Faculty can attach video references (upload or embed URL) to a `CourseContentModule`.
-- New `ContentVideo` entity: `ModuleId`, `Title`, `StorageUrl` or `EmbedUrl`, `DurationSeconds`.
-- Student portal shows video player (upload) or embedded iframe (URL) within the module view.
-- Storage limits and allowed formats are configurable by SuperAdmin in Portal Settings.
-
-### Stage 19.3 — Discussion Forums
-- New `DiscussionThread` entity per `CourseOffering`: `Title`, `AuthorId`, `IsPinned`, `IsClosed`.
-- New `DiscussionReply` child entity: `ThreadId`, `AuthorId`, `Body`, `CreatedAt`.
-- Faculty can pin, close, and delete threads; Students can create threads and reply.
-- Notification dispatched to all participants in a thread when a new reply is posted.
-
-### Stage 19.4 — Course Announcements
-- Faculty can post course-level announcements (distinct from discussion threads) visible to all enrolled students.
-- New `CourseAnnouncement` entity: `OfferingId`, `AuthorId`, `Title`, `Body`, `PostedAt`.
-- Announcement triggers an in-app notification (uses existing `NotificationType.Announcement = 6`) to all enrolled students.
-- Admin can post department-wide announcements targeting all students and faculty in their assigned departments.
-
----
-
-## Phase 20 — Study Planner
-**Complexity:** Medium | **Dependencies:** Phase 17 (Degree Audit for prerequisite/credit validation)
-
-### Stage 20.1 — Semester Planning Tool
-- Students can build a tentative plan for future semesters by selecting available courses.
-- New `StudyPlan` entity: `StudentProfileId`, `PlannedSemesterName`; child `StudyPlanCourse` rows.
-- Planner validates prerequisites (Phase 15) and credit-load limits before saving.
-- Saved plans are visible to the student's assigned Faculty advisor.
-
-### Stage 20.2 — Course Recommendation Engine
-- System recommends courses for the next semester based on completed credits, degree audit gaps (Phase 17), and available offerings.
-- Faculty advisors can endorse or modify recommendations before they surface to the student.
-- SuperAdmin configures recommendation rules and credit-load weightings per `AcademicProgram`.
-
----
-
-## Phase 21 — External Integrations
-**Complexity:** High | **Dependencies:** None (configurable by SuperAdmin)
-
-> **Partial foundation for Stage 21.2:** The Report Center already exports CSV/PDF for operational reports. Accreditation-specific templates and regulatory format handling are new.
-
-### Stage 21.1 — Library System Integration
-- SuperAdmin configures an external library catalogue URL and optional auth token in Portal Settings.
-- Portal embeds or links the library catalogue within a dedicated Library portal page.
-- Loan status and due dates are surfaced on the student dashboard via a configurable library API endpoint.
-
-### Stage 21.2 — Government / Accreditation Reporting
-- SuperAdmin can define named accreditation report templates (enrollment counts, completion rates, demographic summaries) with configurable field mappings.
-- Reports are generated on-demand as CSV or PDF in the required regulatory format.
-- All accreditation export events are written to the audit log with user, timestamp, and template name.
-
----
-
-## Phase 22 — Advanced Course Creation & Result Configuration
-**Complexity:** Medium–High | **Dependencies:** `Course`, `AcademicProgram`, `Semester`, `Result`, `ResultComponentRule` (all exist)
-
-> **Objective:** Extend the course creation flow and result calculation system to natively distinguish semester-based degree programs from short-duration non-semester courses. Introduce auto-semester generation, per-course grading configuration, and smart course filtering in the result calculation interface.
-
-### Stage 22.1 — Semester-Based Course Type Flag & Auto-Semester Generation
+### Stage 19.1 — Semester-Based Course Type Flag & Auto-Semester Generation
 - Add `HasSemesters` (`bool`, default `true`) and `TotalSemesters` (`int?`) columns to the `courses` table via EF migration.
 - Course creation form gains a **"This course has semesters"** checkbox.
   - When checked (semester-based): show a **Number of Semesters** input (e.g. 2, 4, 6, 8).
-  - When unchecked (non-semester): hide semester count and show Stage 22.2 fields instead.
+  - When unchecked (non-semester): hide semester count and show Stage 19.2 fields instead.
 - On save of a semester-based course, the system automatically creates `TotalSemesters` `Semester` rows (Semester 1 … Semester N) linked to the course's `AcademicProgram`.
 - New `CourseService.AutoCreateSemestersAsync(courseId, count)` orchestrates the batch creation.
-- After all semester results are published and passing, the existing graduation trigger (`StudentLifecycleController.GraduateStudent`) is invoked automatically — no manual step required.
-- **Files:** `Course.cs` (domain), `AcademicConfigurations.cs` (EF config), migration `Phase22_CourseTypeAndGrading`, `ICourseService.cs` / `CourseService.cs`, `CourseController.cs`, `Courses.cshtml` (portal), `PortalViewModels.cs`, `EduApiClient.cs`
+- After all semester results are published and passing, the Phase 18 graduation trigger (`StudentLifecycleController.GraduateStudent`) is invoked automatically — no manual step required.
+- **Files:** `Course.cs` (domain), `AcademicConfigurations.cs` (EF config), migration `Phase19_CourseTypeAndGrading`, `ICourseService.cs` / `CourseService.cs`, `CourseController.cs`, `Courses.cshtml` (portal), `PortalViewModels.cs`, `EduApiClient.cs`
 
-### Stage 22.2 — Non-Semester (Short-Duration) Course Support
+### Stage 19.2 — Non-Semester (Short-Duration) Course Support
 - When `HasSemesters = false`, course creation shows:
   - **Duration** numeric input (e.g. `6`).
   - **Duration Unit** dropdown (`Weeks` / `Months` / `Years`).
@@ -246,9 +182,9 @@
 - No `Semester` rows are created for non-semester courses.
 - Non-semester courses are treated as a single-block program throughout the system (enrollment, attendance, result calculation).
 - Course creation form also exposes a **Grading Type** dropdown (values: `GPA`, `Percentage`, `Grade`) stored as `GradingType` (`nvarchar(20)`) on the `courses` table.
-- **Files:** same as Stage 22.1 (same migration, same service/controller/view)
+- **Files:** same as Stage 19.1 (same migration, same service/controller/view)
 
-### Stage 22.3 — Result Calculation Dual Dropdown & Course Search
+### Stage 19.3 — Result Calculation Dual Dropdown & Course Search
 - Result calculation page (Admin/Faculty) gains a **two-level course filter**:
   1. **Course Type dropdown** — `Semester-Based` / `Non-Semester-Based`.
   2. **Course dropdown** — dynamically populated to show only courses matching the selected type; uses `HasSemesters` flag.
@@ -257,17 +193,83 @@
 - New API query parameter: `GET /api/v1/course?hasSemesters={true|false}` on the existing `CourseController.GetAll` to support the filtered dropdown.
 - **Files:** `CourseController.cs` (filter param), `Results.cshtml` / result portal page, `PortalController.cs`, `EduApiClient.cs`
 
-### Stage 22.4 — Per-Course Grading Configuration (SuperAdmin)
+### Stage 19.4 — Per-Course Grading Configuration (SuperAdmin)
 - SuperAdmin can define a **grading configuration** per course (not global):
   - **Pass threshold** — minimum mark or GPA to pass.
   - **Grade ranges** — mapping of mark ranges to letter grades (e.g. 90–100 → A+, 80–89 → A, …).
   - **Evaluation method** — which component rules (assignments/quizzes/exams) contribute and at what weightage (leverages existing `ResultComponentRule`).
-- New `CourseGradingConfig` entity: `CourseId` (unique), `PassThreshold` (`decimal`), `GradingType` (from Stage 22.2), `GradeRangesJson` (`nvarchar(max)` — serialised range list).
+- New `CourseGradingConfig` entity: `CourseId` (unique), `PassThreshold` (`decimal`), `GradingType` (from Stage 19.2), `GradeRangesJson` (`nvarchar(max)` — serialised range list).
 - New `ICourseGradingRepository` + `CourseGradingRepository` and `ICourseGradingService` + `CourseGradingService`.
 - New `GradingConfigController` with endpoints: `GET /api/v1/grading-config/{courseId}`, `PUT /api/v1/grading-config/{courseId}` (SuperAdmin only).
 - Portal page **GradingConfig.cshtml** (SuperAdmin only): grade-range builder UI (add/remove rows with mark-from, mark-to, grade label), pass-threshold input.
 - Grade ranges are applied by `ResultCalculationService` when publishing results for a course.
-- **Files:** `CourseGradingConfig.cs` (domain), `AcademicConfigurations.cs`, migration `Phase22_CourseTypeAndGrading`, `ICourseGradingRepository.cs`, `CourseGradingRepository.cs`, `ICourseGradingService.cs`, `CourseGradingService.cs`, `GradingConfigController.cs`, `GradingConfigDTOs.cs`, `GradingConfig.cshtml`, `PortalViewModels.cs`, `EduApiClient.cs`, `PortalController.cs`, `_Layout.cshtml` (sidebar link)
+- **Files:** `CourseGradingConfig.cs` (domain), `AcademicConfigurations.cs`, migration `Phase19_CourseTypeAndGrading`, `ICourseGradingRepository.cs`, `CourseGradingRepository.cs`, `ICourseGradingService.cs`, `CourseGradingService.cs`, `GradingConfigController.cs`, `GradingConfigDTOs.cs`, `GradingConfig.cshtml`, `PortalViewModels.cs`, `EduApiClient.cs`, `PortalController.cs`, `_Layout.cshtml` (sidebar link)
+
+---
+
+## Phase 20 — Learning Management System (LMS)
+**Complexity:** High | **Dependencies:** `CourseOffering`, `Enrollment`, Notification system (all exist); benefits from stable `Course` structure introduced in Phase 19
+
+> **Partial foundation for Stage 20.4:** `NotificationType.Announcement = 6` already exists in the notification enum. The announcement entity and dedicated portal page are new.
+
+### Stage 20.1 — Structured Course Content
+- New `CourseContentModule` entity: `OfferingId`, `Title`, `WeekNumber`, `Body` (rich text), `IsPublished`, ordering.
+- Faculty create and order weekly module units per offering; publish/unpublish individually.
+- Students enrolled in the offering can access published modules in order from the portal.
+- SuperAdmin and Admin can enable/disable the LMS feature per portal instance via Module Settings.
+
+### Stage 20.2 — Video-Based Teaching
+- Faculty can attach video references (upload or embed URL) to a `CourseContentModule`.
+- New `ContentVideo` entity: `ModuleId`, `Title`, `StorageUrl` or `EmbedUrl`, `DurationSeconds`.
+- Student portal shows video player (upload) or embedded iframe (URL) within the module view.
+- Storage limits and allowed formats are configurable by SuperAdmin in Portal Settings.
+
+### Stage 20.3 — Discussion Forums
+- New `DiscussionThread` entity per `CourseOffering`: `Title`, `AuthorId`, `IsPinned`, `IsClosed`.
+- New `DiscussionReply` child entity: `ThreadId`, `AuthorId`, `Body`, `CreatedAt`.
+- Faculty can pin, close, and delete threads; Students can create threads and reply.
+- Notification dispatched to all participants in a thread when a new reply is posted.
+
+### Stage 20.4 — Course Announcements
+- Faculty can post course-level announcements (distinct from discussion threads) visible to all enrolled students.
+- New `CourseAnnouncement` entity: `OfferingId`, `AuthorId`, `Title`, `Body`, `PostedAt`.
+- Announcement triggers an in-app notification (uses existing `NotificationType.Announcement = 6`) to all enrolled students.
+- Admin can post department-wide announcements targeting all students and faculty in their assigned departments.
+
+---
+
+## Phase 21 — Study Planner
+**Complexity:** Medium | **Dependencies:** Phase 17 ✅ (Degree Audit), Phase 15 ✅ (Prerequisites); benefits from `HasSemesters` flag introduced in Phase 19
+
+### Stage 21.1 — Semester Planning Tool
+- Students can build a tentative plan for future semesters by selecting available courses.
+- New `StudyPlan` entity: `StudentProfileId`, `PlannedSemesterName`; child `StudyPlanCourse` rows.
+- Planner validates prerequisites (Phase 15) and credit-load limits before saving.
+- Course picker respects `HasSemesters` (Phase 19) — only semester-based courses appear in semester planning.
+- Saved plans are visible to the student's assigned Faculty advisor.
+
+### Stage 21.2 — Course Recommendation Engine
+- System recommends courses for the next semester based on completed credits, degree audit gaps (Phase 17), and available offerings.
+- Recommendations filter by `HasSemesters` (Phase 19) so non-semester short courses are excluded from semester-based recommendations.
+- Faculty advisors can endorse or modify recommendations before they surface to the student.
+- SuperAdmin configures recommendation rules and credit-load weightings per `AcademicProgram`.
+
+---
+
+## Phase 22 — External Integrations
+**Complexity:** High | **Dependencies:** None (configurable by SuperAdmin); fully standalone phase
+
+> **Partial foundation for Stage 22.2:** The Report Center already exports CSV/PDF for operational reports. Accreditation-specific templates and regulatory format handling are new.
+
+### Stage 22.1 — Library System Integration
+- SuperAdmin configures an external library catalogue URL and optional auth token in Portal Settings.
+- Portal embeds or links the library catalogue within a dedicated Library portal page.
+- Loan status and due dates are surfaced on the student dashboard via a configurable library API endpoint.
+
+### Stage 22.2 — Government / Accreditation Reporting
+- SuperAdmin can define named accreditation report templates (enrollment counts, completion rates, demographic summaries) with configurable field mappings.
+- Reports are generated on-demand as CSV or PDF in the required regulatory format.
+- All accreditation export events are written to the audit log with user, timestamp, and template name.
 
 ---
 
@@ -275,14 +277,14 @@
 
 | Phase | Feature | Complexity | Status |
 |---|---|---|---|
-| 12 | Academic Calendar (timelines + deadlines) | Low–Medium | Planned |
-| 13 | Global Search | Low | Planned |
-| 14 | Helpdesk / Support Ticketing | Low–Medium | Planned |
-| 15 | Enrollment Rules Engine | Medium | Planned (Stage 15.3 ✅ done) |
-| 16 | Faculty Grading System (gradebook, rubrics, bulk CSV) | Medium | Planned |
-| 17 | Degree Audit System | Medium | Planned (partial foundation) |
+| 12 | Academic Calendar (timelines + deadlines) | Low–Medium | ✅ Implemented |
+| 13 | Global Search | Low | ✅ Implemented |
+| 14 | Helpdesk / Support Ticketing | Low–Medium | ✅ Implemented |
+| 15 | Enrollment Rules Engine | Medium | ✅ Implemented |
+| 16 | Faculty Grading System (gradebook, rubrics, bulk CSV) | Medium | ✅ Implemented |
+| 17 | Degree Audit System | Medium | ✅ Implemented |
 | 18 | Graduation Workflow (application + certificate) | Medium | Planned (partial foundation) |
-| 19 | Learning Management System | High | Planned (Stage 19.4 partial) |
-| 20 | Study Planner | Medium | Planned |
-| 21 | External Integrations | High | Planned (Stage 21.2 partial) |
-| 22 | Advanced Course Creation & Result Configuration | Medium–High | Planned |
+| 19 | Advanced Course Creation & Result Configuration | Medium–High | Planned |
+| 20 | Learning Management System | High | Planned (Stage 20.4 partial) |
+| 21 | Study Planner | Medium | Planned |
+| 22 | External Integrations | High | Planned (Stage 22.2 partial) |

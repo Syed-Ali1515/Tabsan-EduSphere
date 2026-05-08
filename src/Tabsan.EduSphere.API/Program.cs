@@ -221,6 +221,11 @@ builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IRubricServic
 builder.Services.AddScoped<Tabsan.EduSphere.Domain.Interfaces.IDegreeAuditRepository, Tabsan.EduSphere.Infrastructure.Repositories.DegreeAuditRepository>();
 builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IDegreeAuditService, Tabsan.EduSphere.Application.Academic.DegreeAuditService>();
 
+// ── Phase 18: Graduation Workflow ──────────────────────────────────────────
+builder.Services.AddScoped<Tabsan.EduSphere.Domain.Interfaces.IGraduationRepository, Tabsan.EduSphere.Infrastructure.Repositories.GraduationRepository>();
+builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.ICertificateGenerator, Tabsan.EduSphere.Infrastructure.Services.CertificateGenerator>();
+builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IGraduationService, Tabsan.EduSphere.Application.Academic.GraduationService>();
+
 // ── Rate limiting (OWASP hardening) ─────────────────────────────────────
 builder.Services.AddRateLimiter(opts =>
 {

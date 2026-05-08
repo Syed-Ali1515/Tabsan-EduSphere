@@ -283,6 +283,28 @@ public interface IEduApiClient
     Task DeleteDegreeRuleAsync(Guid ruleId, CancellationToken ct);
     // Final-Touches Phase 17 Stage 17.3 — course type tagging
     Task SetCourseTypeAsync(Guid courseId, string courseType, CancellationToken ct);
+
+    // Phase 18: Graduation Workflow
+    // Final-Touches Phase 18 Stage 18.1 — student own applications
+    Task<List<GraduationApplicationWebModel>?> GetMyGraduationApplicationsAsync(CancellationToken ct);
+    // Final-Touches Phase 18 Stage 18.1 — application detail
+    Task<GraduationApplicationDetailWebModel?> GetGraduationApplicationDetailAsync(Guid applicationId, CancellationToken ct);
+    // Final-Touches Phase 18 Stage 18.1 — admin/superadmin list
+    Task<List<GraduationApplicationWebModel>?> GetGraduationApplicationsAsync(Guid? departmentId, string? status, CancellationToken ct);
+    // Final-Touches Phase 18 Stage 18.1 — student submit
+    Task<GraduationApplicationWebModel?> SubmitGraduationApplicationAsync(string? studentNote, CancellationToken ct);
+    // Final-Touches Phase 18 Stage 18.1 — faculty approve/reject
+    Task<GraduationApplicationWebModel?> FacultyApproveApplicationAsync(Guid applicationId, bool isApproved, string? note, CancellationToken ct);
+    // Final-Touches Phase 18 Stage 18.1 — admin approve/reject
+    Task<GraduationApplicationWebModel?> AdminApproveApplicationAsync(Guid applicationId, bool isApproved, string? note, CancellationToken ct);
+    // Final-Touches Phase 18 Stage 18.1 — superadmin final approve/reject
+    Task<GraduationApplicationWebModel?> FinalApproveApplicationAsync(Guid applicationId, bool isApproved, string? note, CancellationToken ct);
+    // Final-Touches Phase 18 Stage 18.1 — reject at caller's stage
+    Task<GraduationApplicationWebModel?> RejectApplicationAsync(Guid applicationId, string? reason, CancellationToken ct);
+    // Final-Touches Phase 18 Stage 18.2 — download certificate bytes
+    Task<byte[]?> DownloadCertificateAsync(Guid applicationId, CancellationToken ct);
+    // Final-Touches Phase 18 Stage 18.2 — regenerate certificate
+    Task<string?> RegenerateCertificateAsync(Guid applicationId, CancellationToken ct);
 }
 
 public class EduApiClient : IEduApiClient
@@ -507,6 +529,120 @@ public class EduApiClient : IEduApiClient
 
     // â”€â”€ HTTP helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
+
+    // Phase 18: Graduation Workflow
+
+    public async Task<System.Collections.Generic.List<GraduationApplicationWebModel>?> GetMyGraduationApplicationsAsync(CancellationToken ct)
+    {
+        var raw = await GetAsync<System.Collections.Generic.List<GraduationApplicationApiDto>>("api/v1/graduation/my", ct);
+        return raw?.Select(MapGradApp).ToList();
+    }
+
+    public async Task<GraduationApplicationDetailWebModel?> GetGraduationApplicationDetailAsync(Guid applicationId, CancellationToken ct)
+    {
+        var raw = await GetAsync<GraduationApplicationDetailApiDto>($"api/v1/graduation/{applicationId}", ct);
+        if (raw is null) return null;
+        return new GraduationApplicationDetailWebModel
+        {
+            Id = raw.Id, StudentProfileId = raw.StudentProfileId,
+            StudentName = raw.StudentName ?? "", RegistrationNumber = raw.RegistrationNumber ?? "",
+            ProgramName = raw.ProgramName ?? "", Status = raw.Status ?? "",
+            StudentNote = raw.StudentNote, SubmittedAt = raw.SubmittedAt, UpdatedAt = raw.UpdatedAt,
+            HasCertificate = raw.HasCertificate, CertificatePath = raw.CertificatePath,
+            ApprovalHistory = raw.ApprovalHistory?.Select(a => new ApprovalHistoryWebItem
+            { Stage = a.Stage ?? "", ApproverName = a.ApproverName ?? "", IsApproved = a.IsApproved, Note = a.Note, ActedAt = a.ActedAt }).ToList() ?? new()
+        };
+    }
+
+    public async Task<System.Collections.Generic.List<GraduationApplicationWebModel>?> GetGraduationApplicationsAsync(Guid? departmentId, string? status, CancellationToken ct)
+    {
+        var query = "api/v1/graduation";
+        var parts = new System.Collections.Generic.List<string>();
+        if (departmentId.HasValue) parts.Add($"departmentId={departmentId}");
+        if (!string.IsNullOrEmpty(status)) parts.Add($"status={status}");
+        if (parts.Count > 0) query += "?" + string.Join("&", parts);
+        var raw = await GetAsync<System.Collections.Generic.List<GraduationApplicationApiDto>>(query, ct);
+        return raw?.Select(MapGradApp).ToList();
+    }
+
+    public async Task<GraduationApplicationWebModel?> SubmitGraduationApplicationAsync(string? studentNote, CancellationToken ct)
+    {
+        var payload = new { StudentNote = studentNote };
+        var raw = await PostAsync<object, GraduationApplicationApiDto>("api/v1/graduation/submit", payload, ct);
+        return raw is null ? null : MapGradApp(raw);
+    }
+
+    public async Task<GraduationApplicationWebModel?> FacultyApproveApplicationAsync(Guid applicationId, bool isApproved, string? note, CancellationToken ct)
+    {
+        var payload = new { IsApproved = isApproved, Note = note };
+        var raw = await PostAsync<object, GraduationApplicationApiDto>($"api/v1/graduation/{applicationId}/faculty-approve", payload, ct);
+        return raw is null ? null : MapGradApp(raw);
+    }
+
+    public async Task<GraduationApplicationWebModel?> AdminApproveApplicationAsync(Guid applicationId, bool isApproved, string? note, CancellationToken ct)
+    {
+        var payload = new { IsApproved = isApproved, Note = note };
+        var raw = await PostAsync<object, GraduationApplicationApiDto>($"api/v1/graduation/{applicationId}/admin-approve", payload, ct);
+        return raw is null ? null : MapGradApp(raw);
+    }
+
+    public async Task<GraduationApplicationWebModel?> FinalApproveApplicationAsync(Guid applicationId, bool isApproved, string? note, CancellationToken ct)
+    {
+        var payload = new { IsApproved = isApproved, Note = note };
+        var raw = await PostAsync<object, GraduationApplicationApiDto>($"api/v1/graduation/{applicationId}/final-approve", payload, ct);
+        return raw is null ? null : MapGradApp(raw);
+    }
+
+    public async Task<GraduationApplicationWebModel?> RejectApplicationAsync(Guid applicationId, string? reason, CancellationToken ct)
+    {
+        var payload = new { IsApproved = false, Note = reason };
+        var raw = await PostAsync<object, GraduationApplicationApiDto>($"api/v1/graduation/{applicationId}/reject", payload, ct);
+        return raw is null ? null : MapGradApp(raw);
+    }
+
+    public async Task<byte[]?> DownloadCertificateAsync(Guid applicationId, CancellationToken ct)
+    {
+        var connection = GetConnection();
+        if (connection is null) return null;
+        using var request = CreateRequest(System.Net.Http.HttpMethod.Get, $"api/v1/graduation/{applicationId}/certificate");
+        using var response = await CreateClient().SendAsync(request, ct);
+        if (!response.IsSuccessStatusCode) return null;
+        return await response.Content.ReadAsByteArrayAsync(ct);
+    }
+
+    public async Task<string?> RegenerateCertificateAsync(Guid applicationId, CancellationToken ct)
+    {
+        var raw = await PostAsync<object, System.Collections.Generic.Dictionary<string, string>>($"api/v1/graduation/{applicationId}/regenerate-certificate", new { }, ct);
+        return raw?.GetValueOrDefault("path");
+    }
+
+    private static GraduationApplicationWebModel MapGradApp(GraduationApplicationApiDto raw) => new()
+    {
+        Id = raw.Id, StudentProfileId = raw.StudentProfileId, StudentName = raw.StudentName ?? "",
+        RegistrationNumber = raw.RegistrationNumber ?? "", ProgramName = raw.ProgramName ?? "",
+        Status = raw.Status ?? "", SubmittedAt = raw.SubmittedAt, UpdatedAt = raw.UpdatedAt, HasCertificate = raw.HasCertificate
+    };
+
+    private class GraduationApplicationApiDto
+    {
+        public Guid Id { get; set; } public Guid StudentProfileId { get; set; }
+        public string? StudentName { get; set; } public string? RegistrationNumber { get; set; }
+        public string? ProgramName { get; set; } public string? Status { get; set; }
+        public DateTime? SubmittedAt { get; set; } public DateTime? UpdatedAt { get; set; }
+        public bool HasCertificate { get; set; }
+    }
+
+    private sealed class GraduationApplicationDetailApiDto : GraduationApplicationApiDto
+    {
+        public string? StudentNote { get; set; } public string? CertificatePath { get; set; }
+        public System.Collections.Generic.List<ApprovalHistoryApiDto>? ApprovalHistory { get; set; }
+    }
+
+    private sealed class ApprovalHistoryApiDto
+    {
+        public string? Stage { get; set; } public string? ApproverName { get; set; }
+        public bool IsApproved { get; set; } public string? Note { get; set; } public DateTime ActedAt { get; set; }
+    }
     private async Task<T?> GetAsync<T>(string path, CancellationToken ct)
     {
         using var request  = CreateRequest(HttpMethod.Get, path);

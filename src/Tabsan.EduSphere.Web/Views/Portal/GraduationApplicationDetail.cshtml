@@ -1,0 +1,138 @@
+@* Final-Touches Phase 18 Stage 18.1/18.2 — graduation application detail view *@
+@model GraduationApplicationDetailPageModel
+@{
+    ViewBag.Title = "Graduation Application Detail";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var app = Model.Application;
+    var role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "";
+}
+
+<div class="container-fluid">
+    <div class="mb-3">
+        <a href="@Url.Action("GraduationApplications", "Portal")" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Back to List</a>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+    {
+        <div class="alert alert-success alert-dismissible fade show"><i class="bi bi-check-circle me-2"></i>@Model.SuccessMessage<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show"><i class="bi bi-exclamation-circle me-2"></i>@Model.ErrorMessage<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+
+    @if (app is null)
+    {
+        <div class="alert alert-warning">Application not found.</div>
+        return;
+    }
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-mortarboard me-2"></i>Application Detail</h5>
+            <span class="badge fs-6 @(app.Status == "Approved" ? "bg-success" : app.Status == "Rejected" ? "bg-danger" : "bg-warning text-dark")">@app.Status</span>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4"><strong>Student:</strong><br/>@app.StudentName</div>
+                <div class="col-md-4"><strong>Registration:</strong><br/>@app.RegistrationNumber</div>
+                <div class="col-md-4"><strong>Program:</strong><br/>@app.ProgramName</div>
+                <div class="col-md-4"><strong>Submitted:</strong><br/>@app.SubmittedAt?.ToString("dd MMM yyyy HH:mm")</div>
+                <div class="col-md-4"><strong>Last Updated:</strong><br/>@app.UpdatedAt?.ToString("dd MMM yyyy HH:mm")</div>
+                @if (!string.IsNullOrEmpty(app.StudentNote))
+                {
+                    <div class="col-12"><strong>Student Note:</strong><br/>@app.StudentNote</div>
+                }
+            </div>
+        </div>
+    </div>
+
+    @* Approval History *@
+    @if (app.ApprovalHistory.Any())
+    {
+        <div class="card shadow-sm mb-4">
+            <div class="card-header"><h6 class="mb-0">Approval History</h6></div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead class="table-light">
+                        <tr><th>Stage</th><th>Approver</th><th>Decision</th><th>Note</th><th>Date</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var h in app.ApprovalHistory)
+                        {
+                            <tr>
+                                <td>@h.Stage</td>
+                                <td>@h.ApproverName</td>
+                                <td><span class="badge @(h.IsApproved ? "bg-success" : "bg-danger")">@(h.IsApproved ? "Approved" : "Rejected")</span></td>
+                                <td>@(h.Note ?? "—")</td>
+                                <td>@h.ActedAt.ToString("dd MMM yyyy HH:mm")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+    @* Certificate *@
+    @if (app.HasCertificate)
+    {
+        <div class="card shadow-sm mb-4">
+            <div class="card-body d-flex align-items-center gap-3">
+                <i class="bi bi-file-earmark-pdf fs-3 text-danger"></i>
+                <div class="flex-grow-1"><strong>Graduation Certificate</strong><br/><small class="text-muted">@app.CertificatePath</small></div>
+                <a href="@Url.Action("GraduationCertificateDownload", "Portal", new { id = app.Id })" class="btn btn-success"><i class="bi bi-download me-1"></i>Download</a>
+                @if (role is "Admin" or "SuperAdmin")
+                {
+                    <form method="post" asp-action="GraduationRegenerateCertificate" asp-controller="Portal" class="d-inline" asp-route-id="@app.Id">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-outline-warning" onclick="return confirm('Regenerate certificate?')"><i class="bi bi-arrow-clockwise me-1"></i>Regenerate</button>
+                    </form>
+                }
+            </div>
+        </div>
+    }
+
+    @* Action Buttons for Staff *@
+    @{
+        bool canAct = app.Status is not ("Approved" or "Rejected");
+        bool isFaculty   = role == "Faculty"   && app.Status == "PendingFaculty";
+        bool isAdmin     = role is "Admin"     && app.Status == "PendingAdmin";
+        bool isSuperFinal = role == "SuperAdmin" && app.Status == "PendingFinalApproval";
+        bool canApprove  = isFaculty || isAdmin || isSuperFinal;
+        bool canReject   = canAct && role is "Faculty" or "Admin" or "SuperAdmin";
+    }
+
+    @if (canApprove)
+    {
+        <div class="card shadow-sm mb-4">
+            <div class="card-header"><h6 class="mb-0">Take Action</h6></div>
+            <div class="card-body">
+                <form method="post" asp-action="GraduationApprove" asp-controller="Portal" asp-route-id="@app.Id">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label class="form-label">Note (optional)</label>
+                        <textarea name="note" class="form-control" rows="2"></textarea>
+                    </div>
+                    <button type="submit" name="action" value="approve" class="btn btn-success me-2"><i class="bi bi-check-circle me-1"></i>Approve</button>
+                    <button type="submit" name="action" value="reject" class="btn btn-danger"><i class="bi bi-x-circle me-1"></i>Reject</button>
+                </form>
+            </div>
+        </div>
+    }
+    else if (canReject)
+    {
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <form method="post" asp-action="GraduationReject" asp-controller="Portal" asp-route-id="@app.Id">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label class="form-label">Rejection Reason (optional)</label>
+                        <textarea name="reason" class="form-control" rows="2"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-danger"><i class="bi bi-x-circle me-1"></i>Reject Application</button>
+                </form>
+            </div>
+        </div>
+    }
+</div>

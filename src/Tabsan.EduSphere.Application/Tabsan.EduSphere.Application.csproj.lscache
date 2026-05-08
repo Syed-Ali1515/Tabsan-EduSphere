@@ -57,6 +57,7 @@ Academic/
  AcademicCalendarService.cs
  DegreeAuditService.cs
  EnrollmentService.cs
+ GraduationService.cs
  StudentRegistrationService.cs
 AiChat/AiChatService.cs
 Assignments/
@@ -72,6 +73,7 @@ DTOs/Academic/
  AcademicDtos.cs
  DegreeAuditDTOs.cs
  EnrollmentRulesDTOs.cs
+ GraduationDTOs.cs
 DTOs/
  AccountSecurityDtos.cs
  AiChat/AiChatDtos.cs
@@ -106,6 +108,7 @@ Interfaces/
  IAttendanceService.cs
  IAuthService.cs
  IBuildingRoomService.cs
+ ICertificateGenerator.cs
  ICsvRegistrationImportService.cs
  IDegreeAuditService.cs
  IEmailSender.cs
@@ -113,6 +116,7 @@ Interfaces/
  IEnrollmentService.cs
  IFypService.cs
  IGradebookService.cs
+ IGraduationService.cs
  IHelpdeskService.cs
  ILlmClient.cs
  IModuleEntitlementResolver.cs

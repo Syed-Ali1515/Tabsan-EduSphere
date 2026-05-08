@@ -227,6 +227,12 @@ public class ApplicationDbContext : DbContext
     /// <summary>Individual required courses within a degree rule.</summary>
     public DbSet<DegreeRuleRequiredCourse> DegreeRuleRequiredCourses => Set<DegreeRuleRequiredCourse>();
 
+    // ── Phase 18: Graduation Workflow ──────────────────────────────────────────
+    /// <summary>Student graduation applications subject to multi-stage approval.</summary>
+    public DbSet<GraduationApplication> GraduationApplications => Set<GraduationApplication>();
+    /// <summary>Individual approval records per stage within a graduation application.</summary>
+    public DbSet<GraduationApplicationApproval> GraduationApplicationApprovals => Set<GraduationApplicationApproval>();
+
     /// <summary>
     /// Scans the current assembly for all IEntityTypeConfiguration implementations
     /// and applies them automatically. This keeps OnModelCreating clean as the

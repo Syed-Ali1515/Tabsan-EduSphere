@@ -70,6 +70,7 @@ Controllers/
  EnrollmentController.cs
  FypController.cs
  GradebookController.cs
+ GraduationController.cs
  HelpdeskController.cs
  LicenseController.cs
  ModuleController.cs

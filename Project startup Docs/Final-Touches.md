@@ -814,5 +814,13 @@ Stage 15.1 adds prerequisite-based enrollment blocking with detailed unmet-prere
 - [x] Migration `Phase17_DegreeAudit` created and applied
 - [x] 78/78 unit tests passing
 
+## Phase 18 — Graduation Workflow ✅ Complete
+
+- [x] Stage 18.1: `GraduationApplication` entity + `GraduationApplicationApproval`; multi-stage approval flow (Faculty → Admin → SuperAdmin); `GraduationController` REST API (10 endpoints); `GraduationService`; `GraduationRepository`.
+- [x] Stage 18.2: `ICertificateGenerator` / `CertificateGenerator` (QuestPDF A4 Landscape); certificate stored under `wwwroot/certificates/`; `GET /api/v1/graduation/{id}/certificate` download; `POST .../regenerate-certificate` admin action.
+- [x] Web portal: `GraduationApply.cshtml`, `GraduationApplications.cshtml`, `GraduationApplicationDetail.cshtml`.
+- [x] EF Migration `Phase18_GraduationWorkflow` — tables `graduation_applications`, `graduation_application_approvals`.
+- [x] 78/78 unit tests passing
+
 ## Next Phase To Execute
-Phase 18 — (see Docs/Enhancements.md for full spec).
+Phase 19 — (see Docs/Enhancements.md for full spec).

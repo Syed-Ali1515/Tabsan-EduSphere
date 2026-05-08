@@ -97,6 +97,8 @@ Migrations/
  20260507223356_Phase16_FacultyGrading.Designer.cs
  20260507231326_Phase17_DegreeAudit.cs
  20260507231326_Phase17_DegreeAudit.Designer.cs
+ 20260508003259_Phase18_GraduationWorkflow.cs
+ 20260508003259_Phase18_GraduationWorkflow.Designer.cs
  ApplicationDbContextModelSnapshot.cs
 Modules/ModuleEntitlementResolver.cs
 obj/Debug/net8.0/
@@ -175,6 +177,7 @@ Repositories/
  DegreeAuditRepository.cs
  DepartmentRepository.cs
  GradebookRubricRepositories.cs
+ GraduationRepository.cs
  HelpdeskRepository.cs
  LicenseRepository.cs
  ModuleRepository.cs
@@ -188,6 +191,7 @@ Repositories/
  TimetableRepository.cs
  UserRepository.cs
  UserSessionRepository.cs
+Services/CertificateGenerator.cs
 Timetable/
  TimetableExcelExporter.cs
  TimetablePdfExporter.cs

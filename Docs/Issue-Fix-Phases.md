@@ -729,3 +729,13 @@ Enhancement phase tracked in `Docs/Enhancements.md`. Summary entry recorded here
 - Stage 17.3: `CourseType` enum on `Course`; `SetCourseTypeAsync`; `DegreeRules.cshtml` SuperAdmin rule management.
 - Migration `Phase17_DegreeAudit` — adds `degree_rules`, `degree_rule_required_courses` tables + `course_type` column.
 - Validation: 0 build errors; 78/78 tests passed.
+
+## Phase 18 — Graduation Workflow ✅ Complete
+
+Enhancement phase tracked in `Docs/Enhancements.md`. Summary entry recorded here for cross-reference.
+
+- Stage 18.1: Multi-stage graduation application workflow (Draft → PendingFaculty → PendingAdmin → PendingFinalApproval → Approved/Rejected); `GraduationApplication` + `GraduationApplicationApproval` domain entities; `GraduationRepository`; `GraduationService` orchestration; `GraduationController` (10 endpoints).
+- Stage 18.2: `ICertificateGenerator` abstraction (Application layer) + `CertificateGenerator` (Infrastructure/QuestPDF) — A4 Landscape PDF; stored to `wwwroot/certificates/`; `FinalApproveAsync` auto-generates certificate + marks student Graduated.
+- Web portal: `GraduationApply`, `GraduationApplications`, `GraduationApplicationDetail` views + controller actions + EduApiClient methods.
+- Migration `Phase18_GraduationWorkflow` — adds `graduation_applications`, `graduation_application_approvals` tables.
+- Validation: 0 build errors; 78/78 tests passed.

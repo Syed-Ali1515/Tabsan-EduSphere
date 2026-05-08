@@ -1710,3 +1710,72 @@ public class EligibilityPageModel
     public Guid?                        DepartmentId   { get; set; }
     public Guid?                        ProgramId      { get; set; }
 }
+
+// ── Phase 18: Graduation Workflow ─────────────────────────────────────────────
+
+// Final-Touches Phase 18 Stage 18.1 — graduation application summary web model
+public class GraduationApplicationWebModel
+{
+    public Guid      Id                 { get; set; }
+    public Guid      StudentProfileId   { get; set; }
+    public string    StudentName        { get; set; } = "";
+    public string    RegistrationNumber { get; set; } = "";
+    public string    ProgramName        { get; set; } = "";
+    public string    Status             { get; set; } = "";
+    public DateTime? SubmittedAt        { get; set; }
+    public DateTime? UpdatedAt          { get; set; }
+    public bool      HasCertificate     { get; set; }
+}
+
+// Final-Touches Phase 18 Stage 18.1 — approval history item
+public class ApprovalHistoryWebItem
+{
+    public string   Stage        { get; set; } = "";
+    public string   ApproverName { get; set; } = "";
+    public bool     IsApproved   { get; set; }
+    public string?  Note         { get; set; }
+    public DateTime ActedAt      { get; set; }
+}
+
+// Final-Touches Phase 18 Stage 18.1 — graduation application detail web model
+public class GraduationApplicationDetailWebModel
+{
+    public Guid      Id                 { get; set; }
+    public Guid      StudentProfileId   { get; set; }
+    public string    StudentName        { get; set; } = "";
+    public string    RegistrationNumber { get; set; } = "";
+    public string    ProgramName        { get; set; } = "";
+    public string    Status             { get; set; } = "";
+    public string?   StudentNote        { get; set; }
+    public DateTime? SubmittedAt        { get; set; }
+    public DateTime? UpdatedAt          { get; set; }
+    public bool      HasCertificate     { get; set; }
+    public string?   CertificatePath    { get; set; }
+    public List<ApprovalHistoryWebItem> ApprovalHistory { get; set; } = new();
+}
+
+// Final-Touches Phase 18 Stage 18.1 — page model for student graduation apply page
+public class GraduationApplyPageModel
+{
+    public List<GraduationApplicationWebModel> Applications   { get; set; } = new();
+    public bool                                CanSubmitNew   { get; set; }
+    public string?                             SuccessMessage { get; set; }
+    public string?                             ErrorMessage   { get; set; }
+}
+
+// Final-Touches Phase 18 Stage 18.1 — page model for admin/faculty application list
+public class GraduationApplicationsPageModel
+{
+    public List<GraduationApplicationWebModel> Applications { get; set; } = new();
+    public string? StatusFilter                             { get; set; }
+    public Guid?   DepartmentFilter                        { get; set; }
+    public List<LookupItem> Departments                    { get; set; } = new();
+}
+
+// Final-Touches Phase 18 Stage 18.1/18.2 — page model for application detail view
+public class GraduationApplicationDetailPageModel
+{
+    public GraduationApplicationDetailWebModel? Application { get; set; }
+    public string?                              SuccessMessage { get; set; }
+    public string?                              ErrorMessage   { get; set; }
+}

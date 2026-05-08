@@ -178,3 +178,43 @@ public class DegreeRuleRequiredCourseConfiguration : IEntityTypeConfiguration<De
                .OnDelete(DeleteBehavior.Restrict);
     }
 }
+
+// Final-Touches Phase 18 Stage 18.1 — GraduationApplication EF configuration
+/// <summary>EF Core configuration for GraduationApplication.</summary>
+public class GraduationApplicationConfiguration : IEntityTypeConfiguration<GraduationApplication>
+{
+    public void Configure(EntityTypeBuilder<GraduationApplication> builder)
+    {
+        builder.ToTable("graduation_applications");
+        builder.HasKey(a => a.Id);
+        builder.Property(a => a.Status).IsRequired().HasConversion<int>();
+        builder.Property(a => a.StudentNote).HasMaxLength(2000);
+        builder.Property(a => a.CertificatePath).HasMaxLength(500);
+        builder.Property(a => a.RowVersion).IsRowVersion();
+
+        builder.HasOne(a => a.StudentProfile)
+               .WithMany()
+               .HasForeignKey(a => a.StudentProfileId)
+               .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasMany(a => a.Approvals)
+               .WithOne()
+               .HasForeignKey(ap => ap.GraduationApplicationId)
+               .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasQueryFilter(a => !a.IsDeleted);
+    }
+}
+
+// Final-Touches Phase 18 Stage 18.1 — GraduationApplicationApproval EF configuration
+/// <summary>EF Core configuration for GraduationApplicationApproval.</summary>
+public class GraduationApplicationApprovalConfiguration : IEntityTypeConfiguration<GraduationApplicationApproval>
+{
+    public void Configure(EntityTypeBuilder<GraduationApplicationApproval> builder)
+    {
+        builder.ToTable("graduation_application_approvals");
+        builder.HasKey(ap => ap.Id);
+        builder.Property(ap => ap.Stage).IsRequired().HasConversion<int>();
+        builder.Property(ap => ap.Note).HasMaxLength(1000);
+    }
+}

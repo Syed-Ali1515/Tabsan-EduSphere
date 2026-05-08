@@ -32,13 +32,14 @@ Also update this file with:
 **Always-on Git sync (requested workflow):**
 - Before ending any work session, always run full sync: commit all changes, pull from remote, then push to remote.
 - Do not leave local-only completed work.
+- **Always do BOTH pull and push** — pull first (rebase), then push. Never push without pulling first.
 - Use this command sequence:
 
 ```powershell
-git add -A
-git commit -m "<phase/stage summary>"
-git pull --rebase
-git push
+cmd /c git -C "<repo-root>" add -A
+cmd /c git -C "<repo-root>" commit -m "<phase/stage summary>"
+cmd /c git -C "<repo-root>" pull --rebase origin main
+cmd /c git -C "<repo-root>" push origin main
 ```
 
 **Code quality rules (enforced from Phase 5 onward):**
@@ -160,7 +161,8 @@ Database is fully synchronized with codebase.
 - **Phase 15 — Enrollment Rules Engine — COMPLETE ✅** (commit 42f0993, 2026-05-08)
 - **Phase 16 — Faculty Grading System — COMPLETE ✅** (commit `1f496f7`)
 - **Phase 17 — Degree Audit System — COMPLETE ✅** (78/78 tests passed)
-- Continue through Phases 18–21 per Docs/Enhancements.md priority order
+- **Phase 18 — Graduation Workflow — COMPLETE ✅** (78/78 tests passed; migration `Phase18_GraduationWorkflow`)
+- Continue through Phases 19–21 per Docs/Enhancements.md priority order
 
 ## Pending Extra Tasks (Cross-Phase)
 - Keep Report Center menu visible by role and working links.
