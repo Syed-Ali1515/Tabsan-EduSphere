@@ -207,34 +207,40 @@
 
 ---
 
-## Phase 20 — Learning Management System (LMS)
+## Phase 20 — Learning Management System (LMS) ✅ Implemented (commit `ecf4d91` — 2026-05-08)
 **Complexity:** High | **Dependencies:** `CourseOffering`, `Enrollment`, Notification system (all exist); benefits from stable `Course` structure introduced in Phase 19
 
 > **Partial foundation for Stage 20.4:** `NotificationType.Announcement = 6` already exists in the notification enum. The announcement entity and dedicated portal page are new.
 
-### Stage 20.1 — Structured Course Content
-- New `CourseContentModule` entity: `OfferingId`, `Title`, `WeekNumber`, `Body` (rich text), `IsPublished`, ordering.
-- Faculty create and order weekly module units per offering; publish/unpublish individually.
-- Students enrolled in the offering can access published modules in order from the portal.
-- SuperAdmin and Admin can enable/disable the LMS feature per portal instance via Module Settings.
+### Stage 20.1 — Structured Course Content ✅
+- `CourseContentModule` entity: `OfferingId`, `Title`, `WeekNumber`, `Body` (50 000 char), `IsPublished`, ordering.
+- Faculty create/order weekly module units per offering; publish/unpublish individually.
+- Students enrolled see published modules in order; faculty see all (published + draft).
+- `ILmsRepository` + `LmsRepository`; `ILmsService` + `LmsService`; `LmsController` (`api/v1/lms`).
+- Portal views: `CourseLms.cshtml` (student), `LmsManage.cshtml` (faculty).
 
-### Stage 20.2 — Video-Based Teaching
-- Faculty can attach video references (upload or embed URL) to a `CourseContentModule`.
-- New `ContentVideo` entity: `ModuleId`, `Title`, `StorageUrl` or `EmbedUrl`, `DurationSeconds`.
-- Student portal shows video player (upload) or embedded iframe (URL) within the module view.
-- Storage limits and allowed formats are configurable by SuperAdmin in Portal Settings.
+### Stage 20.2 — Video-Based Teaching ✅
+- `ContentVideo` entity: `ModuleId`, `Title`, `StorageUrl`, `EmbedUrl`, `DurationSeconds`.
+- Faculty attach video references to modules; add/delete via `LmsController`.
+- EF: `LmsConfigurations.cs` — table configs + soft-delete query filters for both entities.
+- `LmsRepository`: `GetModulesByOfferingAsync` includes Videos; `GetModuleByIdAsync` includes Videos.
 
-### Stage 20.3 — Discussion Forums
-- New `DiscussionThread` entity per `CourseOffering`: `Title`, `AuthorId`, `IsPinned`, `IsClosed`.
-- New `DiscussionReply` child entity: `ThreadId`, `AuthorId`, `Body`, `CreatedAt`.
-- Faculty can pin, close, and delete threads; Students can create threads and reply.
-- Notification dispatched to all participants in a thread when a new reply is posted.
+### Stage 20.3 — Discussion Forums ✅
+- `DiscussionThread` entity per `CourseOffering`: `Title`, `AuthorId`, `IsPinned`, `IsClosed`.
+- `DiscussionReply` child entity: `ThreadId`, `AuthorId`, `Body`.
+- Faculty pin, close, reopen, delete threads; all participants create threads and reply.
+- `IDiscussionRepository` + `DiscussionRepository`; `IDiscussionService` + `DiscussionService`; `DiscussionController` (`api/v1/discussion`).
+- Portal views: `Discussion.cshtml` (thread list), `DiscussionThread.cshtml` (detail + replies).
+- Author names resolved via `IUserRepository.GetByIdAsync` → `Username`.
 
-### Stage 20.4 — Course Announcements
-- Faculty can post course-level announcements (distinct from discussion threads) visible to all enrolled students.
-- New `CourseAnnouncement` entity: `OfferingId`, `AuthorId`, `Title`, `Body`, `PostedAt`.
-- Announcement triggers an in-app notification (uses existing `NotificationType.Announcement = 6`) to all enrolled students.
-- Admin can post department-wide announcements targeting all students and faculty in their assigned departments.
+### Stage 20.4 — Course Announcements ✅
+- `CourseAnnouncement` entity: `OfferingId` (nullable), `AuthorId`, `Title`, `Body`, `PostedAt`.
+- On creation, fan-out notification dispatched to all active enrolled students (`NotificationType.Announcement = 6`).
+- `IAnnouncementRepository` + `AnnouncementRepository`; `IAnnouncementService` + `AnnouncementService`; `AnnouncementController` (`api/v1/announcement`).
+- Portal view: `Announcements.cshtml` — create form + announcement cards with delete.
+- Sidebar entries added: `lms_manage`, `discussion`, `announcements` (group: Academic Related).
+
+**Validation:** 0 build errors · 7/7 unit tests passed · migration `Phase20_LMS` applied
 
 ---
 
@@ -285,6 +291,6 @@
 | 17 | Degree Audit System | Medium | ✅ Implemented |
 | 18 | Graduation Workflow (application + certificate) | Medium | Planned (partial foundation) |
 | 19 | Advanced Course Creation & Result Configuration | Medium–High | Planned |
-| 20 | Learning Management System | High | Planned (Stage 20.4 partial) |
+| 20 | Learning Management System | High | ✅ Implemented (commit `ecf4d91`) |
 | 21 | Study Planner | Medium | Planned |
 | 22 | External Integrations | High | Planned (Stage 22.2 partial) |

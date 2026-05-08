@@ -992,3 +992,37 @@ Accessible from the top navigation as a dedicated "Settings" menu:
   - Re-run calculations after approved mark modifications and retain audit logs
 
 ---
+
+## Phase 20 — Learning Management System (LMS) ✅ Implemented (2026-05-08)
+
+### 20.A Overview
+Delivers structured digital learning content, discussion forums, and course announcements within the university portal. Faculty manage content per `CourseOffering`; students consume published content; announcements trigger in-app notifications to enrolled students.
+
+### 20.B Functional Requirements
+
+#### Stage 20.1 — Structured Course Content
+- Faculty create weekly content modules (`CourseContentModule`) per offering with rich-text body and publish/unpublish control.
+- Students see only published modules in week order.
+- Faculty see all modules (published and draft).
+
+#### Stage 20.2 — Video-Based Teaching
+- Faculty attach video references (`ContentVideo`) to modules: direct upload URL or embed URL with optional duration.
+- Students see videos rendered as iframes within the module accordion.
+
+#### Stage 20.3 — Discussion Forums
+- Faculty and students open `DiscussionThread` entries per offering.
+- Faculty moderate: pin, close, reopen, delete threads.
+- All participants add `DiscussionReply`; students can delete only their own replies; faculty delete any reply.
+
+#### Stage 20.4 — Course Announcements
+- Faculty post `CourseAnnouncement` entries; each post triggers `NotificationType.Announcement` in-app notifications to all active enrolled students.
+- Announcements displayed as cards on the `Announcements` portal page.
+
+### 20.C Technical Implementation
+- **Domain:** `CourseContentModule`, `ContentVideo`, `DiscussionThread`, `DiscussionReply`, `CourseAnnouncement` — all extend `AuditableEntity` with soft-delete.
+- **Persistence:** 5 new tables (`course_content_modules`, `content_videos`, `discussion_threads`, `discussion_replies`, `course_announcements`); EF migration `Phase20_LMS`.
+- **API:** `LmsController` (`api/v1/lms`), `DiscussionController` (`api/v1/discussion`), `AnnouncementController` (`api/v1/announcement`) — JWT-enforced `AuthorId` on all write operations.
+- **Web:** `CourseLms.cshtml`, `LmsManage.cshtml`, `Discussion.cshtml`, `DiscussionThread.cshtml`, `Announcements.cshtml`; sidebar entries `lms_manage`, `discussion`, `announcements`.
+- **Validation:** 0 build errors · 7/7 unit tests · commit `ecf4d91`
+
+---

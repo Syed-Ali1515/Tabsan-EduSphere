@@ -490,3 +490,42 @@ A feature is complete only when:
 - `Build succeeded. 0 Error(s)` on `dotnet build`
 
 ---
+
+### 2026-05-08 — Phase 20 Learning Management System Complete (commit `ecf4d91`)
+
+**Stage 20.1 — Course Content Modules:**
+- `CourseContentModule` + `ContentVideo` domain entities (`Domain/Lms/`).
+- `ILmsRepository` + `LmsRepository`; `ILmsService` + `LmsService`.
+- `LmsController` at `api/v1/lms` — full CRUD + publish/unpublish for modules; add/delete for videos.
+- Students auto-scoped to `publishedOnly=true`; faculty see all modules.
+- Portal views: `CourseLms.cshtml` (student accordion), `LmsManage.cshtml` (faculty management panel).
+
+**Stage 20.2 — EF Configuration:**
+- `LmsConfigurations.cs` — 5 EF entity configurations with table names, FK cascade rules, field lengths, and `HasQueryFilter(!IsDeleted)` for all LMS entities.
+- EF migration `Phase20_LMS` — creates `course_content_modules`, `content_videos`, `discussion_threads`, `discussion_replies`, `course_announcements`.
+
+**Stage 20.3 — Discussion Forums:**
+- `DiscussionThread` + `DiscussionReply` domain entities.
+- `IDiscussionRepository` + `DiscussionRepository`; `IDiscussionService` + `DiscussionService`.
+- Author names resolved at service layer via `IUserRepository.GetByIdAsync`.
+- `DiscussionController` at `api/v1/discussion`; JWT-enforced `AuthorId` on all write endpoints.
+- Portal views: `Discussion.cshtml` + `DiscussionThread.cshtml`.
+
+**Stage 20.4 — Course Announcements:**
+- `CourseAnnouncement` domain entity; optional `OfferingId` FK with SET NULL on cascade.
+- `IAnnouncementRepository` + `AnnouncementRepository`; `IAnnouncementService` + `AnnouncementService`.
+- Fan-out on create: queries enrolled students → dispatches `NotificationType.Announcement` notification batch.
+- `AnnouncementController` at `api/v1/announcement`; JWT-enforced `AuthorId`.
+- Portal view: `Announcements.cshtml`.
+
+**Cross-cutting:**
+- `ApplicationDbContext` updated with 5 new `DbSet<T>` properties.
+- `Program.cs` Phase 20 DI block: 6 scoped registrations.
+- `EduApiClient` interface + models + 21 new method implementations.
+- `PortalController` 19 new actions (LMS + Discussion + Announcements).
+- `PortalViewModels.cs` 10 new view models.
+- `_Layout.cshtml` sidebar entries: `lms_manage`, `discussion`, `announcements` (group: Academic Related).
+
+**Validation:** 0 build errors · 7/7 unit tests · migration applied · commit `ecf4d91` pushed
+
+---

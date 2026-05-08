@@ -7,15 +7,18 @@ Before starting any work, the assistant must:
 2. Read Project startup Docs/Final-Touches.md.
 3. Continue from the exact Current Execution Pointer below.
 
-## Non-Negotiable Rule Per Completed Phase
-After each completed phase, update all required tracking files:
+## Non-Negotiable Rule Per Completed Stage / Phase
+After **every completed stage** (not just at phase-end), update **all** required tracking files:
 1. Docs/Function-List.md
 2. Docs/Command.md
-3. Project startup Docs/PRD.md
+3. Docs/Enhancements.md
 4. Docs/Issue-Fix-Phases.md
-5. Project startup Docs/Final-Touches.md
+5. Project startup Docs/PRD.md
+6. Project startup Docs/Database Schema.md
+7. Project startup Docs/Development Plan - ASP.NET.md
+8. Project startup Docs/Final-Touches.md
 
-After documentation is updated, complete mandatory Git sync in this exact order:
+After every documentation update, complete mandatory Git sync in this exact order:
 1. Commit all current changes
 2. Pull latest remote changes (rebase preferred)
 3. Push committed changes to remote
@@ -26,8 +29,10 @@ Also update this file with:
 - next steps
 - pending extras
 
-**Always-on documentation sync (requested workflow):**
-- Keep `Docs/Function-List.md`, `Docs/Command.md`, `Project startup Docs/PRD.md`, and `Docs/Issue-Fix-Phases.md` updated continuously as work progresses, not only at phase-end.
+**Always-on documentation sync (mandatory workflow — enforced from Phase 20 onward):**
+- After **every completed stage**, update ALL eight tracking files listed above before moving to the next stage.
+- Do not batch documentation to phase-end.
+- Keep `Docs/Function-List.md`, `Docs/Command.md`, `Docs/Enhancements.md`, `Project startup Docs/PRD.md`, `Project startup Docs/Database Schema.md`, `Project startup Docs/Development Plan - ASP.NET.md`, and `Docs/Issue-Fix-Phases.md` updated continuously as work progresses.
 
 **Always-on Git sync (requested workflow):**
 - Before ending any work session, always run full sync: commit all changes, pull from remote, then push to remote.
@@ -50,11 +55,11 @@ cmd /c git -C "<repo-root>" push origin main
 
 ## Current Execution Pointer
 - Plan Source: Docs/Enhancements.md
-- Active Phase: **Phase 17 — Degree Audit System — FULLY COMPLETE ✅**
-- Active Stage: **Stages 17.1 + 17.2 + 17.3 done — Credit Completion Tracking, Graduation Eligibility Checker, Elective vs Core Course Tagging**
-- Status: **0 build errors; 78/78 tests passed**
+- Active Phase: **Phase 20 — Learning Management System (LMS) — FULLY COMPLETE ✅**
+- Active Stage: **Stages 20.1 + 20.2 + 20.3 + 20.4 done — Course Content Modules, Videos, Discussion Forum, Announcements**
+- Status: **0 build errors; 7/7 unit tests passed; migration Phase20_LMS applied**
 - Last Updated: 2026-05-08
-- Next: Phase 18 — (see Enhancements.md)
+- Next: Phase 21 — Study Planner (see Enhancements.md)
 
 ---
 
@@ -946,4 +951,35 @@ git push origin main
 
 **Test Run:** 78/78 tests passed
 **Status:** ✅ Complete
+
+---
+
+## Phase 20 — Learning Management System (LMS)
+
+**EF Migration:**
+```powershell
+dotnet ef migrations add Phase20_LMS --project src/Tabsan.EduSphere.Infrastructure --startup-project src/Tabsan.EduSphere.API -- --environment Development
+dotnet ef database update --project src/Tabsan.EduSphere.Infrastructure --startup-project src/Tabsan.EduSphere.API -- --environment Development
+```
+
+**Git Commit:**
+```powershell
+git add -A
+git commit -m "Phase 20 — Learning Management System (LMS)"
+git pull --rebase origin main
+git push origin main
+```
+
+**Test Run:** 7/7 unit tests passed (build clean; pre-existing nullability warnings only)
+**Commit:** `ecf4d91` pushed to main — 2026-05-08
+**Status:** ✅ Complete
+
+### Stages Completed
+| Stage | Description | Files |
+|-------|-------------|-------|
+| 20.1 | Course Content Modules domain + service + API + web | `Domain/Lms/CourseContentModule.cs`, `Domain/Lms/ContentVideo.cs`, `Domain/Interfaces/ILmsRepository.cs`, `Application/Interfaces/ILmsService.cs`, `Application/Lms/LmsService.cs`, `API/Controllers/LmsController.cs`, `Web/Views/Portal/CourseLms.cshtml`, `Web/Views/Portal/LmsManage.cshtml` |
+| 20.2 | EF configurations for LMS entities | `Infrastructure/Persistence/Configurations/LmsConfigurations.cs`, `Infrastructure/Repositories/LmsRepository.cs` |
+| 20.3 | Discussion threads + replies | `Domain/Lms/DiscussionThread.cs`, `Domain/Lms/DiscussionReply.cs`, `Domain/Interfaces/IDiscussionRepository.cs`, `Application/Interfaces/IDiscussionService.cs`, `Application/Lms/DiscussionService.cs`, `Infrastructure/Repositories/DiscussionRepository.cs`, `API/Controllers/DiscussionController.cs`, `Web/Views/Portal/Discussion.cshtml`, `Web/Views/Portal/DiscussionThread.cshtml` |
+| 20.4 | Course announcements with notification fan-out | `Domain/Lms/CourseAnnouncement.cs`, `Domain/Interfaces/IAnnouncementRepository.cs`, `Application/Interfaces/IAnnouncementService.cs`, `Application/Lms/AnnouncementService.cs`, `Infrastructure/Repositories/AnnouncementRepository.cs`, `API/Controllers/AnnouncementController.cs`, `Web/Views/Portal/Announcements.cshtml` |
+| Cross-cutting | DTOs, DI, DbContext, EduApiClient, PortalController, PortalViewModels, sidebar | `Application/DTOs/Lms/LmsDTOs.cs`, `API/Program.cs`, `Infrastructure/Persistence/ApplicationDbContext.cs`, `Web/Services/EduApiClient.cs`, `Web/Controllers/PortalController.cs`, `Web/Models/Portal/PortalViewModels.cs`, `Views/Shared/_Layout.cshtml` |
 

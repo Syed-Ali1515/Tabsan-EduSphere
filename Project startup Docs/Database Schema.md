@@ -595,3 +595,70 @@ Operational audit logs for privileged activities.
 - Apply feature migrations per release train (v1, v1.1, v1.2)
 
 ---
+
+## 24. Phase 20 LMS Tables (Migration `Phase20_LMS` — 2026-05-08)
+
+### course_content_modules
+Structured weekly learning modules created by faculty per `CourseOffering`.
+
+- id (UUID, PK)
+- offering_id (FK → course_offerings.id, ON DELETE CASCADE)
+- title (varchar 300)
+- week_number (int)
+- body (nvarchar 50000)
+- is_published (bool, default false)
+- is_deleted (bool, default false)
+- deleted_at (datetime, nullable)
+- created_at / updated_at / row_version
+
+### content_videos
+Video attachments linked to a `CourseContentModule`.
+
+- id (UUID, PK)
+- module_id (FK → course_content_modules.id, ON DELETE CASCADE)
+- title (varchar 300)
+- storage_url (varchar 1000, nullable)
+- embed_url (varchar 1000, nullable)
+- duration_seconds (int, default 0)
+- is_deleted (bool, default false)
+- deleted_at (datetime, nullable)
+- created_at / updated_at / row_version
+
+### discussion_threads
+Discussion threads opened within a `CourseOffering`.
+
+- id (UUID, PK)
+- offering_id (FK → course_offerings.id, ON DELETE CASCADE)
+- title (varchar 500)
+- author_id (FK → users.id, ON DELETE NO ACTION)
+- is_pinned (bool, default false)
+- is_closed (bool, default false)
+- is_deleted (bool, default false)
+- deleted_at (datetime, nullable)
+- created_at / updated_at / row_version
+
+### discussion_replies
+Replies within a `DiscussionThread`.
+
+- id (UUID, PK)
+- thread_id (FK → discussion_threads.id, ON DELETE CASCADE)
+- author_id (FK → users.id, ON DELETE NO ACTION)
+- body (nvarchar 10000)
+- is_deleted (bool, default false)
+- deleted_at (datetime, nullable)
+- created_at / updated_at / row_version
+
+### course_announcements
+Course-level announcements posted by faculty; triggers fan-out notification to enrolled students.
+
+- id (UUID, PK)
+- offering_id (FK → course_offerings.id, ON DELETE SET NULL, nullable)
+- author_id (FK → users.id, ON DELETE NO ACTION)
+- title (varchar 300)
+- body (nvarchar 10000)
+- posted_at (datetime)
+- is_deleted (bool, default false)
+- deleted_at (datetime, nullable)
+- created_at / updated_at / row_version
+
+---

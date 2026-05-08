@@ -3592,3 +3592,141 @@ New themes added to site.css and ThemeSettingsPageModel: `neon_mint`, `sakura_pi
 | `GradingConfig.cshtml` | View (new) | SuperAdmin page: course selector, pass threshold, grade-range builder |
 | `Courses.cshtml` | View (updated) | Create modal now has HasSemesters toggle, duration/semesters fields, grading type; table shows Type badge |
 | `ResultCalculation.cshtml` | View (updated) | Stage 19.3: Course Type + Course filter panel at top |
+
+---
+
+## Final-Touches Phase 20 — Learning Management System (LMS) (2026-05-08, commit `ecf4d91`)
+
+### Domain — Entities (Phase 20)
+
+| Symbol | Type | Notes |
+|--------|------|-------|
+| `CourseContentModule` | Entity (new) | `OfferingId`, `Title`, `WeekNumber`, `Body` (50 000 char), `IsPublished`; `Publish()`, `Unpublish()`, `Update()` domain methods |
+| `ContentVideo` | Entity (new) | `ModuleId`, `Title`, `StorageUrl`, `EmbedUrl`, `DurationSeconds`; child of `CourseContentModule` |
+| `DiscussionThread` | Entity (new) | `OfferingId`, `Title`, `AuthorId`, `IsPinned`, `IsClosed`; `SetPinned()`, `Close()`, `Reopen()` methods |
+| `DiscussionReply` | Entity (new) | `ThreadId`, `AuthorId`, `Body`; `UpdateBody()` method |
+| `CourseAnnouncement` | Entity (new) | `OfferingId` (nullable), `AuthorId`, `Title`, `Body`, `PostedAt` |
+
+### Domain — Repository Interfaces (Phase 20)
+
+| Symbol | Type | Notes |
+|--------|------|-------|
+| `ILmsRepository` | Interface (new) | `GetModulesByOfferingAsync`, `GetModuleByIdAsync`, `AddModuleAsync`, `AddVideoAsync`, `SaveChangesAsync` |
+| `IDiscussionRepository` | Interface (new) | `GetThreadsByOfferingAsync`, `GetThreadByIdAsync`, `AddThreadAsync`, `AddReplyAsync`, `SaveChangesAsync` |
+| `IAnnouncementRepository` | Interface (new) | `GetByOfferingAsync`, `AddAsync`, `GetByIdAsync`, `SaveChangesAsync` |
+
+### Application — DTOs (Phase 20)
+
+| Symbol | Type | Notes |
+|--------|------|-------|
+| `CreateModuleRequest` | DTO (new) | `OfferingId`, `Title`, `WeekNumber`, `Body` |
+| `UpdateModuleRequest` | DTO (new) | `ModuleId`, `Title`, `WeekNumber`, `Body` |
+| `AddVideoRequest` | DTO (new) | `ModuleId`, `Title`, `StorageUrl`, `EmbedUrl`, `DurationSeconds` |
+| `ContentVideoDto` | DTO (new) | Response DTO for a video attachment |
+| `CourseContentModuleDto` | DTO (new) | Response DTO for a module including its Videos list |
+| `CreateThreadRequest` | DTO (new) | `OfferingId`, `AuthorId`, `Title` |
+| `AddReplyRequest` | DTO (new) | `ThreadId`, `AuthorId`, `Body` |
+| `DiscussionReplyDto` | DTO (new) | `Id`, `ThreadId`, `AuthorId`, `AuthorName`, `Body`, `CreatedAt`, `UpdatedAt` |
+| `DiscussionThreadDto` | DTO (new) | `Id`, `OfferingId`, `Title`, `AuthorName`, `IsPinned`, `IsClosed`, `CreatedAt`, `Replies` list |
+| `CreateAnnouncementRequest` | DTO (new) | `OfferingId`, `AuthorId`, `Title`, `Body` |
+| `CourseAnnouncementDto` | DTO (new) | Response DTO including `PostedAt` and `AuthorName` |
+
+### Application — Service Interfaces (Phase 20)
+
+| Symbol | Type | Notes |
+|--------|------|-------|
+| `ILmsService` | Interface (new) | `GetModulesAsync`, `GetModuleAsync`, `CreateModuleAsync`, `UpdateModuleAsync`, `PublishModuleAsync`, `UnpublishModuleAsync`, `DeleteModuleAsync`, `AddVideoAsync`, `DeleteVideoAsync` |
+| `IDiscussionService` | Interface (new) | `GetThreadsAsync`, `GetThreadAsync`, `CreateThreadAsync`, `SetPinnedAsync`, `CloseThreadAsync`, `ReopenThreadAsync`, `DeleteThreadAsync`, `AddReplyAsync`, `DeleteReplyAsync` |
+| `IAnnouncementService` | Interface (new) | `GetByOfferingAsync`, `CreateAsync`, `DeleteAsync` |
+
+### Application — Service Implementations (Phase 20)
+
+| Symbol | Type | Notes |
+|--------|------|-------|
+| `LmsService` | Service (new) | Implements `ILmsService`; inline `MapModule`/`MapVideo` helpers; `SoftDelete()` for deletes; filters `!v.IsDeleted` videos in map |
+| `DiscussionService` | Service (new) | Implements `IDiscussionService`; resolves `AuthorName` via `IUserRepository.GetByIdAsync → Username`; `DeleteReplyAsync` enforces ownership — throws `UnauthorizedAccessException` if not faculty and not reply author |
+| `AnnouncementService` | Service (new) | Implements `IAnnouncementService`; on create, queries `IEnrollmentRepository.GetByOfferingAsync` → filters Active + non-null `StudentProfile` → collects `UserId` list → calls `INotificationService.SendSystemAsync` with `NotificationType.Announcement` |
+
+### Infrastructure — EF Configurations (Phase 20)
+
+| Symbol | Type | Notes |
+|--------|------|-------|
+| `CourseContentModuleConfiguration` | EF config (new) | Table `course_content_modules`; FK `OfferingId` → `CourseOfferings` (Cascade); `Body` MaxLength 50 000; global query filter `!IsDeleted` |
+| `ContentVideoConfiguration` | EF config (new) | Table `content_videos`; `StorageUrl`/`EmbedUrl` MaxLength 1 000; global query filter `!IsDeleted` |
+| `DiscussionThreadConfiguration` | EF config (new) | Table `discussion_threads`; FK `OfferingId` → `CourseOfferings` (Cascade); `Title` MaxLength 500; global query filter `!IsDeleted` |
+| `DiscussionReplyConfiguration` | EF config (new) | Table `discussion_replies`; `Body` MaxLength 10 000; global query filter `!IsDeleted` |
+| `CourseAnnouncementConfiguration` | EF config (new) | Table `course_announcements`; FK `OfferingId` optional (SetNull); `Title` MaxLength 300; `Body` MaxLength 10 000; global query filter `!IsDeleted` |
+
+### Infrastructure — Repositories (Phase 20)
+
+| Symbol | Type | Notes |
+|--------|------|-------|
+| `LmsRepository` | Repository (new) | Implements `ILmsRepository`; `GetModulesByOfferingAsync` includes Videos; `GetModuleByIdAsync` includes Videos |
+| `DiscussionRepository` | Repository (new) | Implements `IDiscussionRepository`; `GetThreadsByOfferingAsync` orders pinned first then `CreatedAt` desc; `GetThreadByIdAsync` includes Replies |
+| `AnnouncementRepository` | Repository (new) | Implements `IAnnouncementRepository`; `GetByOfferingAsync` orders by `PostedAt` desc |
+
+### API — Controllers (Phase 20)
+
+| Endpoint | Auth | Notes |
+|----------|------|-------|
+| `GET api/v1/lms/modules/{offeringId}` | Authenticated | Students get `publishedOnly=true` automatically |
+| `GET api/v1/lms/module/{moduleId}` | Authenticated | Returns module with videos |
+| `POST api/v1/lms/module` | Faculty/Admin/SuperAdmin | Create module |
+| `PUT api/v1/lms/module/{id}` | Faculty/Admin/SuperAdmin | Update module |
+| `POST api/v1/lms/module/{id}/publish` | Faculty/Admin/SuperAdmin | Publish |
+| `POST api/v1/lms/module/{id}/unpublish` | Faculty/Admin/SuperAdmin | Unpublish |
+| `DELETE api/v1/lms/module/{id}` | Faculty/Admin/SuperAdmin | Soft-delete module |
+| `POST api/v1/lms/video` | Faculty/Admin/SuperAdmin | Attach video to module |
+| `DELETE api/v1/lms/video/{id}` | Faculty/Admin/SuperAdmin | Soft-delete video |
+| `GET api/v1/discussion/threads/{offeringId}` | Authenticated | List threads, pinned first |
+| `GET api/v1/discussion/thread/{threadId}` | Authenticated | Thread detail with replies |
+| `POST api/v1/discussion/thread` | Authenticated | Create thread; `AuthorId` overridden from JWT |
+| `POST api/v1/discussion/thread/{id}/pin` | Faculty/Admin/SuperAdmin | Pin/unpin |
+| `POST api/v1/discussion/thread/{id}/close` | Faculty/Admin/SuperAdmin | Close |
+| `POST api/v1/discussion/thread/{id}/reopen` | Faculty/Admin/SuperAdmin | Reopen |
+| `DELETE api/v1/discussion/thread/{id}` | Faculty/Admin/SuperAdmin | Soft-delete thread |
+| `POST api/v1/discussion/reply` | Authenticated | Add reply; `AuthorId` overridden from JWT |
+| `DELETE api/v1/discussion/reply/{id}` | Authenticated | Delete reply — faculty always allowed; students only own replies |
+| `GET api/v1/announcement/{offeringId}` | Authenticated | List announcements |
+| `POST api/v1/announcement` | Faculty/Admin/SuperAdmin | Create + fan-out notification |
+| `DELETE api/v1/announcement/{id}` | Faculty/Admin/SuperAdmin | Soft-delete |
+
+### Web — EduApiClient (Phase 20)
+
+| Symbol | Type | Notes |
+|--------|------|-------|
+| `GetLmsModulesAsync` | Method (new) | `GET api/v1/lms/modules/{offeringId}` |
+| `GetLmsModuleAsync` | Method (new) | `GET api/v1/lms/module/{moduleId}` |
+| `CreateLmsModuleAsync` | Method (new) | `POST api/v1/lms/module` then re-fetch |
+| `UpdateLmsModuleAsync` | Method (new) | `PUT api/v1/lms/module/{id}` |
+| `PublishLmsModuleAsync` / `UnpublishLmsModuleAsync` | Methods (new) | Toggle publish state |
+| `DeleteLmsModuleAsync` | Method (new) | `DELETE api/v1/lms/module/{id}` |
+| `AddLmsVideoAsync` / `DeleteLmsVideoAsync` | Methods (new) | Video CRUD |
+| `GetDiscussionThreadsAsync` / `GetDiscussionThreadAsync` | Methods (new) | Thread list + detail |
+| `CreateDiscussionThreadAsync` / `AddDiscussionReplyAsync` | Methods (new) | Create thread / reply |
+| `SetThreadPinnedAsync` / `CloseDiscussionThreadAsync` / `ReopenDiscussionThreadAsync` | Methods (new) | Thread moderation |
+| `DeleteDiscussionThreadAsync` / `DeleteDiscussionReplyAsync` | Methods (new) | Delete thread / reply |
+| `GetAnnouncementsAsync` / `CreateAnnouncementAsync` / `DeleteAnnouncementAsync` | Methods (new) | Announcement CRUD |
+| `LmsVideoApiModel` / `LmsModuleApiModel` / `DiscussionReplyApiModel` / `DiscussionThreadApiModel` / `AnnouncementApiModel` | Classes (new) | API response models |
+
+### Web — PortalController + Views (Phase 20)
+
+| Symbol | Type | Notes |
+|--------|------|-------|
+| `CourseLms(GET)` | Action (new) | Student module listing |
+| `LmsManage(GET)` | Action (new) | Faculty module management |
+| `CreateLmsModule` / `UpdateLmsModule` / `PublishLmsModule` / `UnpublishLmsModule` / `DeleteLmsModule` | Actions (new) | Module CRUD POST actions |
+| `AddLmsVideo` / `DeleteLmsVideo` | Actions (new) | Video CRUD POST actions |
+| `Discussion(GET)` | Action (new) | Thread listing |
+| `DiscussionThreadDetail(GET)` | Action (new) | Thread detail with replies |
+| `CreateDiscussionThread` / `AddDiscussionReply` / `DeleteDiscussionThread` / `DeleteDiscussionReply` | Actions (new) | Discussion POST actions |
+| `Announcements(GET)` | Action (new) | Announcement listing |
+| `CreateAnnouncement` / `DeleteAnnouncement` | Actions (new) | Announcement POST actions |
+| `CourseLms.cshtml` | View (new) | Student: accordion of published modules + embedded video iframes |
+| `LmsManage.cshtml` | View (new) | Faculty: manage modules + videos, publish/unpublish controls |
+| `Discussion.cshtml` | View (new) | Thread list; create thread form; faculty pin/close controls |
+| `DiscussionThread.cshtml` | View (new) | Thread detail; reply list; add reply form; delete controls |
+| `Announcements.cshtml` | View (new) | Announcement cards; create form; delete button |
+| `LmsVideoItem` / `LmsModuleItem` / `CourseLmsPageModel` / `LmsManagePageModel` | View models (new) | LMS portal view models |
+| `DiscussionReplyItem` / `DiscussionThreadItem` / `DiscussionPageModel` / `DiscussionDetailPageModel` | View models (new) | Discussion portal view models |
+| `AnnouncementItem` / `AnnouncementsPageModel` | View models (new) | Announcement portal view models |
