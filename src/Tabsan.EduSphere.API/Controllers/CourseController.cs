@@ -20,28 +20,31 @@ public class CourseController : ControllerBase
     private readonly IFacultyAssignmentRepository _facultyAssignments;
     private readonly IAdminAssignmentRepository _adminAssignments;
     private readonly IEnrollmentRepository _enrollments;
+    private readonly Tabsan.EduSphere.Application.Interfaces.ICourseService _courseService;
 
     public CourseController(
         ICourseRepository repo,
         IFacultyAssignmentRepository facultyAssignments,
         IAdminAssignmentRepository adminAssignments,
-        IEnrollmentRepository enrollments)
+        IEnrollmentRepository enrollments,
+        Tabsan.EduSphere.Application.Interfaces.ICourseService courseService)
     {
         _repo = repo;
         _facultyAssignments = facultyAssignments;
         _adminAssignments = adminAssignments;
         _enrollments = enrollments;
+        _courseService = courseService;
     }
 
     // ────────────────────── COURSES ────────────────────────────────────────────
 
     // ── GET /api/v1/course ─────────────────────────────────────────────────────
 
-    /// <summary>Returns the course catalogue, optionally filtered by departmentId.</summary>
+    /// <summary>Returns the course catalogue, optionally filtered by departmentId and/or hasSemesters.</summary>
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] Guid? departmentId, CancellationToken ct)
+    public async Task<IActionResult> GetAll([FromQuery] Guid? departmentId, [FromQuery] bool? hasSemesters, CancellationToken ct)
     {
-        var courses = await _repo.GetAllAsync(departmentId, ct);
+        var courses = await _repo.GetAllAsync(departmentId, hasSemesters, ct);
 
         // Issue-Fix Phase 3 Stage 3.1 — Replace Forbid with empty result; faculty sees only their assigned-dept courses.
         if (User.IsInRole("Faculty") && !User.IsInRole("Admin") && !User.IsInRole("SuperAdmin"))
@@ -65,7 +68,8 @@ public class CourseController : ControllerBase
         return Ok(courses.Select(c => new
         {
             c.Id, c.Title, c.Code, c.CreditHours, c.DepartmentId,
-            DepartmentName = c.Department?.Name ?? "", c.IsActive
+            DepartmentName = c.Department?.Name ?? "", c.IsActive,
+            c.HasSemesters, c.TotalSemesters, c.DurationValue, c.DurationUnit, c.GradingType, c.CourseType
         }));
     }
 
@@ -91,8 +95,20 @@ public class CourseController : ControllerBase
             return Conflict($"Course code '{request.Code}' already exists in this department.");
 
         var course = new Course(request.Title, request.Code, request.CreditHours, request.DepartmentId);
+
+        // Final-Touches Phase 19 Stage 19.1/19.2 — apply semester/duration/grading configuration
+        if (request.HasSemesters)
+            course.SetSemesterBased(request.TotalSemesters ?? 0, request.GradingType ?? "GPA");
+        else
+            course.SetNonSemesterBased(request.DurationValue ?? 0, request.DurationUnit ?? "Months", request.GradingType ?? "GPA");
+
         await _repo.AddAsync(course, ct);
         await _repo.SaveChangesAsync(ct);
+
+        // Final-Touches Phase 19 Stage 19.1 — auto-create semester rows for semester-based courses
+        if (request.HasSemesters && (request.TotalSemesters ?? 0) > 0)
+            await _courseService.AutoCreateSemestersAsync(course.Id, ct);
+
         return CreatedAtAction(nameof(GetById), new { id = course.Id }, new { course.Id });
     }
 

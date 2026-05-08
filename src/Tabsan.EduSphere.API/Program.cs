@@ -226,6 +226,11 @@ builder.Services.AddScoped<Tabsan.EduSphere.Domain.Interfaces.IGraduationReposit
 builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.ICertificateGenerator, Tabsan.EduSphere.Infrastructure.Services.CertificateGenerator>();
 builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IGraduationService, Tabsan.EduSphere.Application.Academic.GraduationService>();
 
+// ── Phase 19: Advanced Course Creation & Grading Config ────────────────────
+builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.ICourseService, Tabsan.EduSphere.Application.Academic.CourseService>();
+builder.Services.AddScoped<Tabsan.EduSphere.Domain.Interfaces.ICourseGradingRepository, Tabsan.EduSphere.Infrastructure.Repositories.CourseGradingRepository>();
+builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.ICourseGradingService, Tabsan.EduSphere.Application.Academic.CourseGradingService>();
+
 // ── Rate limiting (OWASP hardening) ─────────────────────────────────────
 builder.Services.AddRateLimiter(opts =>
 {

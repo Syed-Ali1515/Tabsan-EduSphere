@@ -233,6 +233,10 @@ public class ApplicationDbContext : DbContext
     /// <summary>Individual approval records per stage within a graduation application.</summary>
     public DbSet<GraduationApplicationApproval> GraduationApplicationApprovals => Set<GraduationApplicationApproval>();
 
+    // ── Phase 19: Advanced Course Creation & Grading Config ────────────────────
+    /// <summary>Per-course grading configurations (pass threshold, grade ranges).</summary>
+    public DbSet<CourseGradingConfig> CourseGradingConfigs => Set<CourseGradingConfig>();
+
     /// <summary>
     /// Scans the current assembly for all IEntityTypeConfiguration implementations
     /// and applies them automatically. This keeps OnModelCreating clean as the

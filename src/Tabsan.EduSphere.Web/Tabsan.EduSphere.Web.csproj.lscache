@@ -474,6 +474,7 @@ Views/
   ForceChangePassword.cshtml
   Fyp.cshtml
   Gradebook.cshtml
+  GradingConfig.cshtml
   GraduationApplicationDetail.cshtml
   GraduationApplications.cshtml
   GraduationApply.cshtml
@@ -548,6 +549,7 @@ Views/
   ForceChangePassword.cshtml
   Fyp.cshtml
   Gradebook.cshtml
+  GradingConfig.cshtml
   GraduationApplicationDetail.cshtml
   GraduationApplications.cshtml
   GraduationApply.cshtml

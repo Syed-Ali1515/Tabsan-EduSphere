@@ -11,12 +11,14 @@ public class CourseRepository : ICourseRepository
     private readonly ApplicationDbContext _db;
     public CourseRepository(ApplicationDbContext db) => _db = db;
 
-    /// <summary>Returns all courses, optionally filtered by department, ordered by code.</summary>
-    public async Task<IReadOnlyList<Course>> GetAllAsync(Guid? departmentId = null, CancellationToken ct = default)
+    /// <summary>Returns all courses, optionally filtered by department and/or HasSemesters, ordered by code.</summary>
+    public async Task<IReadOnlyList<Course>> GetAllAsync(Guid? departmentId = null, bool? hasSemesters = null, CancellationToken ct = default)
     {
         var query = _db.Courses.Include(c => c.Department).AsQueryable();
         if (departmentId.HasValue)
             query = query.Where(c => c.DepartmentId == departmentId.Value);
+        if (hasSemesters.HasValue)
+            query = query.Where(c => c.HasSemesters == hasSemesters.Value);
         return await query.OrderBy(c => c.Code).ToListAsync(ct);
     }
 

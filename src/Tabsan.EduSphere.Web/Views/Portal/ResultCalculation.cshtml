@@ -17,6 +17,30 @@
 }
 else
 {
+    @* Final-Touches Phase 19 Stage 19.3 — Course type and course filter *@
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Course Type</label>
+                    <select id="courseTypeFilter" class="form-select" onchange="loadCoursesForType()">
+                        <option value="">All Courses</option>
+                        <option value="true">Semester-Based</option>
+                        <option value="false">Non-Semester-Based</option>
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label">Course</label>
+                    <select id="courseFilter" class="form-select">
+                        <option value="">All (no filter)</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <input type="text" id="courseSearch" class="form-control" placeholder="Search course…" oninput="filterCourseDropdown()">
+                </div>
+            </div>
+        </div>
+    </div>
     <form asp-action="SaveResultCalculation" method="post" class="d-grid gap-4" id="resultCalculationForm">
         @Html.AntiForgeryToken()
 
@@ -208,5 +232,36 @@ else
         });
 
         updateComponentTotal();
+
+        // Final-Touches Phase 19 Stage 19.3 — course type filter JS
+        var _allCourses = [];
+        async function loadCoursesForType() {
+            var type = document.getElementById('courseTypeFilter').value;
+            var url = '/api/v1/course' + (type !== '' ? '?hasSemesters=' + type : '');
+            try {
+                var r = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                if (r.ok) {
+                    _allCourses = await r.json();
+                    populateCourseDropdown(_allCourses);
+                }
+            } catch(e) { console.warn('Could not load courses', e); }
+        }
+        function populateCourseDropdown(courses) {
+            var sel = document.getElementById('courseFilter');
+            sel.innerHTML = '<option value="">All (no filter)</option>';
+            courses.forEach(function(c) {
+                var opt = document.createElement('option');
+                opt.value = c.id;
+                opt.textContent = c.code + ' — ' + c.title;
+                sel.appendChild(opt);
+            });
+        }
+        function filterCourseDropdown() {
+            var term = document.getElementById('courseSearch').value.toLowerCase();
+            var filtered = _allCourses.filter(function(c) {
+                return c.code.toLowerCase().includes(term) || c.title.toLowerCase().includes(term);
+            });
+            populateCourseDropdown(filtered);
+        }
     </script>
 }

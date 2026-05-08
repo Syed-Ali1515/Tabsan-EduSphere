@@ -55,7 +55,7 @@ else
                             <table class="table table-sm table-hover mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Code</th><th>Title</th><th>Dept</th><th>Cr.</th>
+                                        <th>Code</th><th>Title</th><th>Dept</th><th>Cr.</th><th>Type</th>
                                         @if (User.IsInRole("SuperAdmin") || User.IsInRole("Admin")) { <th></th> }
                                     </tr>
                                 </thead>
@@ -67,6 +67,16 @@ else
                                             <td>@c.Title</td>
                                             <td>@c.DepartmentName</td>
                                             <td class="text-center">@c.CreditHours</td>
+                                            <td class="text-center">
+                                                @if (c.HasSemesters)
+                                                {
+                                                    <span class="badge bg-info text-dark">Semester (@c.TotalSemesters)</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">@(c.DurationValue) @(c.DurationUnit)</span>
+                                                }
+                                            </td>
                                             @if (User.IsInRole("SuperAdmin") || User.IsInRole("Admin"))
                                             {
                                                 <td>
@@ -176,11 +186,48 @@ else
                     <div class="mb-3">
                         <label class="form-label">Department <span class="text-danger">*</span></label>
                         <select name="departmentId" class="form-select" required>
-                            <option value="">Select departmentâ€¦</option>
+                            <option value="">Select department…</option>
                             @foreach (var d in Model.Departments)
                             {
                                 <option value="@d.Id" selected="@(Model.SelectedDepartmentId == d.Id ? "selected" : null)">@d.Name</option>
                             }
+                        </select>
+                    </div>
+                    @* Final-Touches Phase 19 Stage 19.1/19.2 — semester vs duration and grading type *@
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="hasSemesters" id="hasSemesters" value="true" checked onchange="toggleCourseType()">
+                            <label class="form-check-label" for="hasSemesters">This course is semester-based</label>
+                        </div>
+                    </div>
+                    <div id="semesterFields">
+                        <div class="mb-3">
+                            <label class="form-label">Number of Semesters</label>
+                            <input type="number" name="totalSemesters" class="form-control" min="1" max="16" value="4">
+                        </div>
+                    </div>
+                    <div id="durationFields" style="display:none">
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <label class="form-label">Duration</label>
+                                <input type="number" name="durationValue" class="form-control" min="1" value="6">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Unit</label>
+                                <select name="durationUnit" class="form-select">
+                                    <option value="Weeks">Weeks</option>
+                                    <option value="Months" selected>Months</option>
+                                    <option value="Years">Years</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Grading Type</label>
+                        <select name="gradingType" class="form-select">
+                            <option value="GPA" selected>GPA</option>
+                            <option value="Percentage">Percentage</option>
+                            <option value="Grade">Grade</option>
                         </select>
                     </div>
                 </div>
@@ -192,6 +239,13 @@ else
         </form>
     </div>
 </div>
+<script>
+function toggleCourseType() {
+    var cb = document.getElementById('hasSemesters');
+    document.getElementById('semesterFields').style.display = cb.checked ? '' : 'none';
+    document.getElementById('durationFields').style.display = cb.checked ? 'none' : '';
+}
+</script>
 
 @* â”€â”€ Create Offering Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ *@
 <div class="modal fade" id="createOfferingModal" tabindex="-1">

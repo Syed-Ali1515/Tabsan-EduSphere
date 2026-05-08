@@ -1,0 +1,151 @@
+@model Tabsan.EduSphere.Web.Models.Portal.GradingConfigPageModel
+@{
+    ViewData["Title"]     = "Course Grading Configuration";
+    ViewData["PageTitle"] = "Grading Configuration";
+    ViewData["ActivePage"] = "grading_config";
+}
+
+@* Final-Touches Phase 19 Stage 19.4 — SuperAdmin grading config page *@
+
+@if (!Model.IsConnected)
+{
+    <div class="alert alert-warning">API is not available. Grading configuration cannot be managed offline.</div>
+    return;
+}
+
+@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        @Model.SuccessMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        @Model.ErrorMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <h6 class="card-title mb-3">Select Course</h6>
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label">Course</label>
+                <select name="courseId" class="form-select" onchange="this.form.submit()">
+                    <option value="">-- Select a course --</option>
+                    @foreach (var c in Model.Courses)
+                    {
+                        if (Model.SelectedCourseId == c.Id)
+                        {
+                            <option value="@c.Id" selected>@c.Code — @c.Title</option>
+                        }
+                        else
+                        {
+                            <option value="@c.Id">@c.Code — @c.Title</option>
+                        }
+                    }
+                </select>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (Model.SelectedCourseId.HasValue)
+{
+    var selectedCourse = Model.Courses.FirstOrDefault(c => c.Id == Model.SelectedCourseId);
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent">
+            <strong>@(selectedCourse?.Code ?? "") — @(selectedCourse?.Title ?? "")</strong>
+        </div>
+        <div class="card-body">
+            <form asp-action="SaveGradingConfig" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="courseId" value="@Model.SelectedCourseId" />
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label class="form-label">Pass Threshold (%)</label>
+                        <input type="number" name="passThreshold" class="form-control"
+                               step="0.01" min="0" max="100" value="@Model.PassThreshold" required>
+                        <small class="text-muted">Minimum score to pass this course.</small>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Grading Type</label>
+                        <select name="gradingType" class="form-select">
+                            @{
+                                var gt = Model.GradingType;
+                            }
+                            @if (gt == "GPA")        { <option value="GPA" selected>GPA</option> }
+                            else                     { <option value="GPA">GPA</option> }
+                            @if (gt == "Percentage") { <option value="Percentage" selected>Percentage</option> }
+                            else                     { <option value="Percentage">Percentage</option> }
+                            @if (gt == "Grade")      { <option value="Grade" selected>Grade</option> }
+                            else                     { <option value="Grade">Grade</option> }
+                        </select>
+                    </div>
+                </div>
+
+                @* Grade Range Builder *@
+                <h6 class="mb-3">Grade Ranges <small class="text-muted">(optional)</small></h6>
+                <div id="gradeRanges" class="mb-3">
+                    @foreach (var r in Model.GradeRanges)
+                    {
+                        <div class="grade-range-row row g-2 align-items-center mb-2">
+                            <div class="col-3">
+                                <input type="number" placeholder="From" value="@r.From" class="form-control form-control-sm range-from" min="0" max="100">
+                            </div>
+                            <div class="col-3">
+                                <input type="number" placeholder="To" value="@r.To" class="form-control form-control-sm range-to" min="0" max="100">
+                            </div>
+                            <div class="col-4">
+                                <input type="text" placeholder="Label (e.g. A+)" value="@r.Label" class="form-control form-control-sm range-label" maxlength="10">
+                            </div>
+                            <div class="col-2">
+                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)">×</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-secondary mb-3" onclick="addRangeRow()">+ Add Grade Range</button>
+
+                @* Hidden field — populated by JS before submit *@
+                <input type="hidden" name="gradeRangesJson" id="gradeRangesJson" />
+
+                <div>
+                    <button type="submit" class="btn btn-primary" onclick="buildRangesJson()">Save Configuration</button>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+@section Scripts {
+<script>
+function addRangeRow() {
+    var row = document.createElement('div');
+    row.className = 'grade-range-row row g-2 align-items-center mb-2';
+    row.innerHTML = '<div class="col-3"><input type="number" placeholder="From" class="form-control form-control-sm range-from" min="0" max="100"></div>' +
+                    '<div class="col-3"><input type="number" placeholder="To" class="form-control form-control-sm range-to" min="0" max="100"></div>' +
+                    '<div class="col-4"><input type="text" placeholder="Label (e.g. A+)" class="form-control form-control-sm range-label" maxlength="10"></div>' +
+                    '<div class="col-2"><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow(this)">×</button></div>';
+    document.getElementById('gradeRanges').appendChild(row);
+}
+function removeRow(btn) { btn.closest('.grade-range-row').remove(); }
+function buildRangesJson() {
+    var rows = document.querySelectorAll('.grade-range-row');
+    var ranges = [];
+    rows.forEach(function(row) {
+        var from = row.querySelector('.range-from').value;
+        var to   = row.querySelector('.range-to').value;
+        var lbl  = row.querySelector('.range-label').value;
+        if (from !== '' && to !== '' && lbl !== '')
+            ranges.push({ From: parseInt(from), To: parseInt(to), Label: lbl });
+    });
+    document.getElementById('gradeRangesJson').value = ranges.length ? JSON.stringify(ranges) : '';
+}
+</script>
+}

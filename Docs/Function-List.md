@@ -3535,3 +3535,60 @@ New themes added to site.css and ThemeSettingsPageModel: `neon_mint`, `sakura_pi
 | `GraduationApply.cshtml` | View (new) | Student apply/status page with existing applications table and submit form |
 | `GraduationApplications.cshtml` | View (new) | Staff application list with status/department filters |
 | `GraduationApplicationDetail.cshtml` | View (new) | Full detail with approval history timeline, certificate download, approve/reject actions |
+
+---
+
+## Phase 19 — Advanced Course Creation & Result Configuration
+
+### Domain (Phase 19)
+
+| Symbol | Type | Notes |
+|--------|------|-------|
+| `Course.HasSemesters` | Property (new) | `bool`, default `true`; indicates semester-based course |
+| `Course.TotalSemesters` | Property (new) | `int?`; number of semesters for semester-based courses |
+| `Course.DurationValue` | Property (new) | `int?`; numeric duration for non-semester courses |
+| `Course.DurationUnit` | Property (new) | `string?` (Weeks/Months/Years) |
+| `Course.GradingType` | Property (new) | `string`, default `"GPA"` |
+| `Course.SetSemesterBased(totalSemesters, gradingType)` | Method (new) | Sets HasSemesters=true |
+| `Course.SetNonSemesterBased(durationValue, durationUnit, gradingType)` | Method (new) | Sets HasSemesters=false |
+| `CourseGradingConfig` | Entity (new) | Per-course grading config; `PassThreshold`, `GradingType`, `GradeRangesJson` |
+| `ICourseGradingRepository` | Interface (new) | `GetByCourseIdAsync`, `AddAsync`, `Update`, `SaveChangesAsync` |
+| `ICourseRepository.GetAllAsync` | Method (updated) | Now accepts `bool? hasSemesters` filter |
+
+### Application (Phase 19)
+
+| Symbol | Type | Notes |
+|--------|------|-------|
+| `ICourseService` | Interface (new) | `AutoCreateSemestersAsync(courseId)` |
+| `CourseService` | Service (new) | Idempotent auto-creates semester rows for semester-based courses |
+| `ICourseGradingService` | Interface (new) | `GetConfigAsync`, `UpsertConfigAsync` |
+| `CourseGradingService` | Service (new) | Validates and upserts course grading config |
+| `CreateCourseRequest` | DTO (updated) | Extended with `HasSemesters`, `TotalSemesters`, `DurationValue`, `DurationUnit`, `GradingType` |
+| `CourseGradingConfigDto` | DTO (new) | Response DTO for grading config |
+| `SaveCourseGradingConfigRequest` | DTO (new) | Request DTO for upsert |
+
+### API — Controller (Phase 19)
+
+| Endpoint | Auth | Notes |
+|----------|------|-------|
+| `GET /api/v1/course?hasSemesters={bool}` | Authenticated | Filter by course type |
+| `POST /api/v1/course` | Admin/SuperAdmin | Creates course with semester/duration/grading config; auto-creates semester rows |
+| `GET /api/v1/grading-config/{courseId}` | Authenticated | Returns per-course grading config |
+| `PUT /api/v1/grading-config/{courseId}` | SuperAdmin | Creates or updates grading config |
+
+### Web — EduApiClient + PortalController + Views (Phase 19)
+
+| Symbol | Type | Notes |
+|--------|------|-------|
+| `EduApiClient.CreateCourseAsync` | Method (updated) | Now includes hasSemesters, totalSemesters, durationValue, durationUnit, gradingType |
+| `EduApiClient.GetCourseDetailsByTypeAsync` | Method (new) | Filter courses by HasSemesters |
+| `EduApiClient.GetCourseGradingConfigAsync` | Method (new) | Fetch grading config for course |
+| `EduApiClient.SaveCourseGradingConfigAsync` | Method (new) | PUT grading config then re-fetch |
+| `GradingConfigApiModel` | Class (new) | API response model for grading config |
+| `GradingConfigPageModel` | View model (new) | SuperAdmin grading config page model |
+| `GradeRangeItem` | View model (new) | Grade range row: From, To, Label |
+| `PortalController.GradingConfig` | Action (new) | GET — loads courses + existing config |
+| `PortalController.SaveGradingConfig` | Action (new) | POST — saves config, redirects |
+| `GradingConfig.cshtml` | View (new) | SuperAdmin page: course selector, pass threshold, grade-range builder |
+| `Courses.cshtml` | View (updated) | Create modal now has HasSemesters toggle, duration/semesters fields, grading type; table shows Type badge |
+| `ResultCalculation.cshtml` | View (updated) | Stage 19.3: Course Type + Course filter panel at top |

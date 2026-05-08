@@ -822,5 +822,15 @@ Stage 15.1 adds prerequisite-based enrollment blocking with detailed unmet-prere
 - [x] EF Migration `Phase18_GraduationWorkflow` — tables `graduation_applications`, `graduation_application_approvals`.
 - [x] 78/78 unit tests passing
 
+## Phase 19 — Advanced Course Creation & Result Configuration ✅ Complete
+
+- [x] Stage 19.1: `Course` entity extended — `HasSemesters`, `TotalSemesters`; domain methods `SetSemesterBased`, `SetNonSemesterBased`; `AutoCreateSemestersAsync` creates standalone semester rows for semester-based courses on creation.
+- [x] Stage 19.2: `Course` entity extended — `DurationValue`, `DurationUnit`, `GradingType` for non-semester courses.
+- [x] Stage 19.3: `ResultCalculation.cshtml` updated with Course Type (Semester-Based / Non-Semester-Based) and Course filter dropdowns (AJAX-powered via `GET /api/v1/course?hasSemesters=`).
+- [x] Stage 19.4: `CourseGradingConfig` entity; `ICourseGradingRepository` + `CourseGradingRepository`; `ICourseGradingService` + `CourseGradingService`; `GradingConfigController` (`GET/PUT /api/v1/grading-config/{courseId}`); `GradingConfig.cshtml` SuperAdmin page with grade-range builder.
+- [x] `Courses.cshtml` modal form updated with HasSemesters toggle, semester count / duration fields, grading type selector; course table shows Type badge.
+- [x] EF Migration `Phase19_CourseTypeAndGrading` — adds columns to `courses` table, new table `course_grading_configs`.
+- [x] 78/78 unit tests passing
+
 ## Next Phase To Execute
-Phase 19 — (see Docs/Enhancements.md for full spec).
+Phase 20 — (see Docs/Enhancements.md for full spec).

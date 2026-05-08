@@ -499,6 +499,12 @@ public class CourseItem
     public string Code           { get; set; } = "";
     public string DepartmentName { get; set; } = "";
     public int    CreditHours    { get; set; }
+    // Final-Touches Phase 19 Stage 19.1/19.2 — extended course fields
+    public bool   HasSemesters   { get; set; } = true;
+    public int?   TotalSemesters { get; set; }
+    public int?   DurationValue  { get; set; }
+    public string? DurationUnit  { get; set; }
+    public string GradingType    { get; set; } = "GPA";
 }
 
 public class CourseOfferingItem
@@ -1778,4 +1784,28 @@ public class GraduationApplicationDetailPageModel
     public GraduationApplicationDetailWebModel? Application { get; set; }
     public string?                              SuccessMessage { get; set; }
     public string?                              ErrorMessage   { get; set; }
+}
+
+// ── Phase 19: Advanced Course Creation & Grading Config ───────────────────────
+
+// Final-Touches Phase 19 Stage 19.4 — grade range item for the grading config builder
+public class GradeRangeItem
+{
+    public int    From  { get; set; }
+    public int    To    { get; set; }
+    public string Label { get; set; } = "";
+}
+
+// Final-Touches Phase 19 Stage 19.4 — page model for per-course grading config UI
+public class GradingConfigPageModel
+{
+    public List<CourseItem>     Courses       { get; set; } = new();
+    public List<LookupItem>     Departments   { get; set; } = new();
+    public Guid?                SelectedCourseId  { get; set; }
+    public decimal              PassThreshold     { get; set; } = 50;
+    public string               GradingType       { get; set; } = "GPA";
+    public List<GradeRangeItem> GradeRanges       { get; set; } = new();
+    public string?              SuccessMessage     { get; set; }
+    public string?              ErrorMessage       { get; set; }
+    public bool                 IsConnected        { get; set; }
 }

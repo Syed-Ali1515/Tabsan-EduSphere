@@ -70,6 +70,21 @@ public class CourseConfiguration : IEntityTypeConfiguration<Course>
                .HasConversion<int>()
                .HasDefaultValue(Domain.Academic.CourseType.Core);
 
+        // Final-Touches Phase 19 Stage 19.1 — semester-based flag
+        builder.Property(c => c.HasSemesters)
+               .IsRequired()
+               .HasDefaultValue(true);
+
+        builder.Property(c => c.TotalSemesters);
+
+        // Final-Touches Phase 19 Stage 19.2 — non-semester duration + grading type
+        builder.Property(c => c.DurationUnit).HasMaxLength(20);
+
+        builder.Property(c => c.GradingType)
+               .IsRequired()
+               .HasMaxLength(20)
+               .HasDefaultValue("GPA");
+
         builder.HasQueryFilter(c => !c.IsDeleted);
     }
 }
@@ -216,5 +231,37 @@ public class GraduationApplicationApprovalConfiguration : IEntityTypeConfigurati
         builder.HasKey(ap => ap.Id);
         builder.Property(ap => ap.Stage).IsRequired().HasConversion<int>();
         builder.Property(ap => ap.Note).HasMaxLength(1000);
+    }
+}
+
+// Final-Touches Phase 19 Stage 19.4 — CourseGradingConfig EF configuration
+/// <summary>EF Core configuration for CourseGradingConfig.</summary>
+public class CourseGradingConfigConfiguration : IEntityTypeConfiguration<CourseGradingConfig>
+{
+    public void Configure(EntityTypeBuilder<CourseGradingConfig> builder)
+    {
+        builder.ToTable("course_grading_configs");
+        builder.HasKey(c => c.Id);
+
+        builder.Property(c => c.PassThreshold)
+               .IsRequired()
+               .HasColumnType("decimal(5,2)");
+
+        builder.Property(c => c.GradingType)
+               .IsRequired()
+               .HasMaxLength(20);
+
+        builder.Property(c => c.GradeRangesJson)
+               .HasMaxLength(4000);
+
+        // One course → one grading config
+        builder.HasOne(c => c.Course)
+               .WithMany()
+               .HasForeignKey(c => c.CourseId)
+               .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasIndex(c => c.CourseId)
+               .IsUnique()
+               .HasDatabaseName("IX_course_grading_configs_courseId");
     }
 }

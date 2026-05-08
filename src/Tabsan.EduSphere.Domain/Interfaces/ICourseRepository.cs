@@ -5,8 +5,8 @@ namespace Tabsan.EduSphere.Domain.Interfaces;
 /// <summary>Repository interface for Course catalogue and CourseOffering operations.</summary>
 public interface ICourseRepository
 {
-    /// <summary>Returns all course definitions, optionally filtered by department.</summary>
-    Task<IReadOnlyList<Course>> GetAllAsync(Guid? departmentId = null, CancellationToken ct = default);
+    /// <summary>Returns all course definitions, optionally filtered by department and/or HasSemesters.</summary>
+    Task<IReadOnlyList<Course>> GetAllAsync(Guid? departmentId = null, bool? hasSemesters = null, CancellationToken ct = default);
 
     /// <summary>Returns the course with the given ID, or null.</summary>
     Task<Course?> GetByIdAsync(Guid id, CancellationToken ct = default);

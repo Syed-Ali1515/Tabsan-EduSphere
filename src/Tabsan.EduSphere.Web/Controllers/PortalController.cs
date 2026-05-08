@@ -1208,14 +1208,63 @@ public class PortalController : Controller
     }
 
     [HttpPost, ValidateAntiForgeryToken]
-    public async Task<IActionResult> CreateCourse(string code, string title, int creditHours, Guid departmentId, Guid? filterDepartmentId, CancellationToken ct)
+    public async Task<IActionResult> CreateCourse(
+        string code, string title, int creditHours, Guid departmentId, Guid? filterDepartmentId,
+        bool hasSemesters, int? totalSemesters, int? durationValue, string? durationUnit, string? gradingType,
+        CancellationToken ct)
     {
         if (_api.IsConnected())
         {
-            try { await _api.CreateCourseAsync(code, title, creditHours, departmentId, ct); TempData["PortalMessage"] = $"Course '{code}' created."; }
+            try
+            {
+                await _api.CreateCourseAsync(code, title, creditHours, departmentId,
+                    hasSemesters, totalSemesters, durationValue, durationUnit, gradingType, ct);
+                TempData["PortalMessage"] = $"Course '{code}' created.";
+            }
             catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
         }
         return RedirectToAction(nameof(Courses), new { departmentId = filterDepartmentId });
+    }
+
+    // Final-Touches Phase 19 Stage 19.4 — GradingConfig page (GET)
+    public async Task<IActionResult> GradingConfig(Guid? courseId, CancellationToken ct)
+    {
+        var model = new GradingConfigPageModel { IsConnected = _api.IsConnected() };
+        if (model.IsConnected)
+        {
+            var courses = await _api.GetCourseDetailsAsync(null, ct);
+            model.Courses = courses;
+            model.SelectedCourseId = courseId;
+            if (courseId.HasValue)
+            {
+                var config = await _api.GetCourseGradingConfigAsync(courseId.Value, ct);
+                if (config != null)
+                {
+                    model.PassThreshold = config.PassThreshold;
+                    model.GradingType   = config.GradingType ?? "GPA";
+                    if (!string.IsNullOrWhiteSpace(config.GradeRangesJson))
+                        model.GradeRanges = System.Text.Json.JsonSerializer.Deserialize<List<GradeRangeItem>>(config.GradeRangesJson) ?? new();
+                }
+            }
+        }
+        model.SuccessMessage = TempData["PortalMessage"] as string;
+        return View(model);
+    }
+
+    // Final-Touches Phase 19 Stage 19.4 — GradingConfig save (POST)
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> SaveGradingConfig(Guid courseId, decimal passThreshold, string gradingType, string? gradeRangesJson, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try
+            {
+                await _api.SaveCourseGradingConfigAsync(courseId, passThreshold, gradingType, gradeRangesJson, ct);
+                TempData["PortalMessage"] = "Grading configuration saved.";
+            }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(GradingConfig), new { courseId });
     }
 
     [HttpPost, ValidateAntiForgeryToken]

@@ -55,6 +55,8 @@ TemporaryDependencyNodeTargetIdentifier=net8.0
 [sourceFiles]
 Academic/
  AcademicCalendarService.cs
+ CourseGradingService.cs
+ CourseService.cs
  DegreeAuditService.cs
  EnrollmentService.cs
  GraduationService.cs
@@ -71,6 +73,7 @@ Auth/AuthService.cs
 DTOs/Academic/
  AcademicDeadlineDTOs.cs
  AcademicDtos.cs
+ CourseGradingDTOs.cs
  DegreeAuditDTOs.cs
  EnrollmentRulesDTOs.cs
  GraduationDTOs.cs
@@ -109,6 +112,8 @@ Interfaces/
  IAuthService.cs
  IBuildingRoomService.cs
  ICertificateGenerator.cs
+ ICourseGradingService.cs
+ ICourseService.cs
  ICsvRegistrationImportService.cs
  IDegreeAuditService.cs
  IEmailSender.cs

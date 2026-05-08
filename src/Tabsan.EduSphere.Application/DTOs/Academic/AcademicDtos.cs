@@ -16,7 +16,17 @@ public sealed record CreateSemesterRequest(string Name, DateTime StartDate, Date
 // ── Course DTOs ───────────────────────────────────────────────────────────────
 
 /// <summary>Request body for adding a course to the catalogue.</summary>
-public sealed record CreateCourseRequest(string Title, string Code, int CreditHours, Guid DepartmentId);
+// Final-Touches Phase 19 Stage 19.1/19.2 — extended with semester/duration/grading fields
+public sealed record CreateCourseRequest(
+    string Title,
+    string Code,
+    int CreditHours,
+    Guid DepartmentId,
+    bool HasSemesters = true,
+    int? TotalSemesters = null,
+    int? DurationValue = null,
+    string? DurationUnit = null,
+    string? GradingType = null);
 
 /// <summary>Request body for updating a course title.</summary>
 public sealed record UpdateCourseTitleRequest(string NewTitle);

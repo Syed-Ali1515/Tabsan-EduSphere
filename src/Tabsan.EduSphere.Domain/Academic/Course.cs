@@ -40,6 +40,24 @@ public class Course : AuditableEntity
     /// <summary>Whether this course is a core requirement or an elective.</summary>
     public CourseType CourseType { get; private set; } = CourseType.Core;
 
+    // Final-Touches Phase 19 Stage 19.1 — semester-based flag and total semester count
+    /// <summary>True for degree programmes with defined semesters; false for short-duration courses.</summary>
+    public bool HasSemesters { get; private set; } = true;
+
+    /// <summary>Number of semesters to auto-generate when HasSemesters is true.</summary>
+    public int? TotalSemesters { get; private set; }
+
+    // Final-Touches Phase 19 Stage 19.2 — non-semester duration fields
+    /// <summary>Duration value for non-semester courses (e.g. 6 for "6 Weeks").</summary>
+    public int? DurationValue { get; private set; }
+
+    /// <summary>Duration unit for non-semester courses: "Weeks", "Months", or "Years".</summary>
+    public string? DurationUnit { get; private set; }
+
+    // Final-Touches Phase 19 Stage 19.2 — grading type
+    /// <summary>How results are graded: "GPA", "Percentage", or "Grade".</summary>
+    public string GradingType { get; private set; } = "GPA";
+
     private Course() { }
 
     public Course(string title, string code, int creditHours, Guid departmentId)
@@ -62,6 +80,38 @@ public class Course : AuditableEntity
     public void SetCourseType(CourseType courseType)
     {
         CourseType = courseType;
+        Touch();
+    }
+
+    // Final-Touches Phase 19 Stage 19.1 — configure as semester-based course
+    /// <summary>Configures this as a semester-based course and records how many semesters to auto-generate.</summary>
+    public void SetSemesterBased(int totalSemesters, string gradingType = "GPA")
+    {
+        HasSemesters = true;
+        TotalSemesters = totalSemesters;
+        DurationValue = null;
+        DurationUnit = null;
+        GradingType = gradingType;
+        Touch();
+    }
+
+    // Final-Touches Phase 19 Stage 19.2 — configure as non-semester (short-duration) course
+    /// <summary>Configures this as a non-semester course with an explicit duration.</summary>
+    public void SetNonSemesterBased(int durationValue, string durationUnit, string gradingType)
+    {
+        HasSemesters = false;
+        TotalSemesters = null;
+        DurationValue = durationValue;
+        DurationUnit = durationUnit;
+        GradingType = gradingType;
+        Touch();
+    }
+
+    // Final-Touches Phase 19 Stage 19.2 — update grading type independently
+    /// <summary>Updates the grading type (GPA / Percentage / Grade).</summary>
+    public void SetGradingType(string gradingType)
+    {
+        GradingType = gradingType;
         Touch();
     }
 

@@ -99,6 +99,8 @@ Migrations/
  20260507231326_Phase17_DegreeAudit.Designer.cs
  20260508003259_Phase18_GraduationWorkflow.cs
  20260508003259_Phase18_GraduationWorkflow.Designer.cs
+ 20260508043559_Phase19_CourseTypeAndGrading.cs
+ 20260508043559_Phase19_CourseTypeAndGrading.Designer.cs
  ApplicationDbContextModelSnapshot.cs
 Modules/ModuleEntitlementResolver.cs
 obj/Debug/net8.0/
@@ -173,6 +175,7 @@ Repositories/
  AiChatRepository.cs
  AssignmentResultRepositories.cs
  BuildingRoomRepository.cs
+ CourseGradingRepository.cs
  CourseRepository.cs
  DegreeAuditRepository.cs
  DepartmentRepository.cs

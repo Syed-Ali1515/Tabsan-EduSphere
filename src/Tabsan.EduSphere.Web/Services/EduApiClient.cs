@@ -132,12 +132,18 @@ public interface IEduApiClient
 
     // Courses / Offerings
     Task<List<CourseItem>> GetCourseDetailsAsync(Guid? departmentId, CancellationToken ct);
+    // Final-Touches Phase 19 Stage 19.3 — filtered by hasSemesters
+    Task<List<CourseItem>> GetCourseDetailsByTypeAsync(bool hasSemesters, CancellationToken ct);
     Task<List<CourseOfferingItem>> GetCourseOfferingsAsync(Guid? departmentId, CancellationToken ct);
     Task<List<LookupItem>> GetMyOfferingsAsync(CancellationToken ct);
-    Task CreateCourseAsync(string code, string title, int creditHours, Guid departmentId, CancellationToken ct);
+    // Final-Touches Phase 19 Stage 19.1/19.2 — extended create with semester/duration/grading
+    Task CreateCourseAsync(string code, string title, int creditHours, Guid departmentId, bool hasSemesters, int? totalSemesters, int? durationValue, string? durationUnit, string? gradingType, CancellationToken ct);
     Task CreateOfferingAsync(Guid courseId, Guid semesterId, int maxEnrollment, Guid? facultyUserId, CancellationToken ct);
     Task DeactivateCourseAsync(Guid id, CancellationToken ct);
     Task DeleteOfferingAsync(Guid id, CancellationToken ct);
+    // Final-Touches Phase 19 Stage 19.4 — per-course grading config
+    Task<GradingConfigApiModel?> GetCourseGradingConfigAsync(Guid courseId, CancellationToken ct);
+    Task<GradingConfigApiModel?> SaveCourseGradingConfigAsync(Guid courseId, decimal passThreshold, string gradingType, string? gradeRangesJson, CancellationToken ct);
 
     // Assignments
     Task<List<AssignmentItem>> GetMyAssignmentsAsync(CancellationToken ct);
@@ -1271,14 +1277,14 @@ public class EduApiClient : IEduApiClient
             ? $"api/v1/course?departmentId={departmentId.Value}"
             : "api/v1/course";
         var raw = await GetAsync<List<CourseDetailDto>>(path, ct) ?? new();
-        return raw.Select(c => new CourseItem
-        {
-            Id             = c.Id,
-            Title          = c.Title ?? "",
-            Code           = c.Code ?? "",
-            DepartmentName = c.DepartmentName ?? "",
-            CreditHours    = c.CreditHours
-        }).ToList();
+        return raw.Select(MapCourseItem).ToList();
+    }
+
+    // Final-Touches Phase 19 Stage 19.3 — get courses filtered by HasSemesters
+    public async Task<List<CourseItem>> GetCourseDetailsByTypeAsync(bool hasSemesters, CancellationToken ct)
+    {
+        var raw = await GetAsync<List<CourseDetailDto>>($"api/v1/course?hasSemesters={hasSemesters}", ct) ?? new();
+        return raw.Select(MapCourseItem).ToList();
     }
 
     public async Task<List<CourseOfferingItem>> GetCourseOfferingsAsync(Guid? departmentId, CancellationToken ct)
@@ -1310,8 +1316,19 @@ public class EduApiClient : IEduApiClient
         }).ToList();
     }
 
-    public Task CreateCourseAsync(string code, string title, int creditHours, Guid departmentId, CancellationToken ct)
-        => PostAsync<object, object>("api/v1/course", new { code, title, creditHours, departmentId }, ct);
+    public Task CreateCourseAsync(string code, string title, int creditHours, Guid departmentId, bool hasSemesters, int? totalSemesters, int? durationValue, string? durationUnit, string? gradingType, CancellationToken ct)
+        => PostAsync<object, object>("api/v1/course", new { code, title, creditHours, departmentId, hasSemesters, totalSemesters, durationValue, durationUnit, gradingType }, ct);
+
+    // Final-Touches Phase 19 Stage 19.4 — get grading config
+    public Task<GradingConfigApiModel?> GetCourseGradingConfigAsync(Guid courseId, CancellationToken ct)
+        => GetAsync<GradingConfigApiModel>($"api/v1/grading-config/{courseId}", ct);
+
+    // Final-Touches Phase 19 Stage 19.4 — save grading config
+    public async Task<GradingConfigApiModel?> SaveCourseGradingConfigAsync(Guid courseId, decimal passThreshold, string gradingType, string? gradeRangesJson, CancellationToken ct)
+    {
+        await PutAsync<object, object>($"api/v1/grading-config/{courseId}", new { passThreshold, gradingType, gradeRangesJson }, ct);
+        return await GetCourseGradingConfigAsync(courseId, ct);
+    }
 
     public Task CreateOfferingAsync(Guid courseId, Guid semesterId, int maxEnrollment, Guid? facultyUserId, CancellationToken ct)
         => PostAsync<object, object>("api/v1/course/offerings", new { courseId, semesterId, maxEnrollment, facultyUserId }, ct);
@@ -1329,7 +1346,28 @@ public class EduApiClient : IEduApiClient
         public string? Code           { get; set; }
         public string? DepartmentName { get; set; }
         public int     CreditHours    { get; set; }
+        // Final-Touches Phase 19 Stage 19.1/19.2 — extended fields
+        public bool    HasSemesters   { get; set; } = true;
+        public int?    TotalSemesters { get; set; }
+        public int?    DurationValue  { get; set; }
+        public string? DurationUnit   { get; set; }
+        public string? GradingType    { get; set; }
     }
+
+    // Final-Touches Phase 19 Stage 19.1/19.2 — shared mapper
+    private static CourseItem MapCourseItem(CourseDetailDto c) => new()
+    {
+        Id             = c.Id,
+        Title          = c.Title          ?? "",
+        Code           = c.Code           ?? "",
+        DepartmentName = c.DepartmentName ?? "",
+        CreditHours    = c.CreditHours,
+        HasSemesters   = c.HasSemesters,
+        TotalSemesters = c.TotalSemesters,
+        DurationValue  = c.DurationValue,
+        DurationUnit   = c.DurationUnit,
+        GradingType    = c.GradingType    ?? "GPA"
+    };
 
     private sealed class OfferingApiDto
     {
@@ -3488,5 +3526,15 @@ public class EduApiClient : IEduApiClient
         public bool    IsInternalNote { get; set; }
         public DateTime CreatedAt    { get; set; }
     }
+}
+
+// Final-Touches Phase 19 Stage 19.4 — grading config API response model (top-level for interface visibility)
+public sealed class GradingConfigApiModel
+{
+    public Guid    Id              { get; set; }
+    public Guid    CourseId        { get; set; }
+    public decimal PassThreshold   { get; set; }
+    public string? GradingType     { get; set; }
+    public string? GradeRangesJson { get; set; }
 }
 
