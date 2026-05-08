@@ -1,0 +1,133 @@
+EduSphere MSSQL Table Design & Indexing Strategy Guide
+
+OBJECTIVE:
+Design database tables and indexing in MSSQL to support high performance, scalability, and fast query execution for hundreds of thousands to millions of users.
+
+--------------------------------------------------
+1. DATABASE DESIGN PRINCIPLES
+--------------------------------------------------
+- Normalize core entities (Students, Courses, Results, Users).
+- Avoid unnecessary duplication of data.
+- Maintain a clear relationship structure using foreign keys.
+- Keep tables focused and avoid overly large table designs.
+
+--------------------------------------------------
+2. CORE TABLE STRUCTURE (HIGH-LEVEL)
+--------------------------------------------------
+- Users (UserId, Name, Role, InstitutionId)
+- Students (StudentId, UserId, ClassId, CourseId)
+- Institutions (InstitutionId, InstitutionType)
+- Courses (CourseId, Name, HasSemester, InstitutionId)
+- Semesters (SemesterId, CourseId, SequenceNumber)
+- Results (ResultId, StudentId, CourseId, SemesterId, Marks, Grade)
+- Subjects (SubjectId, CourseId, StreamId)
+
+--------------------------------------------------
+3. PRIMARY KEY STRATEGY
+--------------------------------------------------
+- Every table must have a Primary Key (Clustered Index).
+- Use INT IDENTITY for performance (or BIGINT for future scale).
+- Avoid GUID as clustered primary key unless necessary.
+
+--------------------------------------------------
+4. INDEXING STRATEGY (CRITICAL)
+--------------------------------------------------
+
+4.1 Clustered Index
+- Use on Primary Key columns.
+- Keeps data physically sorted.
+
+4.2 Non-Clustered Indexes
+- Create indexes on frequently searched columns:
+  - StudentId
+  - UserId
+  - CourseId
+  - InstitutionId
+  - SemesterId
+
+4.3 Composite Indexes
+- Use for multi-column queries:
+  Example:
+  - (InstitutionId, CourseId)
+  - (StudentId, CourseId)
+
+4.4 Covering Index
+- Include additional columns to avoid extra lookups.
+- Useful for reports and dashboards.
+
+--------------------------------------------------
+5. QUERY OPTIMIZATION
+--------------------------------------------------
+- Avoid SELECT * queries.
+- Always fetch only needed columns.
+- Use WHERE conditions with indexed fields.
+- Use JOINs carefully with indexed keys.
+- Use pagination (OFFSET / FETCH).
+
+--------------------------------------------------
+6. PARTITIONING (FOR LARGE DATA)
+--------------------------------------------------
+- Partition large tables like Results based on:
+  - InstitutionId
+  - Year
+- Improves query performance and maintenance.
+
+--------------------------------------------------
+7. ARCHIVE STRATEGY
+--------------------------------------------------
+- Move old records (e.g., older than 3-5 years) to archive tables.
+- Keeps active tables small and fast.
+
+--------------------------------------------------
+8. TRANSACTION HANDLING
+--------------------------------------------------
+- Keep transactions short.
+- Avoid long-running locks on large tables.
+- Use proper isolation levels.
+
+--------------------------------------------------
+9. STORED PROCEDURES
+--------------------------------------------------
+- Use stored procedures for:
+  - Result calculations
+  - Report generation
+  - Bulk operations
+- Benefits:
+  - Faster execution
+  - Reduced network load
+
+--------------------------------------------------
+10. INDEX MAINTENANCE
+--------------------------------------------------
+- Rebuild fragmented indexes regularly.
+- Monitor index usage and remove unused indexes.
+
+--------------------------------------------------
+11. MONITORING & PERFORMANCE TUNING
+--------------------------------------------------
+- Identify slow queries using execution plans.
+- Optimize queries with high cost.
+- Monitor CPU, memory, and disk usage.
+
+--------------------------------------------------
+12. MULTI-TENANT OPTIMIZATION
+--------------------------------------------------
+- Add InstitutionId to all major tables.
+- Always filter queries by InstitutionId.
+- Prevent data mixing across institutions.
+
+--------------------------------------------------
+13. HIGH-SCALE BEST PRACTICES
+--------------------------------------------------
+- Avoid large joins on huge tables without indexes.
+- Avoid loading thousands of records at once.
+- Break complex queries into smaller steps.
+- Use caching for frequently used data.
+
+--------------------------------------------------
+14. FINAL OUTCOME
+--------------------------------------------------
+- Fast query execution even with millions of rows
+- Efficient data access
+- Reduced server load
+- Scalable system ready for enterprise usage
