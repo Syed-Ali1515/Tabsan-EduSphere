@@ -105,6 +105,8 @@ Migrations/
  20260508050712_Phase20_LMS.Designer.cs
  20260508054215_Phase21_StudyPlanner.cs
  20260508054215_Phase21_StudyPlanner.Designer.cs
+ 20260508132355_Phase22_ExternalIntegrations.cs
+ 20260508132355_Phase22_ExternalIntegrations.Designer.cs
  ApplicationDbContextModelSnapshot.cs
 Modules/ModuleEntitlementResolver.cs
 obj/Debug/net8.0/
@@ -116,6 +118,7 @@ Persistence/
  Configurations/
   AcademicConfigurations.cs
   AcademicDeadlineConfiguration.cs
+  AccreditationTemplateConfiguration.cs
   AdminChangeRequestConfiguration.cs
   AiChatConfigurations.cs
   AssignmentConfigurations.cs
@@ -178,6 +181,7 @@ Repositories/
  AcademicDeadlineRepository.cs
  AcademicRepositories.cs
  AcademicSupportRepositories.cs
+ AccreditationRepository.cs
  AiChatRepository.cs
  AnnouncementRepository.cs
  AssignmentResultRepositories.cs
@@ -413,15 +417,15 @@ Timetable/
  microsoft.entityframeworkcore.sqlserver/8.0.8/lib/net8.0/Microsoft.EntityFrameworkCore.SqlServer.dll
  microsoft.entityframeworkcore/8.0.8/lib/net8.0/Microsoft.EntityFrameworkCore.dll
  microsoft.extensions.caching.abstractions/8.0.0/lib/net8.0/Microsoft.Extensions.Caching.Abstractions.dll
- microsoft.extensions.caching.memory/8.0.0/lib/net8.0/Microsoft.Extensions.Caching.Memory.dll
+ microsoft.extensions.caching.memory/8.0.1/lib/net8.0/Microsoft.Extensions.Caching.Memory.dll
  microsoft.extensions.configuration.abstractions/8.0.0/lib/net8.0/Microsoft.Extensions.Configuration.Abstractions.dll
- microsoft.extensions.dependencyinjection.abstractions/8.0.0/lib/net8.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll
+ microsoft.extensions.dependencyinjection.abstractions/8.0.2/lib/net8.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll
  microsoft.extensions.dependencyinjection/8.0.0/lib/net8.0/Microsoft.Extensions.DependencyInjection.dll
  microsoft.extensions.fileproviders.abstractions/2.2.0/lib/netstandard2.0/Microsoft.Extensions.FileProviders.Abstractions.dll
  microsoft.extensions.hosting.abstractions/2.2.0/lib/netstandard2.0/Microsoft.Extensions.Hosting.Abstractions.dll
  microsoft.extensions.identity.core/8.0.8/lib/net8.0/Microsoft.Extensions.Identity.Core.dll
  microsoft.extensions.identity.stores/8.0.8/lib/net8.0/Microsoft.Extensions.Identity.Stores.dll
- microsoft.extensions.logging.abstractions/8.0.0/lib/net8.0/Microsoft.Extensions.Logging.Abstractions.dll
+ microsoft.extensions.logging.abstractions/8.0.2/lib/net8.0/Microsoft.Extensions.Logging.Abstractions.dll
  microsoft.extensions.logging/8.0.0/lib/net8.0/Microsoft.Extensions.Logging.dll
  microsoft.extensions.objectpool/2.2.0/lib/netstandard2.0/Microsoft.Extensions.ObjectPool.dll
  microsoft.extensions.options/8.0.2/lib/net8.0/Microsoft.Extensions.Options.dll
@@ -460,7 +464,7 @@ Timetable/
  Microsoft.Interop.SourceGeneration.dll
  System.Text.Json.SourceGeneration.dll
  System.Text.RegularExpressions.Generator.dll
-<DOTNET>/sdk/10.0.203/Sdks/Microsoft.NET.Sdk/analyzers/
+<DOTNET>/sdk/10.0.202/Sdks/Microsoft.NET.Sdk/analyzers/
  Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll
  Microsoft.CodeAnalysis.NetAnalyzers.dll
 <NUGET>/microsoft.codeanalysis.analyzers/3.3.3/analyzers/dotnet/cs/
@@ -468,9 +472,9 @@ Timetable/
  Microsoft.CodeAnalysis.CSharp.Analyzers.dll
 <NUGET>/
  microsoft.entityframeworkcore.analyzers/8.0.8/analyzers/dotnet/cs/Microsoft.EntityFrameworkCore.Analyzers.dll
- microsoft.extensions.logging.abstractions/8.0.0/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Logging.Generators.dll
+ microsoft.extensions.logging.abstractions/8.0.2/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Logging.Generators.dll
  microsoft.extensions.options/8.0.2/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Options.SourceGeneration.dll
 
 [analyzerConfigFiles]
-<DOTNET>/sdk/10.0.203/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_8_default.globalconfig
+<DOTNET>/sdk/10.0.202/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_8_default.globalconfig
 obj/Debug/net8.0/Tabsan.EduSphere.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig

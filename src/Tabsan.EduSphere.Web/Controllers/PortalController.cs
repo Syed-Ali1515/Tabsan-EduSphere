@@ -4223,5 +4223,42 @@ public class PortalController : Controller
             return RedirectToAction(nameof(AccreditationTemplates));
         }
     }
+
+    // ── Phase 23 — Institution Policy ─────────────────────────────────────────
+
+    [HttpGet]
+    public async Task<IActionResult> InstitutionPolicy(CancellationToken ct)
+    {
+        var model = new InstitutionPolicyPageModel { IsConnected = _api.IsConnected() };
+        if (!model.IsConnected) return View(model);
+        try
+        {
+            var policy = await _api.GetInstitutionPolicyAsync(ct);
+            model.IncludeSchool     = policy?.IncludeSchool     ?? false;
+            model.IncludeCollege    = policy?.IncludeCollege    ?? false;
+            model.IncludeUniversity = policy?.IncludeUniversity ?? true;
+        }
+        catch (Exception ex) { model.Message = ex.Message; }
+        return View(model);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> InstitutionPolicy(
+        InstitutionPolicyPageModel form, CancellationToken ct)
+    {
+        if (!_api.IsConnected()) return RedirectToAction(nameof(InstitutionPolicy));
+        try
+        {
+            await _api.SaveInstitutionPolicyAsync(new InstitutionPolicyApiModel
+            {
+                IncludeSchool     = form.IncludeSchool,
+                IncludeCollege    = form.IncludeCollege,
+                IncludeUniversity = form.IncludeUniversity
+            }, ct);
+            TempData["Success"] = "Institution policy saved.";
+        }
+        catch (Exception ex) { TempData["Error"] = ex.Message; }
+        return RedirectToAction(nameof(InstitutionPolicy));
+    }
 }
 

@@ -91,6 +91,9 @@ DTOs/
   AdminUserManagementDtos.cs
   AuthDtos.cs
  CsvImportDtos.cs
+ External/
+  AccreditationDTOs.cs
+  LibraryDTOs.cs
  Fyp/FypDtos.cs
  Helpdesk/HelpdeskDTOs.cs
  Lms/LmsDTOs.cs
@@ -107,6 +110,7 @@ Helpdesk/HelpdeskService.cs
 Interfaces/
  IAcademicCalendarService.cs
  IAccountSecurityService.cs
+ IAccreditationService.cs
  IAiChatService.cs
  IAnalyticsService.cs
  IAnnouncementService.cs
@@ -127,6 +131,8 @@ Interfaces/
  IGradebookService.cs
  IGraduationService.cs
  IHelpdeskService.cs
+ IInstitutionPolicyService.cs
+ ILibraryService.cs
  ILlmClient.cs
  ILmsService.cs
  IModuleEntitlementResolver.cs
@@ -163,8 +169,11 @@ Quizzes/QuizService.cs
 Search/SearchService.cs
 Services/
  AccountSecurityService.cs
+ AccreditationService.cs
  BuildingRoomService.cs
  CsvRegistrationImportService.cs
+ InstitutionPolicyService.cs
+ LibraryService.cs
  SettingsServices.cs
  StudentLifecycleService.cs
  TimetableService.cs
@@ -338,7 +347,14 @@ Validators/AuthValidators.cs
  System.Xml.XPath.dll
  System.Xml.XPath.XDocument.dll
  WindowsBase.dll
-<NUGET>/fluentvalidation/11.10.0/lib/net8.0/FluentValidation.dll
+<NUGET>/
+ fluentvalidation/11.10.0/lib/net8.0/FluentValidation.dll
+ microsoft.extensions.caching.abstractions/8.0.0/lib/net8.0/Microsoft.Extensions.Caching.Abstractions.dll
+ microsoft.extensions.caching.memory/8.0.1/lib/net8.0/Microsoft.Extensions.Caching.Memory.dll
+ microsoft.extensions.dependencyinjection.abstractions/8.0.2/lib/net8.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll
+ microsoft.extensions.logging.abstractions/8.0.2/lib/net8.0/Microsoft.Extensions.Logging.Abstractions.dll
+ microsoft.extensions.options/8.0.2/lib/net8.0/Microsoft.Extensions.Options.dll
+ microsoft.extensions.primitives/8.0.0/lib/net8.0/Microsoft.Extensions.Primitives.dll
 
 [analyzerReferences]
 <DOTNET>/packs/Microsoft.NETCore.App.Ref/8.0.26/analyzers/dotnet/cs/
@@ -348,10 +364,13 @@ Validators/AuthValidators.cs
  Microsoft.Interop.SourceGeneration.dll
  System.Text.Json.SourceGeneration.dll
  System.Text.RegularExpressions.Generator.dll
-<DOTNET>/sdk/10.0.203/Sdks/Microsoft.NET.Sdk/analyzers/
+<DOTNET>/sdk/10.0.202/Sdks/Microsoft.NET.Sdk/analyzers/
  Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll
  Microsoft.CodeAnalysis.NetAnalyzers.dll
+<NUGET>/
+ microsoft.extensions.logging.abstractions/8.0.2/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Logging.Generators.dll
+ microsoft.extensions.options/8.0.2/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Options.SourceGeneration.dll
 
 [analyzerConfigFiles]
-<DOTNET>/sdk/10.0.203/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_8_default.globalconfig
+<DOTNET>/sdk/10.0.202/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_8_default.globalconfig
 obj/Debug/net8.0/Tabsan.EduSphere.Application.GeneratedMSBuildEditorConfig.editorconfig

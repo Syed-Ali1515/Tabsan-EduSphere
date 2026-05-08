@@ -54,12 +54,12 @@ cmd /c git -C "<repo-root>" push origin main
 ---
 
 ## Current Execution Pointer
-- Plan Source: Docs/Enhancements.md
-- Active Phase: **Phase 22 — External Integrations — FULLY COMPLETE ✅**
-- Active Stage: **Stages 22.1 (Library System Integration) + 22.2 (Accreditation Reporting) done**
-- Status: **0 build errors; 7/7 unit tests passed; migration Phase22_ExternalIntegrations applied**
-- Last Updated: 2026-05-09
-- Next: Phase 23 (see Docs/Advance-Enhancements.md)
+- Plan Source: Docs/Advance-Enhancements.md
+- Active Phase: **Phase 23 — Core Policy Foundation — FULLY COMPLETE ✅**
+- Active Stage: **Stages 23.1 (Policy Kernel) + 23.2 (Institution Context Middleware) + 23.3 (Role-Rights Hardening) done**
+- Status: **0 build errors; 27/27 unit tests passed; no migration needed (uses portal_settings table)**
+- Last Updated: 2026-05-13
+- Next: Phase 24 (see Docs/Advance-Enhancements.md)
 
 ---
 
@@ -1011,6 +1011,30 @@ git push origin main
 | 21.1 | DTOs, service interface + implementation, EF configs, repository | `Application/DTOs/StudyPlanner/StudyPlannerDTOs.cs`, `Application/Interfaces/IStudyPlanService.cs`, `Application/StudyPlanner/StudyPlanService.cs`, `Infrastructure/Persistence/Configurations/StudyPlanConfigurations.cs`, `Infrastructure/Repositories/StudyPlanRepository.cs` |
 | 21.2 | Recommendation engine (degree audit gaps + electives + prerequisite gating) | Part of `StudyPlanService.GetRecommendationsAsync` |
 | Cross-cutting | Controller, DI, DbContext DbSets, EduApiClient, PortalController, views, sidebar | `API/Controllers/StudyPlanController.cs`, `API/Program.cs`, `Infrastructure/Persistence/ApplicationDbContext.cs`, `Web/Services/EduApiClient.cs`, `Web/Controllers/PortalController.cs`, `Web/Views/Portal/StudyPlan.cshtml`, `Web/Views/Portal/StudyPlanDetail.cshtml`, `Web/Views/Portal/StudyPlanRecommendations.cshtml`, `Views/Shared/_Layout.cshtml` |
+
+---
+
+## Phase 23 — Core Policy Foundation
+
+**EF Migration:** Not required (uses existing `portal_settings` table)
+
+**Git Commit:**
+```powershell
+git add -A
+git commit -m "Phase 23 — Core Policy Foundation (License Policy Kernel + Institution Context Resolution + Role-Rights Hardening)"
+git pull --rebase origin main
+git push origin main
+```
+
+**Test Run:** 27/27 unit tests passed (build clean, 0 errors)
+**Status:** ✅ Complete
+
+### Stages Completed
+| Stage | Description | Files |
+|-------|-------------|-------|
+| 23.1 | Policy Kernel — domain enum + application interface + cached service + API controller | `Domain/Enums/InstitutionType.cs`, `Application/Interfaces/IInstitutionPolicyService.cs`, `Application/Services/InstitutionPolicyService.cs`, `API/Controllers/InstitutionPolicyController.cs` |
+| 23.2 | Institution Context Middleware — per-request snapshot resolution | `API/Middleware/InstitutionContextMiddleware.cs`, `API/Program.cs` |
+| 23.3 | Role-Rights Hardening — unit tests (13 new) + web layer (EduApiClient, PortalController, view, sidebar seed) | `tests/.../InstitutionPolicyTests.cs`, `Web/Services/EduApiClient.cs`, `Web/Controllers/PortalController.cs`, `Web/Views/Portal/InstitutionPolicy.cshtml`, `Web/Views/Shared/_Layout.cshtml`, `Scripts/1-MinimalSeed.sql` |
 
 ---
 

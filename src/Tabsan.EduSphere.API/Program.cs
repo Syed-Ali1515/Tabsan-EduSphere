@@ -247,7 +247,8 @@ builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IStudyPlanSer
 builder.Services.AddScoped<Tabsan.EduSphere.Domain.Interfaces.IAccreditationRepository, Tabsan.EduSphere.Infrastructure.Repositories.AccreditationRepository>();
 builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IAccreditationService, Tabsan.EduSphere.Application.Services.AccreditationService>();
 builder.Services.AddHttpClient<Tabsan.EduSphere.Application.Interfaces.ILibraryService, Tabsan.EduSphere.Application.Services.LibraryService>();
-
+// ── Phase 23: Core Policy Foundation ────────────────────────────────────────────
+builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IInstitutionPolicyService, Tabsan.EduSphere.Application.Services.InstitutionPolicyService>();
 // ── Rate limiting (OWASP hardening) ─────────────────────────────────────
 builder.Services.AddRateLimiter(opts =>
 {
@@ -387,6 +388,8 @@ if (corsOrigins.Length > 0)
 app.UseMiddleware<LicenseDomainMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
+// Phase 23 — resolve institution policy snapshot once per request (after auth)
+app.UseMiddleware<Tabsan.EduSphere.API.Middleware.InstitutionContextMiddleware>();
 app.MapControllers();
 app.MapHealthChecks("/health");
 

@@ -360,6 +360,10 @@ public interface IEduApiClient
     Task<AccreditationTemplateApiModel?> UpdateAccreditationTemplateAsync(Guid id, UpdateAccreditationTemplateForm form, CancellationToken ct);
     Task DeleteAccreditationTemplateAsync(Guid id, CancellationToken ct);
     Task<(byte[]? Content, string ContentType, string FileName)> GenerateAccreditationReportAsync(Guid id, CancellationToken ct);
+
+    // Phase 23 — Institution Policy
+    Task<InstitutionPolicyApiModel?> GetInstitutionPolicyAsync(CancellationToken ct);
+    Task SaveInstitutionPolicyAsync(InstitutionPolicyApiModel model, CancellationToken ct);
 }
 
 public class EduApiClient : IEduApiClient
@@ -1541,6 +1545,13 @@ public class EduApiClient : IEduApiClient
                           ?? "report.csv";
         return (bytes, contentType, fileName);
     }
+
+    // Phase 23 — Institution Policy
+    public async Task<InstitutionPolicyApiModel?> GetInstitutionPolicyAsync(CancellationToken ct)
+        => await GetAsync<InstitutionPolicyApiModel>("api/v1/institution-policy", ct);
+
+    public async Task SaveInstitutionPolicyAsync(InstitutionPolicyApiModel model, CancellationToken ct)
+        => await PutAsync<InstitutionPolicyApiModel, object?>("api/v1/institution-policy", model, ct);
 
     private sealed class CourseDetailDto
     {
@@ -3897,4 +3908,13 @@ public sealed class UpdateAccreditationTemplateForm
     public string  Format            { get; set; } = "CSV";
     public string? FieldMappingsJson { get; set; }
     public bool    IsActive          { get; set; }
+}
+
+// ── Phase 23 API models ───────────────────────────────────────────────────────
+public sealed class InstitutionPolicyApiModel
+{
+    public bool IncludeSchool     { get; set; }
+    public bool IncludeCollege    { get; set; }
+    public bool IncludeUniversity { get; set; } = true;
+    public bool IsValid           { get; set; }
 }

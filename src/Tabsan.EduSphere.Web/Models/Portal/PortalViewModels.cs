@@ -265,6 +265,16 @@ public class AccreditationTemplateFormModel
     public bool    IsActive          { get; set; } = true;
 }
 
+// ── Phase 23 — Institution Policy ────────────────────────────────────────────
+public class InstitutionPolicyPageModel
+{
+    public bool    IsConnected      { get; set; }
+    public string? Message          { get; set; }
+    public bool    IncludeSchool     { get; set; }
+    public bool    IncludeCollege    { get; set; }
+    public bool    IncludeUniversity { get; set; } = true;
+}
+
 public class StudentProfileSummaryItem
 {
     public Guid Id { get; set; }
