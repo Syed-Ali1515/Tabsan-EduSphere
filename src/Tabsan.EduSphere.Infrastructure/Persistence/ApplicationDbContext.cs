@@ -261,6 +261,10 @@ public class ApplicationDbContext : DbContext
     /// <summary>Accreditation / government report templates defined by SuperAdmin.</summary>
     public DbSet<AccreditationTemplate> AccreditationTemplates => Set<AccreditationTemplate>();
 
+    // ── Phase 25: Academic Engine Unification ──────────────────────────────────
+    /// <summary>Institution-level grading profiles (pass threshold + grade bands) per institution type.</summary>
+    public DbSet<InstitutionGradingProfile> InstitutionGradingProfiles => Set<InstitutionGradingProfile>();
+
     /// <summary>
     /// Scans the current assembly for all IEntityTypeConfiguration implementations
     /// and applies them automatically. This keeps OnModelCreating clean as the

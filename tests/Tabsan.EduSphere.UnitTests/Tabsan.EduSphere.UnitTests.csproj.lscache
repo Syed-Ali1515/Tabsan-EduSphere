@@ -61,6 +61,7 @@ obj/Debug/net8.0/
  Tabsan.EduSphere.UnitTests.GlobalUsings.g.cs
 PasswordHistoryTests.cs
 Phase24Tests.cs
+Phase25Tests.cs
 UnitTest1.cs
 
 [metadataReferences]

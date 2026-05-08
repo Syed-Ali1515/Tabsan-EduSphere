@@ -67,6 +67,7 @@ Academic/
  Enrollment.cs
  FacultyDepartmentAssignment.cs
  GraduationApplication.cs
+ InstitutionGradingProfile.cs
  RegistrationWhitelist.cs
  Room.cs
  Semester.cs
@@ -125,6 +126,7 @@ Interfaces/
  IGradebookRepository.cs
  IGraduationRepository.cs
  IHelpdeskRepository.cs
+ IInstitutionGradingProfileRepository.cs
  ILicenseRepository.cs
  ILmsRepository.cs
  IModuleRepository.cs

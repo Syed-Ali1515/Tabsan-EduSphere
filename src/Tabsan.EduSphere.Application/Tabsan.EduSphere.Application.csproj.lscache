@@ -59,7 +59,12 @@ Academic/
  CourseService.cs
  DegreeAuditService.cs
  EnrollmentService.cs
+ GpaResultStrategy.cs
  GraduationService.cs
+ InstitutionGradingService.cs
+ PercentageResultStrategy.cs
+ ProgressionService.cs
+ ResultStrategyResolver.cs
  StudentRegistrationService.cs
 AiChat/AiChatService.cs
 Assignments/
@@ -77,6 +82,8 @@ DTOs/Academic/
  DegreeAuditDTOs.cs
  EnrollmentRulesDTOs.cs
  GraduationDTOs.cs
+ InstitutionGradingDtos.cs
+ ProgressionDtos.cs
 DTOs/
  AccountSecurityDtos.cs
  AiChat/AiChatDtos.cs
@@ -132,6 +139,7 @@ Interfaces/
  IGradebookService.cs
  IGraduationService.cs
  IHelpdeskService.cs
+ IInstitutionGradingService.cs
  IInstitutionPolicyService.cs
  ILabelService.cs
  ILibraryService.cs
@@ -142,10 +150,13 @@ Interfaces/
  IModuleService.cs
  INotificationService.cs
  IPasswordHasher.cs
+ IProgressionService.cs
  IQuizService.cs
  IReportService.cs
  IResultCalculationService.cs
+ IResultCalculationStrategy.cs
  IResultService.cs
+ IResultStrategyResolver.cs
  IRubricService.cs
  ISearchRepository.cs
  ISearchService.cs

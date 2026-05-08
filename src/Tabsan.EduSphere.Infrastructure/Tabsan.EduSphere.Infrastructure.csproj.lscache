@@ -107,6 +107,8 @@ Migrations/
  20260508054215_Phase21_StudyPlanner.Designer.cs
  20260508132355_Phase22_ExternalIntegrations.cs
  20260508132355_Phase22_ExternalIntegrations.Designer.cs
+ 20260508152906_Phase25_AcademicEngineUnification.cs
+ 20260508152906_Phase25_AcademicEngineUnification.Designer.cs
  ApplicationDbContextModelSnapshot.cs
 Modules/ModuleEntitlementResolver.cs
 obj/Debug/net8.0/
@@ -127,6 +129,7 @@ Persistence/
   ConsumedVerificationKeyConfiguration.cs
   DepartmentConfiguration.cs
   FypConfigurations.cs
+  InstitutionGradingProfileConfiguration.cs
   LicenseStateConfiguration.cs
   LmsConfigurations.cs
   ModuleConfiguration.cs
@@ -194,6 +197,7 @@ Repositories/
  GradebookRubricRepositories.cs
  GraduationRepository.cs
  HelpdeskRepository.cs
+ InstitutionGradingProfileRepository.cs
  LicenseRepository.cs
  LmsRepository.cs
  ModuleRepository.cs

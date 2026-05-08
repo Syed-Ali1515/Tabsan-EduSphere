@@ -252,7 +252,12 @@ builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IInstitutionP
 // ── Phase 24: Dynamic Module and UI Composition ───────────────────────────────
 builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IModuleRegistryService, Tabsan.EduSphere.Application.Modules.ModuleRegistryService>();
 builder.Services.AddSingleton<Tabsan.EduSphere.Application.Interfaces.ILabelService, Tabsan.EduSphere.Application.Services.LabelService>();
-builder.Services.AddSingleton<Tabsan.EduSphere.Application.Interfaces.IDashboardCompositionService, Tabsan.EduSphere.Application.Services.DashboardCompositionService>();// ── Rate limiting (OWASP hardening) ─────────────────────────────────────
+builder.Services.AddSingleton<Tabsan.EduSphere.Application.Interfaces.IDashboardCompositionService, Tabsan.EduSphere.Application.Services.DashboardCompositionService>();
+// ── Phase 25: Academic Engine Unification ─────────────────────────────────────
+builder.Services.AddSingleton<Tabsan.EduSphere.Application.Interfaces.IResultStrategyResolver, Tabsan.EduSphere.Application.Academic.ResultStrategyResolver>();
+builder.Services.AddScoped<Tabsan.EduSphere.Domain.Interfaces.IInstitutionGradingProfileRepository, Tabsan.EduSphere.Infrastructure.Repositories.InstitutionGradingProfileRepository>();
+builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IInstitutionGradingService, Tabsan.EduSphere.Application.Academic.InstitutionGradingService>();
+builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IProgressionService, Tabsan.EduSphere.Application.Academic.ProgressionService>();// ── Rate limiting (OWASP hardening) ─────────────────────────────────────
 builder.Services.AddRateLimiter(opts =>
 {
     // Global sliding window: 100 requests per minute per IP.
