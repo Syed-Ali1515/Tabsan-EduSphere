@@ -45,6 +45,12 @@
 - Added `SignedUrlSecret` placeholders in API appsettings files.
 - Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
 
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 7
+- Enforced local signed URL validation (`exp`/`sig`) in `PortalSettingsController.GetLogoFile` when `MediaStorage:SignedUrlSecret` is configured.
+- Added unsigned legacy URL compatibility redirect to short-lived local signed logo URLs.
+- Added fixed-time signature comparison and expiry validation for local signed reads.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
+
 ### 2026-05-09 — Phase 28 Stage 28.1 Complete
 - Completed **API and App Tier Scaling** as the first stage of the scalability architecture roadmap.
 - Replaced Web session-backed connection/auth state with protected-cookie storage to keep portal nodes stateless across a load-balanced deployment.

@@ -50,6 +50,11 @@
 - Stage 28.3 slice 6 added temporary signed read URL support in the storage abstraction and provider adapters.
 - No database schema change and no EF migration were required.
 
+## 2026-05-10 Update — Phase 28 Stage 28.3 Slice 7
+
+- Stage 28.3 slice 7 enforced local signed URL validation (`exp`/`sig`) for portal logo reads with legacy unsigned-link signed redirects.
+- No database schema change and no EF migration were required.
+
 ---
 
 # PART 1: UNIVERSITY PORTAL APPLICATION DATABASE

@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.43 (Phase 28 Stage 28.3 slice 6 delivered)  
+**Version:** 1.44 (Phase 28 Stage 28.3 slice 7 delivered)  
 **Status:** Approved  
 **Prepared By:** Product Team  
 **Last Updated:** 10 May 2026  
@@ -43,6 +43,14 @@
 - **Provider support:** local and blob storage adapters now generate temporary read URLs with optional HMAC signature support (`MediaStorage:SignedUrlSecret`).
 - **Portal logo read path:** `GET /api/v1/portal-settings/logo-files/{**storageKey}` now prefers provider temporary URL redirect with safe byte-stream fallback.
 - **Configuration:** added `SignedUrlSecret` placeholders to API appsettings files.
+- **Schema impact:** no database migration required.
+- **Validation:** solution build passed; automated tests passed **162/162**.
+
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 7
+- **Signed URL enforcement:** local logo-read endpoint now validates `exp` and `sig` when `MediaStorage:SignedUrlSecret` is configured.
+- **Legacy compatibility:** unsigned local logo URLs are redirected to short-lived signed URLs.
+- **Verification hardening:** signature validation uses fixed-time comparison and strict expiry checks.
+- **Operational behavior:** provider temporary URL redirect-first path remains intact with byte-stream fallback.
 - **Schema impact:** no database migration required.
 - **Validation:** solution build passed; automated tests passed **162/162**.
 

@@ -64,6 +64,13 @@
 - Added `SignedUrlSecret` configuration placeholders to API appsettings files.
 - No database migration or schema change was required for Stage 28.3 Slice 6.
 
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 7 (File and Media Strategy)
+- Enforced local signed URL validation on portal logo reads when `MediaStorage:SignedUrlSecret` is configured.
+- Added compatibility redirect from unsigned legacy logo links to short-lived signed local URLs.
+- Added expiry checks and fixed-time HMAC comparison for `exp`/`sig` local logo requests.
+- Kept provider temporary URL redirect-first behavior and byte-stream fallback for compatibility.
+- No database migration or schema change was required for Stage 28.3 Slice 7.
+
 ---
 
 ## Phase 12 — Academic Calendar System ✅ Implemented

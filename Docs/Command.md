@@ -56,11 +56,11 @@ cmd /c git -C "<repo-root>" push origin main
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
 - Active Phase: **Phase 28 — Scalability Architecture (1M+ Readiness) — IN PROGRESS ⚙️**
-- Active Stage: **Stage 28.3 in progress (Slice 6 delivered: temporary signed read URLs + logo redirect fallback flow)**
-- Status: **0 build errors; 162/162 tests passed; no database migration required for Stage 28.3 Slice 6**
+- Active Stage: **Stage 28.3 in progress (Slice 7 delivered: local signed URL validation + legacy-link signed redirect)**
+- Status: **0 build errors; 162/162 tests passed; no database migration required for Stage 28.3 Slice 7**
 - Last Updated: 2026-05-10
-- Next: **Phase 28 Stage 28.3 — continue provider hardening (metadata contracts + strict signed URL validation path) and migrate remaining direct path assumptions** (see Docs/Advance-Enhancements.md)
-- Docs Updated: ✅ All 8 tracking files updated for Phase 28 Stage 28.3 Slice 6 progress (2026-05-10)
+- Next: **Phase 28 Stage 28.3 — continue provider hardening (metadata contracts + broader signed URL adoption across media reads) and migrate remaining direct path assumptions** (see Docs/Advance-Enhancements.md)
+- Docs Updated: ✅ All 8 tracking files updated for Phase 28 Stage 28.3 Slice 7 progress (2026-05-10)
 
 ---
 
@@ -223,6 +223,11 @@ Database is fully synchronized with codebase.
   - Added temporary signed URL generation support in both local and blob storage providers using optional `MediaStorage:SignedUrlSecret`.
   - Updated portal logo file endpoint to prefer redirecting to provider-generated temporary URLs and safely fall back to byte streaming when unavailable.
   - Added `SignedUrlSecret` placeholders to API appsettings files.
+- **Phase 28 — Scalability Architecture — Stage 28.3 SLICE 7 DELIVERED ✅**
+  - Enforced signed URL validation (`exp` + `sig`) on local logo streaming when `MediaStorage:SignedUrlSecret` is configured.
+  - Added compatibility redirect from unsigned legacy logo URLs to short-lived signed local URLs.
+  - Added fixed-time signature comparison and expiry enforcement for local signed reads.
+  - Kept provider temporary URL redirect-first behavior and byte-stream fallback for operational compatibility.
 - Continue through Phase 28.3+ per Docs/Advance-Enhancements.md
 
 ## Pending Extra Tasks (Cross-Phase)

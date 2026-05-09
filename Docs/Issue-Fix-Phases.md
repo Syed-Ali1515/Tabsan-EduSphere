@@ -58,6 +58,12 @@ This file tracks the reported portal issues as phased work items so they can be 
 - Updated portal logo file endpoint to use redirect-first reads from provider temporary URLs with byte-stream fallback.
 - Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
 
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 7 Update
+- Added strict local signed URL validation for portal logo reads when `MediaStorage:SignedUrlSecret` is configured.
+- Added legacy unsigned-link compatibility redirect to short-lived signed local logo URLs.
+- Added expiry checks and fixed-time signature verification for `exp`/`sig` requests.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
+
 ---
 
 ## Refactoring-Hosting-Security — Part A + Part B

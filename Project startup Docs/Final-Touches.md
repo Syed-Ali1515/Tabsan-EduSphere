@@ -215,6 +215,28 @@ For **every completed phase**:
 
 ---
 
+## Phase 28 — Scalability Architecture (Stage 28.3 Slice 7)
+**Status:** ✅ Slice 7 Delivered (2026-05-10)
+
+### Completion Mark
+- [x] Enforce local signed URL validation (`exp`/`sig`) for portal logo reads when signing is configured.
+- [x] Add unsigned legacy-link compatibility redirect to short-lived signed local URLs.
+- [x] Add fixed-time signature verification and strict expiry checks.
+- [x] Keep provider temporary URL redirect-first behavior plus local byte-stream fallback.
+- [x] Confirm no database migration is required.
+
+### Implementation Summary
+- Updated `PortalSettingsController` to read `MediaStorageOptions` and enforce signed local logo reads when `SignedUrlSecret` is set.
+- Added helpers to build signed local URLs, validate signatures with `CryptographicOperations.FixedTimeEquals`, and enforce expiration.
+- Added compatibility redirect so existing unsigned `/logo-files/{key}` links upgrade to signed URLs automatically.
+
+### Validation Summary
+- `dotnet build src/Tabsan.EduSphere.API/Tabsan.EduSphere.API.csproj` — passed.
+- `dotnet build Tabsan.EduSphere.sln` — passed.
+- `dotnet test Tabsan.EduSphere.sln --no-build` — **162/162 passed**.
+
+---
+
 ## Refactoring-Hosting-Security — Part A + Part B
 **Status:** ✅ Fully Complete (2026-05-07) | Commits: f56ccd9, 5e80bc9
 

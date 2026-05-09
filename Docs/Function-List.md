@@ -276,6 +276,15 @@
 | `GenerateTemporaryReadUrlAsync(storageKey, ttl, ct)` | Blob-style provider implementation that emits temporary URL references with optional HMAC signature when configured. | `API/Services/BlobMediaStorageService.cs` |
 | `CreateSignature(storageKey, expiresAt)` | Internal helper that signs temporary read URL payloads using `MediaStorage:SignedUrlSecret`. | `API/Services/LocalMediaStorageService.cs`, `API/Services/BlobMediaStorageService.cs` |
 | `GetLogoFile(storageKey, ct)` (redirect-first path) | Updated to prefer provider-generated temporary URL redirects and fall back to in-process streaming when redirect URL is unavailable. | `API/Controllers/PortalSettingsController.cs` |
+
+### API — Phase 28 Stage 28.3 Slice 7 (Local Signed URL Validation)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetLogoFile(storageKey, exp, sig, ct)` | Enforces signed local read parameters (`exp`, `sig`) when configured, redirects unsigned legacy requests to signed URLs, and maintains provider redirect-first streaming flow. | `API/Controllers/PortalSettingsController.cs` |
+| `BuildLocalSignedLogoUrl(storageKey, ttl)` | Generates short-lived local signed logo endpoint URLs for legacy unsigned-link compatibility redirects. | `API/Controllers/PortalSettingsController.cs` |
+| `IsValidLocalSignature(storageKey, expiresAt, providedSignature)` | Validates local signed read requests via fixed-time HMAC comparison. | `API/Controllers/PortalSettingsController.cs` |
+| `TryDecodeHex(value, out bytes)` | Parses signature hex safely for local signed URL validation flow. | `API/Controllers/PortalSettingsController.cs` |
 | `ModuleEntitlementResolver.IsActiveAsync(moduleKey, ct)` | Uses local memory + distributed cache to share module-activation decisions across API nodes. | `Infrastructure/Modules/ModuleEntitlementResolver.cs` |
 
 ### API — Phase 28 Stage 28.2 Completion
