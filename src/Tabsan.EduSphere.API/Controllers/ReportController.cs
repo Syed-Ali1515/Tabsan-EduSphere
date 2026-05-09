@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Tabsan.EduSphere.API.Services;
 using Tabsan.EduSphere.Application.DTOs.Reports;
 using Tabsan.EduSphere.Application.Interfaces;
 using Tabsan.EduSphere.Domain.Interfaces;
@@ -20,12 +21,21 @@ public sealed class ReportController : ControllerBase
     private readonly IReportService _reports;
     private readonly ICourseRepository _courses;
     private readonly IAdminAssignmentRepository _adminAssignments;
+    private readonly ReportExportJobQueue _exportQueue;
+    private readonly ReportExportJobStore _exportStore;
 
-    public ReportController(IReportService reports, ICourseRepository courses, IAdminAssignmentRepository adminAssignments)
+    public ReportController(
+        IReportService reports,
+        ICourseRepository courses,
+        IAdminAssignmentRepository adminAssignments,
+        ReportExportJobQueue exportQueue,
+        ReportExportJobStore exportStore)
     {
         _reports = reports;
         _courses = courses;
         _adminAssignments = adminAssignments;
+        _exportQueue = exportQueue;
+        _exportStore = exportStore;
     }
 
     // ── Catalog ────────────────────────────────────────────────────────────────
@@ -210,6 +220,98 @@ public sealed class ReportController : ControllerBase
         var request = new ResultSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
         var bytes = await _reports.ExportResultSummaryPdfAsync(request, ct);
         return File(bytes, "application/pdf", "result-summary.pdf");
+    }
+
+    /// <summary>
+    /// Queues result summary export generation for background processing.
+    /// Supported formats: excel, csv, pdf.
+    /// </summary>
+    [HttpPost("result-summary/export-jobs")]
+    [Authorize(Roles = "SuperAdmin,Admin,Faculty")]
+    public async Task<IActionResult> QueueResultSummaryExport(
+        [FromQuery] Guid? semesterId,
+        [FromQuery] Guid? departmentId,
+        [FromQuery] Guid? courseOfferingId,
+        [FromQuery] Guid? studentProfileId,
+        [FromQuery] string format = "excel",
+        CancellationToken ct = default)
+    {
+        var scoped = await EnforceAdminDepartmentScopeAsync(departmentId, courseOfferingId, ct);
+        if (scoped is not null) return scoped;
+
+        scoped = await EnforceFacultyOfferingScopeAsync(courseOfferingId, ct);
+        if (scoped is not null) return scoped;
+
+        var requestedByUserId = GetCurrentUserId();
+        if (requestedByUserId == Guid.Empty) return Unauthorized();
+
+        if (!TryParseFormat(format, out var exportFormat))
+            return BadRequest("format must be one of: excel, csv, pdf.");
+
+        var jobId = Guid.NewGuid();
+        await _exportStore.SetStateAsync(new ReportExportJobState
+        {
+            JobId = jobId,
+            RequestedByUserId = requestedByUserId,
+            Status = "queued"
+        }, ct);
+
+        _exportQueue.Enqueue(new ResultSummaryExportJobRequest(
+            jobId,
+            requestedByUserId,
+            semesterId,
+            departmentId,
+            courseOfferingId,
+            studentProfileId,
+            exportFormat));
+
+        return Accepted(new
+        {
+            jobId,
+            status = "queued",
+            statusUrl = $"/api/v1/reports/export-jobs/{jobId}",
+            downloadUrl = $"/api/v1/reports/export-jobs/{jobId}/download"
+        });
+    }
+
+    /// <summary>Returns status for a queued report export job.</summary>
+    [HttpGet("export-jobs/{jobId:guid}")]
+    [Authorize(Roles = "SuperAdmin,Admin,Faculty")]
+    public async Task<IActionResult> GetExportJob(Guid jobId, CancellationToken ct)
+    {
+        var requestedByUserId = GetCurrentUserId();
+        if (requestedByUserId == Guid.Empty) return Unauthorized();
+
+        var state = await _exportStore.GetStateAsync(jobId, ct);
+        if (state is null) return NotFound();
+
+        if (state.RequestedByUserId != requestedByUserId && !User.IsInRole("SuperAdmin") && !User.IsInRole("Admin"))
+            return Forbid();
+
+        return Ok(state);
+    }
+
+    /// <summary>Downloads the completed payload for a queued report export job.</summary>
+    [HttpGet("export-jobs/{jobId:guid}/download")]
+    [Authorize(Roles = "SuperAdmin,Admin,Faculty")]
+    public async Task<IActionResult> DownloadExportJob(Guid jobId, CancellationToken ct)
+    {
+        var requestedByUserId = GetCurrentUserId();
+        if (requestedByUserId == Guid.Empty) return Unauthorized();
+
+        var state = await _exportStore.GetStateAsync(jobId, ct);
+        if (state is null) return NotFound();
+
+        if (state.RequestedByUserId != requestedByUserId && !User.IsInRole("SuperAdmin") && !User.IsInRole("Admin"))
+            return Forbid();
+
+        if (!string.Equals(state.Status, "completed", StringComparison.OrdinalIgnoreCase))
+            return Conflict(new { message = $"Job status is '{state.Status}'." });
+
+        var payload = await _exportStore.GetPayloadAsync(jobId, ct);
+        if (payload is null) return NotFound("Export payload not found or expired.");
+
+        return File(payload, state.ContentType ?? "application/octet-stream", state.FileName ?? $"report-{jobId:N}.bin");
     }
 
     // ── Assignment Summary ───────────────────────────────────────────────────
@@ -536,6 +638,28 @@ public sealed class ReportController : ControllerBase
     {
         var raw = User.FindFirstValue(ClaimTypes.NameIdentifier);
         return Guid.TryParse(raw, out var id) ? id : Guid.Empty;
+    }
+
+    private static bool TryParseFormat(string? format, out ReportExportFormat exportFormat)
+    {
+        switch (format?.Trim().ToLowerInvariant())
+        {
+            case "csv":
+                exportFormat = ReportExportFormat.Csv;
+                return true;
+            case "pdf":
+                exportFormat = ReportExportFormat.Pdf;
+                return true;
+            case "excel":
+            case "xlsx":
+            case null:
+            case "":
+                exportFormat = ReportExportFormat.Excel;
+                return true;
+            default:
+                exportFormat = ReportExportFormat.Excel;
+                return false;
+        }
     }
 
     private async Task<IActionResult?> EnforceFacultyOfferingScopeAsync(Guid? courseOfferingId, CancellationToken ct)

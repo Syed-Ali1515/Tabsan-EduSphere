@@ -130,6 +130,12 @@ Services/
  FileUploadValidator.cs
  NotificationFanoutQueue.cs
  NotificationFanoutWorker.cs
+ ReportExportJobQueue.cs
+ ReportExportJobStore.cs
+ ReportExportJobWorker.cs
+ ResultPublishJobQueue.cs
+ ResultPublishJobStore.cs
+ ResultPublishJobWorker.cs
 
 [metadataReferences]
 ../

@@ -16,6 +16,12 @@ This file tracks the reported portal issues as phased work items so they can be 
 - Large notification recipient fan-out is now processed by a background worker when the batch crosses the configured threshold.
 - Validation: `dotnet build Tabsan.EduSphere.sln` passed and automated tests passed **162/162**.
 
+### 2026-05-10 — Phase 28 Stage 28.2 Completion Update
+- Added queued result-summary export jobs with status and deferred download endpoints.
+- Added queued result publish-all jobs so large publish/recalculation operations can run in the background.
+- Stage 28.2 is now complete for caching and background workload objectives.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed and automated tests passed **162/162**.
+
 ---
 
 ## Refactoring-Hosting-Security — Part A + Part B

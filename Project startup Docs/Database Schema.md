@@ -15,6 +15,11 @@
 - Stage 28.2 foundation delivered cache and background-worker changes only.
 - No database schema change and no EF migration were required.
 
+## 2026-05-10 Update — Phase 28 Stage 28.2 Completion
+
+- Stage 28.2 completion delivered additional API queue-processing endpoints and workers for report generation and publish-all recalculation workloads.
+- No database schema change and no EF migration were required.
+
 ---
 
 # PART 1: UNIVERSITY PORTAL APPLICATION DATABASE

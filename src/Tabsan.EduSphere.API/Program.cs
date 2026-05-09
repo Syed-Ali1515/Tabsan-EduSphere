@@ -180,6 +180,12 @@ builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 builder.Services.AddSingleton<NotificationFanoutQueue>();
 builder.Services.AddSingleton<INotificationFanoutQueue>(sp => sp.GetRequiredService<NotificationFanoutQueue>());
 builder.Services.AddHostedService<NotificationFanoutWorker>();
+builder.Services.AddSingleton<ResultPublishJobQueue>();
+builder.Services.AddSingleton<ResultPublishJobStore>();
+builder.Services.AddHostedService<ResultPublishJobWorker>();
+builder.Services.AddSingleton<ReportExportJobQueue>();
+builder.Services.AddSingleton<ReportExportJobStore>();
+builder.Services.AddHostedService<ReportExportJobWorker>();
 // ── Phase 5: Quizzes and FYP ──────────────────────────────────────────
 builder.Services.AddScoped<IQuizRepository, QuizRepository>();
 builder.Services.AddScoped<IFypRepository, FypRepository>();

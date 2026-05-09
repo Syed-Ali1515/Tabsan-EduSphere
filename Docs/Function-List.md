@@ -260,6 +260,18 @@
 | `ReportService.GetCatalogAsync(roleName, ct)` | Reads/writes report catalog results through distributed cache for shared hot-read reuse across nodes. | `Infrastructure/Reporting/ReportService.cs` |
 | `ModuleEntitlementResolver.IsActiveAsync(moduleKey, ct)` | Uses local memory + distributed cache to share module-activation decisions across API nodes. | `Infrastructure/Modules/ModuleEntitlementResolver.cs` |
 
+### API — Phase 28 Stage 28.2 Completion
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `ResultController.QueuePublishAll(courseOfferingId, ct)` | Queues result publish-all recalculation work for asynchronous background processing. | `API/Controllers/ResultController.cs` |
+| `ResultController.GetPublishAllJob(jobId, ct)` | Returns status for queued result publish-all jobs. | `API/Controllers/ResultController.cs` |
+| `ReportController.QueueResultSummaryExport(...)` | Queues result-summary export generation (excel/csv/pdf) for background processing. | `API/Controllers/ReportController.cs` |
+| `ReportController.GetExportJob(jobId, ct)` | Returns status for queued report export jobs. | `API/Controllers/ReportController.cs` |
+| `ReportController.DownloadExportJob(jobId, ct)` | Downloads completed queued report export payloads. | `API/Controllers/ReportController.cs` |
+| `ResultPublishJobWorker.ExecuteAsync(...)` | Background worker that executes queued result publish-all jobs and persists job state. | `API/Services/ResultPublishJobWorker.cs` |
+| `ReportExportJobWorker.ExecuteAsync(...)` | Background worker that executes queued result-summary export jobs and stores payloads for deferred download. | `API/Services/ReportExportJobWorker.cs` |
+
 ### API — Program.cs Changes (Part A)
 
 | Change | Purpose | Location |

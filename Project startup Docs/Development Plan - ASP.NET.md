@@ -22,6 +22,12 @@
 - Added focused unit tests for deferred fan-out behavior.
 - Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
 
+### 2026-05-10 — Phase 28 Stage 28.2 Completion
+- Added queue-backed result-summary export jobs in `ReportController` with dedicated status and download endpoints.
+- Added queue-backed result publish-all jobs in `ResultController` for asynchronous recalculation-heavy publishing.
+- Added `ResultPublishJobWorker` and `ReportExportJobWorker` hosted services with distributed-cache-backed job state/payload storage.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
+
 ### 2026-05-05 — Phase 1 Remediation Restart (Batch 1)
 - Re-opened Phase 1 workstream to address Observed-Issues Phase 1 items.
 - Implemented role-access remediation for offerings used by Assignments, Attendance, Results, and Quizzes page data loads.
@@ -43,7 +49,7 @@
 - Validated SuperAdmin result summary endpoint response with non-empty records.
 
 ### Next Execution Target
-- Continue **Phase 28 Stage 28.2 — report-generation and recalculation queue coverage**.
+- Continue **Phase 28 Stage 28.3 — File and Media Strategy**.
 
 ### 2026-05-08 — Phase 13 Global Search Complete (commit 00b7b64)
 - **Stage 13.1 — Cross-Entity Search API:**

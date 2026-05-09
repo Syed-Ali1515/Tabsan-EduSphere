@@ -60,6 +60,27 @@ For **every completed phase**:
 
 ---
 
+## Phase 28 — Scalability Architecture (Stage 28.2 Completion)
+**Status:** ✅ Complete (2026-05-10)
+
+### Completion Mark
+- [x] Add queued report-generation endpoint coverage for result-summary exports.
+- [x] Add queued large recalculation endpoint coverage for result publish-all workflows.
+- [x] Add background workers and distributed-cache-backed job-state tracking for both queued workloads.
+- [x] Keep existing synchronous endpoints intact for compatibility.
+- [x] Confirm no database migration is required.
+
+### Implementation Summary
+- `ReportController` now supports asynchronous result-summary export jobs (excel/csv/pdf) with queue, status polling, and download endpoints.
+- `ResultController` now supports asynchronous publish-all jobs for large offering-level publication/recalculation workloads.
+- New hosted workers (`ResultPublishJobWorker`, `ReportExportJobWorker`) process queued jobs and persist status/results through distributed cache.
+
+### Validation Summary
+- `dotnet build Tabsan.EduSphere.sln` — passed.
+- Automated tests — **162/162 passed**.
+
+---
+
 ## Refactoring-Hosting-Security — Part A + Part B
 **Status:** ✅ Fully Complete (2026-05-07) | Commits: f56ccd9, 5e80bc9
 

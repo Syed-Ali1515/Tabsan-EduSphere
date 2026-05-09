@@ -18,7 +18,12 @@
 - Module entitlement checks and report-catalog reads now use the shared distributed cache layer so multiple API nodes can reuse the same hot-read state.
 - Large notification fan-out batches are now deferred to a hosted worker, reducing synchronous request-path work for high-recipient sends.
 - Added focused unit tests for deferred notification fan-out behavior.
-- The remaining Stage 28.2 work is to extend the same async queue pattern to broader report-generation and recalculation workloads.
+
+### 2026-05-10 — Phase 28 Stage 28.2 Completion
+- Added queued report-generation for result-summary exports with asynchronous job creation, status polling, and deferred download endpoints.
+- Added queued recalculation workload support for result publish-all operations with asynchronous job creation and status polling.
+- Stage 28.2 is now complete: Redis/distributed cache for hot reads + background processing for notification fan-out, report generation, and large recalculation workloads.
+- No database migration or schema change was required for Stage 28.2 completion.
 
 ---
 

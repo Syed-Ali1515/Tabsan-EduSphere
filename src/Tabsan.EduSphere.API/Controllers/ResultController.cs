@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Tabsan.EduSphere.API.Services;
 using Tabsan.EduSphere.Application.DTOs.Assignments;
 using Tabsan.EduSphere.Application.Interfaces;
 
@@ -17,7 +18,15 @@ namespace Tabsan.EduSphere.API.Controllers;
 public class ResultController : ControllerBase
 {
     private readonly IResultService _service;
-    public ResultController(IResultService service) => _service = service;
+    private readonly ResultPublishJobQueue _publishQueue;
+    private readonly ResultPublishJobStore _publishStore;
+
+    public ResultController(IResultService service, ResultPublishJobQueue publishQueue, ResultPublishJobStore publishStore)
+    {
+        _service = service;
+        _publishQueue = publishQueue;
+        _publishStore = publishStore;
+    }
 
     // ── Result entry ──────────────────────────────────────────────────────────
 
@@ -72,6 +81,52 @@ public class ResultController : ControllerBase
 
         var count = await _service.PublishAllForOfferingAsync(courseOfferingId, userId, ct);
         return Ok(new { published = count });
+    }
+
+    /// <summary>
+    /// Queues a publish-all operation for asynchronous execution.
+    /// Use the returned job ID to poll status.
+    /// </summary>
+    [HttpPost("publish-all/jobs")]
+    [Authorize(Roles = "SuperAdmin,Admin,Faculty")]
+    public async Task<IActionResult> QueuePublishAll([FromQuery] Guid courseOfferingId, CancellationToken ct)
+    {
+        var userId = GetCurrentUserId();
+        if (userId == Guid.Empty) return Unauthorized();
+        if (courseOfferingId == Guid.Empty) return BadRequest("courseOfferingId is required.");
+
+        var jobId = Guid.NewGuid();
+        await _publishStore.SetAsync(new ResultPublishJobState
+        {
+            JobId = jobId,
+            CourseOfferingId = courseOfferingId,
+            RequestedByUserId = userId,
+            Status = "queued"
+        }, ct);
+
+        _publishQueue.Enqueue(new ResultPublishJobWorkItem(jobId, courseOfferingId, userId));
+        return Accepted(new
+        {
+            jobId,
+            status = "queued",
+            statusUrl = $"/api/v1/result/publish-all/jobs/{jobId}"
+        });
+    }
+
+    /// <summary>Returns status for an asynchronous publish-all job.</summary>
+    [HttpGet("publish-all/jobs/{jobId:guid}")]
+    [Authorize(Roles = "SuperAdmin,Admin,Faculty")]
+    public async Task<IActionResult> GetPublishAllJob(Guid jobId, CancellationToken ct)
+    {
+        var userId = GetCurrentUserId();
+        if (userId == Guid.Empty) return Unauthorized();
+
+        var state = await _publishStore.GetAsync(jobId, ct);
+        if (state is null) return NotFound();
+        if (state.RequestedByUserId != userId && !User.IsInRole("SuperAdmin") && !User.IsInRole("Admin"))
+            return Forbid();
+
+        return Ok(state);
     }
 
     // ── Admin correction ──────────────────────────────────────────────────────

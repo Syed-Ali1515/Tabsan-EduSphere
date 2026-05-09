@@ -24,6 +24,13 @@
 - **Background workloads:** large notification fan-out batches are now deferred to a hosted worker that persists recipients in chunks.
 - **Validation:** solution build passed; automated test suite passed **162/162**.
 
+### 2026-05-10 — Phase 28 Stage 28.2 Completion
+- **Report generation workloads:** queued result-summary export jobs now support asynchronous generation, status polling, and deferred download.
+- **Large recalculation workloads:** queued result publish-all jobs now run in the background with job-state polling.
+- **Scalability outcome:** Stage 28.2 objectives are fully met with distributed cache hot paths plus background offload for notification fan-out, report generation, and recalculation operations.
+- **Schema impact:** no database migration required.
+- **Validation:** solution build passed; automated test suite passed **162/162**.
+
 ### 2026-05-08 — Phase 16 Faculty Grading System Complete
 - **Stage 16.1 — Gradebook Grid View:** `GradebookController` (GET/PUT/POST endpoints), `GradebookService` (GetGradebookAsync, UpsertEntryAsync, PublishAllAsync), `GradebookRepository` (3-way join for student info), `Gradebook.cshtml` (inline edit + publish-all).
 - **Stage 16.2 — Rubric-Based Grading:** Domain entities `Rubric`/`RubricCriterion`/`RubricLevel`/`RubricStudentGrade`, EF configs, `RubricRepository`, `RubricService`, `RubricController`, `RubricManage.cshtml`, `RubricView.cshtml`.
