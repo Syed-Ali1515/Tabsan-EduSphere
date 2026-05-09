@@ -26,6 +26,12 @@
 - Extended storage contract with delete support to clean temporary upload objects.
 - Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
 
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 4
+- Added `AddConfiguredMediaStorage` to register storage provider implementation from configuration.
+- Added `BlobMediaStorageService` as an object-storage style adapter behind `IMediaStorageService`.
+- Added `BlobRootPath` storage configuration key in API environment appsettings.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
+
 ### 2026-05-09 — Phase 28 Stage 28.1 Complete
 - Completed **API and App Tier Scaling** as the first stage of the scalability architecture roadmap.
 - Replaced Web session-backed connection/auth state with protected-cookie storage to keep portal nodes stateless across a load-balanced deployment.

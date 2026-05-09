@@ -299,6 +299,15 @@
 | `IMediaStorageService.DeleteAsync(storageKey, ct)` | Defines provider-agnostic deletion for temporary media objects. | `Application/Interfaces/IMediaStorageService.cs` |
 | `LocalMediaStorageService.DeleteAsync(storageKey, ct)` | Deletes stored local-file object by storage key. | `API/Services/LocalMediaStorageService.cs` |
 
+### API — Phase 28 Stage 28.3 Slice 4
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `MediaStorageServiceCollectionExtensions.AddConfiguredMediaStorage(services, configuration)` | Registers storage provider implementation based on `MediaStorage:Provider` config, defaulting to local provider. | `API/Services/MediaStorageServiceCollectionExtensions.cs` |
+| `BlobMediaStorageService.SaveAsync(content, category, fileExtension, ct)` | Persists objects using blob-style key semantics and configurable blob-root storage path. | `API/Services/BlobMediaStorageService.cs` |
+| `BlobMediaStorageService.ReadAsBytesAsync(storageKey, ct)` | Reads stored object bytes by key from blob-style storage root. | `API/Services/BlobMediaStorageService.cs` |
+| `BlobMediaStorageService.DeleteAsync(storageKey, ct)` | Deletes stored object by key from blob-style storage root. | `API/Services/BlobMediaStorageService.cs` |
+
 ### API — Program.cs Changes (Part A)
 
 | Change | Purpose | Location |

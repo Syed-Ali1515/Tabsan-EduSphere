@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.40 (Phase 28 Stage 28.3 slice 3 delivered)  
+**Version:** 1.41 (Phase 28 Stage 28.3 slice 4 delivered)  
 **Status:** Approved  
 **Prepared By:** Product Team  
 **Last Updated:** 10 May 2026  
@@ -20,6 +20,13 @@
 ### 2026-05-10 — Phase 28 Stage 28.3 Slice 3
 - **License upload storage migration:** license upload endpoint now uses provider-backed temporary storage (save/read/delete) instead of direct temp-file path handling.
 - **Validation flow decoupling:** added `ActivateFromBytesAsync` so license validation can run from in-memory bytes without filesystem-path assumptions.
+- **Schema impact:** no database migration required.
+- **Validation:** solution build passed; automated tests passed **162/162**.
+
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 4
+- **Provider selection:** added config-driven media storage provider selection (`MediaStorage:Provider`).
+- **Object-storage adapter:** added `BlobMediaStorageService` with object-key semantics and configurable blob root path.
+- **Configuration:** added `MediaStorage:BlobRootPath` in API appsettings defaults/placeholders.
 - **Schema impact:** no database migration required.
 - **Validation:** solution build passed; automated tests passed **162/162**.
 

@@ -56,11 +56,11 @@ cmd /c git -C "<repo-root>" push origin main
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
 - Active Phase: **Phase 28 — Scalability Architecture (1M+ Readiness) — IN PROGRESS ⚙️**
-- Active Stage: **Stage 28.3 in progress (Slice 3 delivered: license upload storage migration)**
-- Status: **0 build errors; 162/162 tests passed; no database migration required for Stage 28.3 Slice 3**
+- Active Stage: **Stage 28.3 in progress (Slice 4 delivered: configurable provider selection + blob-style adapter)**
+- Status: **0 build errors; 162/162 tests passed; no database migration required for Stage 28.3 Slice 4**
 - Last Updated: 2026-05-10
-- Next: **Phase 28 Stage 28.3 — add non-local object-storage provider implementation and migrate remaining file paths** (see Docs/Advance-Enhancements.md)
-- Docs Updated: ✅ All 8 tracking files updated for Phase 28 Stage 28.3 Slice 3 progress (2026-05-10)
+- Next: **Phase 28 Stage 28.3 — migrate remaining direct file-path flows and harden provider capabilities (metadata, signed URLs, streaming)** (see Docs/Advance-Enhancements.md)
+- Docs Updated: ✅ All 8 tracking files updated for Phase 28 Stage 28.3 Slice 4 progress (2026-05-10)
 
 ---
 
@@ -208,6 +208,11 @@ Database is fully synchronized with codebase.
   - Added bytes-based activation method in `LicenseValidationService` so license verification no longer depends on filesystem paths.
   - Added storage-provider delete support to clean temporary upload objects after activation attempts.
   - No schema changes required.
+- **Phase 28 — Scalability Architecture — Stage 28.3 SLICE 4 DELIVERED ✅**
+  - Added configurable provider registration (`AddConfiguredMediaStorage`) so storage backend selection is now driven by `MediaStorage:Provider`.
+  - Added `BlobMediaStorageService` adapter (object-storage style key semantics, isolated root path, reference generation).
+  - Extended media storage settings with `BlobRootPath` and updated environment appsettings defaults/placeholders.
+  - Local provider remains default to preserve runtime behavior unless provider is explicitly switched.
 - Continue through Phase 28.3+ per Docs/Advance-Enhancements.md
 
 ## Pending Extra Tasks (Cross-Phase)

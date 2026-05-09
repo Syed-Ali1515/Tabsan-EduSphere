@@ -147,6 +147,29 @@ For **every completed phase**:
 
 ---
 
+## Phase 28 — Scalability Architecture (Stage 28.3 Slice 4)
+**Status:** ✅ Slice 4 Delivered (2026-05-10)
+
+### Completion Mark
+- [x] Add config-driven storage provider selection.
+- [x] Add second storage provider implementation (`BlobMediaStorageService`).
+- [x] Add blob-root configuration key across API environments.
+- [x] Preserve local-provider default for backward-compatible runtime behavior.
+- [x] Confirm no database migration is required.
+
+### Implementation Summary
+- Added `MediaStorageServiceCollectionExtensions.AddConfiguredMediaStorage` to bind `MediaStorageOptions` and choose provider by `MediaStorage:Provider`.
+- Added `BlobMediaStorageService` implementing the existing storage contract with object-key persistence semantics.
+- Updated API `Program.cs` to use configuration-driven storage registration.
+- Added `MediaStorage:BlobRootPath` to API `appsettings*.json` files.
+
+### Validation Summary
+- `dotnet build src/Tabsan.EduSphere.API/Tabsan.EduSphere.API.csproj` — passed.
+- `dotnet build Tabsan.EduSphere.sln` — passed.
+- `dotnet test Tabsan.EduSphere.sln --no-build` — **162/162 passed**.
+
+---
+
 ## Refactoring-Hosting-Security — Part A + Part B
 **Status:** ✅ Fully Complete (2026-05-07) | Commits: f56ccd9, 5e80bc9
 

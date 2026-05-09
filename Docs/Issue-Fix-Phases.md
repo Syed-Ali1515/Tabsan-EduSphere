@@ -40,6 +40,12 @@ This file tracks the reported portal issues as phased work items so they can be 
 - Extended storage abstraction with delete support for temporary upload cleanup.
 - Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
 
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 4 Update
+- Added `MediaStorage:Provider` based DI selection for storage backend registration.
+- Added `BlobMediaStorageService` adapter to model object-storage style operations behind the same interface.
+- Added `BlobRootPath` configuration support in API appsettings.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
+
 ---
 
 ## Refactoring-Hosting-Security — Part A + Part B

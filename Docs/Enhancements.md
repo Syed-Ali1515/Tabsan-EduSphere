@@ -44,6 +44,12 @@
 - Extended media storage abstraction with delete support for temporary-object cleanup.
 - No database migration or schema change was required for Stage 28.3 Slice 3.
 
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 4 (File and Media Strategy)
+- Added config-driven provider selection for media storage through `MediaStorage:Provider`.
+- Added `BlobMediaStorageService` as an object-storage style adapter with key-based persistence and isolated blob root path.
+- Added `MediaStorage:BlobRootPath` configuration in API appsettings files.
+- No database migration or schema change was required for Stage 28.3 Slice 4.
+
 ---
 
 ## Phase 12 — Academic Calendar System ✅ Implemented
