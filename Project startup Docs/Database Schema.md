@@ -86,6 +86,11 @@
 - Stage 29.2 slice 1 added application/query contract pagination for helpdesk ticket lists only.
 - No database schema change and no EF migration were required.
 
+## 2026-05-10 Update — Phase 29 Stage 29.2 Slice 2
+
+- Stage 29.2 slice 2 added application/query contract pagination for graduation application lists.
+- No database schema change and no EF migration were required.
+
 ---
 
 # PART 1: UNIVERSITY PORTAL APPLICATION DATABASE

@@ -3598,15 +3598,21 @@ public class PortalController : Controller
     // ── Phase 18: Graduation Workflow ─────────────────────────────────────────
 
     // Final-Touches Phase 18 Stage 18.1 — student views own graduation applications + submit form
-    public async Task<IActionResult> GraduationApply(CancellationToken ct)
+    public async Task<IActionResult> GraduationApply(int page = 1, CancellationToken ct = default)
     {
         if (!_api.IsConnected()) return RedirectToAction("Connect", "Home");
-        var model = new GraduationApplyPageModel();
+        var model = new GraduationApplyPageModel { Page = page < 1 ? 1 : page };
         try
         {
-            model.Applications = await _api.GetMyGraduationApplicationsAsync(ct) ?? new();
-            model.CanSubmitNew = model.Applications.All(a =>
-                a.Status == "Rejected" || a.Status == "Approved");
+            var pageResult = await _api.GetMyGraduationApplicationsAsync(model.Page, model.PageSize, ct);
+            model.Applications = pageResult?.Items ?? new();
+            model.TotalCount = pageResult?.TotalCount ?? 0;
+            model.PageSize = pageResult?.PageSize ?? model.PageSize;
+            model.Page = pageResult?.Page ?? model.Page;
+
+            var firstPage = await _api.GetMyGraduationApplicationsAsync(1, 1, ct);
+            var latest = firstPage?.Items ?? new List<GraduationApplicationWebModel>();
+            model.CanSubmitNew = latest.Count == 0 || latest.All(a => a.Status == "Rejected" || a.Status == "Approved");
 
             if (TempData["SuccessMessage"] is string s) model.SuccessMessage = s;
             if (TempData["ErrorMessage"]   is string e) model.ErrorMessage   = e;
@@ -3630,17 +3636,23 @@ public class PortalController : Controller
     }
 
     // Final-Touches Phase 18 Stage 18.1 — admin/faculty views application list
-    public async Task<IActionResult> GraduationApplications(string? status, Guid? departmentId, CancellationToken ct)
+    public async Task<IActionResult> GraduationApplications(string? status, Guid? departmentId, int page = 1, CancellationToken ct = default)
     {
         if (!_api.IsConnected()) return RedirectToAction("Connect", "Home");
         var model = new GraduationApplicationsPageModel
         {
             StatusFilter     = status,
-            DepartmentFilter = departmentId
+            DepartmentFilter = departmentId,
+            Page = page < 1 ? 1 : page
         };
         try
         {
-            model.Applications = await _api.GetGraduationApplicationsAsync(departmentId, status, ct) ?? new();
+            var pageResult = await _api.GetGraduationApplicationsAsync(departmentId, status, model.Page, model.PageSize, ct);
+            model.Applications = pageResult?.Items ?? new();
+            model.TotalCount = pageResult?.TotalCount ?? 0;
+            model.PageSize = pageResult?.PageSize ?? model.PageSize;
+            model.Page = pageResult?.Page ?? model.Page;
+
             var depts = await _api.GetDepartmentsAsync(ct);
             model.Departments = depts.Select(d => new LookupItem { Id = d.Id, Name = d.Name }).ToList();
         }

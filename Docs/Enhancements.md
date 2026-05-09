@@ -105,6 +105,13 @@
 - No database migration or schema change was required for Stage 29.2 Slice 1.
 - Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
 
+### 2026-05-10 — Phase 29 Stage 29.2 Slice 2 (Query Discipline and Pagination)
+- Added paged graduation application listing contract for student and staff list endpoints with `page` and `pageSize` parameters.
+- Updated graduation repository/service/API list paths to execute SQL-side paging with total-count metadata instead of unbounded list materialization.
+- Updated portal graduation apply/list pages to render previous/next navigation while preserving active status/department filters.
+- No database migration or schema change was required for Stage 29.2 Slice 2.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
+
 ---
 
 ## Phase 12 — Academic Calendar System ✅ Implemented

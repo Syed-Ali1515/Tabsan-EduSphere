@@ -24,6 +24,21 @@ public class GraduationRepository : IGraduationRepository
                     .OrderByDescending(a => a.CreatedAt)
                     .ToListAsync(ct);
 
+    public async Task<IReadOnlyList<GraduationApplication>> GetByStudentPagedAsync(
+        Guid studentProfileId, int skip, int take, CancellationToken ct = default)
+        => await _db.GraduationApplications
+                    .Include(a => a.Approvals)
+                    .Where(a => a.StudentProfileId == studentProfileId)
+                    .OrderByDescending(a => a.CreatedAt)
+                    .Skip(skip)
+                    .Take(take)
+                    .ToListAsync(ct);
+
+    public Task<int> CountByStudentAsync(Guid studentProfileId, CancellationToken ct = default)
+        => _db.GraduationApplications
+              .Where(a => a.StudentProfileId == studentProfileId)
+              .CountAsync(ct);
+
     public Task<GraduationApplication?> GetActiveByStudentAsync(
         Guid studentProfileId, CancellationToken ct = default)
         => _db.GraduationApplications
@@ -59,6 +74,25 @@ public class GraduationRepository : IGraduationRepository
                     .OrderByDescending(a => a.CreatedAt)
                     .ToListAsync(ct);
 
+    public async Task<IReadOnlyList<GraduationApplication>> GetByDepartmentPagedAsync(
+        Guid departmentId, GraduationApplicationStatus? status, int skip, int take, CancellationToken ct = default)
+        => await _db.GraduationApplications
+                    .Include(a => a.Approvals)
+                    .Include(a => a.StudentProfile)
+                    .Where(a => a.StudentProfile.DepartmentId == departmentId
+                             && (status == null || a.Status == status))
+                    .OrderByDescending(a => a.CreatedAt)
+                    .Skip(skip)
+                    .Take(take)
+                    .ToListAsync(ct);
+
+    public Task<int> CountByDepartmentAsync(Guid departmentId, GraduationApplicationStatus? status, CancellationToken ct = default)
+        => _db.GraduationApplications
+              .Include(a => a.StudentProfile)
+              .Where(a => a.StudentProfile.DepartmentId == departmentId
+                       && (status == null || a.Status == status))
+              .CountAsync(ct);
+
     public async Task<IReadOnlyList<GraduationApplication>> GetAllAsync(
         GraduationApplicationStatus? status, CancellationToken ct = default)
         => await _db.GraduationApplications
@@ -67,6 +101,22 @@ public class GraduationRepository : IGraduationRepository
                     .Where(a => status == null || a.Status == status)
                     .OrderByDescending(a => a.CreatedAt)
                     .ToListAsync(ct);
+
+    public async Task<IReadOnlyList<GraduationApplication>> GetAllPagedAsync(
+        GraduationApplicationStatus? status, int skip, int take, CancellationToken ct = default)
+        => await _db.GraduationApplications
+                    .Include(a => a.Approvals)
+                    .Include(a => a.StudentProfile)
+                    .Where(a => status == null || a.Status == status)
+                    .OrderByDescending(a => a.CreatedAt)
+                    .Skip(skip)
+                    .Take(take)
+                    .ToListAsync(ct);
+
+    public Task<int> CountAllAsync(GraduationApplicationStatus? status, CancellationToken ct = default)
+        => _db.GraduationApplications
+              .Where(a => status == null || a.Status == status)
+              .CountAsync(ct);
 
     // ── Lookup helpers ────────────────────────────────────────────────────────
 

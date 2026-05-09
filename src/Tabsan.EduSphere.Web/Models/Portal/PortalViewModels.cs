@@ -1799,6 +1799,15 @@ public class GraduationApplicationWebModel
     public bool      HasCertificate     { get; set; }
 }
 
+public class GraduationApplicationPageItem
+{
+    public List<GraduationApplicationWebModel> Items { get; set; } = new();
+    public int Page { get; set; } = 1;
+    public int PageSize { get; set; } = 20;
+    public int TotalCount { get; set; }
+    public int TotalPages => PageSize > 0 ? (int)Math.Ceiling((double)TotalCount / PageSize) : 0;
+}
+
 // Final-Touches Phase 18 Stage 18.1 — approval history item
 public class ApprovalHistoryWebItem
 {
@@ -1830,6 +1839,10 @@ public class GraduationApplicationDetailWebModel
 public class GraduationApplyPageModel
 {
     public List<GraduationApplicationWebModel> Applications   { get; set; } = new();
+    public int                                 Page           { get; set; } = 1;
+    public int                                 PageSize       { get; set; } = 20;
+    public int                                 TotalCount     { get; set; }
+    public int                                 TotalPages     => PageSize > 0 ? (int)Math.Ceiling((double)TotalCount / PageSize) : 0;
     public bool                                CanSubmitNew   { get; set; }
     public string?                             SuccessMessage { get; set; }
     public string?                             ErrorMessage   { get; set; }
@@ -1841,6 +1854,10 @@ public class GraduationApplicationsPageModel
     public List<GraduationApplicationWebModel> Applications { get; set; } = new();
     public string? StatusFilter                             { get; set; }
     public Guid?   DepartmentFilter                        { get; set; }
+    public int     Page                                    { get; set; } = 1;
+    public int     PageSize                                { get; set; } = 20;
+    public int     TotalCount                              { get; set; }
+    public int     TotalPages                              => PageSize > 0 ? (int)Math.Ceiling((double)TotalCount / PageSize) : 0;
     public List<LookupItem> Departments                    { get; set; } = new();
 }
 

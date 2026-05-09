@@ -13,6 +13,12 @@ public interface IGraduationRepository
     /// <summary>Returns all applications for a specific student profile.</summary>
     Task<IReadOnlyList<GraduationApplication>> GetByStudentAsync(Guid studentProfileId, CancellationToken ct = default);
 
+    /// <summary>Returns a paged application slice for a specific student profile.</summary>
+    Task<IReadOnlyList<GraduationApplication>> GetByStudentPagedAsync(Guid studentProfileId, int skip, int take, CancellationToken ct = default);
+
+    /// <summary>Returns the total number of applications for a specific student profile.</summary>
+    Task<int> CountByStudentAsync(Guid studentProfileId, CancellationToken ct = default);
+
     /// <summary>Returns the active (non-rejected, non-soft-deleted) application for a student, or null.</summary>
     Task<GraduationApplication?> GetActiveByStudentAsync(Guid studentProfileId, CancellationToken ct = default);
 
@@ -25,8 +31,20 @@ public interface IGraduationRepository
     /// <summary>Returns all applications visible to an Admin (scoped to their department).</summary>
     Task<IReadOnlyList<GraduationApplication>> GetByDepartmentAsync(Guid departmentId, GraduationApplicationStatus? status, CancellationToken ct = default);
 
+    /// <summary>Returns a paged application slice visible to an Admin (scoped to their department).</summary>
+    Task<IReadOnlyList<GraduationApplication>> GetByDepartmentPagedAsync(Guid departmentId, GraduationApplicationStatus? status, int skip, int take, CancellationToken ct = default);
+
+    /// <summary>Returns total applications visible to an Admin (scoped to their department).</summary>
+    Task<int> CountByDepartmentAsync(Guid departmentId, GraduationApplicationStatus? status, CancellationToken ct = default);
+
     /// <summary>Returns all applications (SuperAdmin full view), optionally filtered by status.</summary>
     Task<IReadOnlyList<GraduationApplication>> GetAllAsync(GraduationApplicationStatus? status, CancellationToken ct = default);
+
+    /// <summary>Returns a paged application slice (SuperAdmin full view), optionally filtered by status.</summary>
+    Task<IReadOnlyList<GraduationApplication>> GetAllPagedAsync(GraduationApplicationStatus? status, int skip, int take, CancellationToken ct = default);
+
+    /// <summary>Returns total applications (SuperAdmin full view), optionally filtered by status.</summary>
+    Task<int> CountAllAsync(GraduationApplicationStatus? status, CancellationToken ct = default);
 
     /// <summary>Queues a new application for insertion.</summary>
     Task AddAsync(GraduationApplication application, CancellationToken ct = default);

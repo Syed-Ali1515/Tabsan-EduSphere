@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.49 (Phase 29 Stage 29.2 slice 1 delivered)  
+**Version:** 1.50 (Phase 29 Stage 29.2 slice 2 delivered)  
 **Status:** Approved  
 **Prepared By:** Product Team  
 **Last Updated:** 10 May 2026  
@@ -88,6 +88,13 @@
 - **Pagination discipline:** helpdesk ticket listing now uses server-side paging with `page` and `pageSize` parameters.
 - **Contract update:** API, application service, repository, and portal client now exchange paged ticket results instead of unbounded lists.
 - **User experience:** portal helpdesk list now supports next/previous navigation while preserving the selected status filter.
+- **Schema impact:** no database migration required.
+- **Validation:** solution build passed; automated tests passed **162/162**.
+
+### 2026-05-10 — Phase 29 Stage 29.2 Slice 2
+- **Pagination discipline:** graduation application list endpoints now use server-side paging with `page` and `pageSize` parameters.
+- **Contract update:** graduation API/application/repository/web contracts now exchange paged list results with total-count metadata.
+- **User experience:** portal graduation apply/list pages now support next/previous navigation while preserving active filters.
 - **Schema impact:** no database migration required.
 - **Validation:** solution build passed; automated tests passed **162/162**.
 

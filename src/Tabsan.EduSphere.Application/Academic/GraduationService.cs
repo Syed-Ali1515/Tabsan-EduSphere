@@ -59,14 +59,20 @@ public class GraduationService : IGraduationService
 
     // ── Queries ───────────────────────────────────────────────────────────────
 
-    public async Task<IReadOnlyList<GraduationApplicationSummary>> GetMyApplicationsAsync(
-        Guid studentProfileId, CancellationToken ct = default)
+    public async Task<GraduationApplicationPageDto> GetMyApplicationsAsync(
+        Guid studentProfileId, int page, int pageSize, CancellationToken ct = default)
     {
-        var apps  = await _repo.GetByStudentAsync(studentProfileId, ct);
+        var normalizedPage = page < 1 ? 1 : page;
+        var normalizedPageSize = Math.Clamp(pageSize, 10, 100);
+        var skip = (normalizedPage - 1) * normalizedPageSize;
+
+        var totalCount = await _repo.CountByStudentAsync(studentProfileId, ct);
+        var apps  = await _repo.GetByStudentPagedAsync(studentProfileId, skip, normalizedPageSize, ct);
         var name  = await _repo.GetStudentDisplayNameAsync(studentProfileId, ct);
         var regNo = await _repo.GetStudentRegistrationNumberAsync(studentProfileId, ct);
         var prog  = await _repo.GetStudentProgramNameAsync(studentProfileId, ct);
-        return apps.Select(a => ToSummary(a, name, regNo, prog)).ToList();
+        var summaries = apps.Select(a => ToSummary(a, name, regNo, prog)).ToList();
+        return new GraduationApplicationPageDto(summaries, normalizedPage, normalizedPageSize, totalCount);
     }
 
     public async Task<GraduationApplicationDetail> GetApplicationDetailAsync(
@@ -93,17 +99,28 @@ public class GraduationService : IGraduationService
         return ToDetail(app, name, regNo, prog, history);
     }
 
-    public async Task<IReadOnlyList<GraduationApplicationSummary>> GetApplicationsAsync(
-        Guid? departmentId, string? statusFilter, CancellationToken ct = default)
+    public async Task<GraduationApplicationPageDto> GetApplicationsAsync(
+        Guid? departmentId, string? statusFilter, int page, int pageSize, CancellationToken ct = default)
     {
+        var normalizedPage = page < 1 ? 1 : page;
+        var normalizedPageSize = Math.Clamp(pageSize, 10, 100);
+        var skip = (normalizedPage - 1) * normalizedPageSize;
+
         GraduationApplicationStatus? status = statusFilter is null ? null
             : Enum.TryParse<GraduationApplicationStatus>(statusFilter, true, out var s) ? s : null;
 
         IReadOnlyList<GraduationApplication> apps;
+        int totalCount;
         if (departmentId.HasValue)
-            apps = await _repo.GetByDepartmentAsync(departmentId.Value, status, ct);
+        {
+            totalCount = await _repo.CountByDepartmentAsync(departmentId.Value, status, ct);
+            apps = await _repo.GetByDepartmentPagedAsync(departmentId.Value, status, skip, normalizedPageSize, ct);
+        }
         else
-            apps = await _repo.GetAllAsync(status, ct);
+        {
+            totalCount = await _repo.CountAllAsync(status, ct);
+            apps = await _repo.GetAllPagedAsync(status, skip, normalizedPageSize, ct);
+        }
 
         var result = new List<GraduationApplicationSummary>();
         foreach (var a in apps)
@@ -113,7 +130,7 @@ public class GraduationService : IGraduationService
             var prog  = await _repo.GetStudentProgramNameAsync(a.StudentProfileId, ct);
             result.Add(ToSummary(a, name, regNo, prog));
         }
-        return result;
+        return new GraduationApplicationPageDto(result, normalizedPage, normalizedPageSize, totalCount);
     }
 
     // ── Commands ──────────────────────────────────────────────────────────────

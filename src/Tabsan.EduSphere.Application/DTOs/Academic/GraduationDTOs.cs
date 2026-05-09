@@ -33,6 +33,14 @@ public sealed record GraduationApplicationSummary(
     bool   HasCertificate
 );
 
+/// <summary>Paged response wrapper for graduation application lists.</summary>
+public sealed record GraduationApplicationPageDto(
+    IReadOnlyList<GraduationApplicationSummary> Items,
+    int Page,
+    int PageSize,
+    int TotalCount
+);
+
 // Final-Touches Phase 18 Stage 18.1/18.2 — full application detail
 /// <summary>Full detail of a graduation application including approval history.</summary>
 public sealed record GraduationApplicationDetail(

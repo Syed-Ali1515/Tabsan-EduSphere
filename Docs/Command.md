@@ -56,11 +56,11 @@ cmd /c git -C "<repo-root>" push origin main
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
 - Active Phase: **Phase 29 — MSSQL Data and Indexing Optimization — IN PROGRESS ⚙️**
-- Active Stage: **Stage 29.2 in progress (Slice 1 delivered: helpdesk ticket pagination)**
-- Status: **0 build errors; 162/162 tests passed; no database migration required for Stage 29.2 Slice 1**
+- Active Stage: **Stage 29.2 in progress (Slice 2 delivered: graduation application pagination)**
+- Status: **0 build errors; 162/162 tests passed; no database migration required for Stage 29.2 Slice 2**
 - Last Updated: 2026-05-10
-- Next: **Phase 29 Stage 29.2 — continue pagination/filter discipline on other heavy list endpoints (graduation/FYP/payment receipts)** (see Docs/Advance-Enhancements.md)
-- Docs Updated: ✅ All 8 tracking files updated for Phase 29 Stage 29.2 Slice 1 progress (2026-05-10)
+- Next: **Phase 29 Stage 29.2 — continue pagination/filter discipline on other heavy list endpoints (FYP/payment receipts)** (see Docs/Advance-Enhancements.md)
+- Docs Updated: ✅ All 8 tracking files updated for Phase 29 Stage 29.2 Slice 2 progress (2026-05-10)
 
 ---
 
@@ -255,6 +255,11 @@ Database is fully synchronized with codebase.
   - Added paged helpdesk ticket listing contract across API, application, repository, and web layers.
   - Replaced unbounded `GET /api/v1/helpdesk/tickets` listing with `page` and `pageSize` driven queries for Student, Faculty, Admin, and SuperAdmin views.
   - Updated portal helpdesk page with previous/next pagination controls and status-filter reset to page 1.
+  - No database migration was required.
+- **Phase 29 — MSSQL Data and Indexing Optimization — Stage 29.2 SLICE 2 DELIVERED ✅**
+  - Added paged graduation application list contract for both student (`GET /api/v1/graduation/my`) and staff (`GET /api/v1/graduation`) list paths.
+  - Replaced unbounded graduation list materialization with server-side `page` and `pageSize` SQL paging in repository/service/API layers.
+  - Updated portal graduation list pages with previous/next pagination controls while preserving status/department filters.
   - No database migration was required.
 
 ## Pending Extra Tasks (Cross-Phase)

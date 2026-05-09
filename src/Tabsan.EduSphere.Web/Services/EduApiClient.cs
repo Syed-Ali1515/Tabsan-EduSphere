@@ -320,11 +320,11 @@ public interface IEduApiClient
 
     // Phase 18: Graduation Workflow
     // Final-Touches Phase 18 Stage 18.1 — student own applications
-    Task<List<GraduationApplicationWebModel>?> GetMyGraduationApplicationsAsync(CancellationToken ct);
+    Task<GraduationApplicationPageItem?> GetMyGraduationApplicationsAsync(int page, int pageSize, CancellationToken ct);
     // Final-Touches Phase 18 Stage 18.1 — application detail
     Task<GraduationApplicationDetailWebModel?> GetGraduationApplicationDetailAsync(Guid applicationId, CancellationToken ct);
     // Final-Touches Phase 18 Stage 18.1 — admin/superadmin list
-    Task<List<GraduationApplicationWebModel>?> GetGraduationApplicationsAsync(Guid? departmentId, string? status, CancellationToken ct);
+    Task<GraduationApplicationPageItem?> GetGraduationApplicationsAsync(Guid? departmentId, string? status, int page, int pageSize, CancellationToken ct);
     // Final-Touches Phase 18 Stage 18.1 — student submit
     Task<GraduationApplicationWebModel?> SubmitGraduationApplicationAsync(string? studentNote, CancellationToken ct);
     // Final-Touches Phase 18 Stage 18.1 — faculty approve/reject
@@ -608,10 +608,11 @@ public class EduApiClient : IEduApiClient
 
     // Phase 18: Graduation Workflow
 
-    public async Task<System.Collections.Generic.List<GraduationApplicationWebModel>?> GetMyGraduationApplicationsAsync(CancellationToken ct)
+    public async Task<GraduationApplicationPageItem?> GetMyGraduationApplicationsAsync(int page, int pageSize, CancellationToken ct)
     {
-        var raw = await GetAsync<System.Collections.Generic.List<GraduationApplicationApiDto>>("api/v1/graduation/my", ct);
-        return raw?.Select(MapGradApp).ToList();
+        var query = $"api/v1/graduation/my?page={page}&pageSize={pageSize}";
+        var raw = await GetAsync<GraduationApplicationPageApiDto>(query, ct);
+        return raw is null ? null : MapGradPage(raw);
     }
 
     public async Task<GraduationApplicationDetailWebModel?> GetGraduationApplicationDetailAsync(Guid applicationId, CancellationToken ct)
@@ -630,15 +631,17 @@ public class EduApiClient : IEduApiClient
         };
     }
 
-    public async Task<System.Collections.Generic.List<GraduationApplicationWebModel>?> GetGraduationApplicationsAsync(Guid? departmentId, string? status, CancellationToken ct)
+    public async Task<GraduationApplicationPageItem?> GetGraduationApplicationsAsync(Guid? departmentId, string? status, int page, int pageSize, CancellationToken ct)
     {
         var query = "api/v1/graduation";
         var parts = new System.Collections.Generic.List<string>();
         if (departmentId.HasValue) parts.Add($"departmentId={departmentId}");
         if (!string.IsNullOrEmpty(status)) parts.Add($"status={status}");
+        parts.Add($"page={page}");
+        parts.Add($"pageSize={pageSize}");
         if (parts.Count > 0) query += "?" + string.Join("&", parts);
-        var raw = await GetAsync<System.Collections.Generic.List<GraduationApplicationApiDto>>(query, ct);
-        return raw?.Select(MapGradApp).ToList();
+        var raw = await GetAsync<GraduationApplicationPageApiDto>(query, ct);
+        return raw is null ? null : MapGradPage(raw);
     }
 
     public async Task<GraduationApplicationWebModel?> SubmitGraduationApplicationAsync(string? studentNote, CancellationToken ct)
@@ -699,6 +702,14 @@ public class EduApiClient : IEduApiClient
         Status = raw.Status ?? "", SubmittedAt = raw.SubmittedAt, UpdatedAt = raw.UpdatedAt, HasCertificate = raw.HasCertificate
     };
 
+    private static GraduationApplicationPageItem MapGradPage(GraduationApplicationPageApiDto raw) => new()
+    {
+        Items = raw.Items?.Select(MapGradApp).ToList() ?? new(),
+        Page = raw.Page,
+        PageSize = raw.PageSize,
+        TotalCount = raw.TotalCount
+    };
+
     private class GraduationApplicationApiDto
     {
         public Guid Id { get; set; } public Guid StudentProfileId { get; set; }
@@ -706,6 +717,14 @@ public class EduApiClient : IEduApiClient
         public string? ProgramName { get; set; } public string? Status { get; set; }
         public DateTime? SubmittedAt { get; set; } public DateTime? UpdatedAt { get; set; }
         public bool HasCertificate { get; set; }
+    }
+
+    private sealed class GraduationApplicationPageApiDto
+    {
+        public System.Collections.Generic.List<GraduationApplicationApiDto>? Items { get; set; }
+        public int Page { get; set; }
+        public int PageSize { get; set; }
+        public int TotalCount { get; set; }
     }
 
     private sealed class GraduationApplicationDetailApiDto : GraduationApplicationApiDto

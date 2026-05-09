@@ -85,6 +85,11 @@
 - Replaced the previous unbounded helpdesk list path with `page` and `pageSize` aware queries.
 - Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
 
+### 2026-05-10 — Phase 29 Stage 29.2 Slice 2
+- Added server-side pagination for graduation application list endpoints across repository, application service, API controller, portal client, and portal pages.
+- Replaced previous unbounded graduation list paths with `page` and `pageSize` aware queries plus total-count metadata.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
+
 ### 2026-05-09 — Phase 28 Stage 28.1 Complete
 - Completed **API and App Tier Scaling** as the first stage of the scalability architecture roadmap.
 - Replaced Web session-backed connection/auth state with protected-cookie storage to keep portal nodes stateless across a load-balanced deployment.

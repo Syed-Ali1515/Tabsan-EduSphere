@@ -98,6 +98,12 @@ This file tracks the reported portal issues as phased work items so they can be 
 - Added portal paging controls while preserving status filtering behavior.
 - Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
 
+### 2026-05-10 — Phase 29 Stage 29.2 Slice 2 Update
+- Added paged graduation application list contracts for both student and staff list endpoints.
+- Replaced unbounded graduation list retrieval with server-side `page` and `pageSize` queries plus total-count metadata.
+- Updated portal graduation pages with previous/next pagination controls while preserving status and department filtering.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
+
 ---
 
 ## Refactoring-Hosting-Security — Part A + Part B

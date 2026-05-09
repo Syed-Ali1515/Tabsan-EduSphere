@@ -44,11 +44,14 @@ public class GraduationController : ControllerBase
     /// <summary>Returns the current student's graduation applications.</summary>
     [HttpGet("my")]
     [Authorize(Roles = "Student")]
-    public async Task<IActionResult> GetMyApplications(CancellationToken ct)
+    public async Task<IActionResult> GetMyApplications(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken ct = default)
     {
         var profile = await _studentRepo.GetByUserIdAsync(GetUserId(), ct);
         if (profile is null) return NotFound("Student profile not found.");
-        var apps = await _graduation.GetMyApplicationsAsync(profile.Id, ct);
+        var apps = await _graduation.GetMyApplicationsAsync(profile.Id, page, pageSize, ct);
         return Ok(apps);
     }
 
@@ -76,9 +79,11 @@ public class GraduationController : ControllerBase
     public async Task<IActionResult> GetAll(
         [FromQuery] Guid? departmentId,
         [FromQuery] string? status,
-        CancellationToken ct)
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken ct = default)
     {
-        var apps = await _graduation.GetApplicationsAsync(departmentId, status, ct);
+        var apps = await _graduation.GetApplicationsAsync(departmentId, status, page, pageSize, ct);
         return Ok(apps);
     }
 

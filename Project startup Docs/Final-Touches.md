@@ -365,6 +365,26 @@ For **every completed phase**:
 
 ---
 
+## Phase 29 — MSSQL Data and Indexing Optimization (Stage 29.2 Slice 2)
+**Status:** ✅ Slice 2 Delivered (2026-05-10)
+
+### Completion Mark
+- [x] Add server-side pagination for another heavy list endpoint.
+- [x] Push pagination through repository, application, API, and portal layers.
+- [x] Preserve existing status/department filtering behavior while paging.
+- [x] Confirm no database migration is required.
+
+### Implementation Summary
+- Added paged graduation application list contracts (`GraduationApplicationPageDto`) for student and staff list endpoints.
+- Updated graduation repository/service/API list methods to apply SQL-side paging with total-count metadata.
+- Updated portal graduation apply/list pages to render previous/next controls while preserving active filters.
+
+### Validation Summary
+- `dotnet build Tabsan.EduSphere.sln` — passed.
+- `dotnet test Tabsan.EduSphere.sln --no-build` — **162/162 passed**.
+
+---
+
 ## Refactoring-Hosting-Security — Part A + Part B
 **Status:** ✅ Fully Complete (2026-05-07) | Commits: f56ccd9, 5e80bc9
 

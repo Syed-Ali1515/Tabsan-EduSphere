@@ -344,6 +344,23 @@
 | `GetTicketsAsync(status, page, pageSize, ct)` | Web API client method that consumes the paged helpdesk response. | `Web/Services/EduApiClient.cs` |
 | `Helpdesk(status, page, ct)` | Portal action that binds and renders paged helpdesk results. | `Web/Controllers/PortalController.cs` |
 
+### Application/API/Web — Phase 29 Stage 29.2 Slice 2 (Graduation Pagination)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GraduationApplicationPageDto` | Carries paged graduation application items plus paging metadata at the application/API boundary. | `Application/DTOs/Academic/GraduationDTOs.cs` |
+| `GetMyApplicationsAsync(studentProfileId, page, pageSize, ct)` | Returns paged student graduation applications instead of an unbounded list. | `Application/Interfaces/IGraduationService.cs`, `Application/Academic/GraduationService.cs` |
+| `GetApplicationsAsync(departmentId, statusFilter, page, pageSize, ct)` | Returns paged admin/superadmin graduation applications with optional filters. | `Application/Interfaces/IGraduationService.cs`, `Application/Academic/GraduationService.cs` |
+| `GetByStudentPagedAsync(studentProfileId, skip, take, ct)` | Executes SQL-side paging for student graduation application history. | `Domain/Interfaces/IGraduationRepository.cs`, `Infrastructure/Repositories/GraduationRepository.cs` |
+| `GetByDepartmentPagedAsync(departmentId, status, skip, take, ct)` | Executes SQL-side paging for department-scoped graduation queues. | `Domain/Interfaces/IGraduationRepository.cs`, `Infrastructure/Repositories/GraduationRepository.cs` |
+| `GetAllPagedAsync(status, skip, take, ct)` | Executes SQL-side paging for global graduation queues. | `Domain/Interfaces/IGraduationRepository.cs`, `Infrastructure/Repositories/GraduationRepository.cs` |
+| `GetMyApplications(page, pageSize, ct)` | API endpoint exposing paged student graduation applications. | `API/Controllers/GraduationController.cs` |
+| `GetAll(departmentId, status, page, pageSize, ct)` | API endpoint exposing paged staff graduation applications with filters. | `API/Controllers/GraduationController.cs` |
+| `GetMyGraduationApplicationsAsync(page, pageSize, ct)` | Web client method consuming paged student graduation application responses. | `Web/Services/EduApiClient.cs` |
+| `GetGraduationApplicationsAsync(departmentId, status, page, pageSize, ct)` | Web client method consuming paged staff graduation application responses. | `Web/Services/EduApiClient.cs` |
+| `GraduationApply(page, ct)` | Portal action rendering paged student graduation application history. | `Web/Controllers/PortalController.cs` |
+| `GraduationApplications(status, departmentId, page, ct)` | Portal action rendering paged staff graduation application lists with filters. | `Web/Controllers/PortalController.cs` |
+
 ### API — Phase 28 Stage 28.2 Completion
 
 | Function Name | Purpose | Location |
