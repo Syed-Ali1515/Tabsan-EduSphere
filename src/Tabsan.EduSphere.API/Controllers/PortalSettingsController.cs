@@ -110,10 +110,11 @@ public class PortalSettingsController : ControllerBase
         if (Uri.TryCreate(temporaryUrl, UriKind.Absolute, out _))
             return Redirect(temporaryUrl!);
 
+        var metadata = await _mediaStorage.GetMetadataAsync(storageKey, ct);
         var bytes = await _mediaStorage.ReadAsBytesAsync(storageKey, ct);
         if (bytes is null) return NotFound();
 
-        return File(bytes, ResolveImageContentType(storageKey));
+        return File(bytes, metadata?.ContentType ?? ResolveImageContentType(storageKey));
     }
 
     private static string ResolveImageContentType(string path)

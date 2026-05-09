@@ -78,6 +78,13 @@
 - Preserved legacy `/certificates/*` certificate path byte-download compatibility.
 - No database migration or schema change was required for Stage 28.3 Slice 8.
 
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 9 (File and Media Strategy)
+- Extended storage abstraction with metadata lookup support (`GetMetadataAsync`) plus content type and length in save results.
+- Added provider metadata resolution in local and blob storage adapters.
+- Updated portal logo and certificate streaming endpoints to use provider metadata for response content type selection.
+- Preserved signed URL enforcement, redirect-first reads, and legacy path compatibility.
+- No database migration or schema change was required for Stage 28.3 Slice 9.
+
 ---
 
 ## Phase 12 — Academic Calendar System ✅ Implemented

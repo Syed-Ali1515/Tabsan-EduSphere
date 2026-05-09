@@ -56,11 +56,11 @@ cmd /c git -C "<repo-root>" push origin main
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
 - Active Phase: **Phase 28 — Scalability Architecture (1M+ Readiness) — IN PROGRESS ⚙️**
-- Active Stage: **Stage 28.3 in progress (Slice 8 delivered: signed certificate media reads + tokenized certificate endpoint)**
-- Status: **0 build errors; 162/162 tests passed; no database migration required for Stage 28.3 Slice 8**
+- Active Stage: **Stage 28.3 in progress (Slice 9 delivered: storage metadata contract + metadata-backed media responses)**
+- Status: **0 build errors; 162/162 tests passed; no database migration required for Stage 28.3 Slice 9**
 - Last Updated: 2026-05-10
-- Next: **Phase 28 Stage 28.3 — continue provider hardening (metadata contracts + signed URL adoption for any remaining direct byte media paths)** (see Docs/Advance-Enhancements.md)
-- Docs Updated: ✅ All 8 tracking files updated for Phase 28 Stage 28.3 Slice 8 progress (2026-05-10)
+- Next: **Phase 28 Stage 28.3 — continue provider hardening (content hashes/disposition metadata + remaining direct byte media paths)** (see Docs/Advance-Enhancements.md)
+- Docs Updated: ✅ All 8 tracking files updated for Phase 28 Stage 28.3 Slice 9 progress (2026-05-10)
 
 ---
 
@@ -233,6 +233,11 @@ Database is fully synchronized with codebase.
   - Updated graduation certificate download flow to redirect to temporary provider URLs (when available) or signed local certificate URLs.
   - Enforced signed URL validation (`exp` + `sig`) for local certificate streaming when signing secret is configured.
   - Preserved legacy `/certificates/*` certificate path compatibility with existing byte-download flow.
+- **Phase 28 — Scalability Architecture — Stage 28.3 SLICE 9 DELIVERED ✅**
+  - Extended `IMediaStorageService` with metadata lookup support (`GetMetadataAsync`) and expanded save results to include content type and object length.
+  - Added metadata resolution in local/blob storage providers so callers can retrieve provider-backed content type and length without re-deriving from business code.
+  - Updated portal logo and certificate streaming endpoints to prefer storage metadata for response content type selection.
+  - Preserved existing signed URL and legacy path compatibility behavior.
 - Continue through Phase 28.3+ per Docs/Advance-Enhancements.md
 
 ## Pending Extra Tasks (Cross-Phase)

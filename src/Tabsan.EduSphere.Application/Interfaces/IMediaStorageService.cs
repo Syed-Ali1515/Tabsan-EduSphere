@@ -13,6 +13,8 @@ public interface IMediaStorageService
 
     Task<byte[]?> ReadAsBytesAsync(string storageKey, CancellationToken ct = default);
 
+    Task<MediaStorageObjectMetadata?> GetMetadataAsync(string storageKey, CancellationToken ct = default);
+
     Task<string?> GenerateTemporaryReadUrlAsync(
         string storageKey,
         TimeSpan ttl,
@@ -21,4 +23,13 @@ public interface IMediaStorageService
     Task DeleteAsync(string storageKey, CancellationToken ct = default);
 }
 
-public sealed record MediaStorageSaveResult(string StorageKey, string Reference);
+public sealed record MediaStorageSaveResult(
+    string StorageKey,
+    string Reference,
+    string ContentType,
+    long Length);
+
+public sealed record MediaStorageObjectMetadata(
+    string StorageKey,
+    string ContentType,
+    long Length);

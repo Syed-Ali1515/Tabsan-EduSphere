@@ -267,10 +267,11 @@ public class GraduationController : ControllerBase
                 return NotFound();
         }
 
+        var metadata = await _mediaStorage.GetMetadataAsync(storageKey, ct);
         var bytes = await _mediaStorage.ReadAsBytesAsync(storageKey, ct);
         if (bytes is null) return NotFound("Certificate not yet generated or not found.");
 
-        return File(bytes, "application/pdf");
+        return File(bytes, metadata?.ContentType ?? "application/pdf");
     }
 
     // Final-Touches Phase 18 Stage 18.2 — admin/superadmin regenerates certificate

@@ -294,6 +294,16 @@
 | `GetCertificateFile(storageKey, exp, sig, ct)` | Streams provider-backed graduation certificates by storage key with signed URL validation when configured. | `API/Controllers/GraduationController.cs` |
 | `BuildLocalSignedCertificateUrl(storageKey, ttl)` | Builds short-lived signed local certificate URLs for tokenized reads. | `API/Controllers/GraduationController.cs` |
 | `IsValidLocalSignature(storageKey, expiresAt, providedSignature)` | Performs fixed-time signature verification for local certificate URL requests. | `API/Controllers/GraduationController.cs` |
+
+### Application/API — Phase 28 Stage 28.3 Slice 9 (Storage Metadata Contract)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetMetadataAsync(storageKey, ct)` | Storage-contract method for retrieving object metadata such as content type and length. | `Application/Interfaces/IMediaStorageService.cs` |
+| `MediaStorageObjectMetadata` | Metadata record carrying storage key, content type, and length for provider-backed media objects. | `Application/Interfaces/IMediaStorageService.cs` |
+| `GetMetadataAsync(storageKey, ct)` | Local provider implementation that resolves metadata from filesystem-backed objects. | `API/Services/LocalMediaStorageService.cs` |
+| `GetMetadataAsync(storageKey, ct)` | Blob-style provider implementation that resolves metadata from object files. | `API/Services/BlobMediaStorageService.cs` |
+| `ResolveContentType(path)` | Provider helper that derives canonical content type for stored object metadata and save results. | `API/Services/LocalMediaStorageService.cs`, `API/Services/BlobMediaStorageService.cs` |
 | `ModuleEntitlementResolver.IsActiveAsync(moduleKey, ct)` | Uses local memory + distributed cache to share module-activation decisions across API nodes. | `Infrastructure/Modules/ModuleEntitlementResolver.cs` |
 
 ### API — Phase 28 Stage 28.2 Completion

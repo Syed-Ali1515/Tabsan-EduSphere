@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.45 (Phase 28 Stage 28.3 slice 8 delivered)  
+**Version:** 1.46 (Phase 28 Stage 28.3 slice 9 delivered)  
 **Status:** Approved  
 **Prepared By:** Product Team  
 **Last Updated:** 10 May 2026  
@@ -59,6 +59,14 @@
 - **Redirect-first certificate reads:** graduation certificate download now redirects to provider temporary URLs when available, otherwise to signed local certificate URLs.
 - **Signed local enforcement:** local certificate-file reads validate `exp` and `sig` when `MediaStorage:SignedUrlSecret` is configured.
 - **Legacy compatibility:** existing legacy `/certificates/*` records continue to use the original byte-download path.
+- **Schema impact:** no database migration required.
+- **Validation:** solution build passed; automated tests passed **162/162**.
+
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 9
+- **Storage metadata contract:** added `GetMetadataAsync` plus content type and length fields on storage save results.
+- **Provider metadata support:** local and blob storage adapters now expose metadata derived from persisted objects.
+- **Response hardening:** logo and certificate streaming endpoints now use storage metadata to select content type instead of relying only on controller-side extension mapping.
+- **Compatibility:** signed URL flows and legacy path fallbacks remain unchanged.
 - **Schema impact:** no database migration required.
 - **Validation:** solution build passed; automated tests passed **162/162**.
 

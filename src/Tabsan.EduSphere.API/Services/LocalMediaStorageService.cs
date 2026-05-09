@@ -42,9 +42,14 @@ public sealed class LocalMediaStorageService : IMediaStorageService
 
         await using var destination = new FileStream(fullPath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
         await content.CopyToAsync(destination, ct);
+        await destination.FlushAsync(ct);
 
         var reference = BuildReference(objectKey);
-        return new MediaStorageSaveResult(objectKey, reference);
+        return new MediaStorageSaveResult(
+            objectKey,
+            reference,
+            ResolveContentType(objectKey),
+            destination.Length);
     }
 
     public async Task<byte[]?> ReadAsBytesAsync(string storageKey, CancellationToken ct = default)
@@ -57,6 +62,20 @@ public sealed class LocalMediaStorageService : IMediaStorageService
             return null;
 
         return await File.ReadAllBytesAsync(fullPath, ct);
+    }
+
+    public Task<MediaStorageObjectMetadata?> GetMetadataAsync(string storageKey, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(storageKey))
+            return Task.FromResult<MediaStorageObjectMetadata?>(null);
+
+        var fullPath = Path.Combine(GetRootPath(), storageKey.Replace('/', Path.DirectorySeparatorChar));
+        if (!File.Exists(fullPath))
+            return Task.FromResult<MediaStorageObjectMetadata?>(null);
+
+        var info = new FileInfo(fullPath);
+        var metadata = new MediaStorageObjectMetadata(storageKey, ResolveContentType(storageKey), info.Length);
+        return Task.FromResult<MediaStorageObjectMetadata?>(metadata);
     }
 
     public Task<string?> GenerateTemporaryReadUrlAsync(
@@ -150,5 +169,22 @@ public sealed class LocalMediaStorageService : IMediaStorageService
         using var hmac = new HMACSHA256(keyBytes);
         var hash = hmac.ComputeHash(payloadBytes);
         return Convert.ToHexString(hash).ToLowerInvariant();
+    }
+
+    private static string ResolveContentType(string path)
+    {
+        var ext = Path.GetExtension(path).ToLowerInvariant();
+        return ext switch
+        {
+            ".png" => "image/png",
+            ".jpg" => "image/jpeg",
+            ".jpeg" => "image/jpeg",
+            ".gif" => "image/gif",
+            ".svg" => "image/svg+xml",
+            ".webp" => "image/webp",
+            ".pdf" => "application/pdf",
+            ".tablic" => "application/octet-stream",
+            _ => "application/octet-stream"
+        };
     }
 }

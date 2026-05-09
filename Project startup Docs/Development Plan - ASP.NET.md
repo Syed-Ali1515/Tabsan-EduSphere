@@ -58,6 +58,12 @@
 - Preserved legacy `/certificates/*` compatibility for existing path-based records.
 - Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
 
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 9
+- Extended `IMediaStorageService` with metadata lookup support (`GetMetadataAsync`) and added content type/length fields on save results.
+- Implemented provider metadata resolution in `LocalMediaStorageService` and `BlobMediaStorageService`.
+- Updated portal logo and certificate streaming endpoints to use provider metadata for response content type selection.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
+
 ### 2026-05-09 — Phase 28 Stage 28.1 Complete
 - Completed **API and App Tier Scaling** as the first stage of the scalability architecture roadmap.
 - Replaced Web session-backed connection/auth state with protected-cookie storage to keep portal nodes stateless across a load-balanced deployment.

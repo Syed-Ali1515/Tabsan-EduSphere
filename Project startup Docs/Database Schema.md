@@ -60,6 +60,11 @@
 - Stage 28.3 slice 8 added authenticated tokenized certificate streaming endpoint support and signed local certificate read validation.
 - No database schema change and no EF migration were required.
 
+## 2026-05-10 Update — Phase 28 Stage 28.3 Slice 9
+
+- Stage 28.3 slice 9 added provider-backed storage metadata lookup support (content type and length) for media objects.
+- No database schema change and no EF migration were required.
+
 ---
 
 # PART 1: UNIVERSITY PORTAL APPLICATION DATABASE

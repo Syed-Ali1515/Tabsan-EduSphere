@@ -43,8 +43,13 @@ public sealed class BlobMediaStorageService : IMediaStorageService
 
         await using var destination = new FileStream(fullPath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
         await content.CopyToAsync(destination, ct);
+        await destination.FlushAsync(ct);
 
-        return new MediaStorageSaveResult(key, BuildReference(key));
+        return new MediaStorageSaveResult(
+            key,
+            BuildReference(key),
+            ResolveContentType(key),
+            destination.Length);
     }
 
     public async Task<byte[]?> ReadAsBytesAsync(string storageKey, CancellationToken ct = default)
@@ -55,6 +60,20 @@ public sealed class BlobMediaStorageService : IMediaStorageService
         if (!File.Exists(fullPath)) return null;
 
         return await File.ReadAllBytesAsync(fullPath, ct);
+    }
+
+    public Task<MediaStorageObjectMetadata?> GetMetadataAsync(string storageKey, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(storageKey))
+            return Task.FromResult<MediaStorageObjectMetadata?>(null);
+
+        var fullPath = ResolveFullPath(storageKey);
+        if (!File.Exists(fullPath))
+            return Task.FromResult<MediaStorageObjectMetadata?>(null);
+
+        var info = new FileInfo(fullPath);
+        var metadata = new MediaStorageObjectMetadata(storageKey, ResolveContentType(storageKey), info.Length);
+        return Task.FromResult<MediaStorageObjectMetadata?>(metadata);
     }
 
     public Task<string?> GenerateTemporaryReadUrlAsync(
@@ -150,5 +169,22 @@ public sealed class BlobMediaStorageService : IMediaStorageService
         using var hmac = new HMACSHA256(keyBytes);
         var hash = hmac.ComputeHash(payloadBytes);
         return Convert.ToHexString(hash).ToLowerInvariant();
+    }
+
+    private static string ResolveContentType(string path)
+    {
+        var ext = Path.GetExtension(path).ToLowerInvariant();
+        return ext switch
+        {
+            ".png" => "image/png",
+            ".jpg" => "image/jpeg",
+            ".jpeg" => "image/jpeg",
+            ".gif" => "image/gif",
+            ".svg" => "image/svg+xml",
+            ".webp" => "image/webp",
+            ".pdf" => "application/pdf",
+            ".tablic" => "application/octet-stream",
+            _ => "application/octet-stream"
+        };
     }
 }

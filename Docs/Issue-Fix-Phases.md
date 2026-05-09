@@ -70,6 +70,12 @@ This file tracks the reported portal issues as phased work items so they can be 
 - Added local signed URL validation (`exp`/`sig`) for certificate-file reads when signing is configured.
 - Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
 
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 9 Update
+- Extended `IMediaStorageService` with metadata lookup support (`GetMetadataAsync`) and enriched save results with content type and object length.
+- Added metadata resolution in local/blob providers for provider-backed files.
+- Updated logo and certificate streaming endpoints to use provider metadata for response content type selection.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
+
 ---
 
 ## Refactoring-Hosting-Security — Part A + Part B
