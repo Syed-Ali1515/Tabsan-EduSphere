@@ -15,6 +15,13 @@
 - Enabled Brotli/Gzip response compression in API and Web, and configured JSON payload shaping to omit null values.
 - Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **160/160**.
 
+### 2026-05-09 — Phase 28 Stage 28.2 Foundation Batch
+- Added optional Redis-backed distributed cache registration in API startup, with distributed-memory fallback for local or single-node environments.
+- Shifted module entitlement resolution and report catalog retrieval onto the shared cache layer for scale-out reuse.
+- Added a hosted notification fan-out worker so large recipient batches no longer block the API request path.
+- Added focused unit tests for deferred fan-out behavior.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
+
 ### 2026-05-05 — Phase 1 Remediation Restart (Batch 1)
 - Re-opened Phase 1 workstream to address Observed-Issues Phase 1 items.
 - Implemented role-access remediation for offerings used by Assignments, Attendance, Results, and Quizzes page data loads.
@@ -36,7 +43,7 @@
 - Validated SuperAdmin result summary endpoint response with non-empty records.
 
 ### Next Execution Target
-- Continue **Phase 28 Stage 28.2 — Caching and Background Workloads**.
+- Continue **Phase 28 Stage 28.2 — report-generation and recalculation queue coverage**.
 
 ### 2026-05-08 — Phase 13 Global Search Complete (commit 00b7b64)
 - **Stage 13.1 — Cross-Entity Search API:**

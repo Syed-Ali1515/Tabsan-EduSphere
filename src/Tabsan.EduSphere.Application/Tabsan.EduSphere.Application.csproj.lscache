@@ -157,6 +157,7 @@ Interfaces/
  IModuleEntitlementResolver.cs
  IModuleRegistryService.cs
  IModuleService.cs
+ INotificationFanoutQueue.cs
  INotificationService.cs
  IParentPortalService.cs
  IPasswordHasher.cs

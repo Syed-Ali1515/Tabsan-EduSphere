@@ -1,8 +1,10 @@
 using ClosedXML.Excel;
+using Microsoft.Extensions.Caching.Distributed;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 using System.Text;
+using System.Text.Json;
 using Tabsan.EduSphere.Application.DTOs.Reports;
 using Tabsan.EduSphere.Application.Interfaces;
 using Tabsan.EduSphere.Domain.Interfaces;
@@ -16,10 +18,14 @@ namespace Tabsan.EduSphere.Infrastructure.Reporting;
 public sealed class ReportService : IReportService
 {
     private readonly IReportRepository _repo;
+    private readonly IDistributedCache _distributedCache;
 
-    public ReportService(IReportRepository repo)
+    private static readonly TimeSpan CatalogCacheTtl = TimeSpan.FromMinutes(5);
+
+    public ReportService(IReportRepository repo, IDistributedCache distributedCache)
     {
         _repo = repo;
+        _distributedCache = distributedCache;
         QuestPDF.Settings.License = LicenseType.Community;
     }
 
@@ -27,6 +33,15 @@ public sealed class ReportService : IReportService
 
     public async Task<ReportCatalogResponse> GetCatalogAsync(string roleName, CancellationToken ct = default)
     {
+        var cacheKey = $"report_catalog:{roleName.Trim().ToLowerInvariant()}";
+        var cached = await _distributedCache.GetStringAsync(cacheKey, ct);
+        if (!string.IsNullOrWhiteSpace(cached))
+        {
+            var cachedResponse = JsonSerializer.Deserialize<ReportCatalogResponse>(cached);
+            if (cachedResponse is not null)
+                return cachedResponse;
+        }
+
         var defs = await _repo.GetCatalogForRoleAsync(roleName, ct);
         var items = defs.Select(d => new ReportCatalogItemResponse(
             d.Id,
@@ -36,7 +51,12 @@ public sealed class ReportService : IReportService
             d.IsActive,
             d.RoleAssignments.Select(ra => ra.RoleName).ToList()
         )).ToList();
-        return new ReportCatalogResponse(items);
+        var response = new ReportCatalogResponse(items);
+        await _distributedCache.SetStringAsync(cacheKey, JsonSerializer.Serialize(response), new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = CatalogCacheTtl
+        }, ct);
+        return response;
     }
 
     // ── Attendance Summary ─────────────────────────────────────────────────────

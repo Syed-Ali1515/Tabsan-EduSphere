@@ -18,6 +18,12 @@
 - **Schema impact:** no database migration required.
 - **Validation:** solution build passed; automated test suite passed **160/160**.
 
+### 2026-05-09 — Phase 28 Stage 28.2 Foundation Batch
+- **Distributed cache:** API startup now supports an optional Redis connection string and shared cache instance name, with distributed-memory fallback for local/dev environments.
+- **Hot reads:** module entitlement checks and report catalog retrieval now use the distributed cache layer so repeated reads can be reused across nodes.
+- **Background workloads:** large notification fan-out batches are now deferred to a hosted worker that persists recipients in chunks.
+- **Validation:** solution build passed; automated test suite passed **162/162**.
+
 ### 2026-05-08 — Phase 16 Faculty Grading System Complete
 - **Stage 16.1 — Gradebook Grid View:** `GradebookController` (GET/PUT/POST endpoints), `GradebookService` (GetGradebookAsync, UpsertEntryAsync, PublishAllAsync), `GradebookRepository` (3-way join for student info), `Gradebook.cshtml` (inline edit + publish-all).
 - **Stage 16.2 — Rubric-Based Grading:** Domain entities `Rubric`/`RubricCriterion`/`RubricLevel`/`RubricStudentGrade`, EF configs, `RubricRepository`, `RubricService`, `RubricController`, `RubricManage.cshtml`, `RubricView.cshtml`.

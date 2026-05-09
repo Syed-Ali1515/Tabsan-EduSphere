@@ -407,6 +407,7 @@ UserImportAndForceChangeIntegrationTests.cs
  microsoft.entityframeworkcore.relational/8.0.8/lib/net8.0/Microsoft.EntityFrameworkCore.Relational.dll
  microsoft.entityframeworkcore.sqlserver/8.0.8/lib/net8.0/Microsoft.EntityFrameworkCore.SqlServer.dll
  microsoft.entityframeworkcore/8.0.8/lib/net8.0/Microsoft.EntityFrameworkCore.dll
+ microsoft.extensions.caching.stackexchangeredis/8.0.8/lib/net8.0/Microsoft.Extensions.Caching.StackExchangeRedis.dll
  microsoft.extensions.dependencymodel/8.0.1/lib/net8.0/Microsoft.Extensions.DependencyModel.dll
  microsoft.identity.client.extensions.msal/4.56.0/lib/netstandard2.0/Microsoft.Identity.Client.Extensions.Msal.dll
  microsoft.identity.client/4.56.0/lib/net6.0/Microsoft.Identity.Client.dll
@@ -436,6 +437,7 @@ UserImportAndForceChangeIntegrationTests.cs
  opentelemetry.exporter.console/1.9.0/lib/net8.0/OpenTelemetry.Exporter.Console.dll
  opentelemetry.extensions.hosting/1.9.0/lib/net8.0/OpenTelemetry.Extensions.Hosting.dll
  opentelemetry/1.9.0/lib/net8.0/OpenTelemetry.dll
+ pipelines.sockets.unofficial/2.2.8/lib/net5.0/Pipelines.Sockets.Unofficial.dll
  questpdf/2024.12.0/lib/net8.0/QuestPDF.dll
  serilog.aspnetcore/8.0.2/lib/net8.0/Serilog.AspNetCore.dll
  serilog.extensions.hosting/8.0.0/lib/net8.0/Serilog.Extensions.Hosting.dll
@@ -450,6 +452,7 @@ UserImportAndForceChangeIntegrationTests.cs
  sixlabors.fonts/1.0.0/lib/netcoreapp3.1/SixLabors.Fonts.dll
  ssh.net/2023.0.0/lib/net7.0/Renci.SshNet.dll
  sshnet.security.cryptography/1.3.0/lib/netstandard2.0/SshNet.Security.Cryptography.dll
+ stackexchange.redis/2.7.27/lib/net6.0/StackExchange.Redis.dll
  swashbuckle.aspnetcore.swagger/6.6.2/lib/net8.0/Swashbuckle.AspNetCore.Swagger.dll
  swashbuckle.aspnetcore.swaggergen/6.6.2/lib/net8.0/Swashbuckle.AspNetCore.SwaggerGen.dll
  swashbuckle.aspnetcore.swaggerui/6.6.2/lib/net8.0/Swashbuckle.AspNetCore.SwaggerUI.dll

@@ -15,8 +15,15 @@ namespace Tabsan.EduSphere.Application.Notifications;
 public class NotificationService : INotificationService
 {
     private readonly INotificationRepository _repo;
+    private readonly INotificationFanoutQueue? _fanoutQueue;
 
-    public NotificationService(INotificationRepository repo) => _repo = repo;
+    private const int DeferredFanoutThreshold = 250;
+
+    public NotificationService(INotificationRepository repo, INotificationFanoutQueue? fanoutQueue = null)
+    {
+        _repo = repo;
+        _fanoutQueue = fanoutQueue;
+    }
 
     /// <summary>
     /// Creates a notification and fans it out to the provided list of user IDs.
@@ -28,13 +35,7 @@ public class NotificationService : INotificationService
         await _repo.AddAsync(notification, ct);
         await _repo.SaveChangesAsync(ct);
 
-        var recipients = request.RecipientUserIds
-            .Distinct()
-            .Select(uid => new NotificationRecipient(notification.Id, uid))
-            .ToList();
-
-        await _repo.AddRecipientsAsync(recipients, ct);
-        await _repo.SaveChangesAsync(ct);
+        await FanOutRecipientsAsync(notification.Id, request.RecipientUserIds, ct);
 
         return notification.Id;
     }
@@ -51,13 +52,7 @@ public class NotificationService : INotificationService
         await _repo.AddAsync(notification, ct);
         await _repo.SaveChangesAsync(ct);
 
-        var recipients = recipientUserIds
-            .Distinct()
-            .Select(uid => new NotificationRecipient(notification.Id, uid))
-            .ToList();
-
-        await _repo.AddRecipientsAsync(recipients, ct);
-        await _repo.SaveChangesAsync(ct);
+        await FanOutRecipientsAsync(notification.Id, recipientUserIds, ct);
 
         return notification.Id;
     }
@@ -137,4 +132,24 @@ public class NotificationService : INotificationService
             r.Notification.CreatedAt,
             r.IsRead,
             r.ReadAt);
+
+    private async Task FanOutRecipientsAsync(Guid notificationId, IReadOnlyList<Guid> recipientUserIds, CancellationToken ct)
+    {
+        var distinctRecipients = recipientUserIds.Distinct().ToList();
+        if (distinctRecipients.Count == 0)
+            return;
+
+        if (_fanoutQueue is not null && distinctRecipients.Count >= DeferredFanoutThreshold)
+        {
+            _fanoutQueue.Enqueue(new NotificationFanoutWorkItem(notificationId, distinctRecipients));
+            return;
+        }
+
+        var recipients = distinctRecipients
+            .Select(uid => new NotificationRecipient(notificationId, uid))
+            .ToList();
+
+        await _repo.AddRecipientsAsync(recipients, ct);
+        await _repo.SaveChangesAsync(ct);
+    }
 }

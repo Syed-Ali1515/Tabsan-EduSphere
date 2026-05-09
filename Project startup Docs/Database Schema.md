@@ -10,6 +10,11 @@
 - Stage 28.1 delivered runtime and hosting changes only.
 - No database schema change and no EF migration were required.
 
+## 2026-05-09 Update — Phase 28 Stage 28.2 Foundation
+
+- Stage 28.2 foundation delivered cache and background-worker changes only.
+- No database schema change and no EF migration were required.
+
 ---
 
 # PART 1: UNIVERSITY PORTAL APPLICATION DATABASE

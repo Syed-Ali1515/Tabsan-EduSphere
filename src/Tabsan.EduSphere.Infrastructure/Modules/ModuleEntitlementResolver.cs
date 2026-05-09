@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Tabsan.EduSphere.Application.Interfaces;
 using Tabsan.EduSphere.Domain.Interfaces;
@@ -15,15 +16,17 @@ namespace Tabsan.EduSphere.Infrastructure.Modules;
 public class ModuleEntitlementResolver : IModuleEntitlementResolver
 {
     private readonly IModuleRepository _moduleRepo;
-    private readonly IMemoryCache _cache;
+    private readonly IMemoryCache _memoryCache;
+    private readonly IDistributedCache _distributedCache;
 
     private static readonly TimeSpan CacheTtl = TimeSpan.FromSeconds(60);
     private const string CacheKeyPrefix = "module_active_";
 
-    public ModuleEntitlementResolver(IModuleRepository moduleRepo, IMemoryCache cache)
+    public ModuleEntitlementResolver(IModuleRepository moduleRepo, IMemoryCache memoryCache, IDistributedCache distributedCache)
     {
         _moduleRepo = moduleRepo;
-        _cache = cache;
+        _memoryCache = memoryCache;
+        _distributedCache = distributedCache;
     }
 
     /// <summary>
@@ -34,11 +37,22 @@ public class ModuleEntitlementResolver : IModuleEntitlementResolver
     {
         var cacheKey = $"{CacheKeyPrefix}{moduleKey}";
 
-        if (_cache.TryGetValue(cacheKey, out bool cached))
+        if (_memoryCache.TryGetValue(cacheKey, out bool cached))
             return cached;
 
+        var distributedValue = await _distributedCache.GetStringAsync(cacheKey, ct);
+        if (bool.TryParse(distributedValue, out var distributedCached))
+        {
+            _memoryCache.Set(cacheKey, distributedCached, CacheTtl);
+            return distributedCached;
+        }
+
         var isActive = await _moduleRepo.IsActiveAsync(moduleKey, ct);
-        _cache.Set(cacheKey, isActive, CacheTtl);
+        _memoryCache.Set(cacheKey, isActive, CacheTtl);
+        await _distributedCache.SetStringAsync(cacheKey, isActive.ToString(), new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = CacheTtl
+        }, ct);
         return isActive;
     }
 
@@ -48,7 +62,11 @@ public class ModuleEntitlementResolver : IModuleEntitlementResolver
     /// Called after a Super Admin toggles a module on or off.
     /// </summary>
     public void InvalidateCache(string moduleKey)
-        => _cache.Remove($"{CacheKeyPrefix}{moduleKey}");
+    {
+        var cacheKey = $"{CacheKeyPrefix}{moduleKey}";
+        _memoryCache.Remove(cacheKey);
+        _distributedCache.Remove(cacheKey);
+    }
 
     /// <summary>
     /// Clears all module entitlement cache entries.
@@ -60,7 +78,11 @@ public class ModuleEntitlementResolver : IModuleEntitlementResolver
         // We dispose and recreate the entries by calling Remove on known keys.
         // For a larger module set a dedicated cache region or MemoryCacheEntryOptions tag would be used.
         foreach (var key in KnownModuleKeys.All)
-            _cache.Remove($"{CacheKeyPrefix}{key}");
+        {
+            var cacheKey = $"{CacheKeyPrefix}{key}";
+            _memoryCache.Remove(cacheKey);
+            _distributedCache.Remove(cacheKey);
+        }
     }
 }
 

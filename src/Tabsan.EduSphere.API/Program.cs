@@ -31,6 +31,7 @@ using Tabsan.EduSphere.Infrastructure.Persistence;
 using Tabsan.EduSphere.Infrastructure.Repositories;
 using Tabsan.EduSphere.Application.Services;
 using Tabsan.EduSphere.Infrastructure.Exporters;
+using Tabsan.EduSphere.API.Services;
 using Microsoft.AspNetCore.HttpOverrides;
 using Serilog;
 using Serilog.Events;
@@ -130,6 +131,19 @@ builder.Services.AddScoped<LicenseValidationService>();
 
 // ── Module entitlement ──────────────────────────────────────────────────────────
 builder.Services.AddMemoryCache();
+var redisConnectionString = builder.Configuration["ScaleOut:RedisConnectionString"];
+if (!string.IsNullOrWhiteSpace(redisConnectionString))
+{
+    builder.Services.AddStackExchangeRedisCache(options =>
+    {
+        options.Configuration = redisConnectionString;
+        options.InstanceName = builder.Configuration["ScaleOut:RedisInstanceName"] ?? "Tabsan.EduSphere:";
+    });
+}
+else
+{
+    builder.Services.AddDistributedMemoryCache();
+}
 builder.Services.AddScoped<IModuleEntitlementResolver, ModuleEntitlementResolver>();
 builder.Services.AddScoped<ModuleEntitlementResolver>(); // concrete needed by LicenseController
 
@@ -163,6 +177,9 @@ builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<IAttendanceRepository, AttendanceRepository>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IAttendanceService, AttendanceService>();
+builder.Services.AddSingleton<NotificationFanoutQueue>();
+builder.Services.AddSingleton<INotificationFanoutQueue>(sp => sp.GetRequiredService<NotificationFanoutQueue>());
+builder.Services.AddHostedService<NotificationFanoutWorker>();
 // ── Phase 5: Quizzes and FYP ──────────────────────────────────────────
 builder.Services.AddScoped<IQuizRepository, QuizRepository>();
 builder.Services.AddScoped<IFypRepository, FypRepository>();

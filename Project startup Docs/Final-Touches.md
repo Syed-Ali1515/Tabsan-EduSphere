@@ -38,6 +38,28 @@ For **every completed phase**:
 
 ---
 
+## Phase 28 — Scalability Architecture (Stage 28.2 Foundation Batch)
+**Status:** ✅ Foundation Delivered (2026-05-09)
+
+### Completion Mark
+- [x] Add optional Redis-backed distributed cache registration with local fallback.
+- [x] Move hot-read cache paths onto distributed cache for scale-out sharing.
+- [x] Add hosted background worker for large notification fan-out batches.
+- [x] Add focused unit tests for deferred fan-out behavior.
+- [x] Confirm no database migration is required.
+
+### Implementation Summary
+- API startup now supports `ScaleOut:RedisConnectionString` and `ScaleOut:RedisInstanceName`, using distributed memory when Redis is not configured.
+- `ModuleEntitlementResolver` now uses local memory as L1 cache and distributed cache as the shared cross-node layer.
+- `ReportService.GetCatalogAsync` now caches per-role report catalogs in distributed cache.
+- `NotificationService` now defers large recipient batches to `NotificationFanoutWorker`, which persists recipients in chunks in the background.
+
+### Validation Summary
+- `dotnet build Tabsan.EduSphere.sln` — passed.
+- Automated tests — **162/162 passed**.
+
+---
+
 ## Refactoring-Hosting-Security — Part A + Part B
 **Status:** ✅ Fully Complete (2026-05-07) | Commits: f56ccd9, 5e80bc9
 

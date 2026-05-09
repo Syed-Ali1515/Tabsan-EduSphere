@@ -250,6 +250,16 @@
 | `DeleteCookie(key)` | Clears protected state cookies during logout or connection reset. | `Web/Services/EduApiClient.cs` |
 | `SaveConnection(model)` | Stores or clears API base URL, JWT token, department, and identity state using protected cookies. | `Web/Services/EduApiClient.cs` |
 
+### API / Application — Phase 28 Stage 28.2 Foundation
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `NotificationFanoutQueue.Enqueue(workItem)` | Queues large notification recipient batches for background processing instead of blocking the request path. | `API/Services/NotificationFanoutQueue.cs` |
+| `NotificationFanoutWorker.ExecuteAsync(...)` | Background worker that drains deferred fan-out batches and persists notification recipients in chunks. | `API/Services/NotificationFanoutWorker.cs` |
+| `NotificationService.FanOutRecipientsAsync(...)` | Chooses between inline recipient persistence and deferred background fan-out based on recipient count. | `Application/Notifications/NotificationService.cs` |
+| `ReportService.GetCatalogAsync(roleName, ct)` | Reads/writes report catalog results through distributed cache for shared hot-read reuse across nodes. | `Infrastructure/Reporting/ReportService.cs` |
+| `ModuleEntitlementResolver.IsActiveAsync(moduleKey, ct)` | Uses local memory + distributed cache to share module-activation decisions across API nodes. | `Infrastructure/Modules/ModuleEntitlementResolver.cs` |
+
 ### API — Program.cs Changes (Part A)
 
 | Change | Purpose | Location |

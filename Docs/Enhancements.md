@@ -13,6 +13,13 @@
 - Web startup supports an optional shared data-protection key-ring path for multi-node deployments behind a load balancer.
 - No database migration or schema change was required for Stage 28.1.
 
+### 2026-05-09 — Phase 28 Stage 28.2 Foundation Batch
+- Added optional Redis-backed distributed cache registration in the API, with distributed-memory fallback when Redis is not configured.
+- Module entitlement checks and report-catalog reads now use the shared distributed cache layer so multiple API nodes can reuse the same hot-read state.
+- Large notification fan-out batches are now deferred to a hosted worker, reducing synchronous request-path work for high-recipient sends.
+- Added focused unit tests for deferred notification fan-out behavior.
+- The remaining Stage 28.2 work is to extend the same async queue pattern to broader report-generation and recalculation workloads.
+
 ---
 
 ## Phase 12 — Academic Calendar System ✅ Implemented

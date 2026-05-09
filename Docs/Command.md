@@ -56,11 +56,11 @@ cmd /c git -C "<repo-root>" push origin main
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
 - Active Phase: **Phase 28 — Scalability Architecture (1M+ Readiness) — IN PROGRESS ⚙️**
-- Active Stage: **Stage 28.1 (API and App Tier Scaling) complete; Stage 28.2 next**
-- Status: **0 build errors; 160/160 tests passed; no database migration required for Stage 28.1**
+- Active Stage: **Stage 28.2 foundation delivered; Stage 28.2 remaining queue work next**
+- Status: **0 build errors; 162/162 tests passed; no database migration required for the Stage 28.2 foundation batch**
 - Last Updated: 2026-05-09
-- Next: **Phase 28 Stage 28.2 — Caching and Background Workloads** (see Docs/Advance-Enhancements.md)
-- Docs Updated: ✅ All 8 tracking files updated for Phase 28 Stage 28.1 (2026-05-09)
+- Next: **Phase 28 Stage 28.2 — complete report-generation/recalculation queue coverage** (see Docs/Advance-Enhancements.md)
+- Docs Updated: ✅ All 8 tracking files updated for the Phase 28 Stage 28.2 foundation batch (2026-05-09)
 
 ---
 
@@ -187,6 +187,10 @@ Database is fully synchronized with codebase.
   - Load-balancer readiness: forwarded headers expanded on API and added to Web.
   - Stateless web nodes: session-backed portal/API auth state replaced with protected cookies; optional shared key-ring path introduced.
   - Response compression and payload shaping: Brotli/Gzip compression enabled; null JSON fields omitted in API/Web JSON responses.
+- **Phase 28 — Scalability Architecture — Stage 28.2 FOUNDATION ⚙️**
+  - Distributed cache foundation: optional Redis-backed `IDistributedCache` added with distributed-memory fallback.
+  - Hot-read sharing: module entitlement resolution and report catalog reads now use shared cache across API nodes.
+  - Async workload offload: large notification fan-out batches now defer recipient insertion to a hosted background worker.
 - Continue through Phase 28.2+ per Docs/Advance-Enhancements.md
 
 ## Pending Extra Tasks (Cross-Phase)

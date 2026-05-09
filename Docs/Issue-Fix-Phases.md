@@ -10,6 +10,12 @@ This file tracks the reported portal issues as phased work items so they can be 
 - Web startup now supports an optional shared data-protection key-ring path for load-balanced multi-node hosting.
 - Validation: `dotnet build Tabsan.EduSphere.sln` passed and automated tests passed **160/160**.
 
+### 2026-05-09 — Phase 28 Stage 28.2 Foundation Update
+- Added distributed-cache infrastructure for scale-out API nodes with Redis configuration support and distributed-memory fallback.
+- Shared-cache hot paths now include module entitlement checks and report catalog retrieval.
+- Large notification recipient fan-out is now processed by a background worker when the batch crosses the configured threshold.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed and automated tests passed **162/162**.
+
 ---
 
 ## Refactoring-Hosting-Security — Part A + Part B
