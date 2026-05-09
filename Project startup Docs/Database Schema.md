@@ -836,3 +836,13 @@ Parent/guardian to student mapping used for parent-read portal access.
 
 **Indexes:**
 - `IX_parent_student_links_parent_student` — unique (`parent_user_id`, `student_profile_id`)
+
+---
+
+### Phase 27 — University Portal Parity and Student Experience
+Phase 27 (Stages 27.1, 27.2, 27.3) introduced service/API/web integration and security/abstraction contracts only.
+
+- No new database tables.
+- No altered columns.
+- No new indexes.
+- No EF migration required.

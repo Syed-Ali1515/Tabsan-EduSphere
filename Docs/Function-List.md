@@ -4160,3 +4160,39 @@ New themes added to site.css and ThemeSettingsPageModel: `neon_mint`, `sakura_pi
 | `BulkPromotionController.Review(request, ct)` | `POST api/v1/bulk-promotion/review` — approve/reject batch. Admin+. | `API/Controllers/BulkPromotionController.cs` |
 | `BulkPromotionController.Apply(request, ct)` | `POST api/v1/bulk-promotion/apply` — execute approved promotion batch. Admin+. | `API/Controllers/BulkPromotionController.cs` |
 | `ParentPortalController.GetMyLinkedStudents(ct)` | `GET api/v1/parent-portal/me/students` — read-only parent-linked students list. Authenticated. | `API/Controllers/ParentPortalController.cs` |
+
+---
+
+## Phase 27 — University Portal Parity and Student Experience (2026-05-09)
+
+### Stage 27.1 — Portal Capability Matrix
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `IPortalCapabilityMatrixService.GetMatrixAsync(policy, ct)` | Returns normalized portal capability matrix across roles, institution policy flags, and module activation state. | `Application/Interfaces/IPortalCapabilityMatrixService.cs` |
+| `PortalCapabilityMatrixService.GetMatrixAsync(policy, ct)` | Builds matrix rows from module visibility and institution-type compatibility. | `Application/Services/PortalCapabilityMatrixService.cs` |
+| `PortalCapabilitiesController.GetMatrix(ct)` | `GET api/v1/portal-capabilities/matrix` — API surface for capability matrix. | `API/Controllers/PortalCapabilitiesController.cs` |
+| `PortalController.PortalCapabilityMatrix(ct)` | Loads API matrix and maps it to web model for portal rendering. | `Web/Controllers/PortalController.cs` |
+
+### Stage 27.2 — Authentication and Security UX
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `IAuthService.GetSecurityProfileAsync(ct)` | Exposes runtime auth security capabilities (MFA/SSO/session-risk) to clients. | `Application/Interfaces/IAuthService.cs` |
+| `AuthService.GetSecurityProfileAsync(ct)` | Returns deployment security profile from bound `AuthSecurity` options. | `Application/Auth/AuthService.cs` |
+| `AuthService.LoginAsync(request, ipAddress, ct)` | Enforces MFA toggle, evaluates session risk, adds richer auth audit events, and returns risk-aware login response fields. | `Application/Auth/AuthService.cs` |
+| `AuthController.SecurityProfile(ct)` | `GET api/v1/auth/security-profile` endpoint for adaptive login UX. | `API/Controllers/AuthController.cs` |
+| `LoginController.PopulateSecurityProfileAsync(apiBase, ct)` | Reads API security profile and populates login view model flags. | `Web/Controllers/LoginController.cs` |
+
+### Stage 27.3 — Support and Communication Integration Contracts
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `ISupportTicketingProvider` | Provider contract for ticketing-related outbound communication events. | `Application/Interfaces/ICommunicationIntegrationContracts.cs` |
+| `IAnnouncementBroadcastProvider` | Provider contract for announcement fan-out delivery. | `Application/Interfaces/ICommunicationIntegrationContracts.cs` |
+| `IEmailDeliveryProvider` | Provider contract for HTML/template email delivery abstraction. | `Application/Interfaces/ICommunicationIntegrationContracts.cs` |
+| `CommunicationIntegrationService.GetProfileAsync(ct)` | Returns active provider keys for ticketing/announcement/email integrations. | `Application/Services/CommunicationIntegrationService.cs` |
+| `InAppSupportTicketingProvider.NotifyTicketReplyAsync(...)` | Default in-app ticket reply notification adapter. | `Infrastructure/Integrations/InAppSupportTicketingProvider.cs` |
+| `InAppAnnouncementBroadcastProvider.BroadcastAsync(...)` | Default in-app announcement broadcast adapter from enrollment fan-out. | `Infrastructure/Integrations/InAppAnnouncementBroadcastProvider.cs` |
+| `SmtpEmailDeliveryProvider.SendTemplateAsync(...)` | Default email adapter over template renderer + SMTP sender. | `Infrastructure/Integrations/SmtpEmailDeliveryProvider.cs` |
+| `CommunicationIntegrationsController.GetProfile(ct)` | `GET api/v1/communication-integrations/profile` endpoint for integration profile discovery. | `API/Controllers/CommunicationIntegrationsController.cs` |

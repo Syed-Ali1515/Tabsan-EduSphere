@@ -1022,3 +1022,27 @@ Phase 20 — (see Docs/Enhancements.md for full spec).
 - `dotnet build Tabsan.EduSphere.sln` — 0 errors.
 - `runTests` — 152/152 tests passed.
 - Migration listed: `20260509044437_Phase26_SchoolCollegeExpansion`.
+
+---
+
+## Phase 27 — University Portal Parity and Student Experience ✅ Complete (2026-05-09)
+
+### Completion Mark
+- [x] Stage 27.1 — `IPortalCapabilityMatrixService` + `PortalCapabilityMatrixService` implemented.
+- [x] Stage 27.1 — `PortalCapabilitiesController` added with `GET /api/v1/portal-capabilities/matrix`.
+- [x] Stage 27.1 — web wiring complete (`PortalController.PortalCapabilityMatrix`, new view models, `PortalCapabilityMatrix.cshtml`).
+- [x] Stage 27.2 — `AuthSecurityOptions` added and bound in API (`AuthSecurity` section).
+- [x] Stage 27.2 — `AuthController` extended with `GET /api/v1/auth/security-profile` and richer login failure handling.
+- [x] Stage 27.2 — `AuthService` extended for MFA toggle enforcement, session-risk controls, and auth audit improvements.
+- [x] Stage 27.2 — login UX updated for MFA/SSO/risk messaging and request payload support.
+- [x] Stage 27.3 — provider contracts added for ticketing/announcement/email (`ICommunicationIntegrationContracts`).
+- [x] Stage 27.3 — default adapters added (`InAppSupportTicketingProvider`, `InAppAnnouncementBroadcastProvider`, `SmtpEmailDeliveryProvider`).
+- [x] Stage 27.3 — core service consumers refactored to provider contracts (`HelpdeskService`, `AnnouncementService`, `LicenseExpiryWarningJob`).
+- [x] Stage 27.3 — integration profile API added (`GET /api/v1/communication-integrations/profile`).
+- [x] Unit tests added and passing for stages 27.1/27.2/27.3 (`Phase27Tests`, `Phase27Stage2Tests`, `Phase27Stage3Tests`).
+
+### Validation Summary
+- `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj` — 89/89 passed.
+- `dotnet build Tabsan.EduSphere.sln` — success.
+- No EF migration required for Phase 27.
+- Commits pushed: `fd3b137`, `20dba8d`, `56cf1dd`.

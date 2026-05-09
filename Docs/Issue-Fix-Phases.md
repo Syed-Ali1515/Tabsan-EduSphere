@@ -809,3 +809,13 @@ Enhancement phase tracked in `Docs/Enhancements.md`. No regressions introduced. 
 - Stage 26.3: Parent-student read model (`parent_student_links`) and parent-linked student endpoint.
 - Migration: `20260509044437_Phase26_SchoolCollegeExpansion`.
 - 8 new unit tests added; 152/152 total tests passed.
+
+## Phase 27 — University Portal Parity and Student Experience ✅ Complete (2026-05-09)
+
+Enhancement phase tracked in `Docs/Enhancements.md`. Summary entry recorded here for cross-reference.
+
+- Stage 27.1 (commit `fd3b137`): portal capability matrix service + API + web view + unit tests.
+- Stage 27.2 (commit `20dba8d`): deployment-configurable MFA toggle, SSO-ready auth security profile endpoint, session-risk controls, and auth audit improvements.
+- Stage 27.3 (commit `56cf1dd`): vendor-agnostic provider contracts for ticketing, announcements, and email; default adapters; integration profile endpoint.
+- Data model impact: no new tables and no EF migration required.
+- Validation: latest unit run 89/89 passing; solution build successful.

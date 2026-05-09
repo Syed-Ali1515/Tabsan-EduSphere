@@ -438,4 +438,40 @@
 | 24 | Dynamic Module and UI Composition | Medium | ✅ Implemented (commit `391ac45`) |
 | 25 | Academic Engine Unification | High | ✅ Implemented (commit `d2aabd3`) |
 | 26 | School and College Functional Expansion | High | ✅ Implemented (commit `4c0904c`) |
-| 27 | University Portal Parity and Student Experience | High | Planned |
+| 27 | University Portal Parity and Student Experience | High | ✅ Implemented (commits `fd3b137`, `20dba8d`, `56cf1dd`) |
+
+---
+
+## Phase 27 — University Portal Parity and Student Experience ✅ Implemented (2026-05-09)
+
+### Stage 27.1 — Student Portal Capability Matrix ✅
+- Added `IPortalCapabilityMatrixService` + `PortalCapabilityMatrixService` to consolidate role/institution/module capability visibility.
+- Added API endpoint `GET /api/v1/portal-capabilities/matrix` via `PortalCapabilitiesController`.
+- Added portal page flow: `PortalController.PortalCapabilityMatrix`, new view model classes, and `PortalCapabilityMatrix.cshtml`.
+- Added unit coverage in `Phase27Tests.cs` for module activation, institution-type gating, and license-gated AI capability.
+
+### Stage 27.2 — Authentication and Security UX ✅
+- Added deployment-driven auth security options (`AuthSecurity`): MFA toggle, SSO profile contract, session-risk controls.
+- Added `GET /api/v1/auth/security-profile` for adaptive client UX.
+- Extended login contract to support MFA code and risk metadata in response.
+- Added session-risk blocking/auditing and enriched auth failure audit trail events.
+- Updated web login UX to show security profile hints (MFA/SSO/risk) and handle MFA/risk-specific responses.
+- Added unit coverage in `Phase27Stage2Tests.cs` for MFA-required and risk-blocked login scenarios.
+
+### Stage 27.3 — Support and Communication Integration ✅
+- Added provider abstraction contracts:
+  - `ISupportTicketingProvider`
+  - `IAnnouncementBroadcastProvider`
+  - `IEmailDeliveryProvider`
+- Added default adapter implementations:
+  - `InAppSupportTicketingProvider`
+  - `InAppAnnouncementBroadcastProvider`
+  - `SmtpEmailDeliveryProvider`
+- Refactored `HelpdeskService`, `AnnouncementService`, and `LicenseExpiryWarningJob` to consume provider contracts (vendor-agnostic core).
+- Added `ICommunicationIntegrationService` + `CommunicationIntegrationService` and `GET /api/v1/communication-integrations/profile` endpoint.
+- Added unit coverage in `Phase27Stage3Tests.cs` for provider-profile resolution.
+
+### Validation
+- `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj` — 89/89 passing.
+- `dotnet build Tabsan.EduSphere.sln` — success.
+- No EF migration required for Phase 27.

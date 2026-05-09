@@ -1229,3 +1229,47 @@ Builds school/college-specific academic operations on top of the unified engine 
 - **Validation:** 0 build errors · 152/152 tests passed · commit `4c0904c`
 
 ---
+
+## Phase 27 — University Portal Parity and Student Experience ✅ Implemented (2026-05-09)
+
+### 27.A Overview
+Completes parity and UX alignment across student/faculty/admin portal flows by adding a consolidated capability matrix, deployment-configurable auth-security UX, and provider-based communication integration contracts to avoid vendor lock-in.
+
+### 27.B Functional Requirements
+
+#### Stage 27.1 — Student Portal Capability Matrix
+- Consolidates capabilities (dashboard, courses, assignments, quizzes, attendance, timetable, results, fees/payments, notifications, support, AI assistant, FYP workspace, reports) into a single role/institution-aware matrix.
+- `GET api/v1/portal-capabilities/matrix` exposed for portal and admin visibility.
+
+#### Stage 27.2 — Authentication and Security UX
+- SSO-ready contract added for deployments that enable SSO.
+- MFA toggle support from configuration with login-time enforcement.
+- Session risk controls and expanded auth audit trail events.
+- `GET api/v1/auth/security-profile` added to support adaptive login UX.
+
+#### Stage 27.3 — Support and Communication Integration
+- Added abstraction contracts for ticketing, announcements, and email delivery.
+- Refactored core services to consume contracts instead of concrete vendor implementations.
+- Added integration profile endpoint for runtime provider discovery.
+
+### 27.C Technical Implementation
+- **Application:**
+  - `IPortalCapabilityMatrixService` + `PortalCapabilityMatrixService`.
+  - `AuthSecurityOptions` and `AuthService` extensions (MFA, risk, security profile).
+  - `ICommunicationIntegrationContracts` + `CommunicationIntegrationService`.
+- **API:**
+  - `PortalCapabilitiesController`.
+  - `AuthController` security-profile endpoint and extended login failure mapping.
+  - `CommunicationIntegrationsController`.
+- **Infrastructure:**
+  - `InAppSupportTicketingProvider`.
+  - `InAppAnnouncementBroadcastProvider`.
+  - `SmtpEmailDeliveryProvider`.
+- **Web:**
+  - `PortalCapabilityMatrix` page.
+  - Adaptive login UX updates using security-profile data.
+- **Validation:** 89/89 unit tests passed; full solution build passed.
+- **Migrations:** none required.
+- **Commits:** `fd3b137`, `20dba8d`, `56cf1dd`.
+
+---

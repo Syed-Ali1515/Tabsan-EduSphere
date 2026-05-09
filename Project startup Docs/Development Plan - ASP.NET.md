@@ -698,3 +698,56 @@ A feature is complete only when:
 - Commit: `4c0904c` pushed.
 
 ---
+
+### 2026-05-09 — Phase 27 Stage 27.1 Portal Capability Matrix Complete
+
+**Changes:**
+- Added `IPortalCapabilityMatrixService` + `PortalCapabilityMatrixService`.
+- Added `PortalCapabilitiesController` endpoint: `GET api/v1/portal-capabilities/matrix`.
+- Added web support: `PortalController.PortalCapabilityMatrix`, portal page model, and `PortalCapabilityMatrix.cshtml`.
+- Added unit tests in `Phase27Tests.cs`.
+
+**Validation:**
+- Unit tests passed.
+- Solution build successful.
+- Commit: `fd3b137` pushed.
+
+---
+
+### 2026-05-09 — Phase 27 Stage 27.2 Authentication and Security UX Complete
+
+**Changes:**
+- Added `AuthSecurityOptions` config contract (`AuthSecurity` section in appsettings).
+- Extended auth DTO/service/controller flows for MFA toggle, SSO-ready security profile, and session-risk controls.
+- Added API endpoint `GET api/v1/auth/security-profile`.
+- Updated web login flow/UI for MFA field, SSO/risk hints, and richer auth error handling.
+- Added unit tests in `Phase27Stage2Tests.cs`.
+
+**Validation:**
+- Unit tests passed.
+- Solution build successful.
+- Commit: `20dba8d` pushed.
+
+---
+
+### 2026-05-09 — Phase 27 Stage 27.3 Support and Communication Integration Complete
+
+**Changes:**
+- Added provider abstraction contracts:
+  - `ISupportTicketingProvider`
+  - `IAnnouncementBroadcastProvider`
+  - `IEmailDeliveryProvider`
+- Added default adapters in Infrastructure:
+  - `InAppSupportTicketingProvider`
+  - `InAppAnnouncementBroadcastProvider`
+  - `SmtpEmailDeliveryProvider`
+- Refactored `HelpdeskService`, `AnnouncementService`, and `LicenseExpiryWarningJob` to use provider contracts.
+- Added `ICommunicationIntegrationService` + `CommunicationIntegrationService` and API endpoint `GET api/v1/communication-integrations/profile`.
+- Added unit test `Phase27Stage3Tests.cs`.
+
+**Validation:**
+- `dotnet test` (unit project): 89/89 passed.
+- `dotnet build Tabsan.EduSphere.sln`: success.
+- Commit: `56cf1dd` pushed.
+
+---
