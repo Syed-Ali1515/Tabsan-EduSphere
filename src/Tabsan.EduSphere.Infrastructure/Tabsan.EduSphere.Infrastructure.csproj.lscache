@@ -109,6 +109,8 @@ Migrations/
  20260508132355_Phase22_ExternalIntegrations.Designer.cs
  20260508152906_Phase25_AcademicEngineUnification.cs
  20260508152906_Phase25_AcademicEngineUnification.Designer.cs
+ 20260509044437_Phase26_SchoolCollegeExpansion.cs
+ 20260509044437_Phase26_SchoolCollegeExpansion.Designer.cs
  ApplicationDbContextModelSnapshot.cs
 Modules/ModuleEntitlementResolver.cs
 obj/Debug/net8.0/
@@ -126,6 +128,8 @@ Persistence/
   AssignmentConfigurations.cs
   AttendanceConfigurations.cs
   AuditLogConfiguration.cs
+  BulkPromotionBatchConfiguration.cs
+  BulkPromotionEntryConfiguration.cs
   ConsumedVerificationKeyConfiguration.cs
   DepartmentConfiguration.cs
   FypConfigurations.cs
@@ -135,6 +139,7 @@ Persistence/
   ModuleConfiguration.cs
   NotificationConfigurations.cs
   OutboundEmailLogConfiguration.cs
+  ParentStudentLinkConfiguration.cs
   PasswordHistoryConfiguration.cs
   PaymentReceiptConfiguration.cs
   Phase9Configurations.cs
@@ -142,7 +147,10 @@ Persistence/
   ResultCalculationConfigurations.cs
   RoleConfiguration.cs
   RubricConfigurations.cs
+  SchoolStreamConfiguration.cs
   StudentAcademicConfigurations.cs
+  StudentReportCardConfiguration.cs
+  StudentStreamAssignmentConfiguration.cs
   StudyPlanConfigurations.cs
   SupportTicketConfiguration.cs
   SupportTicketMessageConfiguration.cs
@@ -203,6 +211,7 @@ Repositories/
  ModuleRepository.cs
  NotificationAttendanceRepositories.cs
  PasswordHistoryRepository.cs
+ Phase26Repositories.cs
  PrerequisiteRepository.cs
  QuizFypRepositories.cs
  SearchRepository.cs

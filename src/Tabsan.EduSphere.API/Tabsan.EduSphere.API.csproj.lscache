@@ -65,6 +65,7 @@ Controllers/
  AttendanceController.cs
  AuthController.cs
  BuildingController.cs
+ BulkPromotionController.cs
  CalendarController.cs
  CourseController.cs
  DashboardCompositionController.cs
@@ -86,6 +87,7 @@ Controllers/
  ModuleController.cs
  ModuleRegistryController.cs
  NotificationController.cs
+ ParentPortalController.cs
  PaymentReceiptController.cs
  PortalSettingsController.cs
  PrerequisiteController.cs
@@ -93,12 +95,14 @@ Controllers/
  ProgressionController.cs
  QuizController.cs
  RegistrationImportController.cs
+ ReportCardController.cs
  ReportController.cs
  ReportSettingsController.cs
  ResultCalculationController.cs
  ResultController.cs
  RoomController.cs
  RubricController.cs
+ SchoolStreamController.cs
  SearchController.cs
  SemesterController.cs
  SidebarMenuController.cs

@@ -265,6 +265,20 @@ public class ApplicationDbContext : DbContext
     /// <summary>Institution-level grading profiles (pass threshold + grade bands) per institution type.</summary>
     public DbSet<InstitutionGradingProfile> InstitutionGradingProfiles => Set<InstitutionGradingProfile>();
 
+    // ── Phase 26: School and College Functional Expansion ─────────────────────
+    /// <summary>School stream master records (Science/Commerce/Arts etc.).</summary>
+    public DbSet<SchoolStream> SchoolStreams => Set<SchoolStream>();
+    /// <summary>Links students to streams for school-mode subject constraints.</summary>
+    public DbSet<StudentStreamAssignment> StudentStreamAssignments => Set<StudentStreamAssignment>();
+    /// <summary>Generated report-card snapshots per student and period.</summary>
+    public DbSet<StudentReportCard> StudentReportCards => Set<StudentReportCard>();
+    /// <summary>Bulk promotion batch headers.</summary>
+    public DbSet<BulkPromotionBatch> BulkPromotionBatches => Set<BulkPromotionBatch>();
+    /// <summary>Per-student bulk promotion batch entries.</summary>
+    public DbSet<BulkPromotionEntry> BulkPromotionEntries => Set<BulkPromotionEntry>();
+    /// <summary>Parent to student read-only access links.</summary>
+    public DbSet<ParentStudentLink> ParentStudentLinks => Set<ParentStudentLink>();
+
     /// <summary>
     /// Scans the current assembly for all IEntityTypeConfiguration implementations
     /// and applies them automatically. This keeps OnModelCreating clean as the

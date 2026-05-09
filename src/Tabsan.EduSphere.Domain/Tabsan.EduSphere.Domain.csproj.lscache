@@ -58,6 +58,8 @@ Academic/
  AcademicProgram.cs
  AdminDepartmentAssignment.cs
  Building.cs
+ BulkPromotionBatch.cs
+ BulkPromotionEntry.cs
  Course.cs
  CourseGradingConfig.cs
  CourseOffering.cs
@@ -68,10 +70,14 @@ Academic/
  FacultyDepartmentAssignment.cs
  GraduationApplication.cs
  InstitutionGradingProfile.cs
+ ParentStudentLink.cs
  RegistrationWhitelist.cs
  Room.cs
+ SchoolStream.cs
  Semester.cs
  StudentProfile.cs
+ StudentReportCard.cs
+ StudentStreamAssignment.cs
  Timetable.cs
  TimetableEntry.cs
 AiChat/ChatConversation.cs
@@ -88,7 +94,9 @@ Common/
  AuditableEntity.cs
  BaseEntity.cs
 Enums/
+ BulkPromotionStatus.cs
  ChangeRequestStatus.cs
+ EntryDecision.cs
  InstitutionType.cs
  ModificationRequest.cs
  PaymentReceiptStatus.cs
@@ -115,6 +123,7 @@ Interfaces/
  IAttendanceRepository.cs
  IAuditService.cs
  IBuildingRoomRepository.cs
+ IBulkPromotionRepository.cs
  ICourseGradingRepository.cs
  ICourseRepository.cs
  IDegreeAuditRepository.cs
@@ -131,13 +140,16 @@ Interfaces/
  ILmsRepository.cs
  IModuleRepository.cs
  INotificationRepository.cs
+ IParentStudentLinkRepository.cs
  IPasswordHistoryRepository.cs
  IPrerequisiteRepository.cs
  IQuizRepository.cs
  IRegistrationWhitelistRepository.cs
+ IReportCardRepository.cs
  IReportRepository.cs
  IResultRepository.cs
  IRubricRepository.cs
+ ISchoolStreamRepository.cs
  ISemesterRepository.cs
  ISettingsRepository.cs
  IStudentLifecycleRepository.cs

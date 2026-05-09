@@ -257,7 +257,17 @@ builder.Services.AddSingleton<Tabsan.EduSphere.Application.Interfaces.IDashboard
 builder.Services.AddSingleton<Tabsan.EduSphere.Application.Interfaces.IResultStrategyResolver, Tabsan.EduSphere.Application.Academic.ResultStrategyResolver>();
 builder.Services.AddScoped<Tabsan.EduSphere.Domain.Interfaces.IInstitutionGradingProfileRepository, Tabsan.EduSphere.Infrastructure.Repositories.InstitutionGradingProfileRepository>();
 builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IInstitutionGradingService, Tabsan.EduSphere.Application.Academic.InstitutionGradingService>();
-builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IProgressionService, Tabsan.EduSphere.Application.Academic.ProgressionService>();// ── Rate limiting (OWASP hardening) ─────────────────────────────────────
+builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IProgressionService, Tabsan.EduSphere.Application.Academic.ProgressionService>();
+// ── Phase 26: School and College Functional Expansion ───────────────────────
+builder.Services.AddScoped<Tabsan.EduSphere.Domain.Interfaces.ISchoolStreamRepository, Tabsan.EduSphere.Infrastructure.Repositories.SchoolStreamRepository>();
+builder.Services.AddScoped<Tabsan.EduSphere.Domain.Interfaces.IReportCardRepository, Tabsan.EduSphere.Infrastructure.Repositories.ReportCardRepository>();
+builder.Services.AddScoped<Tabsan.EduSphere.Domain.Interfaces.IBulkPromotionRepository, Tabsan.EduSphere.Infrastructure.Repositories.BulkPromotionRepository>();
+builder.Services.AddScoped<Tabsan.EduSphere.Domain.Interfaces.IParentStudentLinkRepository, Tabsan.EduSphere.Infrastructure.Repositories.ParentStudentLinkRepository>();
+builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.ISchoolStreamService, Tabsan.EduSphere.Application.Academic.SchoolStreamService>();
+builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IReportCardService, Tabsan.EduSphere.Application.Academic.ReportCardService>();
+builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IBulkPromotionService, Tabsan.EduSphere.Application.Academic.BulkPromotionService>();
+builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IParentPortalService, Tabsan.EduSphere.Application.Academic.ParentPortalService>();
+// ── Rate limiting (OWASP hardening) ─────────────────────────────────────
 builder.Services.AddRateLimiter(opts =>
 {
     // Global sliding window: 100 requests per minute per IP.

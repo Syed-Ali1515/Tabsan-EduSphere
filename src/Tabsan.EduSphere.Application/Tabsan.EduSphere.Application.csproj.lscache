@@ -55,6 +55,7 @@ TemporaryDependencyNodeTargetIdentifier=net8.0
 [sourceFiles]
 Academic/
  AcademicCalendarService.cs
+ BulkPromotionService.cs
  CourseGradingService.cs
  CourseService.cs
  DegreeAuditService.cs
@@ -62,9 +63,12 @@ Academic/
  GpaResultStrategy.cs
  GraduationService.cs
  InstitutionGradingService.cs
+ ParentPortalService.cs
  PercentageResultStrategy.cs
  ProgressionService.cs
+ ReportCardService.cs
  ResultStrategyResolver.cs
+ SchoolStreamService.cs
  StudentRegistrationService.cs
 AiChat/AiChatService.cs
 Assignments/
@@ -83,6 +87,7 @@ DTOs/Academic/
  EnrollmentRulesDTOs.cs
  GraduationDTOs.cs
  InstitutionGradingDtos.cs
+ Phase26Dtos.cs
  ProgressionDtos.cs
 DTOs/
  AccountSecurityDtos.cs
@@ -125,6 +130,7 @@ Interfaces/
  IAttendanceService.cs
  IAuthService.cs
  IBuildingRoomService.cs
+ IBulkPromotionService.cs
  ICertificateGenerator.cs
  ICourseGradingService.cs
  ICourseService.cs
@@ -149,15 +155,18 @@ Interfaces/
  IModuleRegistryService.cs
  IModuleService.cs
  INotificationService.cs
+ IParentPortalService.cs
  IPasswordHasher.cs
  IProgressionService.cs
  IQuizService.cs
+ IReportCardService.cs
  IReportService.cs
  IResultCalculationService.cs
  IResultCalculationStrategy.cs
  IResultService.cs
  IResultStrategyResolver.cs
  IRubricService.cs
+ ISchoolStreamService.cs
  ISearchRepository.cs
  ISearchService.cs
  ISettingsServices.cs
