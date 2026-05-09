@@ -345,6 +345,26 @@ For **every completed phase**:
 
 ---
 
+## Phase 29 — MSSQL Data and Indexing Optimization (Stage 29.2 Slice 1)
+**Status:** ✅ Slice 1 Delivered (2026-05-10)
+
+### Completion Mark
+- [x] Add server-side pagination for one heavy list endpoint.
+- [x] Push pagination through repository, application, API, and portal layers.
+- [x] Preserve status filtering while paging.
+- [x] Confirm no database migration is required.
+
+### Implementation Summary
+- Added a paged helpdesk ticket contract (`TicketSummaryPageDto`) and updated helpdesk service/repository methods to use `page` and `pageSize` driven SQL queries.
+- Updated `GET /api/v1/helpdesk/tickets` and the portal helpdesk page to consume and render paged ticket results.
+- Added next/previous helpdesk pagination controls in the portal while resetting status-filter changes back to page 1.
+
+### Validation Summary
+- `dotnet build Tabsan.EduSphere.sln` — passed.
+- `dotnet test Tabsan.EduSphere.sln --no-build` — **162/162 passed**.
+
+---
+
 ## Refactoring-Hosting-Security — Part A + Part B
 **Status:** ✅ Fully Complete (2026-05-07) | Commits: f56ccd9, 5e80bc9
 

@@ -331,6 +331,19 @@
 | `UserSessionConfiguration.Configure(builder)` | Adds composite user-session recency index for most-recent refresh session lookup. | `Infrastructure/Persistence/Configurations/UserSessionConfiguration.cs` |
 | `_20260510_Phase29_IndexBaseline.Up(migrationBuilder)` | Applies the Stage 29.1 index baseline migration to SQL Server. | `Infrastructure/Migrations/20260509155457_20260510_Phase29_IndexBaseline.cs` |
 
+### Application/API/Web — Phase 29 Stage 29.2 Slice 1 (Helpdesk Pagination)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetTicketsAsync(callerId, callerRole, departmentIds, status, page, pageSize, ct)` | Returns role-scoped helpdesk tickets as a paged result instead of an unbounded list. | `Application/Interfaces/IHelpdeskService.cs`, `Application/Helpdesk/HelpdeskService.cs` |
+| `TicketSummaryPageDto` | Carries paged ticket items plus page metadata across the API boundary. | `Application/DTOs/Helpdesk/HelpdeskDTOs.cs` |
+| `GetTicketsBySubmitterAsync(submitterId, status, skip, take, ct)` | Fetches a paged student submitter ticket slice directly in SQL. | `Domain/Interfaces/IHelpdeskRepository.cs`, `Infrastructure/Repositories/HelpdeskRepository.cs` |
+| `GetTicketsByDepartmentAsync(departmentIds, status, skip, take, ct)` | Fetches a paged admin/superadmin department ticket slice directly in SQL. | `Domain/Interfaces/IHelpdeskRepository.cs`, `Infrastructure/Repositories/HelpdeskRepository.cs` |
+| `GetTicketsByAssigneeOrSubmitterAsync(userId, status, skip, take, ct)` | Fetches a paged faculty-visible ticket slice without combining unbounded in-memory lists. | `Domain/Interfaces/IHelpdeskRepository.cs`, `Infrastructure/Repositories/HelpdeskRepository.cs` |
+| `GetTickets(status, page, pageSize, ct)` | API endpoint exposing paged helpdesk ticket listing. | `API/Controllers/HelpdeskController.cs` |
+| `GetTicketsAsync(status, page, pageSize, ct)` | Web API client method that consumes the paged helpdesk response. | `Web/Services/EduApiClient.cs` |
+| `Helpdesk(status, page, ct)` | Portal action that binds and renders paged helpdesk results. | `Web/Controllers/PortalController.cs` |
+
 ### API — Phase 28 Stage 28.2 Completion
 
 | Function Name | Purpose | Location |

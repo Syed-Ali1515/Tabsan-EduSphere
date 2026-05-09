@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.48 (Phase 29 Stage 29.1 delivered)  
+**Version:** 1.49 (Phase 29 Stage 29.2 slice 1 delivered)  
 **Status:** Approved  
 **Prepared By:** Product Team  
 **Last Updated:** 10 May 2026  
@@ -82,6 +82,13 @@
 - **Index baseline:** added composite indexes for high-frequency student/user/status recency queries across graduation applications, support tickets, notification recipients, payment receipts, quiz attempts, and user sessions.
 - **Migration:** added `20260509155457_20260510_Phase29_IndexBaseline`.
 - **Schema audit:** current model contains no `InstitutionId`, `YearId`, or `GradeId` columns, so Stage 29.1 targeted existing `StudentId`/`UserId`/`CourseId`/`SemesterId` shaped contracts instead.
+- **Validation:** solution build passed; automated tests passed **162/162**.
+
+### 2026-05-10 — Phase 29 Stage 29.2 Slice 1
+- **Pagination discipline:** helpdesk ticket listing now uses server-side paging with `page` and `pageSize` parameters.
+- **Contract update:** API, application service, repository, and portal client now exchange paged ticket results instead of unbounded lists.
+- **User experience:** portal helpdesk list now supports next/previous navigation while preserving the selected status filter.
+- **Schema impact:** no database migration required.
 - **Validation:** solution build passed; automated tests passed **162/162**.
 
 ### 2026-05-10 — Phase 28 Stage 28.3 Slice 1

@@ -92,6 +92,12 @@ This file tracks the reported portal issues as phased work items so they can be 
 - Model audit confirmed there are currently no `InstitutionId`, `YearId`, or `GradeId` columns to index in the active schema, so Stage 29.1 focused on existing high-frequency key paths.
 - Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
 
+### 2026-05-10 — Phase 29 Stage 29.2 Slice 1 Update
+- Added paged helpdesk listing contract across API, application, repository, and portal layers.
+- Replaced the unbounded helpdesk ticket list path with server-side `page` and `pageSize` driven queries for all roles.
+- Added portal paging controls while preserving status filtering behavior.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
+
 ---
 
 ## Refactoring-Hosting-Security — Part A + Part B

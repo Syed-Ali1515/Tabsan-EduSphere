@@ -19,14 +19,41 @@ public class HelpdeskRepository : IHelpdeskRepository
               .Include(t => t.Messages)
               .FirstOrDefaultAsync(t => t.Id == id, ct);
 
-    public async Task<IReadOnlyList<SupportTicket>> GetTicketsBySubmitterAsync(Guid submitterId, CancellationToken ct = default)
-        => await _db.SupportTickets
-                    .Where(t => t.SubmitterId == submitterId)
-                    .OrderByDescending(t => t.CreatedAt)
-                    .ToListAsync(ct);
+    public async Task<IReadOnlyList<SupportTicket>> GetTicketsBySubmitterAsync(
+        Guid submitterId,
+        TicketStatus? status,
+        int skip,
+        int take,
+        CancellationToken ct = default)
+    {
+        var query = _db.SupportTickets.Where(t => t.SubmitterId == submitterId);
+
+        if (status.HasValue)
+            query = query.Where(t => t.Status == status.Value);
+
+        return await query
+            .OrderByDescending(t => t.CreatedAt)
+            .Skip(skip)
+            .Take(take)
+            .ToListAsync(ct);
+    }
+
+    public Task<int> CountTicketsBySubmitterAsync(Guid submitterId, TicketStatus? status, CancellationToken ct = default)
+    {
+        var query = _db.SupportTickets.Where(t => t.SubmitterId == submitterId);
+
+        if (status.HasValue)
+            query = query.Where(t => t.Status == status.Value);
+
+        return query.CountAsync(ct);
+    }
 
     public async Task<IReadOnlyList<SupportTicket>> GetTicketsByDepartmentAsync(
-        IReadOnlyList<Guid>? departmentIds, TicketStatus? status, CancellationToken ct = default)
+        IReadOnlyList<Guid>? departmentIds,
+        TicketStatus? status,
+        int skip,
+        int take,
+        CancellationToken ct = default)
     {
         var query = _db.SupportTickets.AsQueryable();
 
@@ -36,14 +63,56 @@ public class HelpdeskRepository : IHelpdeskRepository
         if (status.HasValue)
             query = query.Where(t => t.Status == status.Value);
 
-        return await query.OrderByDescending(t => t.CreatedAt).ToListAsync(ct);
+        return await query
+            .OrderByDescending(t => t.CreatedAt)
+            .Skip(skip)
+            .Take(take)
+            .ToListAsync(ct);
     }
 
-    public async Task<IReadOnlyList<SupportTicket>> GetTicketsByAssigneeAsync(Guid assignedToId, CancellationToken ct = default)
-        => await _db.SupportTickets
-                    .Where(t => t.AssignedToId == assignedToId)
-                    .OrderByDescending(t => t.CreatedAt)
-                    .ToListAsync(ct);
+    public Task<int> CountTicketsByDepartmentAsync(IReadOnlyList<Guid>? departmentIds, TicketStatus? status, CancellationToken ct = default)
+    {
+        var query = _db.SupportTickets.AsQueryable();
+
+        if (departmentIds is { Count: > 0 })
+            query = query.Where(t => t.DepartmentId.HasValue && departmentIds.Contains(t.DepartmentId.Value));
+
+        if (status.HasValue)
+            query = query.Where(t => t.Status == status.Value);
+
+        return query.CountAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<SupportTicket>> GetTicketsByAssigneeOrSubmitterAsync(
+        Guid userId,
+        TicketStatus? status,
+        int skip,
+        int take,
+        CancellationToken ct = default)
+    {
+        var query = _db.SupportTickets
+            .Where(t => t.AssignedToId == userId || t.SubmitterId == userId);
+
+        if (status.HasValue)
+            query = query.Where(t => t.Status == status.Value);
+
+        return await query
+            .OrderByDescending(t => t.CreatedAt)
+            .Skip(skip)
+            .Take(take)
+            .ToListAsync(ct);
+    }
+
+    public Task<int> CountTicketsByAssigneeOrSubmitterAsync(Guid userId, TicketStatus? status, CancellationToken ct = default)
+    {
+        var query = _db.SupportTickets
+            .Where(t => t.AssignedToId == userId || t.SubmitterId == userId);
+
+        if (status.HasValue)
+            query = query.Where(t => t.Status == status.Value);
+
+        return query.CountAsync(ct);
+    }
 
     public async Task AddTicketAsync(SupportTicket ticket, CancellationToken ct = default)
         => await _db.SupportTickets.AddAsync(ticket, ct);

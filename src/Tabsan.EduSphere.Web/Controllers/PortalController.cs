@@ -3102,7 +3102,7 @@ public class PortalController : Controller
     // ── Phase 14: Helpdesk / Support Ticketing ────────────────────────────────
 
     [HttpGet]
-    public async Task<IActionResult> Helpdesk(TicketStatusWeb? status, CancellationToken ct = default)
+    public async Task<IActionResult> Helpdesk(TicketStatusWeb? status, int page = 1, CancellationToken ct = default)
     {
         var session = _api.GetSessionIdentity();
         var callerIdStr = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
@@ -3112,14 +3112,19 @@ public class PortalController : Controller
             IsConnected  = _api.IsConnected(),
             CallerRole   = session?.Roles.FirstOrDefault() ?? "",
             CallerId     = callerId,
-            StatusFilter = status
+            StatusFilter = status,
+            Page         = page
         };
 
         if (!model.IsConnected) return View(model);
 
         try
         {
-            model.Tickets = await _api.GetTicketsAsync(status, ct);
+            var ticketPage = await _api.GetTicketsAsync(status, model.Page, model.PageSize, ct);
+            model.Tickets = ticketPage.Items;
+            model.Page = ticketPage.Page;
+            model.PageSize = ticketPage.PageSize;
+            model.TotalCount = ticketPage.TotalCount;
             // Load staff users for assign dropdown (Admin/SuperAdmin only)
             if (model.CallerRole is "SuperAdmin" or "Admin")
                 model.StaffUsers = (await _api.GetFacultyAsync(ct))

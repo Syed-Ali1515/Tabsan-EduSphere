@@ -31,7 +31,7 @@ public class HelpdeskController : ControllerBase
 
     /// <summary>Returns ticket list scoped to the caller's role.</summary>
     [HttpGet("tickets")]
-    public async Task<IActionResult> GetTickets([FromQuery] TicketStatus? status, CancellationToken ct)
+    public async Task<IActionResult> GetTickets([FromQuery] TicketStatus? status, [FromQuery] int page = 1, [FromQuery] int pageSize = 20, CancellationToken ct = default)
     {
         var (callerId, callerRole) = ExtractCaller();
         if (callerId == Guid.Empty) return Unauthorized();
@@ -43,7 +43,7 @@ public class HelpdeskController : ControllerBase
             deptIds = ids.ToList();
         }
 
-        var tickets = await _helpdesk.GetTicketsAsync(callerId, callerRole, deptIds, status, ct);
+        var tickets = await _helpdesk.GetTicketsAsync(callerId, callerRole, deptIds, status, page, pageSize, ct);
         return Ok(tickets);
     }
 

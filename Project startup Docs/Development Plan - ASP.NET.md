@@ -80,6 +80,11 @@
 - Documented that the current schema has no `InstitutionId`, `YearId`, or `GradeId` columns yet, so Stage 29.1 targeted the active query contracts instead.
 - Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
 
+### 2026-05-10 — Phase 29 Stage 29.2 Slice 1
+- Added server-side pagination for helpdesk ticket listing across the repository, application service, API controller, portal client, and portal page.
+- Replaced the previous unbounded helpdesk list path with `page` and `pageSize` aware queries.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
+
 ### 2026-05-09 — Phase 28 Stage 28.1 Complete
 - Completed **API and App Tier Scaling** as the first stage of the scalability architecture roadmap.
 - Replaced Web session-backed connection/auth state with protected-cookie storage to keep portal nodes stateless across a load-balanced deployment.

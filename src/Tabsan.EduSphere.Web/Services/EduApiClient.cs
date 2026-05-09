@@ -274,7 +274,7 @@ public interface IEduApiClient
     Task<SearchWebResponse> SearchAsync(string term, int limit, CancellationToken ct);
 
     // Phase 14: Helpdesk
-    Task<List<TicketSummaryItem>> GetTicketsAsync(TicketStatusWeb? status, CancellationToken ct);
+    Task<TicketSummaryPageItem> GetTicketsAsync(TicketStatusWeb? status, int page, int pageSize, CancellationToken ct);
     Task<TicketDetailItem?> GetTicketDetailAsync(Guid ticketId, CancellationToken ct);
     Task<Guid> CreateTicketAsync(Guid? departmentId, TicketCategoryWeb category, string subject, string body, CancellationToken ct);
     Task<Guid> AddTicketMessageAsync(Guid ticketId, string body, bool isInternalNote, CancellationToken ct);
@@ -3169,13 +3169,25 @@ public class EduApiClient : IEduApiClient
 
     // ── Phase 14: Helpdesk / Support Ticketing ────────────────────────────────
 
-    public async Task<List<TicketSummaryItem>> GetTicketsAsync(TicketStatusWeb? status, CancellationToken ct)
+    public async Task<TicketSummaryPageItem> GetTicketsAsync(TicketStatusWeb? status, int page, int pageSize, CancellationToken ct)
     {
-        var url = status.HasValue
-            ? $"api/v1/helpdesk/tickets?status={(int)status.Value}"
-            : "api/v1/helpdesk/tickets";
-        var raw = await GetAsync<List<TicketSummaryApiDto>>(url, ct);
-        return raw?.Select(MapSummary).ToList() ?? new();
+        var query = new List<string>
+        {
+            $"page={page}",
+            $"pageSize={pageSize}"
+        };
+
+        if (status.HasValue)
+            query.Add($"status={(int)status.Value}");
+
+        var raw = await GetAsync<TicketSummaryPageApiDto>($"api/v1/helpdesk/tickets?{string.Join("&", query)}", ct);
+        return new TicketSummaryPageItem
+        {
+            Items = raw?.Items?.Select(MapSummary).ToList() ?? new(),
+            Page = raw?.Page ?? page,
+            PageSize = raw?.PageSize ?? pageSize,
+            TotalCount = raw?.TotalCount ?? 0
+        };
     }
 
     public async Task<TicketDetailItem?> GetTicketDetailAsync(Guid ticketId, CancellationToken ct)
@@ -3769,6 +3781,14 @@ public class EduApiClient : IEduApiClient
     };
 
     private sealed class TicketIdApiDto         { public Guid Id { get; set; } }
+    private sealed class TicketSummaryPageApiDto
+    {
+        public List<TicketSummaryApiDto>? Items { get; set; }
+        public int Page { get; set; }
+        public int PageSize { get; set; }
+        public int TotalCount { get; set; }
+    }
+
     private sealed class TicketSummaryApiDto
     {
         public Guid    Id            { get; set; }

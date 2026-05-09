@@ -98,6 +98,13 @@
 - Validated current schema audit: no `InstitutionId`, `YearId`, or `GradeId` columns are present in the current model, so Stage 29.1 focused on active `StudentId`/`UserId`/`CourseId`/`SemesterId` shaped query paths.
 - Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
 
+### 2026-05-10 — Phase 29 Stage 29.2 Slice 1 (Query Discipline and Pagination)
+- Added paged helpdesk ticket listing contract end to end with `page` and `pageSize` parameters.
+- Updated repository queries so Student, Faculty, Admin, and SuperAdmin helpdesk views no longer materialize unbounded ticket lists.
+- Updated portal helpdesk page to render previous/next pagination controls while preserving status filters.
+- No database migration or schema change was required for Stage 29.2 Slice 1.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
+
 ---
 
 ## Phase 12 — Academic Calendar System ✅ Implemented

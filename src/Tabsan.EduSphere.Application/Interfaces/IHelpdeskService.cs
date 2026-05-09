@@ -14,9 +14,9 @@ public interface IHelpdeskService
 
     Task<TicketDetailDto?> GetTicketDetailAsync(Guid ticketId, Guid callerId, string callerRole, CancellationToken ct = default);
 
-    /// <summary>Returns ticket summaries visible to the caller (role-scoped).</summary>
-    Task<IReadOnlyList<TicketSummaryDto>> GetTicketsAsync(Guid callerId, string callerRole,
-        IReadOnlyList<Guid>? departmentIds, TicketStatus? status, CancellationToken ct = default);
+    /// <summary>Returns ticket summaries visible to the caller (role-scoped) as a paged result.</summary>
+    Task<TicketSummaryPageDto> GetTicketsAsync(Guid callerId, string callerRole,
+        IReadOnlyList<Guid>? departmentIds, TicketStatus? status, int page, int pageSize, CancellationToken ct = default);
 
     // ── Messaging ────────────────────────────────────────────────────────────
 

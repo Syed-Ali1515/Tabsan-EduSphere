@@ -1410,6 +1410,14 @@ public class TicketSummaryItem
     public int               MessageCount  { get; set; }
 }
 
+public class TicketSummaryPageItem
+{
+    public List<TicketSummaryItem> Items { get; set; } = new();
+    public int Page { get; set; }
+    public int PageSize { get; set; }
+    public int TotalCount { get; set; }
+}
+
 public class TicketMessageItem
 {
     public Guid     Id             { get; set; }
@@ -1445,8 +1453,13 @@ public class HelpdeskListPageModel
     public string                    CallerRole    { get; set; } = "";
     public Guid                      CallerId      { get; set; }
     public TicketStatusWeb?          StatusFilter  { get; set; }
+    public int                       Page          { get; set; } = 1;
+    public int                       PageSize      { get; set; } = 20;
+    public int                       TotalCount    { get; set; }
     public List<TicketSummaryItem>   Tickets       { get; set; } = new();
     public List<LookupItem>          StaffUsers    { get; set; } = new();
+
+    public int TotalPages => PageSize <= 0 ? 1 : (int)Math.Max(1, Math.Ceiling((double)TotalCount / PageSize));
 }
 
 public class HelpdeskDetailPageModel

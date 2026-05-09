@@ -46,6 +46,13 @@ public record TicketSummaryDto(
     int            MessageCount
 );
 
+public record TicketSummaryPageDto(
+    IReadOnlyList<TicketSummaryDto> Items,
+    int Page,
+    int PageSize,
+    int TotalCount
+);
+
 public record TicketDetailDto(
     Guid                          Id,
     string                        Subject,

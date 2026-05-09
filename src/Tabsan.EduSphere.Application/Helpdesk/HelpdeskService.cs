@@ -87,39 +87,38 @@ public sealed class HelpdeskService : IHelpdeskService
             messageDtos);
     }
 
-    public async Task<IReadOnlyList<TicketSummaryDto>> GetTicketsAsync(
+    public async Task<TicketSummaryPageDto> GetTicketsAsync(
         Guid callerId, string callerRole,
-        IReadOnlyList<Guid>? departmentIds, TicketStatus? status, CancellationToken ct = default)
+        IReadOnlyList<Guid>? departmentIds, TicketStatus? status, int page, int pageSize, CancellationToken ct = default)
     {
+        var normalizedPage = page < 1 ? 1 : page;
+        var normalizedPageSize = Math.Clamp(pageSize, 10, 100);
+        var skip = (normalizedPage - 1) * normalizedPageSize;
+
         IReadOnlyList<SupportTicket> tickets;
+        int totalCount;
 
         if (callerRole is "SuperAdmin")
         {
-            tickets = await _helpdesk.GetTicketsByDepartmentAsync(null, status, ct);
+            totalCount = await _helpdesk.CountTicketsByDepartmentAsync(null, status, ct);
+            tickets = await _helpdesk.GetTicketsByDepartmentAsync(null, status, skip, normalizedPageSize, ct);
         }
         else if (callerRole is "Admin")
         {
-            tickets = await _helpdesk.GetTicketsByDepartmentAsync(departmentIds, status, ct);
+            totalCount = await _helpdesk.CountTicketsByDepartmentAsync(departmentIds, status, ct);
+            tickets = await _helpdesk.GetTicketsByDepartmentAsync(departmentIds, status, skip, normalizedPageSize, ct);
         }
         else if (callerRole is "Faculty")
         {
-            // Faculty sees tickets assigned to them + their own submissions
-            var assigned    = await _helpdesk.GetTicketsByAssigneeAsync(callerId, ct);
-            var submitted   = await _helpdesk.GetTicketsBySubmitterAsync(callerId, ct);
-            tickets = assigned.Concat(submitted)
-                              .DistinctBy(t => t.Id)
-                              .OrderByDescending(t => t.CreatedAt)
-                              .ToList();
+            totalCount = await _helpdesk.CountTicketsByAssigneeOrSubmitterAsync(callerId, status, ct);
+            tickets = await _helpdesk.GetTicketsByAssigneeOrSubmitterAsync(callerId, status, skip, normalizedPageSize, ct);
         }
         else
         {
             // Student — own submissions only
-            tickets = await _helpdesk.GetTicketsBySubmitterAsync(callerId, ct);
+            totalCount = await _helpdesk.CountTicketsBySubmitterAsync(callerId, status, ct);
+            tickets = await _helpdesk.GetTicketsBySubmitterAsync(callerId, status, skip, normalizedPageSize, ct);
         }
-
-        // Apply status filter client-side for Faculty/Student (already applied server-side for Admin/SuperAdmin)
-        if (status.HasValue && callerRole is "Faculty" or "Student")
-            tickets = tickets.Where(t => t.Status == status.Value).ToList();
 
         var summaries = new List<TicketSummaryDto>(tickets.Count);
         foreach (var t in tickets)
@@ -135,7 +134,8 @@ public sealed class HelpdeskService : IHelpdeskService
                 t.AssignedToId, assignee?.Username,
                 t.DepartmentId, t.CreatedAt, t.ResolvedAt, msgCount));
         }
-        return summaries;
+
+            return new TicketSummaryPageDto(summaries, normalizedPage, normalizedPageSize, totalCount);
     }
 
     // ── Messaging ────────────────────────────────────────────────────────────
