@@ -237,6 +237,28 @@ For **every completed phase**:
 
 ---
 
+## Phase 28 — Scalability Architecture (Stage 28.3 Slice 8)
+**Status:** ✅ Slice 8 Delivered (2026-05-10)
+
+### Completion Mark
+- [x] Add authenticated storage-key based certificate streaming endpoint.
+- [x] Migrate certificate download flow to redirect-first provider/signed URL pattern for storage-backed records.
+- [x] Enforce local signed URL validation for certificate-file reads when signing is configured.
+- [x] Preserve legacy `/certificates/*` compatibility for existing records.
+- [x] Confirm no database migration is required.
+
+### Implementation Summary
+- `GraduationController` now injects `IMediaStorageService` + `MediaStorageOptions` for certificate read orchestration.
+- Added `GET /api/v1/graduation/certificate-files/{**storageKey}` with role guard and `exp`/`sig` validation.
+- Updated `GET /api/v1/graduation/{id}/certificate` to enforce caller ownership checks, preserve legacy path behavior, and redirect storage-backed certificates to temporary or signed URLs.
+
+### Validation Summary
+- `dotnet build src/Tabsan.EduSphere.API/Tabsan.EduSphere.API.csproj` — passed.
+- `dotnet build Tabsan.EduSphere.sln` — passed.
+- `dotnet test Tabsan.EduSphere.sln --no-build` — **162/162 passed**.
+
+---
+
 ## Refactoring-Hosting-Security — Part A + Part B
 **Status:** ✅ Fully Complete (2026-05-07) | Commits: f56ccd9, 5e80bc9
 

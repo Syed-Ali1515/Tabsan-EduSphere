@@ -64,6 +64,12 @@ This file tracks the reported portal issues as phased work items so they can be 
 - Added expiry checks and fixed-time signature verification for `exp`/`sig` requests.
 - Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
 
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 8 Update
+- Added authenticated certificate file endpoint (`GET /api/v1/graduation/certificate-files/{**storageKey}`) for storage-key based certificate reads.
+- Updated graduation certificate download endpoint to redirect to temporary provider URLs or signed local certificate URLs.
+- Added local signed URL validation (`exp`/`sig`) for certificate-file reads when signing is configured.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
+
 ---
 
 ## Refactoring-Hosting-Security — Part A + Part B

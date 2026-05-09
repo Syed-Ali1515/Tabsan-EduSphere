@@ -55,6 +55,11 @@
 - Stage 28.3 slice 7 enforced local signed URL validation (`exp`/`sig`) for portal logo reads with legacy unsigned-link signed redirects.
 - No database schema change and no EF migration were required.
 
+## 2026-05-10 Update — Phase 28 Stage 28.3 Slice 8
+
+- Stage 28.3 slice 8 added authenticated tokenized certificate streaming endpoint support and signed local certificate read validation.
+- No database schema change and no EF migration were required.
+
 ---
 
 # PART 1: UNIVERSITY PORTAL APPLICATION DATABASE

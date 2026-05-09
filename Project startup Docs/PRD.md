@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.44 (Phase 28 Stage 28.3 slice 7 delivered)  
+**Version:** 1.45 (Phase 28 Stage 28.3 slice 8 delivered)  
 **Status:** Approved  
 **Prepared By:** Product Team  
 **Last Updated:** 10 May 2026  
@@ -51,6 +51,14 @@
 - **Legacy compatibility:** unsigned local logo URLs are redirected to short-lived signed URLs.
 - **Verification hardening:** signature validation uses fixed-time comparison and strict expiry checks.
 - **Operational behavior:** provider temporary URL redirect-first path remains intact with byte-stream fallback.
+- **Schema impact:** no database migration required.
+- **Validation:** solution build passed; automated tests passed **162/162**.
+
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 8
+- **Certificate media endpoint:** added `GET /api/v1/graduation/certificate-files/{**storageKey}` for authenticated, storage-key based certificate streaming.
+- **Redirect-first certificate reads:** graduation certificate download now redirects to provider temporary URLs when available, otherwise to signed local certificate URLs.
+- **Signed local enforcement:** local certificate-file reads validate `exp` and `sig` when `MediaStorage:SignedUrlSecret` is configured.
+- **Legacy compatibility:** existing legacy `/certificates/*` records continue to use the original byte-download path.
 - **Schema impact:** no database migration required.
 - **Validation:** solution build passed; automated tests passed **162/162**.
 

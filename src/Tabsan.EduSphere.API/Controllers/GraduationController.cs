@@ -2,8 +2,12 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using System.Security.Cryptography;
+using System.Text;
 using Tabsan.EduSphere.Application.DTOs.Academic;
 using Tabsan.EduSphere.Application.Interfaces;
+using Tabsan.EduSphere.API.Services;
 using Tabsan.EduSphere.Domain.Interfaces;
 
 namespace Tabsan.EduSphere.API.Controllers;
@@ -19,13 +23,19 @@ public class GraduationController : ControllerBase
 {
     private readonly IGraduationService         _graduation;
     private readonly IStudentProfileRepository  _studentRepo;
+    private readonly IMediaStorageService _mediaStorage;
+    private readonly MediaStorageOptions _mediaStorageOptions;
 
     public GraduationController(
         IGraduationService         graduation,
-        IStudentProfileRepository  studentRepo)
+        IStudentProfileRepository  studentRepo,
+        IMediaStorageService mediaStorage,
+        IOptions<MediaStorageOptions> mediaStorageOptions)
     {
         _graduation  = graduation;
         _studentRepo = studentRepo;
+        _mediaStorage = mediaStorage;
+        _mediaStorageOptions = mediaStorageOptions.Value;
     }
 
     // ── Student: view own applications ────────────────────────────────────────
@@ -182,29 +192,85 @@ public class GraduationController : ControllerBase
     [Authorize(Roles = "Student,Admin,SuperAdmin")]
     public async Task<IActionResult> DownloadCertificate(Guid id, CancellationToken ct)
     {
-        Guid studentProfileId = Guid.Empty;
+        Guid? requestingStudentProfileId = null;
+
+        // Final-Touches Phase 28 Stage 28.3 — verify access first, then issue tokenized certificate read.
+        GraduationApplicationDetail detail;
+        try
+        {
+            detail = await _graduation.GetApplicationDetailAsync(id, ct);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
 
         if (User.IsInRole("Student"))
         {
             var profile = await _studentRepo.GetByUserIdAsync(GetUserId(), ct);
             if (profile is null) return NotFound("Student profile not found.");
-            studentProfileId = profile.Id;
-        }
-        else
-        {
-            // Admin/SuperAdmin: resolve the application's student profile
-            try
-            {
-                var detail = await _graduation.GetApplicationDetailAsync(id, ct);
-                studentProfileId = detail.StudentProfileId;
-            }
-            catch (KeyNotFoundException ex) { return NotFound(ex.Message); }
+            if (profile.Id != detail.StudentProfileId) return Forbid();
+            requestingStudentProfileId = profile.Id;
         }
 
-        var bytes = await _graduation.DownloadCertificateAsync(id, studentProfileId, ct);
+        if (string.IsNullOrWhiteSpace(detail.CertificatePath))
+            return NotFound("Certificate not yet generated or not found.");
+
+        // Keep legacy /certificates/* records on original byte flow.
+        if (detail.CertificatePath.StartsWith("/", StringComparison.Ordinal))
+        {
+            var studentProfileId = requestingStudentProfileId ?? detail.StudentProfileId;
+            var legacyBytes = await _graduation.DownloadCertificateAsync(id, studentProfileId, ct);
+            if (legacyBytes is null) return NotFound("Certificate not yet generated or not found.");
+            return File(legacyBytes, "application/pdf", $"graduation_certificate_{id}.pdf");
+        }
+
+        var temporaryUrl = await _mediaStorage.GenerateTemporaryReadUrlAsync(detail.CertificatePath, TimeSpan.FromMinutes(10), ct);
+        if (Uri.TryCreate(temporaryUrl, UriKind.Absolute, out _))
+            return Redirect(temporaryUrl!);
+
+        if (IsSignedReadRequired())
+            return Redirect(BuildLocalSignedCertificateUrl(detail.CertificatePath, TimeSpan.FromMinutes(10)));
+
+        var escapedKey = Uri.EscapeDataString(detail.CertificatePath).Replace("%2F", "/", StringComparison.OrdinalIgnoreCase);
+        return Redirect($"/api/v1/graduation/certificate-files/{escapedKey}");
+    }
+
+    /// <summary>
+    /// Streams a provider-backed graduation certificate by storage key.
+    /// Requires authenticated role and (when configured) a valid signed URL.
+    /// </summary>
+    [HttpGet("certificate-files/{**storageKey}")]
+    [Authorize(Roles = "Student,Admin,SuperAdmin")]
+    public async Task<IActionResult> GetCertificateFile(
+        string storageKey,
+        [FromQuery] long? exp,
+        [FromQuery] string? sig,
+        CancellationToken ct)
+    {
+        // Final-Touches Phase 28 Stage 28.3 — enforce signed certificate-file reads for local serving.
+        if (string.IsNullOrWhiteSpace(storageKey))
+            return NotFound();
+
+        if (!storageKey.Contains("certificates", StringComparison.OrdinalIgnoreCase))
+            return NotFound();
+
+        if (IsSignedReadRequired())
+        {
+            if (!exp.HasValue || string.IsNullOrWhiteSpace(sig))
+                return Redirect(BuildLocalSignedCertificateUrl(storageKey, TimeSpan.FromMinutes(10)));
+
+            if (exp.Value < DateTimeOffset.UtcNow.ToUnixTimeSeconds())
+                return NotFound();
+
+            if (!IsValidLocalSignature(storageKey, exp.Value, sig))
+                return NotFound();
+        }
+
+        var bytes = await _mediaStorage.ReadAsBytesAsync(storageKey, ct);
         if (bytes is null) return NotFound("Certificate not yet generated or not found.");
 
-        return File(bytes, "application/pdf", $"graduation_certificate_{id}.pdf");
+        return File(bytes, "application/pdf");
     }
 
     // Final-Touches Phase 18 Stage 18.2 — admin/superadmin regenerates certificate
@@ -228,5 +294,55 @@ public class GraduationController : ControllerBase
     {
         var raw = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         return Guid.TryParse(raw, out var id) ? id : Guid.Empty;
+    }
+
+    private bool IsSignedReadRequired() => !string.IsNullOrWhiteSpace(_mediaStorageOptions.SignedUrlSecret);
+
+    private string BuildLocalSignedCertificateUrl(string storageKey, TimeSpan ttl)
+    {
+        var expiresAt = DateTimeOffset.UtcNow.Add(ttl <= TimeSpan.Zero ? TimeSpan.FromMinutes(10) : ttl).ToUnixTimeSeconds();
+        var signature = CreateSignature(storageKey, expiresAt);
+
+        var escapedKey = Uri.EscapeDataString(storageKey).Replace("%2F", "/", StringComparison.OrdinalIgnoreCase);
+        return $"/api/v1/graduation/certificate-files/{escapedKey}?exp={expiresAt}&sig={Uri.EscapeDataString(signature)}";
+    }
+
+    private bool IsValidLocalSignature(string storageKey, long expiresAt, string providedSignature)
+    {
+        var expected = CreateSignature(storageKey, expiresAt);
+        var normalized = providedSignature.Trim();
+
+        if (!TryDecodeHex(expected, out var expectedBytes)) return false;
+        if (!TryDecodeHex(normalized, out var providedBytes)) return false;
+
+        return CryptographicOperations.FixedTimeEquals(expectedBytes, providedBytes);
+    }
+
+    private string CreateSignature(string storageKey, long expiresAt)
+    {
+        var secret = _mediaStorageOptions.SignedUrlSecret;
+        if (string.IsNullOrWhiteSpace(secret))
+            return string.Empty;
+
+        var payload = $"{storageKey}|{expiresAt}";
+        var keyBytes = Encoding.UTF8.GetBytes(secret);
+        var payloadBytes = Encoding.UTF8.GetBytes(payload);
+
+        using var hmac = new HMACSHA256(keyBytes);
+        return Convert.ToHexString(hmac.ComputeHash(payloadBytes)).ToLowerInvariant();
+    }
+
+    private static bool TryDecodeHex(string value, out byte[] bytes)
+    {
+        try
+        {
+            bytes = Convert.FromHexString(value);
+            return true;
+        }
+        catch
+        {
+            bytes = Array.Empty<byte>();
+            return false;
+        }
     }
 }

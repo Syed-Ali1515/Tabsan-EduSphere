@@ -56,11 +56,11 @@ cmd /c git -C "<repo-root>" push origin main
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
 - Active Phase: **Phase 28 — Scalability Architecture (1M+ Readiness) — IN PROGRESS ⚙️**
-- Active Stage: **Stage 28.3 in progress (Slice 7 delivered: local signed URL validation + legacy-link signed redirect)**
-- Status: **0 build errors; 162/162 tests passed; no database migration required for Stage 28.3 Slice 7**
+- Active Stage: **Stage 28.3 in progress (Slice 8 delivered: signed certificate media reads + tokenized certificate endpoint)**
+- Status: **0 build errors; 162/162 tests passed; no database migration required for Stage 28.3 Slice 8**
 - Last Updated: 2026-05-10
-- Next: **Phase 28 Stage 28.3 — continue provider hardening (metadata contracts + broader signed URL adoption across media reads) and migrate remaining direct path assumptions** (see Docs/Advance-Enhancements.md)
-- Docs Updated: ✅ All 8 tracking files updated for Phase 28 Stage 28.3 Slice 7 progress (2026-05-10)
+- Next: **Phase 28 Stage 28.3 — continue provider hardening (metadata contracts + signed URL adoption for any remaining direct byte media paths)** (see Docs/Advance-Enhancements.md)
+- Docs Updated: ✅ All 8 tracking files updated for Phase 28 Stage 28.3 Slice 8 progress (2026-05-10)
 
 ---
 
@@ -228,6 +228,11 @@ Database is fully synchronized with codebase.
   - Added compatibility redirect from unsigned legacy logo URLs to short-lived signed local URLs.
   - Added fixed-time signature comparison and expiry enforcement for local signed reads.
   - Kept provider temporary URL redirect-first behavior and byte-stream fallback for operational compatibility.
+- **Phase 28 — Scalability Architecture — Stage 28.3 SLICE 8 DELIVERED ✅**
+  - Added tokenized certificate file endpoint `GET /api/v1/graduation/certificate-files/{**storageKey}` for provider-backed certificate reads.
+  - Updated graduation certificate download flow to redirect to temporary provider URLs (when available) or signed local certificate URLs.
+  - Enforced signed URL validation (`exp` + `sig`) for local certificate streaming when signing secret is configured.
+  - Preserved legacy `/certificates/*` certificate path compatibility with existing byte-download flow.
 - Continue through Phase 28.3+ per Docs/Advance-Enhancements.md
 
 ## Pending Extra Tasks (Cross-Phase)

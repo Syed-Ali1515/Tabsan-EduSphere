@@ -71,6 +71,13 @@
 - Kept provider temporary URL redirect-first behavior and byte-stream fallback for compatibility.
 - No database migration or schema change was required for Stage 28.3 Slice 7.
 
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 8 (File and Media Strategy)
+- Added authenticated certificate file endpoint (`GET /api/v1/graduation/certificate-files/{**storageKey}`) for storage-key based certificate streaming.
+- Updated graduation certificate download endpoint to redirect-first reads using provider temporary URLs, with signed local URL fallback.
+- Enforced local `exp`/`sig` validation for certificate-file reads when `MediaStorage:SignedUrlSecret` is configured.
+- Preserved legacy `/certificates/*` certificate path byte-download compatibility.
+- No database migration or schema change was required for Stage 28.3 Slice 8.
+
 ---
 
 ## Phase 12 — Academic Calendar System ✅ Implemented

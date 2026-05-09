@@ -285,6 +285,15 @@
 | `BuildLocalSignedLogoUrl(storageKey, ttl)` | Generates short-lived local signed logo endpoint URLs for legacy unsigned-link compatibility redirects. | `API/Controllers/PortalSettingsController.cs` |
 | `IsValidLocalSignature(storageKey, expiresAt, providedSignature)` | Validates local signed read requests via fixed-time HMAC comparison. | `API/Controllers/PortalSettingsController.cs` |
 | `TryDecodeHex(value, out bytes)` | Parses signature hex safely for local signed URL validation flow. | `API/Controllers/PortalSettingsController.cs` |
+
+### API — Phase 28 Stage 28.3 Slice 8 (Certificate Signed Media Reads)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `DownloadCertificate(id, ct)` (redirect-first path) | Validates caller access, preserves legacy path behavior, and redirects provider-backed certificates to temporary or signed tokenized read endpoints. | `API/Controllers/GraduationController.cs` |
+| `GetCertificateFile(storageKey, exp, sig, ct)` | Streams provider-backed graduation certificates by storage key with signed URL validation when configured. | `API/Controllers/GraduationController.cs` |
+| `BuildLocalSignedCertificateUrl(storageKey, ttl)` | Builds short-lived signed local certificate URLs for tokenized reads. | `API/Controllers/GraduationController.cs` |
+| `IsValidLocalSignature(storageKey, expiresAt, providedSignature)` | Performs fixed-time signature verification for local certificate URL requests. | `API/Controllers/GraduationController.cs` |
 | `ModuleEntitlementResolver.IsActiveAsync(moduleKey, ct)` | Uses local memory + distributed cache to share module-activation decisions across API nodes. | `Infrastructure/Modules/ModuleEntitlementResolver.cs` |
 
 ### API — Phase 28 Stage 28.2 Completion

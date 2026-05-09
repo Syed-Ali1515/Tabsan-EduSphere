@@ -51,6 +51,13 @@
 - Added fixed-time signature comparison and expiry validation for local signed reads.
 - Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
 
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 8
+- Added authenticated certificate streaming endpoint `GET /api/v1/graduation/certificate-files/{**storageKey}`.
+- Updated `GET /api/v1/graduation/{id}/certificate` to redirect to temporary provider URLs when available or signed local certificate URLs otherwise.
+- Added local signed URL validation (`exp`/`sig`) for certificate-file reads when signing is configured.
+- Preserved legacy `/certificates/*` compatibility for existing path-based records.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
+
 ### 2026-05-09 — Phase 28 Stage 28.1 Complete
 - Completed **API and App Tier Scaling** as the first stage of the scalability architecture roadmap.
 - Replaced Web session-backed connection/auth state with protected-cookie storage to keep portal nodes stateless across a load-balanced deployment.
