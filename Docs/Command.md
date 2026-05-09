@@ -55,12 +55,12 @@ cmd /c git -C "<repo-root>" push origin main
 
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
-- Active Phase: **Phase 25 — Academic Engine Unification — FULLY COMPLETE ✅**
-- Active Stage: **Stages 25.1 (Strategy Pattern) + 25.2 (Grading Profiles) + 25.3 (Progression Logic) done**
-- Status: **0 build errors; 144/144 unit tests passed; migration `Phase25_AcademicEngineUnification` created**
+- Active Phase: **Phase 26 — School and College Functional Expansion — FULLY COMPLETE ✅**
+- Active Stage: **Stages 26.1 (Streams & Subject Mapping) + 26.2 (Report Cards & Bulk Promotion) + 26.3 (Parent Read Model) done**
+- Status: **0 build errors; 152/152 tests passed; migration `Phase26_SchoolCollegeExpansion` created**
 - Last Updated: 2026-05-09
-- Next: **Phase 26 — Multi-Campus / Multi-Branch Support** (see Docs/Advance-Enhancements.md)
-- Docs Updated: ✅ All 8 tracking files updated for Phase 25 (2026-05-09)
+- Next: **Phase 27 — University Portal Parity and Student Experience** (see Docs/Advance-Enhancements.md)
+- Docs Updated: ✅ All 8 tracking files updated for Phase 26 (2026-05-09)
 
 ---
 
@@ -78,6 +78,7 @@ cmd /c git -C "<repo-root>" push origin main
 9. `Phase17_DegreeAudit` — adds `degree_rules`, `degree_rule_required_courses` tables + `course_type` column on `courses` ✅
 10. `20260508132355_Phase22_ExternalIntegrations` — adds `accreditation_templates` table ✅
 11. `20260508152906_Phase25_AcademicEngineUnification` — adds `institution_grading_profiles` table ✅
+12. `20260509044437_Phase26_SchoolCollegeExpansion` — adds `school_streams`, `student_stream_assignments`, `student_report_cards`, `bulk_promotion_batches`, `bulk_promotion_entries`, `parent_student_links` tables ✅
 
 Database is fully synchronized with codebase.
 
@@ -177,7 +178,8 @@ Database is fully synchronized with codebase.
 - **Phase 23 — Core Policy Foundation — COMPLETE ✅** (commit `28cac36`; 27/27 tests passed)
 - **Phase 24 — Dynamic Module and UI Composition — COMPLETE ✅** (commit `391ac45`; 44/44 tests passed)
 - **Phase 25 — Academic Engine Unification — COMPLETE ✅** (commit `d2aabd3`; 144/144 tests passed; migration `Phase25_AcademicEngineUnification`)
-- Continue through Phase 26+ per Docs/Advance-Enhancements.md
+- **Phase 26 — School and College Functional Expansion — COMPLETE ✅** (commit `4c0904c`; 152/152 tests passed; migration `Phase26_SchoolCollegeExpansion`)
+- Continue through Phase 27+ per Docs/Advance-Enhancements.md
 
 ## Pending Extra Tasks (Cross-Phase)
 - Keep Report Center menu visible by role and working links.

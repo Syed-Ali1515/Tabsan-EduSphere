@@ -961,3 +961,64 @@ Phase 20 — (see Docs/Enhancements.md for full spec).
 - `dotnet build Tabsan.EduSphere.sln` — 0 errors, 5 pre-existing nullable warnings.
 - EF Migration `20260508152906_Phase25_AcademicEngineUnification` applied.
 - 144/144 unit tests passed (29 new).
+
+---
+
+## Phase 26 — School and College Functional Expansion ✅ Complete (2026-05-09) | Commit: `4c0904c`
+
+### Completion Mark
+- [x] Stage 26.1 — `SchoolStream` + `StudentStreamAssignment` domain entities created.
+- [x] Stage 26.1 — `ISchoolStreamRepository` + `SchoolStreamRepository`; `ISchoolStreamService` + `SchoolStreamService`.
+- [x] Stage 26.1 — `SchoolStreamController` endpoints for list/upsert/assign/get-student-assignment.
+- [x] Stage 26.2 — `StudentReportCard`, `BulkPromotionBatch`, `BulkPromotionEntry` domain entities.
+- [x] Stage 26.2 — enums `BulkPromotionStatus` and `EntryDecision` added.
+- [x] Stage 26.2 — `IReportCardRepository`/`ReportCardRepository` + `IReportCardService`/`ReportCardService` + `ReportCardController`.
+- [x] Stage 26.2 — `IBulkPromotionRepository`/`BulkPromotionRepository` + `IBulkPromotionService`/`BulkPromotionService` + `BulkPromotionController`.
+- [x] Stage 26.2 — approval safeguard workflow implemented (Draft → AwaitingApproval → Approved/Rejected → Applied).
+- [x] Stage 26.3 — `ParentStudentLink` entity + `IParentStudentLinkRepository`/`ParentStudentLinkRepository`.
+- [x] Stage 26.3 — `IParentPortalService`/`ParentPortalService` + `ParentPortalController` parent-linked student read endpoint.
+- [x] Migration `20260509044437_Phase26_SchoolCollegeExpansion` created.
+- [x] Tests: `Phase26Tests.cs` added; total suite now 152/152 passing.
+
+### New Files (Phase 26)
+| File | Description |
+|---|---|
+| `Domain/Academic/SchoolStream.cs` | School stream master entity |
+| `Domain/Academic/StudentStreamAssignment.cs` | Student-to-stream assignment entity |
+| `Domain/Academic/StudentReportCard.cs` | Report-card snapshot entity |
+| `Domain/Academic/BulkPromotionBatch.cs` | Bulk promotion workflow header |
+| `Domain/Academic/BulkPromotionEntry.cs` | Per-student bulk promotion row |
+| `Domain/Academic/ParentStudentLink.cs` | Parent-to-student mapping entity |
+| `Domain/Enums/BulkPromotionStatus.cs` | Batch workflow status enum |
+| `Domain/Enums/EntryDecision.cs` | Promote/Hold decision enum |
+| `Domain/Interfaces/ISchoolStreamRepository.cs` | Stream repository contract |
+| `Domain/Interfaces/IReportCardRepository.cs` | Report card repository contract |
+| `Domain/Interfaces/IBulkPromotionRepository.cs` | Bulk promotion repository contract |
+| `Domain/Interfaces/IParentStudentLinkRepository.cs` | Parent-link repository contract |
+| `Application/DTOs/Academic/Phase26Dtos.cs` | Phase 26 DTO contracts |
+| `Application/Interfaces/ISchoolStreamService.cs` | Stream service contract |
+| `Application/Interfaces/IReportCardService.cs` | Report card service contract |
+| `Application/Interfaces/IBulkPromotionService.cs` | Bulk promotion service contract |
+| `Application/Interfaces/IParentPortalService.cs` | Parent portal read-model service contract |
+| `Application/Academic/SchoolStreamService.cs` | Stream orchestration service |
+| `Application/Academic/ReportCardService.cs` | Report card snapshot service |
+| `Application/Academic/BulkPromotionService.cs` | Approval-based bulk promotion service |
+| `Application/Academic/ParentPortalService.cs` | Parent-linked student read service |
+| `API/Controllers/SchoolStreamController.cs` | Stream API endpoints |
+| `API/Controllers/ReportCardController.cs` | Report card API endpoints |
+| `API/Controllers/BulkPromotionController.cs` | Bulk promotion API endpoints |
+| `API/Controllers/ParentPortalController.cs` | Parent portal API endpoint |
+| `Infrastructure/Persistence/Configurations/SchoolStreamConfiguration.cs` | EF config |
+| `Infrastructure/Persistence/Configurations/StudentStreamAssignmentConfiguration.cs` | EF config |
+| `Infrastructure/Persistence/Configurations/StudentReportCardConfiguration.cs` | EF config |
+| `Infrastructure/Persistence/Configurations/BulkPromotionBatchConfiguration.cs` | EF config |
+| `Infrastructure/Persistence/Configurations/BulkPromotionEntryConfiguration.cs` | EF config |
+| `Infrastructure/Persistence/Configurations/ParentStudentLinkConfiguration.cs` | EF config |
+| `Infrastructure/Repositories/Phase26Repositories.cs` | Phase 26 repository implementations |
+| `Infrastructure/Migrations/20260509044437_Phase26_SchoolCollegeExpansion.cs` | EF migration |
+| `tests/Tabsan.EduSphere.UnitTests/Phase26Tests.cs` | 8 Phase 26 unit tests |
+
+### Validation Summary
+- `dotnet build Tabsan.EduSphere.sln` — 0 errors.
+- `runTests` — 152/152 tests passed.
+- Migration listed: `20260509044437_Phase26_SchoolCollegeExpansion`.

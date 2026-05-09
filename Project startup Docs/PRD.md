@@ -1187,3 +1187,45 @@ Adds a pluggable result-calculation engine that supports GPA-based (University) 
 - **Validation:** 0 build errors · 144/144 unit tests · commit `d2aabd3`
 
 ---
+
+## Phase 26 — School and College Functional Expansion ✅ Implemented (2026-05-09)
+
+### 26.A Overview
+Builds school/college-specific academic operations on top of the unified engine by adding stream mapping, report-card snapshots, approval-based bulk promotion workflows, and parent-linked read-only student access.
+
+### 26.B Functional Requirements
+
+#### Stage 26.1 — School Streams and Subject Mapping
+- `SchoolStream` master data with active/inactive lifecycle and unique stream names.
+- Per-student stream assignment (`StudentStreamAssignment`) enforcing one active stream per student.
+- Service/API for stream CRUD and student-stream assignment.
+
+#### Stage 26.2 — School/College Report Cards and Promotion Operations
+- `StudentReportCard` stores immutable report-card JSON snapshots by student and period label.
+- `BulkPromotionBatch` + `BulkPromotionEntry` workflow with safeguards:
+  - Draft → AwaitingApproval → Approved/Rejected → Applied
+  - Apply allowed only for approved batches
+  - Only Promote entries advance student period counters
+  - Hold entries remain unchanged with optional reasons
+
+#### Stage 26.3 — Parent-Facing Read Model (School Optional)
+- `ParentStudentLink` maps parent user accounts to student profiles.
+- Parent portal read endpoint returns only active links and linked student summaries.
+- Strict scope by parent linkage; no cross-student leakage.
+
+### 26.C Technical Implementation
+- **Domain:** `SchoolStream`, `StudentStreamAssignment`, `StudentReportCard`, `BulkPromotionBatch`, `BulkPromotionEntry`, `ParentStudentLink`; enums `BulkPromotionStatus`, `EntryDecision`.
+- **Application:**
+  - `ISchoolStreamService`/`SchoolStreamService`
+  - `IReportCardService`/`ReportCardService`
+  - `IBulkPromotionService`/`BulkPromotionService`
+  - `IParentPortalService`/`ParentPortalService`
+  - DTOs in `Application/DTOs/Academic/Phase26Dtos.cs`
+- **Infrastructure:**
+  - Repositories in `Infrastructure/Repositories/Phase26Repositories.cs`
+  - EF configs: `SchoolStreamConfiguration`, `StudentStreamAssignmentConfiguration`, `StudentReportCardConfiguration`, `BulkPromotionBatchConfiguration`, `BulkPromotionEntryConfiguration`, `ParentStudentLinkConfiguration`
+  - Migration `20260509044437_Phase26_SchoolCollegeExpansion`
+- **API:** `SchoolStreamController`, `ReportCardController`, `BulkPromotionController`, `ParentPortalController`.
+- **Validation:** 0 build errors · 152/152 tests passed · commit `4c0904c`
+
+---

@@ -390,6 +390,35 @@
 
 ---
 
+## Phase 26 — School and College Functional Expansion ✅ (commit `4c0904c`, 2026-05-09)
+
+### Stage 26.1 — School Streams and Subject Mapping ✅
+- Domain entities: `SchoolStream`, `StudentStreamAssignment`.
+- Service/API: `ISchoolStreamService` + `SchoolStreamService`; `SchoolStreamController` (`GET`, `PUT`, `POST assign`, `GET student/{id}`).
+- Persistence: `ISchoolStreamRepository` + `SchoolStreamRepository`; EF configs for `school_streams` and `student_stream_assignments`.
+- Constraints: one active stream assignment per student (`IX_student_stream_assignments_student`), unique stream names (`IX_school_streams_name`).
+
+### Stage 26.2 — School/College Report Cards and Promotion Operations ✅
+- Domain entities: `StudentReportCard`, `BulkPromotionBatch`, `BulkPromotionEntry` with enums `BulkPromotionStatus`, `EntryDecision`.
+- Services/APIs:
+  - `IReportCardService` + `ReportCardService`; `ReportCardController` (`generate`, `latest`, `history`).
+  - `IBulkPromotionService` + `BulkPromotionService`; `BulkPromotionController` (`batch`, `entries`, `submit`, `review`, `apply`, `get`).
+- Approval safeguards: draft → awaiting approval → approved/rejected → applied workflow; apply allowed only after approval.
+- Promotion behavior: only `Promote` entries call `student.AdvanceSemester()`; `Hold` entries remain unchanged.
+
+### Stage 26.3 — Parent-Facing Read Model ✅
+- Domain entity: `ParentStudentLink`.
+- Service/API: `IParentPortalService` + `ParentPortalService`; `ParentPortalController` (`GET api/v1/parent-portal/me/students`).
+- Scope enforcement: returns only active links and only linked students found by repository lookup.
+
+### Infrastructure and Validation
+- Migration: `20260509044437_Phase26_SchoolCollegeExpansion`.
+- New tables: `school_streams`, `student_stream_assignments`, `student_report_cards`, `bulk_promotion_batches`, `bulk_promotion_entries`, `parent_student_links`.
+- Tests: `Phase26Tests.cs` added; total suite now **152/152 passed**.
+- Validation: 0 build errors · 152/152 tests passed.
+
+---
+
 ## Implementation Sequence Summary
 
 | Phase | Feature | Complexity | Status |
@@ -408,5 +437,5 @@
 | 23 | Core Policy Foundation | Medium | ✅ Implemented (commit `28cac36`) |
 | 24 | Dynamic Module and UI Composition | Medium | ✅ Implemented (commit `391ac45`) |
 | 25 | Academic Engine Unification | High | ✅ Implemented (commit `d2aabd3`) |
-| 26 | School and College Functional Expansion | High | Planned |
+| 26 | School and College Functional Expansion | High | ✅ Implemented (commit `4c0904c`) |
 | 27 | University Portal Parity and Student Experience | High | Planned |

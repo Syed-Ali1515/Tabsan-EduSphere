@@ -4086,3 +4086,77 @@ New themes added to site.css and ThemeSettingsPageModel: `neon_mint`, `sakura_pi
 | `Evaluate(request, ct)` | `POST api/v1/progression/evaluate` — returns progression decision without changes. Admin+. | `API/Controllers/ProgressionController.cs` |
 | `Promote(request, ct)` | `POST api/v1/progression/promote` — advances student if eligible; 400 on failure. Admin+. | `API/Controllers/ProgressionController.cs` |
 | `GetMyProgression(type, ct)` | `GET api/v1/progression/me/{type}` — student self-view of progression eligibility. Student+. | `API/Controllers/ProgressionController.cs` |
+
+---
+
+## Phase 26 — School and College Functional Expansion (2026-05-09)
+
+### Application — ISchoolStreamService / SchoolStreamService (Stage 26.1)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetAllStreamsAsync(ct)` | Returns all school stream definitions ordered by name. | `Application/Interfaces/ISchoolStreamService.cs` |
+| `UpsertStreamAsync(id, request, ct)` | Creates or updates stream metadata and active state. | `Application/Academic/SchoolStreamService.cs` |
+| `AssignStudentAsync(request, ct)` | Assigns/reassigns one stream per student profile. | `Application/Academic/SchoolStreamService.cs` |
+| `GetStudentAssignmentAsync(studentId, ct)` | Returns stream assignment details for a student. | `Application/Academic/SchoolStreamService.cs` |
+
+### Domain — SchoolStream / StudentStreamAssignment (Stage 26.1)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `SchoolStream.Update(name, description, isActive)` | Updates stream master record with validation and audit touch. | `Domain/Academic/SchoolStream.cs` |
+| `StudentStreamAssignment(studentId, streamId, byUser)` | Creates a stream assignment snapshot with assignment timestamp. | `Domain/Academic/StudentStreamAssignment.cs` |
+
+### Application — IReportCardService / ReportCardService (Stage 26.2)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GenerateAsync(request, ct)` | Persists a report-card snapshot payload for a student period. | `Application/Academic/ReportCardService.cs` |
+| `GetLatestAsync(studentId, ct)` | Returns the latest report card for a student. | `Application/Academic/ReportCardService.cs` |
+| `GetHistoryAsync(studentId, ct)` | Returns report-card history for a student. | `Application/Academic/ReportCardService.cs` |
+
+### Application — IBulkPromotionService / BulkPromotionService (Stage 26.2)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `CreateBatchAsync(request, ct)` | Creates a new draft bulk-promotion batch. | `Application/Academic/BulkPromotionService.cs` |
+| `AddEntriesAsync(request, ct)` | Adds promote/hold entries to a draft batch with duplicate prevention. | `Application/Academic/BulkPromotionService.cs` |
+| `SubmitAsync(batchId, ct)` | Moves batch from Draft to AwaitingApproval state. | `Application/Academic/BulkPromotionService.cs` |
+| `ReviewAsync(request, ct)` | Approves or rejects a pending batch with reviewer metadata. | `Application/Academic/BulkPromotionService.cs` |
+| `ApplyAsync(request, ct)` | Applies approved batch and advances only Promote entries. | `Application/Academic/BulkPromotionService.cs` |
+| `GetByIdAsync(batchId, ct)` | Returns batch details including entry states. | `Application/Academic/BulkPromotionService.cs` |
+
+### Domain — BulkPromotionBatch / BulkPromotionEntry (Stage 26.2)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `BulkPromotionBatch.AddEntry(studentId, decision)` | Adds a student decision row while in Draft status. | `Domain/Academic/BulkPromotionBatch.cs` |
+| `BulkPromotionBatch.Submit()` | Transitions Draft batch to AwaitingApproval; rejects empty batches. | `Domain/Academic/BulkPromotionBatch.cs` |
+| `BulkPromotionBatch.Approve(userId, note)` | Transitions AwaitingApproval to Approved. | `Domain/Academic/BulkPromotionBatch.cs` |
+| `BulkPromotionBatch.Reject(userId, reason)` | Transitions AwaitingApproval to Rejected. | `Domain/Academic/BulkPromotionBatch.cs` |
+| `BulkPromotionBatch.MarkApplied()` | Transitions Approved batch to Applied after execution. | `Domain/Academic/BulkPromotionBatch.cs` |
+| `BulkPromotionEntry.UpdateDecision(decision, reason)` | Updates row-level decision/reason. | `Domain/Academic/BulkPromotionEntry.cs` |
+| `BulkPromotionEntry.MarkApplied()` | Marks entry as applied with timestamp. | `Domain/Academic/BulkPromotionEntry.cs` |
+
+### Application — IParentPortalService / ParentPortalService (Stage 26.3)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetLinkedStudentsAsync(parentUserId, ct)` | Returns read-only student summaries for active parent links. | `Application/Academic/ParentPortalService.cs` |
+
+### API — Phase 26 Controllers
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `SchoolStreamController.GetAll(ct)` | `GET api/v1/school-streams` — list streams. Faculty+. | `API/Controllers/SchoolStreamController.cs` |
+| `SchoolStreamController.Upsert(id, request, ct)` | `PUT api/v1/school-streams/{id}` — create/update stream. Admin+. | `API/Controllers/SchoolStreamController.cs` |
+| `SchoolStreamController.Assign(request, ct)` | `POST api/v1/school-streams/assign` — assign stream to student. Admin+. | `API/Controllers/SchoolStreamController.cs` |
+| `ReportCardController.Generate(request, ct)` | `POST api/v1/report-cards/generate` — generate report card snapshot. Faculty+. | `API/Controllers/ReportCardController.cs` |
+| `ReportCardController.GetLatest(studentId, ct)` | `GET api/v1/report-cards/latest/{studentId}` — latest card. Faculty+. | `API/Controllers/ReportCardController.cs` |
+| `ReportCardController.GetHistory(studentId, ct)` | `GET api/v1/report-cards/history/{studentId}` — history. Faculty+. | `API/Controllers/ReportCardController.cs` |
+| `BulkPromotionController.CreateBatch(request, ct)` | `POST api/v1/bulk-promotion/batch` — create draft batch. Admin+. | `API/Controllers/BulkPromotionController.cs` |
+| `BulkPromotionController.AddEntries(request, ct)` | `POST api/v1/bulk-promotion/entries` — append student rows. Admin+. | `API/Controllers/BulkPromotionController.cs` |
+| `BulkPromotionController.Submit(batchId, ct)` | `POST api/v1/bulk-promotion/submit/{batchId}` — submit for approval. Admin+. | `API/Controllers/BulkPromotionController.cs` |
+| `BulkPromotionController.Review(request, ct)` | `POST api/v1/bulk-promotion/review` — approve/reject batch. Admin+. | `API/Controllers/BulkPromotionController.cs` |
+| `BulkPromotionController.Apply(request, ct)` | `POST api/v1/bulk-promotion/apply` — execute approved promotion batch. Admin+. | `API/Controllers/BulkPromotionController.cs` |
+| `ParentPortalController.GetMyLinkedStudents(ct)` | `GET api/v1/parent-portal/me/students` — read-only parent-linked students list. Authenticated. | `API/Controllers/ParentPortalController.cs` |

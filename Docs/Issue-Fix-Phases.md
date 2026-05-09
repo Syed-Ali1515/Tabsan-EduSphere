@@ -799,3 +799,13 @@ Enhancement phase tracked in `Docs/Enhancements.md`. No regressions introduced. 
 - Strategy Pattern for result calculation; Institution Grading Profiles; Progression/Promotion Logic.
 - Migration: `20260508152906_Phase25_AcademicEngineUnification` (`institution_grading_profiles` table).
 - 29 new unit tests added; 144/144 total tests passed.
+
+## Phase 26 — School and College Functional Expansion ✅ Complete (2026-05-09) | Commit: `4c0904c`
+
+Enhancement phase tracked in `Docs/Enhancements.md`. No regressions introduced. No existing tests broken.
+
+- Stage 26.1: School streams + student stream assignments (`school_streams`, `student_stream_assignments`).
+- Stage 26.2: Report card snapshots + approval-based bulk promotion (`student_report_cards`, `bulk_promotion_batches`, `bulk_promotion_entries`).
+- Stage 26.3: Parent-student read model (`parent_student_links`) and parent-linked student endpoint.
+- Migration: `20260509044437_Phase26_SchoolCollegeExpansion`.
+- 8 new unit tests added; 152/152 total tests passed.

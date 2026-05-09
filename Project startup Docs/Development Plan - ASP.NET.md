@@ -661,3 +661,40 @@ A feature is complete only when:
 **Validation:** 0 build errors · 144/144 unit tests · migration `20260508152906_Phase25_AcademicEngineUnification` · commit `d2aabd3` pushed
 
 ---
+
+### 2026-05-09 — Phase 26 School and College Functional Expansion Complete
+
+**Stage 26.1 — School Streams and Subject Mapping:**
+- `Domain/Academic/SchoolStream.cs` and `Domain/Academic/StudentStreamAssignment.cs` created.
+- `Domain/Interfaces/ISchoolStreamRepository.cs` + `Infrastructure/Repositories/Phase26Repositories.cs` (`SchoolStreamRepository`).
+- `Application/Interfaces/ISchoolStreamService.cs` + `Application/Academic/SchoolStreamService.cs`.
+- `API/Controllers/SchoolStreamController.cs` endpoints for stream listing/upsert and student assignment.
+- EF configs: `SchoolStreamConfiguration.cs`, `StudentStreamAssignmentConfiguration.cs`.
+
+**Stage 26.2 — Report Cards and Bulk Promotion:**
+- `Domain/Academic/StudentReportCard.cs`, `BulkPromotionBatch.cs`, `BulkPromotionEntry.cs`.
+- Enums: `BulkPromotionStatus.cs`, `EntryDecision.cs`.
+- Repository interfaces: `IReportCardRepository.cs`, `IBulkPromotionRepository.cs`.
+- Services: `IReportCardService`/`ReportCardService`, `IBulkPromotionService`/`BulkPromotionService`.
+- API: `ReportCardController.cs`, `BulkPromotionController.cs`.
+- EF configs: `StudentReportCardConfiguration.cs`, `BulkPromotionBatchConfiguration.cs`, `BulkPromotionEntryConfiguration.cs`.
+
+**Stage 26.3 — Parent-Facing Read Model:**
+- `Domain/Academic/ParentStudentLink.cs` + `Domain/Interfaces/IParentStudentLinkRepository.cs`.
+- `Application/Interfaces/IParentPortalService.cs` + `Application/Academic/ParentPortalService.cs`.
+- `API/Controllers/ParentPortalController.cs`.
+- EF config: `ParentStudentLinkConfiguration.cs`.
+
+**Cross-Cutting / Wiring:**
+- `Application/DTOs/Academic/Phase26Dtos.cs` added for stream/report card/bulk promotion/parent read DTOs.
+- `Infrastructure/Persistence/ApplicationDbContext.cs` adds 6 new DbSets.
+- `API/Program.cs` Phase 26 DI registrations for repositories and services.
+- Migration: `Infrastructure/Migrations/20260509044437_Phase26_SchoolCollegeExpansion.cs`.
+
+**Validation:**
+- `dotnet build Tabsan.EduSphere.sln` — 0 build errors.
+- Unit + integration/contract suite: **152/152 tests passed**.
+- Migration visible in list: `20260509044437_Phase26_SchoolCollegeExpansion`.
+- Commit: `4c0904c` pushed.
+
+---

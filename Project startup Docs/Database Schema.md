@@ -732,3 +732,107 @@ EF migration: `20260508152906_Phase25_AcademicEngineUnification`.
 
 **Indexes:**
 - `IX_institution_grading_profiles_type` — unique on `institution_type` (one profile per type)
+
+---
+
+### school_streams
+School stream master records (Science/Commerce/Arts etc.). Phase 26 — School and College Functional Expansion.
+EF migration: `20260509044437_Phase26_SchoolCollegeExpansion`.
+
+- id (UUID, PK)
+- name (nvarchar 120, required, unique)
+- description (nvarchar 500, nullable)
+- is_active (bool, default true)
+- is_deleted (bool, default false)
+- deleted_at (datetime, nullable)
+- created_at / updated_at / row_version
+
+**Indexes:**
+- `IX_school_streams_name` — unique on `name`
+
+---
+
+### student_stream_assignments
+One-to-one stream assignment per student profile.
+
+- id (UUID, PK)
+- student_profile_id (UUID, FK -> student_profiles.id)
+- school_stream_id (UUID, FK -> school_streams.id)
+- assigned_by_user_id (UUID)
+- assigned_at (datetime)
+- created_at / updated_at
+
+**Indexes:**
+- `IX_student_stream_assignments_student` — unique on `student_profile_id`
+
+---
+
+### student_report_cards
+Report-card snapshot store for school/college/university period exports.
+
+- id (UUID, PK)
+- student_profile_id (UUID, FK -> student_profiles.id)
+- institution_type (int)
+- period_label (nvarchar 80)
+- payload_json (nvarchar max)
+- generated_by_user_id (UUID)
+- generated_at (datetime)
+- created_at / updated_at
+
+**Indexes:**
+- `IX_student_report_cards_student_generated` — (`student_profile_id`, `generated_at`)
+
+---
+
+### bulk_promotion_batches
+Header table for approval-based bulk promotion operations.
+
+- id (UUID, PK)
+- title (nvarchar 180)
+- status (int) — `BulkPromotionStatus` enum
+- created_by_user_id (UUID)
+- approved_by_user_id (UUID, nullable)
+- reviewed_at (datetime, nullable)
+- applied_at (datetime, nullable)
+- review_note (nvarchar 1000, nullable)
+- is_deleted (bool, default false)
+- deleted_at (datetime, nullable)
+- created_at / updated_at / row_version
+
+**Indexes:**
+- `IX_bulk_promotion_batches_status_created` — (`status`, `created_at`)
+
+---
+
+### bulk_promotion_entries
+Per-student promote/hold decisions attached to a bulk promotion batch.
+
+- id (UUID, PK)
+- batch_id (UUID, FK -> bulk_promotion_batches.id)
+- student_profile_id (UUID, FK -> student_profiles.id)
+- decision (int) — `EntryDecision` enum
+- reason (nvarchar 500, nullable)
+- is_applied (bool)
+- applied_at (datetime, nullable)
+- created_at / updated_at
+
+**Indexes:**
+- `IX_bulk_promotion_entries_batch` — (`batch_id`)
+- `IX_bulk_promotion_entries_batch_student` — unique (`batch_id`, `student_profile_id`)
+
+---
+
+### parent_student_links
+Parent/guardian to student mapping used for parent-read portal access.
+
+- id (UUID, PK)
+- parent_user_id (UUID, FK -> users.id)
+- student_profile_id (UUID, FK -> student_profiles.id)
+- relationship (nvarchar 60, nullable)
+- is_active (bool, default true)
+- is_deleted (bool, default false)
+- deleted_at (datetime, nullable)
+- created_at / updated_at / row_version
+
+**Indexes:**
+- `IX_parent_student_links_parent_student` — unique (`parent_user_id`, `student_profile_id`)
