@@ -369,6 +369,8 @@ public interface IEduApiClient
     Task<List<ModuleVisibilityApiModel>> GetVisibleModulesAsync(CancellationToken ct);
     Task<AcademicVocabularyApiModel?> GetVocabularyAsync(CancellationToken ct);
     Task<List<WidgetDescriptorApiModel>> GetDashboardWidgetsAsync(CancellationToken ct);
+    // Phase 27 — Student Portal Capability Matrix
+    Task<PortalCapabilityMatrixApiModel?> GetPortalCapabilityMatrixAsync(CancellationToken ct);
 }
 
 public class EduApiClient : IEduApiClient
@@ -1569,6 +1571,10 @@ public class EduApiClient : IEduApiClient
     public async Task<List<WidgetDescriptorApiModel>> GetDashboardWidgetsAsync(CancellationToken ct)
         => await GetAsync<List<WidgetDescriptorApiModel>>("api/v1/dashboard/composition", ct)
            ?? new();
+
+    // Phase 27 — Student Portal Capability Matrix
+    public async Task<PortalCapabilityMatrixApiModel?> GetPortalCapabilityMatrixAsync(CancellationToken ct)
+        => await GetAsync<PortalCapabilityMatrixApiModel>("api/v1/portal-capabilities/matrix", ct);
 
     private sealed class CourseDetailDto
     {
@@ -3960,4 +3966,32 @@ public sealed class WidgetDescriptorApiModel
     public string Title { get; set; } = "";
     public string Icon  { get; set; } = "";
     public int    Order { get; set; }
+}
+
+// ── Phase 27 API models ───────────────────────────────────────────────────────
+public sealed class PortalCapabilityMatrixApiModel
+{
+    public bool IncludeSchool { get; set; }
+    public bool IncludeCollege { get; set; }
+    public bool IncludeUniversity { get; set; }
+    public List<PortalCapabilityMatrixRowApiModel> Rows { get; set; } = new();
+}
+
+public sealed class PortalCapabilityMatrixRowApiModel
+{
+    public string CapabilityKey { get; set; } = "";
+    public string CapabilityName { get; set; } = "";
+    public string ModuleKey { get; set; } = "";
+    public string ModuleName { get; set; } = "";
+    public string Route { get; set; } = "";
+    public string Description { get; set; } = "";
+    public bool IsModuleActive { get; set; }
+    public bool IsLicenseGated { get; set; }
+    public bool Student { get; set; }
+    public bool Faculty { get; set; }
+    public bool Admin { get; set; }
+    public bool SuperAdmin { get; set; }
+    public bool University { get; set; }
+    public bool School { get; set; }
+    public bool College { get; set; }
 }

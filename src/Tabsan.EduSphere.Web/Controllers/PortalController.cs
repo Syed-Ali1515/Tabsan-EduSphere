@@ -211,6 +211,67 @@ public class PortalController : Controller
         return View(model);
     }
 
+    // ── Phase 27 — Student Portal Capability Matrix ───────────────────────
+
+    [HttpGet]
+    public async Task<IActionResult> PortalCapabilityMatrix(CancellationToken ct)
+    {
+        ViewData["Title"] = "Portal Capability Matrix";
+
+        var model = new PortalCapabilityMatrixPageModel
+        {
+            IsConnected = _api.IsConnected(),
+            Message = TempData["PortalMessage"]?.ToString()
+        };
+
+        if (!model.IsConnected)
+        {
+            model.Message ??= "Configure API connection on Dashboard first.";
+            return View(model);
+        }
+
+        try
+        {
+            var matrix = await _api.GetPortalCapabilityMatrixAsync(ct);
+            if (matrix is null)
+            {
+                model.Message = "Capability matrix is unavailable right now.";
+                return View(model);
+            }
+
+            model.IncludeSchool = matrix.IncludeSchool;
+            model.IncludeCollege = matrix.IncludeCollege;
+            model.IncludeUniversity = matrix.IncludeUniversity;
+            model.Rows = matrix.Rows
+                .Select(r => new PortalCapabilityMatrixItem
+                {
+                    CapabilityKey = r.CapabilityKey,
+                    CapabilityName = r.CapabilityName,
+                    ModuleKey = r.ModuleKey,
+                    ModuleName = r.ModuleName,
+                    Route = r.Route,
+                    Description = r.Description,
+                    IsModuleActive = r.IsModuleActive,
+                    IsLicenseGated = r.IsLicenseGated,
+                    Student = r.Student,
+                    Faculty = r.Faculty,
+                    Admin = r.Admin,
+                    SuperAdmin = r.SuperAdmin,
+                    University = r.University,
+                    School = r.School,
+                    College = r.College
+                })
+                .OrderBy(r => r.CapabilityName)
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            model.Message = ex.Message;
+        }
+
+        return View(model);
+    }
+
     // ── Timetable Admin ─────────────────────────────────────────────────────
 
     [HttpGet]

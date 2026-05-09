@@ -157,6 +157,7 @@ Interfaces/
  INotificationService.cs
  IParentPortalService.cs
  IPasswordHasher.cs
+ IPortalCapabilityMatrixService.cs
  IProgressionService.cs
  IQuizService.cs
  IReportCardService.cs
@@ -202,6 +203,7 @@ Services/
  InstitutionPolicyService.cs
  LabelService.cs
  LibraryService.cs
+ PortalCapabilityMatrixService.cs
  SettingsServices.cs
  StudentLifecycleService.cs
  TimetableService.cs

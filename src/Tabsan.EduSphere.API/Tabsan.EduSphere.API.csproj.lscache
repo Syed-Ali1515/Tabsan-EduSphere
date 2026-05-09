@@ -89,6 +89,7 @@ Controllers/
  NotificationController.cs
  ParentPortalController.cs
  PaymentReceiptController.cs
+ PortalCapabilitiesController.cs
  PortalSettingsController.cs
  PrerequisiteController.cs
  ProgramController.cs

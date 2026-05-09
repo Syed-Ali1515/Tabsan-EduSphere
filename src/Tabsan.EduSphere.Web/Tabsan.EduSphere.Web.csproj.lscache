@@ -495,6 +495,7 @@ Views/
   ModuleSettings.cshtml
   Notifications.cshtml
   Payments.cshtml
+  PortalCapabilityMatrix.cshtml
   Prerequisites.cshtml
   Quizzes.cshtml
   ReportAssignments.cshtml
@@ -582,6 +583,7 @@ Views/
   ModuleSettings.cshtml
   Notifications.cshtml
   Payments.cshtml
+  PortalCapabilityMatrix.cshtml
   Prerequisites.cshtml
   Quizzes.cshtml
   ReportAssignments.cshtml

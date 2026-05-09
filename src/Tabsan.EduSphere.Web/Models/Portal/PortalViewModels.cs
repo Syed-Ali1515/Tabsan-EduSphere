@@ -2060,3 +2060,33 @@ public class WidgetItem
     public string Icon  { get; set; } = "";
     public int    Order { get; set; }
 }
+
+// ── Phase 27 — Student Portal Capability Matrix ───────────────────────────────
+public class PortalCapabilityMatrixPageModel
+{
+    public bool IsConnected { get; set; }
+    public string? Message { get; set; }
+    public bool IncludeSchool { get; set; }
+    public bool IncludeCollege { get; set; }
+    public bool IncludeUniversity { get; set; }
+    public List<PortalCapabilityMatrixItem> Rows { get; set; } = new();
+}
+
+public class PortalCapabilityMatrixItem
+{
+    public string CapabilityKey { get; set; } = "";
+    public string CapabilityName { get; set; } = "";
+    public string ModuleKey { get; set; } = "";
+    public string ModuleName { get; set; } = "";
+    public string Route { get; set; } = "";
+    public string Description { get; set; } = "";
+    public bool IsModuleActive { get; set; }
+    public bool IsLicenseGated { get; set; }
+    public bool Student { get; set; }
+    public bool Faculty { get; set; }
+    public bool Admin { get; set; }
+    public bool SuperAdmin { get; set; }
+    public bool University { get; set; }
+    public bool School { get; set; }
+    public bool College { get; set; }
+}
