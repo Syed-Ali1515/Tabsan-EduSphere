@@ -10,6 +10,97 @@ Source inputs used:
 Status: Planned
 Scope start: After Phase 22
 
+Execution status update (2026-05-10):
+- Phases 23 through 28 are completed.
+- Phase 29 Stage 29.1 is completed.
+- Phase 29 Stage 29.2 slices 1 and 2 are completed.
+
+---
+
+## Completed Tasks - Implementation and Validation Summary
+
+### Phase 23 - Core Policy Foundation (Completed)
+Implementation summary:
+- Centralized policy and role-rights enforcement paths were consolidated and applied across core protected workflows.
+- Institution-context driven behavior and permission hardening were integrated as shared contracts rather than per-controller duplication.
+
+Validation summary:
+- Solution builds passed during phase completion runs.
+- Automated test suites passed for the completion iterations of this phase.
+
+### Phase 24 - Dynamic Module and UI Composition (Completed)
+Implementation summary:
+- Dynamic module visibility and portal capability composition were consolidated around policy/role context.
+- Shared label/vocabulary and module composition behavior was moved to reusable service-driven paths.
+
+Validation summary:
+- Solution builds passed during phase completion runs.
+- Automated test suites passed for the completion iterations of this phase.
+
+### Phase 25 - Academic Engine Unification (Completed)
+Implementation summary:
+- Unified result-calculation and grading-profile behavior for School/College/University through shared strategy-driven orchestration.
+- Removed duplicate mode-specific paths by binding progression and grading behavior to configuration-driven contracts.
+
+Validation summary:
+- Solution builds passed during phase completion runs.
+- Automated test suites passed for the completion iterations of this phase.
+
+### Phase 26 - School and College Functional Expansion (Completed)
+Implementation summary:
+- Delivered stream/subject mapping, report-card/promotion operations, and school/college read-model capabilities on top of the unified engine.
+- Kept shared API/service contracts while extending mode-specific behavior through configuration.
+
+Validation summary:
+- Solution builds passed during phase completion runs.
+- Automated test suites passed for the completion iterations of this phase.
+
+### Phase 27 - University Portal Parity and Student Experience (Completed)
+Implementation summary:
+- Delivered capability-matrix parity, authentication/security UX hardening, and provider-abstraction communication contracts.
+- Preserved existing portal behavior while expanding role-safe student/faculty/admin journeys.
+
+Validation summary:
+- Solution builds passed during phase completion runs.
+- Automated test suites passed for the completion iterations of this phase.
+
+### Phase 28 - Scalability Architecture (Completed)
+Implementation summary:
+- Stage 28.1: delivered stateless/load-balancer-ready app behavior and response shaping/compression.
+- Stage 28.2: delivered distributed-cache hot paths and background offload for fan-out/report/recalculation workloads.
+- Stage 28.3: delivered provider-backed media/file strategy, signed temporary reads, metadata contracts, and integrity/disposition metadata.
+
+Validation summary:
+- Stage-level builds passed; final phase validation runs passed.
+- Automated tests passed in phase completion runs, ending at full suite pass status.
+
+### Phase 29 Stage 29.1 - Index Baseline and Query Contracts (Completed)
+Implementation summary:
+- Added composite MSSQL indexes for high-frequency recency/status access patterns across graduation, helpdesk, notifications, payment receipts, quiz attempts, and sessions.
+- Added EF migration `20260509155457_20260510_Phase29_IndexBaseline`.
+
+Validation summary:
+- `dotnet build Tabsan.EduSphere.sln` passed.
+- `dotnet test Tabsan.EduSphere.sln --no-build` passed (**162/162**).
+
+### Phase 29 Stage 29.2 Slice 1 - Helpdesk Pagination (Completed)
+Implementation summary:
+- Replaced unbounded helpdesk list retrieval with server-side paged contracts (`page`, `pageSize`) across repository, service, API, and portal layers.
+- Added filter-preserving previous/next pagination controls in portal helpdesk views.
+
+Validation summary:
+- `dotnet build Tabsan.EduSphere.sln` passed.
+- `dotnet test Tabsan.EduSphere.sln --no-build` passed (**162/162**).
+
+### Phase 29 Stage 29.2 Slice 2 - Graduation Pagination (Completed)
+Implementation summary:
+- Added paged graduation list contracts with `TotalCount` for student and staff endpoints.
+- Replaced unbounded graduation list materialization with SQL-side paging and updated portal list pagination controls.
+
+Validation summary:
+- `dotnet build Tabsan.EduSphere.sln` passed.
+- `dotnet test Tabsan.EduSphere.sln --no-build` passed (**162/162**).
+
 ---
 
 ## 1) Non-Regression Guardrails (Must Stay Intact)
