@@ -69,7 +69,7 @@ public class PortalSettingsController : ControllerBase
         var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
 
         await using var read = file.OpenReadStream();
-        var stored = await _mediaStorage.SaveAsync(read, "portal-branding/logo", ext, ct);
+        var stored = await _mediaStorage.SaveAsync(read, "portal-branding/logo", ext, file.ContentType, file.FileName, ct);
 
         return Ok(new { url = $"/api/v1/portal-settings/logo-files/{stored.StorageKey}" });
     }

@@ -282,6 +282,47 @@ For **every completed phase**:
 
 ---
 
+## Phase 28 — Scalability Architecture (Stage 28.3 Slice 10)
+**Status:** ✅ Slice 10 Delivered (2026-05-10)
+
+### Completion Mark
+- [x] Extend storage contract with content hash and download filename metadata.
+- [x] Persist integrity/disposition sidecar metadata in local and blob providers.
+- [x] Propagate content type and filename metadata from current upload/certificate generation flows.
+- [x] Preserve filename-aware certificate downloads across signed local and redirect-first reads.
+- [x] Confirm no database migration is required.
+
+### Implementation Summary
+- `IMediaStorageService` save and metadata contracts now include SHA-256 content hash and optional download filename metadata.
+- `LocalMediaStorageService` and `BlobMediaStorageService` now compute hashes during writes and persist sidecar `.meta.json` metadata for later reads.
+- Logo, payment proof, license upload, and certificate generation flows now pass content type and original/download filename metadata into storage.
+- `GraduationController` now preserves filename-aware certificate downloads when serving local signed reads.
+
+### Validation Summary
+- `dotnet build src/Tabsan.EduSphere.API/Tabsan.EduSphere.API.csproj` — passed.
+- `dotnet build Tabsan.EduSphere.sln` — passed.
+- `dotnet test Tabsan.EduSphere.sln --no-build` — **162/162 passed**.
+
+---
+
+## Phase 28 — Scalability Architecture
+**Status:** ✅ Complete (2026-05-10)
+
+### Completion Mark
+- [x] Stage 28.1 — API and App Tier Scaling complete.
+- [x] Stage 28.2 — Caching and Background Workloads complete.
+- [x] Stage 28.3 — File and Media Strategy complete.
+
+### Implementation Summary
+- Phase 28 now provides stateless/load-balanced app behavior, distributed cache and background workload offload, and provider-backed media persistence with signed reads and metadata hardening.
+- The full phase completed without introducing database schema changes.
+
+### Validation Summary
+- `dotnet build Tabsan.EduSphere.sln` — passed.
+- `dotnet test Tabsan.EduSphere.sln --no-build` — **162/162 passed**.
+
+---
+
 ## Refactoring-Hosting-Security — Part A + Part B
 **Status:** ✅ Fully Complete (2026-05-07) | Commits: f56ccd9, 5e80bc9
 

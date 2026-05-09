@@ -246,6 +246,7 @@ public class GraduationController : ControllerBase
         string storageKey,
         [FromQuery] long? exp,
         [FromQuery] string? sig,
+        [FromQuery] string? download,
         CancellationToken ct)
     {
         // Final-Touches Phase 28 Stage 28.3 — enforce signed certificate-file reads for local serving.
@@ -270,6 +271,13 @@ public class GraduationController : ControllerBase
         var metadata = await _mediaStorage.GetMetadataAsync(storageKey, ct);
         var bytes = await _mediaStorage.ReadAsBytesAsync(storageKey, ct);
         if (bytes is null) return NotFound("Certificate not yet generated or not found.");
+
+        var fileName = !string.IsNullOrWhiteSpace(download)
+            ? Path.GetFileName(download)
+            : metadata?.DownloadFileName;
+
+        if (!string.IsNullOrWhiteSpace(fileName))
+            return File(bytes, metadata?.ContentType ?? "application/pdf", fileName);
 
         return File(bytes, metadata?.ContentType ?? "application/pdf");
     }
@@ -305,7 +313,13 @@ public class GraduationController : ControllerBase
         var signature = CreateSignature(storageKey, expiresAt);
 
         var escapedKey = Uri.EscapeDataString(storageKey).Replace("%2F", "/", StringComparison.OrdinalIgnoreCase);
-        return $"/api/v1/graduation/certificate-files/{escapedKey}?exp={expiresAt}&sig={Uri.EscapeDataString(signature)}";
+        var metadata = _mediaStorage.GetMetadataAsync(storageKey).GetAwaiter().GetResult();
+        var url = $"/api/v1/graduation/certificate-files/{escapedKey}?exp={expiresAt}&sig={Uri.EscapeDataString(signature)}";
+
+        if (!string.IsNullOrWhiteSpace(metadata?.DownloadFileName))
+            url += $"&download={Uri.EscapeDataString(metadata.DownloadFileName)}";
+
+        return url;
     }
 
     private bool IsValidLocalSignature(string storageKey, long expiresAt, string providedSignature)

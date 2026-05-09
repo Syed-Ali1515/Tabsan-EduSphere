@@ -52,7 +52,7 @@ public class LicenseController : ControllerBase
         try
         {
             await using var uploadStream = file.OpenReadStream();
-            var stored = await _mediaStorage.SaveAsync(uploadStream, "license-temp", ".tablic", ct);
+            var stored = await _mediaStorage.SaveAsync(uploadStream, "license-temp", ".tablic", file.ContentType, file.FileName, ct);
             tempStorageKey = stored.StorageKey;
         }
         catch

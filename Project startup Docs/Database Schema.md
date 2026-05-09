@@ -65,6 +65,16 @@
 - Stage 28.3 slice 9 added provider-backed storage metadata lookup support (content type and length) for media objects.
 - No database schema change and no EF migration were required.
 
+## 2026-05-10 Update — Phase 28 Stage 28.3 Slice 10
+
+- Stage 28.3 slice 10 added provider-persisted integrity/disposition metadata support (SHA-256 content hash and optional download filename) for media objects.
+- No database schema change and no EF migration were required.
+
+## 2026-05-10 Update — Phase 28 Complete
+
+- Phase 28 completed with runtime, cache/worker, and media-storage architecture changes only.
+- No database schema change and no EF migration were required for Phase 28 completion.
+
 ---
 
 # PART 1: UNIVERSITY PORTAL APPLICATION DATABASE

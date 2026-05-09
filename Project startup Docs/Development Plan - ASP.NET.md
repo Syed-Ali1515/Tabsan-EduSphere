@@ -64,6 +64,16 @@
 - Updated portal logo and certificate streaming endpoints to use provider metadata for response content type selection.
 - Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
 
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 10
+- Extended the storage contract with SHA-256 hash and optional download filename metadata on save and metadata reads.
+- Implemented sidecar metadata persistence in local/blob storage providers.
+- Updated certificate generation and certificate-file streaming so filename-aware downloads survive signed local and redirect-first reads.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
+
+### 2026-05-10 — Phase 28 Complete
+- Stage 28.1, Stage 28.2, and Stage 28.3 are complete.
+- Phase 28 delivered multi-node readiness, distributed cache/background offload, and provider-backed media hardening without schema changes.
+
 ### 2026-05-09 — Phase 28 Stage 28.1 Complete
 - Completed **API and App Tier Scaling** as the first stage of the scalability architecture roadmap.
 - Replaced Web session-backed connection/auth state with protected-cookie storage to keep portal nodes stateless across a load-balanced deployment.

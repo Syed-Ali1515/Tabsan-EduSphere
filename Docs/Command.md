@@ -55,12 +55,12 @@ cmd /c git -C "<repo-root>" push origin main
 
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
-- Active Phase: **Phase 28 — Scalability Architecture (1M+ Readiness) — IN PROGRESS ⚙️**
-- Active Stage: **Stage 28.3 in progress (Slice 9 delivered: storage metadata contract + metadata-backed media responses)**
-- Status: **0 build errors; 162/162 tests passed; no database migration required for Stage 28.3 Slice 9**
+- Active Phase: **Phase 28 — Scalability Architecture (1M+ Readiness) — COMPLETE ✅**
+- Active Stage: **Stage 28.3 complete (Slice 10 delivered: integrity/disposition metadata + download semantics hardening)**
+- Status: **0 build errors; 162/162 tests passed; no database migration required for Stage 28.3 completion**
 - Last Updated: 2026-05-10
-- Next: **Phase 28 Stage 28.3 — continue provider hardening (content hashes/disposition metadata + remaining direct byte media paths)** (see Docs/Advance-Enhancements.md)
-- Docs Updated: ✅ All 8 tracking files updated for Phase 28 Stage 28.3 Slice 9 progress (2026-05-10)
+- Next: **Phase 29 Stage 29.1 — start MSSQL index baseline and query-contract validation for high-frequency filters** (see Docs/Advance-Enhancements.md)
+- Docs Updated: ✅ All 8 tracking files updated for Phase 28 Stage 28.3 completion (2026-05-10)
 
 ---
 
@@ -238,7 +238,15 @@ Database is fully synchronized with codebase.
   - Added metadata resolution in local/blob storage providers so callers can retrieve provider-backed content type and length without re-deriving from business code.
   - Updated portal logo and certificate streaming endpoints to prefer storage metadata for response content type selection.
   - Preserved existing signed URL and legacy path compatibility behavior.
-- Continue through Phase 28.3+ per Docs/Advance-Enhancements.md
+- **Phase 28 — Scalability Architecture — Stage 28.3 SLICE 10 DELIVERED ✅**
+  - Extended storage save/metadata contracts with SHA-256 content hash and optional download filename metadata.
+  - Persisted sidecar metadata for local/blob providers so integrity/disposition details survive provider redirects and later reads.
+  - Updated certificate generation and upload flows to pass content type and original/download filename into storage.
+  - Restored filename-preserving certificate downloads for signed local and redirect-first media reads.
+- **Phase 28 COMPLETE ✅**
+  - Stage 28.1 delivered stateless/load-balanced app behavior.
+  - Stage 28.2 delivered distributed cache and background-work offload.
+  - Stage 28.3 delivered provider-backed media persistence, signed reads, metadata, and integrity/disposition hardening with no schema changes.
 
 ## Pending Extra Tasks (Cross-Phase)
 - Keep Report Center menu visible by role and working links.

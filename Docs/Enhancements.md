@@ -85,6 +85,13 @@
 - Preserved signed URL enforcement, redirect-first reads, and legacy path compatibility.
 - No database migration or schema change was required for Stage 28.3 Slice 9.
 
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 10 (File and Media Strategy)
+- Extended storage save and metadata contracts with SHA-256 content hash plus optional download filename metadata.
+- Persisted sidecar metadata in local and blob storage adapters so integrity and download semantics survive provider redirects and later reads.
+- Updated certificate generation and upload flows to pass content type and filename metadata into storage.
+- Restored filename-preserving certificate downloads for signed local and redirect-first media reads.
+- Stage 28.3 and Phase 28 are now complete with no database migration or schema change required.
+
 ---
 
 ## Phase 12 — Academic Calendar System ✅ Implemented

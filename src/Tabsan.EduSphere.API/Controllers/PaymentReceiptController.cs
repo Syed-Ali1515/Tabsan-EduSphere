@@ -167,7 +167,7 @@ public class PaymentReceiptController : ControllerBase
             return BadRequest(new { message = uploadError });
 
         await using var stream = file.OpenReadStream();
-        var stored = await _mediaStorage.SaveAsync(stream, "payment-proofs", ext, ct);
+        var stored = await _mediaStorage.SaveAsync(stream, "payment-proofs", ext, file.ContentType, file.FileName, ct);
 
         try
         {

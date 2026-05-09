@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Options;
+using System.Text.Json;
 using System.Security.Cryptography;
 using System.Text;
 using Tabsan.EduSphere.Application.Interfaces;
@@ -22,6 +23,8 @@ public sealed class LocalMediaStorageService : IMediaStorageService
         Stream content,
         string category,
         string fileExtension,
+        string? contentType = null,
+        string? downloadFileName = null,
         CancellationToken ct = default)
     {
         if (content is null) throw new ArgumentNullException(nameof(content));
@@ -40,16 +43,31 @@ public sealed class LocalMediaStorageService : IMediaStorageService
             Directory.CreateDirectory(parentDir);
         }
 
-        await using var destination = new FileStream(fullPath, FileMode.CreateNew, FileAccess.Write, FileShare.None);
-        await content.CopyToAsync(destination, ct);
-        await destination.FlushAsync(ct);
+        string? contentHashSha256;
+        long length;
+        await using (var destination = new FileStream(fullPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+        {
+            (contentHashSha256, length) = await CopyWithHashAsync(content, destination, ct);
+            await destination.FlushAsync(ct);
+        }
+
+        var resolvedContentType = string.IsNullOrWhiteSpace(contentType)
+            ? ResolveContentType(objectKey)
+            : contentType.Trim();
+
+        await WriteMetadataAsync(
+            objectKey,
+            new PersistedMediaMetadata(resolvedContentType, length, contentHashSha256, NormalizeDownloadFileName(downloadFileName)),
+            ct);
 
         var reference = BuildReference(objectKey);
         return new MediaStorageSaveResult(
             objectKey,
             reference,
-            ResolveContentType(objectKey),
-            destination.Length);
+            resolvedContentType,
+            length,
+            contentHashSha256,
+            NormalizeDownloadFileName(downloadFileName));
     }
 
     public async Task<byte[]?> ReadAsBytesAsync(string storageKey, CancellationToken ct = default)
@@ -73,9 +91,7 @@ public sealed class LocalMediaStorageService : IMediaStorageService
         if (!File.Exists(fullPath))
             return Task.FromResult<MediaStorageObjectMetadata?>(null);
 
-        var info = new FileInfo(fullPath);
-        var metadata = new MediaStorageObjectMetadata(storageKey, ResolveContentType(storageKey), info.Length);
-        return Task.FromResult<MediaStorageObjectMetadata?>(metadata);
+        return GetMetadataInternalAsync(storageKey, fullPath, ct);
     }
 
     public Task<string?> GenerateTemporaryReadUrlAsync(
@@ -92,8 +108,12 @@ public sealed class LocalMediaStorageService : IMediaStorageService
         // Final-Touches Phase 28 Stage 28.3 — generate provider-backed temporary signed URL.
         var baseUrl = _options.PublicBaseUrl!.TrimEnd('/');
         var expiresAt = DateTimeOffset.UtcNow.Add(ttl <= TimeSpan.Zero ? TimeSpan.FromMinutes(5) : ttl).ToUnixTimeSeconds();
+        var metadata = GetMetadataAsync(storageKey, ct).GetAwaiter().GetResult();
         var unsignedUrl = $"{baseUrl}/{storageKey}?exp={expiresAt}";
         var signature = CreateSignature(storageKey, expiresAt);
+
+        if (!string.IsNullOrWhiteSpace(metadata?.DownloadFileName))
+            unsignedUrl += $"&download={Uri.EscapeDataString(metadata.DownloadFileName)}";
 
         var url = signature is null
             ? unsignedUrl
@@ -113,7 +133,76 @@ public sealed class LocalMediaStorageService : IMediaStorageService
             File.Delete(fullPath);
         }
 
+        var metadataPath = GetMetadataPath(fullPath);
+        if (File.Exists(metadataPath))
+        {
+            File.Delete(metadataPath);
+        }
+
         return Task.CompletedTask;
+    }
+
+    private async Task<MediaStorageObjectMetadata?> GetMetadataInternalAsync(string storageKey, string fullPath, CancellationToken ct)
+    {
+        var persisted = await ReadMetadataAsync(fullPath, ct);
+        var info = new FileInfo(fullPath);
+
+        return new MediaStorageObjectMetadata(
+            storageKey,
+            persisted?.ContentType ?? ResolveContentType(storageKey),
+            info.Length,
+            persisted?.ContentHashSha256,
+            persisted?.DownloadFileName);
+    }
+
+    private async Task<PersistedMediaMetadata?> ReadMetadataAsync(string fullPath, CancellationToken ct)
+    {
+        var metadataPath = GetMetadataPath(fullPath);
+        if (!File.Exists(metadataPath))
+            return null;
+
+        await using var stream = new FileStream(metadataPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+        return await JsonSerializer.DeserializeAsync<PersistedMediaMetadata>(stream, cancellationToken: ct);
+    }
+
+    private async Task WriteMetadataAsync(string storageKey, PersistedMediaMetadata metadata, CancellationToken ct)
+    {
+        var fullPath = Path.Combine(GetRootPath(), storageKey.Replace('/', Path.DirectorySeparatorChar));
+        var metadataPath = GetMetadataPath(fullPath);
+        await using var stream = new FileStream(metadataPath, FileMode.Create, FileAccess.Write, FileShare.None);
+        await JsonSerializer.SerializeAsync(stream, metadata, cancellationToken: ct);
+        await stream.FlushAsync(ct);
+    }
+
+    private static async Task<(string Hash, long Length)> CopyWithHashAsync(Stream source, Stream destination, CancellationToken ct)
+    {
+        using var sha256 = SHA256.Create();
+        var buffer = new byte[81920];
+        long total = 0;
+
+        while (true)
+        {
+            var read = await source.ReadAsync(buffer.AsMemory(0, buffer.Length), ct);
+            if (read == 0)
+                break;
+
+            await destination.WriteAsync(buffer.AsMemory(0, read), ct);
+            sha256.TransformBlock(buffer, 0, read, null, 0);
+            total += read;
+        }
+
+        sha256.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
+        return (Convert.ToHexString(sha256.Hash!).ToLowerInvariant(), total);
+    }
+
+    private static string GetMetadataPath(string fullPath) => fullPath + ".meta.json";
+
+    private static string? NormalizeDownloadFileName(string? fileName)
+    {
+        if (string.IsNullOrWhiteSpace(fileName))
+            return null;
+
+        return Path.GetFileName(fileName.Trim());
     }
 
     private string GetRootPath()
@@ -187,4 +276,10 @@ public sealed class LocalMediaStorageService : IMediaStorageService
             _ => "application/octet-stream"
         };
     }
+
+    private sealed record PersistedMediaMetadata(
+        string ContentType,
+        long Length,
+        string? ContentHashSha256,
+        string? DownloadFileName);
 }

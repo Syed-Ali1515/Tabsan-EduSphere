@@ -9,6 +9,8 @@ public interface IMediaStorageService
         Stream content,
         string category,
         string fileExtension,
+        string? contentType = null,
+        string? downloadFileName = null,
         CancellationToken ct = default);
 
     Task<byte[]?> ReadAsBytesAsync(string storageKey, CancellationToken ct = default);
@@ -27,9 +29,13 @@ public sealed record MediaStorageSaveResult(
     string StorageKey,
     string Reference,
     string ContentType,
-    long Length);
+    long Length,
+    string? ContentHashSha256,
+    string? DownloadFileName);
 
 public sealed record MediaStorageObjectMetadata(
     string StorageKey,
     string ContentType,
-    long Length);
+    long Length,
+    string? ContentHashSha256,
+    string? DownloadFileName);

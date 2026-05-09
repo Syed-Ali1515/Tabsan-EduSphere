@@ -304,6 +304,19 @@
 | `GetMetadataAsync(storageKey, ct)` | Local provider implementation that resolves metadata from filesystem-backed objects. | `API/Services/LocalMediaStorageService.cs` |
 | `GetMetadataAsync(storageKey, ct)` | Blob-style provider implementation that resolves metadata from object files. | `API/Services/BlobMediaStorageService.cs` |
 | `ResolveContentType(path)` | Provider helper that derives canonical content type for stored object metadata and save results. | `API/Services/LocalMediaStorageService.cs`, `API/Services/BlobMediaStorageService.cs` |
+
+### Application/API — Phase 28 Stage 28.3 Slice 10 (Integrity and Disposition Metadata)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `SaveAsync(content, category, fileExtension, contentType, downloadFileName, ct)` | Extended storage-contract save method that accepts content-type and download-filename metadata for persisted media objects. | `Application/Interfaces/IMediaStorageService.cs` |
+| `MediaStorageSaveResult` | Storage save result now carries object hash and optional download filename alongside key/reference/content metadata. | `Application/Interfaces/IMediaStorageService.cs` |
+| `MediaStorageObjectMetadata` | Metadata record now carries object hash and optional download filename for downstream streaming decisions. | `Application/Interfaces/IMediaStorageService.cs` |
+| `CopyWithHashAsync(source, destination, ct)` | Writes object bytes while computing a SHA-256 hash for persisted integrity metadata. | `API/Services/LocalMediaStorageService.cs`, `API/Services/BlobMediaStorageService.cs` |
+| `WriteMetadataAsync(storageKey, metadata, ct)` | Persists sidecar media metadata for later read/redirect operations. | `API/Services/LocalMediaStorageService.cs`, `API/Services/BlobMediaStorageService.cs` |
+| `ReadMetadataAsync(fullPath, ct)` | Reads sidecar media metadata from persisted storage. | `API/Services/LocalMediaStorageService.cs`, `API/Services/BlobMediaStorageService.cs` |
+| `GetCertificateFile(storageKey, exp, sig, download, ct)` | Streams certificate files with signed URL validation and filename-preserving download behavior. | `API/Controllers/GraduationController.cs` |
+| `BuildLocalSignedCertificateUrl(storageKey, ttl)` | Adds signed local certificate URL parameters plus optional download filename propagation. | `API/Controllers/GraduationController.cs` |
 | `ModuleEntitlementResolver.IsActiveAsync(moduleKey, ct)` | Uses local memory + distributed cache to share module-activation decisions across API nodes. | `Infrastructure/Modules/ModuleEntitlementResolver.cs` |
 
 ### API — Phase 28 Stage 28.2 Completion

@@ -311,7 +311,13 @@ public class GraduationService : IGraduationService
 
         // Final-Touches Phase 28 Stage 28.3 — persist certificates through storage abstraction.
         await using var stream = new MemoryStream(pdfBytes);
-        var stored = await _mediaStorage.SaveAsync(stream, CertFolder, ".pdf", ct);
+        var stored = await _mediaStorage.SaveAsync(
+            stream,
+            CertFolder,
+            ".pdf",
+            "application/pdf",
+            $"graduation_certificate_{applicationId}.pdf",
+            ct);
 
         app.AttachCertificate(stored.StorageKey);
         _repo.Update(app);

@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.46 (Phase 28 Stage 28.3 slice 9 delivered)  
+**Version:** 1.47 (Phase 28 complete; Stage 28.3 slice 10 delivered)  
 **Status:** Approved  
 **Prepared By:** Product Team  
 **Last Updated:** 10 May 2026  
@@ -67,6 +67,14 @@
 - **Provider metadata support:** local and blob storage adapters now expose metadata derived from persisted objects.
 - **Response hardening:** logo and certificate streaming endpoints now use storage metadata to select content type instead of relying only on controller-side extension mapping.
 - **Compatibility:** signed URL flows and legacy path fallbacks remain unchanged.
+- **Schema impact:** no database migration required.
+- **Validation:** solution build passed; automated tests passed **162/162**.
+
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 10
+- **Integrity/disposition metadata:** extended storage save and metadata contracts with SHA-256 content hash and optional download filename support.
+- **Provider persistence:** local and blob storage adapters now persist sidecar metadata so integrity and filename semantics survive later reads and redirects.
+- **Download behavior:** certificate generation and media streaming now preserve filename-aware downloads across signed local and redirect-first flows.
+- **Phase outcome:** Stage 28.3 is complete, and with Stages 28.1 and 28.2 already delivered, Phase 28 is complete.
 - **Schema impact:** no database migration required.
 - **Validation:** solution build passed; automated tests passed **162/162**.
 
