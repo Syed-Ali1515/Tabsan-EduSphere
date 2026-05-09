@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Options;
+using Tabsan.EduSphere.Application.Interfaces;
 
 namespace Tabsan.EduSphere.API.Services;
 
@@ -42,6 +43,18 @@ public sealed class LocalMediaStorageService : IMediaStorageService
 
         var reference = BuildReference(objectKey);
         return new MediaStorageSaveResult(objectKey, reference);
+    }
+
+    public async Task<byte[]?> ReadAsBytesAsync(string storageKey, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(storageKey))
+            return null;
+
+        var fullPath = Path.Combine(GetRootPath(), storageKey.Replace('/', Path.DirectorySeparatorChar));
+        if (!File.Exists(fullPath))
+            return null;
+
+        return await File.ReadAllBytesAsync(fullPath, ct);
     }
 
     private string GetRootPath()

@@ -14,6 +14,12 @@
 - Migrated payment-proof upload flow to storage abstraction so database records persist storage object keys instead of hard-coded file system paths.
 - Validation: `dotnet build Tabsan.EduSphere.sln` passed.
 
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 2
+- Moved `IMediaStorageService` into the Application layer to support provider-backed media persistence from both controllers and application services.
+- Extended local provider with read-by-key support.
+- Migrated graduation certificate generation/download to provider-backed storage with legacy `/certificates/*` fallback for existing records.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
+
 ### 2026-05-09 — Phase 28 Stage 28.1 Complete
 - Completed **API and App Tier Scaling** as the first stage of the scalability architecture roadmap.
 - Replaced Web session-backed connection/auth state with protected-cookie storage to keep portal nodes stateless across a load-balanced deployment.

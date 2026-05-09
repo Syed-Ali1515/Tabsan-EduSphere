@@ -281,6 +281,15 @@
 | `LocalMediaStorageService.SaveAsync(content, category, fileExtension, ct)` | Stores uploaded media in a configurable local root while issuing stable object keys for metadata-only DB references. | `API/Services/LocalMediaStorageService.cs` |
 | `LocalMediaStorageService.BuildReference(objectKey)` | Builds an external reference using optional `PublicBaseUrl`, enabling CDN/object-storage style references without API contract changes. | `API/Services/LocalMediaStorageService.cs` |
 
+### Application / API — Phase 28 Stage 28.3 Slice 2
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `IMediaStorageService.ReadAsBytesAsync(storageKey, ct)` | Defines provider-agnostic read path for stored media by storage key. | `Application/Interfaces/IMediaStorageService.cs` |
+| `LocalMediaStorageService.ReadAsBytesAsync(storageKey, ct)` | Resolves a storage key against configured local root and returns file bytes if present. | `API/Services/LocalMediaStorageService.cs` |
+| `GraduationService.GenerateCertificateAsync(applicationId, ct)` | Persists generated certificate PDF through storage provider and stores resulting storage key in application record. | `Application/Academic/GraduationService.cs` |
+| `GraduationService.DownloadCertificateAsync(applicationId, requestingStudentProfileId, ct)` | Downloads certificate via storage provider for new keys, while preserving legacy `/certificates/*` file-path fallback. | `Application/Academic/GraduationService.cs` |
+
 ### API — Program.cs Changes (Part A)
 
 | Change | Purpose | Location |

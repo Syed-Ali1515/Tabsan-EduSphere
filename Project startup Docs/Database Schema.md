@@ -25,6 +25,11 @@
 - Stage 28.3 slice 1 delivered a storage-provider abstraction for file/media persistence and migrated payment-proof uploads to provider-backed object-key references.
 - No database schema change and no EF migration were required.
 
+## 2026-05-10 Update — Phase 28 Stage 28.3 Slice 2
+
+- Stage 28.3 slice 2 migrated graduation certificate persistence to the shared storage-provider abstraction and added provider-backed read support.
+- No database schema change and no EF migration were required.
+
 ---
 
 # PART 1: UNIVERSITY PORTAL APPLICATION DATABASE

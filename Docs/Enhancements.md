@@ -32,6 +32,12 @@
 - Reused file validation pipeline before persistence for safer uploads.
 - No database migration or schema change was required for Stage 28.3 Slice 1.
 
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 2 (File and Media Strategy)
+- Moved `IMediaStorageService` contract into the Application layer so domain-level services can consume provider-backed storage without API-layer coupling.
+- Extended local storage provider with read support for object-key retrieval.
+- Migrated graduation certificate generation/download to storage-provider persistence with legacy `/certificates/*` compatibility fallback.
+- No database migration or schema change was required for Stage 28.3 Slice 2.
+
 ---
 
 ## Phase 12 — Academic Calendar System ✅ Implemented

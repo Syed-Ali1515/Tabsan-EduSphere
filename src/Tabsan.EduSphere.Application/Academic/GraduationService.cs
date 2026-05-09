@@ -19,6 +19,7 @@ public class GraduationService : IGraduationService
     private readonly ISettingsRepository    _settings;
     private readonly IStudentLifecycleRepository _lifecycleRepo;
     private readonly ICertificateGenerator  _certGenerator;
+    private readonly IMediaStorageService _mediaStorage;
 
     // Final-Touches Phase 18 Stage 18.2 — portal setting key for the certificate body text
     private const string CertTemplateSetting = "graduation_certificate_template";
@@ -31,13 +32,15 @@ public class GraduationService : IGraduationService
         INotificationService       notifications,
         ISettingsRepository        settings,
         IStudentLifecycleRepository lifecycleRepo,
-        ICertificateGenerator      certGenerator)
+        ICertificateGenerator      certGenerator,
+        IMediaStorageService mediaStorage)
     {
         _repo          = repo;
         _notifications = notifications;
         _settings      = settings;
         _lifecycleRepo = lifecycleRepo;
         _certGenerator = certGenerator;
+        _mediaStorage = mediaStorage;
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
@@ -306,20 +309,15 @@ public class GraduationService : IGraduationService
 
         byte[] pdfBytes = await _certGenerator.GeneratePdfAsync(studentName, regNo, programName, headline, ct);
 
-        // Final-Touches Phase 18 Stage 18.2 — write to wwwroot/certificates/
-        var wwwRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", CertFolder);
-        Directory.CreateDirectory(wwwRoot);
-        var fileName     = $"certificate_{app.StudentProfileId}_{DateTime.UtcNow:yyyyMMddHHmmss}.pdf";
-        var fullPath     = Path.Combine(wwwRoot, fileName);
-        var relativePath = $"/{CertFolder}/{fileName}";
+        // Final-Touches Phase 28 Stage 28.3 — persist certificates through storage abstraction.
+        await using var stream = new MemoryStream(pdfBytes);
+        var stored = await _mediaStorage.SaveAsync(stream, CertFolder, ".pdf", ct);
 
-        await File.WriteAllBytesAsync(fullPath, pdfBytes, ct);
-
-        app.AttachCertificate(relativePath);
+        app.AttachCertificate(stored.StorageKey);
         _repo.Update(app);
         await _repo.SaveChangesAsync(ct);
 
-        return relativePath;
+        return stored.StorageKey;
     }
 
     // Final-Touches Phase 18 Stage 18.2 — return PDF bytes for download
@@ -333,10 +331,15 @@ public class GraduationService : IGraduationService
         if (app.StudentProfileId != requestingStudentProfileId) return null;
         if (app.CertificatePath is null) return null;
 
-        var wwwRoot  = Directory.GetCurrentDirectory();
-        var fullPath = Path.Combine(wwwRoot, "wwwroot", app.CertificatePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
-        if (!File.Exists(fullPath)) return null;
+        // Final-Touches Phase 28 Stage 28.3 — support legacy /certificates/* paths during transition.
+        if (app.CertificatePath.StartsWith("/", StringComparison.Ordinal))
+        {
+            var wwwRoot  = Directory.GetCurrentDirectory();
+            var fullPath = Path.Combine(wwwRoot, "wwwroot", app.CertificatePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+            if (!File.Exists(fullPath)) return null;
+            return await File.ReadAllBytesAsync(fullPath, ct);
+        }
 
-        return await File.ReadAllBytesAsync(fullPath, ct);
+        return await _mediaStorage.ReadAsBytesAsync(app.CertificatePath, ct);
     }
 }

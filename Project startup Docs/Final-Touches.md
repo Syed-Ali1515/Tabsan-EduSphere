@@ -103,6 +103,29 @@ For **every completed phase**:
 
 ---
 
+## Phase 28 — Scalability Architecture (Stage 28.3 Slice 2)
+**Status:** ✅ Slice 2 Delivered (2026-05-10)
+
+### Completion Mark
+- [x] Move media storage contract into Application layer for cross-layer use.
+- [x] Add provider-backed read path for stored media.
+- [x] Migrate graduation certificate generation to provider-backed persistence.
+- [x] Preserve backward compatibility for legacy certificate path records.
+- [x] Confirm no database migration is required.
+
+### Implementation Summary
+- Added `Application/Interfaces/IMediaStorageService.cs` and moved storage result contract to the Application layer.
+- Updated `LocalMediaStorageService` to implement the Application-layer contract and support `ReadAsBytesAsync`.
+- Refactored `GraduationService` certificate generation and download methods to use storage-provider save/read operations.
+- Added compatibility fallback in certificate download for legacy `/certificates/*` path-based records.
+
+### Validation Summary
+- `dotnet build src/Tabsan.EduSphere.API/Tabsan.EduSphere.API.csproj` — passed.
+- `dotnet build Tabsan.EduSphere.sln` — passed.
+- `dotnet test Tabsan.EduSphere.sln --no-build` — **162/162 passed**.
+
+---
+
 ## Refactoring-Hosting-Security — Part A + Part B
 **Status:** ✅ Fully Complete (2026-05-07) | Commits: f56ccd9, 5e80bc9
 

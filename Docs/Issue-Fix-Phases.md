@@ -28,6 +28,12 @@ This file tracks the reported portal issues as phased work items so they can be 
 - Added `MediaStorage` settings in API configuration for local root path, key prefix, and optional public base URL to prepare for object storage/CDN cutover.
 - Validation: `dotnet build Tabsan.EduSphere.sln` passed.
 
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 2 Update
+- Moved media storage interface contract to the Application layer and extended the provider with read-by-key support.
+- Graduation certificate generation now writes through the storage provider and stores storage-key references for new certificates.
+- Graduation certificate download now reads through the provider for new keys and preserves legacy `/certificates/*` compatibility fallback.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
+
 ---
 
 ## Refactoring-Hosting-Security — Part A + Part B

@@ -56,11 +56,11 @@ cmd /c git -C "<repo-root>" push origin main
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
 - Active Phase: **Phase 28 — Scalability Architecture (1M+ Readiness) — IN PROGRESS ⚙️**
-- Active Stage: **Stage 28.3 in progress (Slice 1 delivered: payment-proof upload storage abstraction)**
-- Status: **0 build errors; 162/162 tests baseline; no database migration required for Stage 28.3 Slice 1**
+- Active Stage: **Stage 28.3 in progress (Slice 2 delivered: graduation certificate storage migration)**
+- Status: **0 build errors; 162/162 tests passed; no database migration required for Stage 28.3 Slice 2**
 - Last Updated: 2026-05-10
-- Next: **Phase 28 Stage 28.3 — expand storage abstraction to certificates and additional media flows** (see Docs/Advance-Enhancements.md)
-- Docs Updated: ✅ All 8 tracking files updated for Phase 28 Stage 28.3 Slice 1 progress (2026-05-10)
+- Next: **Phase 28 Stage 28.3 — expand provider coverage to additional media/document workflows and object-storage adapter** (see Docs/Advance-Enhancements.md)
+- Docs Updated: ✅ All 8 tracking files updated for Phase 28 Stage 28.3 Slice 2 progress (2026-05-10)
 
 ---
 
@@ -198,6 +198,11 @@ Database is fully synchronized with codebase.
   - Migrated student payment-proof upload endpoint to storage abstraction and object-key persistence (instead of hard-coded local file paths).
   - Added stricter upload validation reuse (`FileUploadValidator`) before persistence.
   - No schema changes required; storage references remain metadata-only in existing receipt records.
+- **Phase 28 — Scalability Architecture — Stage 28.3 SLICE 2 DELIVERED ✅**
+  - Moved storage abstraction contract into the Application layer so both API controllers and Application services can share it.
+  - Migrated graduation certificate generation to provider-backed persistence, storing storage keys instead of filesystem-relative webroot paths for new records.
+  - Added provider-backed certificate read path in graduation downloads, with compatibility fallback for legacy `/certificates/*` records.
+  - No schema changes required; existing certificate path column continues to store a metadata reference.
 - Continue through Phase 28.3+ per Docs/Advance-Enhancements.md
 
 ## Pending Extra Tasks (Cross-Phase)

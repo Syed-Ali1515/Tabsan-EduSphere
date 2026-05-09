@@ -42,8 +42,8 @@ public interface IGraduationService
     // Final-Touches Phase 18 Stage 18.2 — certificate management
 
     /// <summary>
-    /// Generates (or re-generates) the graduation certificate PDF and stores the path.
-    /// Returns the certificate file path relative to wwwroot.
+    /// Generates (or re-generates) the graduation certificate PDF and stores the storage key reference.
+    /// Returns the persisted storage key.
     /// </summary>
     Task<string> GenerateCertificateAsync(Guid applicationId, CancellationToken ct = default);
 

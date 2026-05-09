@@ -1,7 +1,7 @@
-namespace Tabsan.EduSphere.API.Services;
+namespace Tabsan.EduSphere.Application.Interfaces;
 
 /// <summary>
-/// Abstraction for persisting media/files so local disk can be swapped with object storage.
+/// Abstraction for file/media persistence so local disk can be swapped with object storage.
 /// </summary>
 public interface IMediaStorageService
 {
@@ -10,6 +10,8 @@ public interface IMediaStorageService
         string category,
         string fileExtension,
         CancellationToken ct = default);
+
+    Task<byte[]?> ReadAsBytesAsync(string storageKey, CancellationToken ct = default);
 }
 
 public sealed record MediaStorageSaveResult(string StorageKey, string Reference);
