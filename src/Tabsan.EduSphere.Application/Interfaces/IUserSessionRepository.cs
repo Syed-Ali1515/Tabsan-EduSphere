@@ -11,6 +11,12 @@ public interface IUserSessionRepository
     /// <summary>Returns the active session matching the token hash, or null.</summary>
     Task<UserSession?> GetActiveByHashAsync(string tokenHash, CancellationToken ct = default);
 
+    /// <summary>
+    /// Returns the most recently created session for a user (active or revoked).
+    /// Used by login risk controls to compare current sign-in context.
+    /// </summary>
+    Task<UserSession?> GetMostRecentByUserIdAsync(Guid userId, CancellationToken ct = default);
+
     /// <summary>Persists a new session.</summary>
     Task AddAsync(UserSession session, CancellationToken ct = default);
 

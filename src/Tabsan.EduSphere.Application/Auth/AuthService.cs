@@ -3,6 +3,7 @@ using Tabsan.EduSphere.Application.Interfaces;
 using Tabsan.EduSphere.Domain.Auditing;
 using Tabsan.EduSphere.Domain.Identity;
 using Tabsan.EduSphere.Domain.Interfaces;
+using Microsoft.Extensions.Options;
 
 namespace Tabsan.EduSphere.Application.Auth;
 
@@ -19,6 +20,7 @@ public class AuthService : IAuthService
     private readonly IAuditService _audit;
     private readonly IPasswordHistoryRepository _passwordHistory;
     private readonly ILicenseRepository _licenseRepo;
+    private readonly AuthSecurityOptions _security;
 
     public AuthService(
         IUserRepository userRepo,
@@ -27,7 +29,8 @@ public class AuthService : IAuthService
         IPasswordHasher passwordHasher,
         IAuditService audit,
         IPasswordHistoryRepository passwordHistory,
-        ILicenseRepository licenseRepo)
+        ILicenseRepository licenseRepo,
+        IOptions<AuthSecurityOptions> security)
     {
         _userRepo        = userRepo;
         _sessionRepo     = sessionRepo;
@@ -36,7 +39,18 @@ public class AuthService : IAuthService
         _audit           = audit;
         _passwordHistory = passwordHistory;
         _licenseRepo     = licenseRepo;
+        _security        = security.Value;
     }
+
+    public Task<AuthSecurityProfileResponse> GetSecurityProfileAsync(CancellationToken ct = default)
+        => Task.FromResult(new AuthSecurityProfileResponse(
+            MfaEnabled: _security.Mfa.Enabled,
+            RequireMfaForPasswordLogin: _security.Mfa.RequireForPasswordLogin,
+            SsoEnabled: _security.Sso.Enabled,
+            SsoProvider: string.IsNullOrWhiteSpace(_security.Sso.Provider) ? null : _security.Sso.Provider,
+            SsoLoginUrl: string.IsNullOrWhiteSpace(_security.Sso.LoginUrl) ? null : _security.Sso.LoginUrl,
+            SessionRiskEnabled: _security.SessionRisk.Enabled,
+            BlockHighRiskLogin: _security.SessionRisk.BlockHighRiskLogin));
 
     // ── Login ──────────────────────────────────────────────────────────────────
 
@@ -54,11 +68,29 @@ public class AuthService : IAuthService
     {
         var user = await _userRepo.GetByUsernameAsync(request.Username, ct);
         if (user is null || !user.IsActive)
+        {
+            await _audit.LogAsync(new AuditLog(
+                "LoginFailed",
+                "User",
+                entityId: null,
+                oldValuesJson: null,
+                newValuesJson: "{\"reason\":\"inactive_or_not_found\",\"username\":\"" + request.Username + "\"}",
+                ipAddress: ipAddress), ct);
             return LoginResult.Fail(LoginFailureReason.InvalidCredentials);
+        }
 
         // Check lockout before password verification
         if (user.IsCurrentlyLockedOut())
+        {
+            await _audit.LogAsync(new AuditLog(
+                "LoginFailed",
+                "User",
+                entityId: user.Id.ToString(),
+                actorUserId: user.Id,
+                newValuesJson: "{\"reason\":\"locked_out\"}",
+                ipAddress: ipAddress), ct);
             return LoginResult.Fail(LoginFailureReason.InvalidCredentials);
+        }
 
         if (!_passwordHasher.Verify(user.PasswordHash, request.Password))
         {
@@ -66,7 +98,66 @@ public class AuthService : IAuthService
             user.RecordFailedLoginAttempt(maxFailedAttempts: 5, lockoutDurationMinutes: 15);
             _userRepo.Update(user);
             await _userRepo.SaveChangesAsync(ct);
+
+            await _audit.LogAsync(new AuditLog(
+                "LoginFailed",
+                "User",
+                entityId: user.Id.ToString(),
+                actorUserId: user.Id,
+                newValuesJson: "{\"reason\":\"invalid_password\",\"failedAttempts\":" + user.FailedLoginAttempts + "}",
+                ipAddress: ipAddress), ct);
+
             return LoginResult.Fail(LoginFailureReason.InvalidCredentials);
+        }
+
+        if (_security.Mfa.Enabled && _security.Mfa.RequireForPasswordLogin)
+        {
+            var provided = request.MfaCode?.Trim();
+            var expected = _security.Mfa.DemoCode?.Trim();
+            if (string.IsNullOrWhiteSpace(provided)
+                || string.IsNullOrWhiteSpace(expected)
+                || !string.Equals(provided, expected, StringComparison.Ordinal))
+            {
+                await _audit.LogAsync(new AuditLog(
+                    "MfaChallengeFailed",
+                    "User",
+                    entityId: user.Id.ToString(),
+                    actorUserId: user.Id,
+                    ipAddress: ipAddress), ct);
+                return LoginResult.Fail(LoginFailureReason.MfaRequired);
+            }
+        }
+
+        var riskLevel = "low";
+        if (_security.SessionRisk.Enabled)
+        {
+            var mostRecentSession = await _sessionRepo.GetMostRecentByUserIdAsync(user.Id, ct);
+            riskLevel = CalculateRiskLevel(ipAddress, mostRecentSession?.IpAddress);
+
+            if (string.Equals(riskLevel, "high", StringComparison.OrdinalIgnoreCase)
+                && _security.SessionRisk.BlockHighRiskLogin)
+            {
+                await _audit.LogAsync(new AuditLog(
+                    "LoginBlockedByRisk",
+                    "User",
+                    entityId: user.Id.ToString(),
+                    actorUserId: user.Id,
+                    oldValuesJson: "{\"previousIp\":\"" + (mostRecentSession?.IpAddress ?? string.Empty) + "\"}",
+                    newValuesJson: "{\"currentIp\":\"" + (ipAddress ?? string.Empty) + "\",\"riskLevel\":\"" + riskLevel + "\"}",
+                    ipAddress: ipAddress), ct);
+                return LoginResult.Fail(LoginFailureReason.SessionRiskBlocked);
+            }
+
+            if (string.Equals(riskLevel, "medium", StringComparison.OrdinalIgnoreCase) && _security.SessionRisk.AuditMediumRiskLogin)
+            {
+                await _audit.LogAsync(new AuditLog(
+                    "LoginRiskObserved",
+                    "User",
+                    entityId: user.Id.ToString(),
+                    actorUserId: user.Id,
+                    newValuesJson: "{\"riskLevel\":\"medium\"}",
+                    ipAddress: ipAddress), ct);
+            }
         }
 
         // ── P2-S1-01 / P2-S2-01: Concurrent user limit enforcement ────────────
@@ -90,7 +181,7 @@ public class AuthService : IAuthService
         var refreshHash = _tokenService.HashRefreshToken(rawRefresh);
         var refreshExpiry = _tokenService.GetRefreshTokenExpiry();
 
-        var session = new UserSession(user.Id, refreshHash, refreshExpiry, ipAddress: ipAddress);
+        var session = new UserSession(user.Id, refreshHash, refreshExpiry, deviceInfo: request.DeviceInfo, ipAddress: ipAddress);
         await _sessionRepo.AddAsync(session, ct);
 
         user.RecordLogin();
@@ -99,7 +190,9 @@ public class AuthService : IAuthService
         await _sessionRepo.SaveChangesAsync(ct);
 
         await _audit.LogAsync(new AuditLog("Login", "User", user.Id.ToString(),
-            actorUserId: user.Id, ipAddress: ipAddress), ct);
+            actorUserId: user.Id,
+            newValuesJson: "{\"riskLevel\":\"" + riskLevel + "\",\"mfaEnabled\":" + (_security.Mfa.Enabled && _security.Mfa.RequireForPasswordLogin).ToString().ToLowerInvariant() + "}",
+            ipAddress: ipAddress), ct);
 
         return LoginResult.Ok(new LoginResponse(
             AccessToken: _tokenService.GenerateAccessToken(user),
@@ -108,7 +201,11 @@ public class AuthService : IAuthService
             Role: user.Role?.Name ?? string.Empty,
             UserId: user.Id,
             Username: user.Username,
-            MustChangePassword: user.MustChangePassword));
+            MustChangePassword: user.MustChangePassword,
+            MfaEnabled: _security.Mfa.Enabled && _security.Mfa.RequireForPasswordLogin,
+            SsoEnabled: _security.Sso.Enabled,
+            SsoProvider: string.IsNullOrWhiteSpace(_security.Sso.Provider) ? null : _security.Sso.Provider,
+            SessionRiskLevel: riskLevel));
     }
 
     // ── Refresh ────────────────────────────────────────────────────────────────
@@ -147,7 +244,11 @@ public class AuthService : IAuthService
             AccessTokenExpiry: DateTime.UtcNow.AddMinutes(15),
             Role: user.Role?.Name ?? string.Empty,
             UserId: user.Id,
-            Username: user.Username);
+            Username: user.Username,
+            MfaEnabled: _security.Mfa.Enabled && _security.Mfa.RequireForPasswordLogin,
+            SsoEnabled: _security.Sso.Enabled,
+            SsoProvider: string.IsNullOrWhiteSpace(_security.Sso.Provider) ? null : _security.Sso.Provider,
+            SessionRiskLevel: "low");
     }
 
     // ── Logout ─────────────────────────────────────────────────────────────────
@@ -235,5 +336,14 @@ public class AuthService : IAuthService
             actorUserId: userId), ct);
 
         return true;
+    }
+
+    private static string CalculateRiskLevel(string? currentIp, string? previousIp)
+    {
+        if (string.IsNullOrWhiteSpace(currentIp)) return "medium";
+        if (string.IsNullOrWhiteSpace(previousIp)) return "low";
+        return string.Equals(currentIp, previousIp, StringComparison.OrdinalIgnoreCase)
+            ? "low"
+            : "high";
     }
 }

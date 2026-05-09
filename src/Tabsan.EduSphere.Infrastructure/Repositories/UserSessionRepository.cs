@@ -23,6 +23,12 @@ public class UserSessionRepository : IUserSessionRepository
         => _db.UserSessions
               .FirstOrDefaultAsync(s => s.RefreshTokenHash == tokenHash && s.RevokedAt == null, ct);
 
+    public Task<UserSession?> GetMostRecentByUserIdAsync(Guid userId, CancellationToken ct = default)
+        => _db.UserSessions
+              .Where(s => s.UserId == userId)
+              .OrderByDescending(s => s.CreatedAt)
+              .FirstOrDefaultAsync(ct);
+
     /// <summary>Queues the new session for insertion.</summary>
     public async Task AddAsync(UserSession session, CancellationToken ct = default)
         => await _db.UserSessions.AddAsync(session, ct);

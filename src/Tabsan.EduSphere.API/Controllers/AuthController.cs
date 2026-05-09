@@ -35,14 +35,37 @@ public class AuthController : ControllerBase
 
         if (!result.IsSuccess)
         {
-            // P2-S1-01: Return 403 so the client can distinguish limit-reached from bad credentials.
-            if (result.FailureReason == LoginFailureReason.ConcurrencyLimitReached)
-                return StatusCode(403, new { message = "Login limit reached. The maximum number of concurrent users allowed by the current license has been reached. Please contact your administrator." });
+            return result.FailureReason switch
+            {
+                // P2-S1-01: Distinguish limit-reached from bad credentials.
+                LoginFailureReason.ConcurrencyLimitReached
+                    => StatusCode(403, new { message = "Login limit reached. The maximum number of concurrent users allowed by the current license has been reached. Please contact your administrator." }),
 
-            return Unauthorized(new { message = "Invalid credentials or account inactive." });
+                LoginFailureReason.MfaRequired
+                    => StatusCode(StatusCodes.Status428PreconditionRequired, new { message = "Multi-factor authentication is required for this deployment. Provide a valid MFA code and retry." }),
+
+                LoginFailureReason.SessionRiskBlocked
+                    => StatusCode(StatusCodes.Status423Locked, new { message = "This sign-in was blocked by session risk controls. Please retry from a trusted network or contact an administrator." }),
+
+                _ => Unauthorized(new { message = "Invalid credentials or account inactive." })
+            };
         }
 
         return Ok(result.Response);
+    }
+
+    // ── GET /api/v1/auth/security-profile ───────────────────────────────────
+
+    /// <summary>
+    /// Returns deployment-auth security capabilities so clients can adapt UX
+    /// (MFA prompt, SSO button, risk-policy messaging) without hardcoding behavior.
+    /// </summary>
+    [HttpGet("security-profile")]
+    [AllowAnonymous]
+    public async Task<IActionResult> SecurityProfile(CancellationToken ct)
+    {
+        var profile = await _auth.GetSecurityProfileAsync(ct);
+        return Ok(profile);
     }
 
     // ── POST /api/v1/auth/refresh ──────────────────────────────────────────────

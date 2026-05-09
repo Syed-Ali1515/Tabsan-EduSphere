@@ -71,6 +71,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(opts =>
 // ── JWT Authentication ──────────────────────────────────────────────────────────
 // Binds JwtSettings section from appsettings.json so options are strongly-typed.
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
+builder.Services.Configure<AuthSecurityOptions>(builder.Configuration.GetSection(AuthSecurityOptions.SectionName));
 var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>()!;
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

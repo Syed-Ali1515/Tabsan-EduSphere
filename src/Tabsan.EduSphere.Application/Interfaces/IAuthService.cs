@@ -18,6 +18,12 @@ public interface IAuthService
     Task<LoginResult> LoginAsync(LoginRequest request, string? ipAddress, CancellationToken ct = default);
 
     /// <summary>
+    /// Returns deployment-auth security capabilities (MFA, SSO, and risk control flags)
+    /// so clients can render adaptive login UX.
+    /// </summary>
+    Task<AuthSecurityProfileResponse> GetSecurityProfileAsync(CancellationToken ct = default);
+
+    /// <summary>
     /// Validates the presented refresh token, rotates it (old token revoked, new issued),
     /// and returns a new access + refresh token pair.
     /// Returns null when the token is invalid, expired, or already revoked.

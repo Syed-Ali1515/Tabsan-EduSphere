@@ -3,6 +3,12 @@
     Layout = null; // standalone page — no sidebar
     var error      = ViewData["Error"] as string;
     var returnUrl  = ViewData["ReturnUrl"] as string;
+    var mfaEnabled = (ViewData["MfaEnabled"] as bool?) == true;
+    var ssoEnabled = (ViewData["SsoEnabled"] as bool?) == true;
+    var ssoProvider = ViewData["SsoProvider"] as string;
+    var ssoLoginUrl = ViewData["SsoLoginUrl"] as string;
+    var riskEnabled = (ViewData["SessionRiskEnabled"] as bool?) == true;
+    var riskBlocking = (ViewData["SessionRiskBlocking"] as bool?) == true;
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -38,6 +44,24 @@
                     <div class="alert alert-danger py-2 small" role="alert">@error</div>
                 }
 
+                @if (ssoEnabled)
+                {
+                    <div class="alert alert-primary py-2 small" role="alert">
+                        Single sign-on is enabled@(string.IsNullOrWhiteSpace(ssoProvider) ? "" : $" ({ssoProvider})").
+                        @if (!string.IsNullOrWhiteSpace(ssoLoginUrl))
+                        {
+                            <span> Use your organization's SSO entry point or <a href="@ssoLoginUrl" class="alert-link">continue via SSO</a>.</span>
+                        }
+                    </div>
+                }
+
+                @if (riskEnabled)
+                {
+                    <div class="alert alert-warning py-2 small" role="alert">
+                        Session risk monitoring is active@(riskBlocking ? " (high-risk sign-ins are blocked)." : ".")
+                    </div>
+                }
+
                 <form method="post" asp-action="Index" asp-controller="Login" asp-route-returnUrl="@returnUrl" autocomplete="on">
                     @Html.AntiForgeryToken()
 
@@ -52,6 +76,16 @@
                         <input id="password" name="password" type="password" class="form-control"
                                placeholder="Your password" autocomplete="current-password" required />
                     </div>
+
+                    @if (mfaEnabled)
+                    {
+                        <div class="mb-4">
+                            <label for="mfaCode" class="form-label fw-semibold">MFA Code</label>
+                            <input id="mfaCode" name="mfaCode" type="text" class="form-control"
+                                   placeholder="6-digit code" inputmode="numeric" autocomplete="one-time-code" />
+                            <div class="form-text">Your deployment requires an additional verification code.</div>
+                        </div>
+                    }
 
                     <button type="submit" class="btn btn-primary w-100">Sign In</button>
                 </form>

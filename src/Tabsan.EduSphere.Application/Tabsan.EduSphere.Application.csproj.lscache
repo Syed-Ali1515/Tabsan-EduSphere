@@ -78,7 +78,9 @@ Assignments/
  ResultService.cs
  RubricService.cs
 Attendance/AttendanceService.cs
-Auth/AuthService.cs
+Auth/
+ AuthSecurityOptions.cs
+ AuthService.cs
 DTOs/Academic/
  AcademicDeadlineDTOs.cs
  AcademicDtos.cs

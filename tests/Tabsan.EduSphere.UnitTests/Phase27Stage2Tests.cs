@@ -1,0 +1,231 @@
+using FluentAssertions;
+using Microsoft.Extensions.Options;
+using Tabsan.EduSphere.Application.Auth;
+using Tabsan.EduSphere.Application.DTOs.Auth;
+using Tabsan.EduSphere.Application.Interfaces;
+using Tabsan.EduSphere.Domain.Auditing;
+using Tabsan.EduSphere.Domain.Identity;
+using Tabsan.EduSphere.Domain.Interfaces;
+using Tabsan.EduSphere.Domain.Licensing;
+using Xunit;
+
+namespace Tabsan.EduSphere.UnitTests;
+
+// Phase 27.2 — Authentication and Security UX unit tests
+
+public class AuthSecurityUxTests
+{
+    [Fact]
+    public async Task GetSecurityProfileAsync_ReturnsConfiguredFlags()
+    {
+        var sut = CreateSut(new AuthSecurityOptions
+        {
+            Mfa = new MfaSettings { Enabled = true, RequireForPasswordLogin = true, DemoCode = "654321" },
+            Sso = new SsoSettings { Enabled = true, Provider = "AzureAD", LoginUrl = "https://sso.contoso.edu/login" },
+            SessionRisk = new SessionRiskSettings { Enabled = true, BlockHighRiskLogin = true }
+        });
+
+        var profile = await sut.GetSecurityProfileAsync();
+
+        profile.MfaEnabled.Should().BeTrue();
+        profile.RequireMfaForPasswordLogin.Should().BeTrue();
+        profile.SsoEnabled.Should().BeTrue();
+        profile.SsoProvider.Should().Be("AzureAD");
+        profile.SsoLoginUrl.Should().Be("https://sso.contoso.edu/login");
+        profile.BlockHighRiskLogin.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task LoginAsync_WhenMfaIsRequiredAndMissing_ReturnsMfaRequired()
+    {
+        var user = new User("student1", "HASH", roleId: 1);
+
+        var sut = CreateSut(
+            new AuthSecurityOptions
+            {
+                Mfa = new MfaSettings { Enabled = true, RequireForPasswordLogin = true, DemoCode = "123456" },
+                SessionRisk = new SessionRiskSettings { Enabled = false }
+            },
+            user: user);
+
+        var result = await sut.LoginAsync(new LoginRequest("student1", "pass"), "10.0.0.5");
+
+        result.IsSuccess.Should().BeFalse();
+        result.FailureReason.Should().Be(LoginFailureReason.MfaRequired);
+    }
+
+    [Fact]
+    public async Task LoginAsync_WhenHighRiskBlocked_ReturnsSessionRiskBlocked()
+    {
+        var user = new User("student1", "HASH", roleId: 1);
+
+        var sessions = new StubSessionRepository
+        {
+            MostRecent = new UserSession(user.Id, "old-hash", DateTime.UtcNow.AddDays(1), ipAddress: "10.0.0.1")
+        };
+
+        var sut = CreateSut(
+            new AuthSecurityOptions
+            {
+                Mfa = new MfaSettings { Enabled = false, RequireForPasswordLogin = false },
+                SessionRisk = new SessionRiskSettings { Enabled = true, BlockHighRiskLogin = true }
+            },
+            user: user,
+            sessionRepo: sessions);
+
+        var result = await sut.LoginAsync(new LoginRequest("student1", "pass"), "10.0.0.99");
+
+        result.IsSuccess.Should().BeFalse();
+        result.FailureReason.Should().Be(LoginFailureReason.SessionRiskBlocked);
+    }
+
+    private static AuthService CreateSut(
+        AuthSecurityOptions options,
+        User? user = null,
+        IUserSessionRepository? sessionRepo = null)
+    {
+        user ??= new User("student1", "HASH", roleId: 1);
+        sessionRepo ??= new StubSessionRepository();
+
+        return new AuthService(
+            new StubUserRepository(user),
+            sessionRepo,
+            new StubTokenService(),
+            new StubPasswordHasher(),
+            new StubAuditService(),
+            new StubPasswordHistoryRepository(),
+            new StubLicenseRepository(),
+            Options.Create(options));
+    }
+}
+
+file sealed class StubUserRepository : IUserRepository
+{
+    private readonly User _user;
+
+    public StubUserRepository(User user) => _user = user;
+
+    public Task<User?> GetByIdAsync(Guid id, CancellationToken ct = default)
+        => Task.FromResult<User?>(_user.Id == id ? _user : null);
+
+    public Task<User?> GetByUsernameAsync(string username, CancellationToken ct = default)
+        => Task.FromResult<User?>(string.Equals(_user.Username, username, StringComparison.OrdinalIgnoreCase) ? _user : null);
+
+    public Task<User?> GetByEmailAsync(string email, CancellationToken ct = default)
+        => Task.FromResult<User?>(null);
+
+    public Task<bool> UsernameExistsAsync(string username, CancellationToken ct = default)
+        => Task.FromResult(string.Equals(_user.Username, username, StringComparison.OrdinalIgnoreCase));
+
+    public Task<IList<User>> GetLockedAccountsAsync(CancellationToken ct = default)
+        => Task.FromResult<IList<User>>([]);
+
+    public Task<IList<User>> GetFacultyUsersAsync(CancellationToken ct = default)
+        => Task.FromResult<IList<User>>([]);
+
+    public Task<IList<User>> GetActiveUsersByRolesAsync(IReadOnlyList<string> roleNames, CancellationToken ct = default)
+        => Task.FromResult<IList<User>>([]);
+
+    public Task<IList<User>> GetUsersByRolesAsync(IReadOnlyList<string> roleNames, bool includeInactive = false, CancellationToken ct = default)
+        => Task.FromResult<IList<User>>([]);
+
+    public Task<Role?> GetRoleByNameAsync(string roleName, CancellationToken ct = default)
+        => Task.FromResult<Role?>(null);
+
+    public Task AddAsync(User user, CancellationToken ct = default) => Task.CompletedTask;
+
+    public Task AddRangeAsync(IEnumerable<User> users, CancellationToken ct = default) => Task.CompletedTask;
+
+    public void Update(User user)
+    {
+    }
+
+    public Task<int> SaveChangesAsync(CancellationToken ct = default)
+        => Task.FromResult(1);
+}
+
+file sealed class StubSessionRepository : IUserSessionRepository
+{
+    public UserSession? MostRecent { get; set; }
+
+    public Task<UserSession?> GetActiveByHashAsync(string tokenHash, CancellationToken ct = default)
+        => Task.FromResult<UserSession?>(null);
+
+    public Task<UserSession?> GetMostRecentByUserIdAsync(Guid userId, CancellationToken ct = default)
+        => Task.FromResult(MostRecent);
+
+    public Task AddAsync(UserSession session, CancellationToken ct = default)
+    {
+        MostRecent = session;
+        return Task.CompletedTask;
+    }
+
+    public void Update(UserSession session)
+    {
+        MostRecent = session;
+    }
+
+    public Task<int> SaveChangesAsync(CancellationToken ct = default)
+        => Task.FromResult(1);
+
+    public Task<int> CountActiveSessionsAsync(CancellationToken ct = default)
+        => Task.FromResult(0);
+}
+
+file sealed class StubTokenService : ITokenService
+{
+    public string GenerateAccessToken(User user) => "ACCESS";
+
+    public string GenerateRefreshToken() => "REFRESH";
+
+    public string HashRefreshToken(string rawToken) => "HASHED";
+
+    public DateTime GetRefreshTokenExpiry() => DateTime.UtcNow.AddDays(7);
+}
+
+file sealed class StubPasswordHasher : IPasswordHasher
+{
+    public string Hash(string input) => "HASH";
+
+    public bool Verify(string hash, string input) => hash == "HASH" && input == "pass";
+}
+
+file sealed class StubAuditService : IAuditService
+{
+    public Task LogAsync(AuditLog entry, CancellationToken ct = default)
+        => Task.CompletedTask;
+}
+
+file sealed class StubPasswordHistoryRepository : IPasswordHistoryRepository
+{
+    public Task<IList<PasswordHistoryEntry>> GetRecentAsync(Guid userId, int count, CancellationToken ct = default)
+        => Task.FromResult<IList<PasswordHistoryEntry>>([]);
+
+    public Task AddAsync(PasswordHistoryEntry entry, CancellationToken ct = default)
+        => Task.CompletedTask;
+
+    public Task SaveChangesAsync(CancellationToken ct = default)
+        => Task.CompletedTask;
+}
+
+file sealed class StubLicenseRepository : ILicenseRepository
+{
+    public Task<LicenseState?> GetCurrentAsync(CancellationToken ct = default)
+        => Task.FromResult<LicenseState?>(null);
+
+    public Task AddAsync(LicenseState state, CancellationToken ct = default)
+        => Task.CompletedTask;
+
+    public void Update(LicenseState state)
+    {
+    }
+
+    public Task<bool> IsVerificationKeyConsumedAsync(string keyHash, CancellationToken ct = default)
+        => Task.FromResult(false);
+
+    public Task AddConsumedKeyAsync(ConsumedVerificationKey key, CancellationToken ct = default)
+        => Task.CompletedTask;
+
+    public Task<int> SaveChangesAsync(CancellationToken ct = default)
+        => Task.FromResult(1);
+}

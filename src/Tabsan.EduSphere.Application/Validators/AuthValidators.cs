@@ -18,6 +18,12 @@ public sealed class LoginRequestValidator : AbstractValidator<LoginRequest>
         RuleFor(x => x.Password)
             .NotEmpty().WithMessage("Password is required.")
             .MaximumLength(128).WithMessage("Password must not exceed 128 characters.");
+
+        RuleFor(x => x.MfaCode)
+            .MaximumLength(16).WithMessage("MFA code must not exceed 16 characters.")
+            .Matches("^[0-9]*$")
+            .When(x => !string.IsNullOrWhiteSpace(x.MfaCode))
+            .WithMessage("MFA code can contain digits only.");
     }
 }
 

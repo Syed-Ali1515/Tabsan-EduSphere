@@ -1,7 +1,7 @@
 namespace Tabsan.EduSphere.Application.DTOs.Auth;
 
 /// <summary>Request body sent by a client to the POST /api/v1/auth/login endpoint.</summary>
-public sealed record LoginRequest(string Username, string Password);
+public sealed record LoginRequest(string Username, string Password, string? MfaCode = null, string? DeviceInfo = null);
 
 /// <summary>
 /// Returned on a successful login.
@@ -17,7 +17,11 @@ public sealed record LoginResponse(
     string Role,
     Guid UserId,
     string Username,
-    bool MustChangePassword = false);
+    bool MustChangePassword = false,
+    bool MfaEnabled = false,
+    bool SsoEnabled = false,
+    string? SsoProvider = null,
+    string SessionRiskLevel = "low");
 
 /// <summary>Request body sent to POST /api/v1/auth/refresh.</summary>
 public sealed record RefreshRequest(string RefreshToken);
@@ -40,8 +44,26 @@ public enum LoginFailureReason
     InvalidCredentials,
 
     /// <summary>Login was blocked because the active session count reached the license limit (P2-S1-01).</summary>
-    ConcurrencyLimitReached
+    ConcurrencyLimitReached,
+
+    /// <summary>MFA is required by deployment policy and no valid code was supplied.</summary>
+    MfaRequired,
+
+    /// <summary>Session risk control blocked this sign-in attempt.</summary>
+    SessionRiskBlocked
 }
+
+/// <summary>
+/// Security profile exposed to clients so login UX can adapt based on deployment policy.
+/// </summary>
+public sealed record AuthSecurityProfileResponse(
+    bool MfaEnabled,
+    bool RequireMfaForPasswordLogin,
+    bool SsoEnabled,
+    string? SsoProvider,
+    string? SsoLoginUrl,
+    bool SessionRiskEnabled,
+    bool BlockHighRiskLogin);
 
 /// <summary>
 /// Wrapper returned by IAuthService.LoginAsync.
