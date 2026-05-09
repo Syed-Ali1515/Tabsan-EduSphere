@@ -50,6 +50,13 @@
 - Added `MediaStorage:BlobRootPath` configuration in API appsettings files.
 - No database migration or schema change was required for Stage 28.3 Slice 4.
 
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 5 (File and Media Strategy)
+- Migrated portal logo upload to provider-backed storage persistence instead of inline base64 generation in the API controller.
+- Added `GET /api/v1/portal-settings/logo-files/{**storageKey}` to stream stored branding logos by storage key for login/landing rendering.
+- Added key-category guardrails so only `portal-branding/logo` storage keys are served by the anonymous logo endpoint.
+- Preserved compatibility with previously stored `data:image/*` logo values.
+- No database migration or schema change was required for Stage 28.3 Slice 5.
+
 ---
 
 ## Phase 12 — Academic Calendar System ✅ Implemented

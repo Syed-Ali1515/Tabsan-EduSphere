@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.41 (Phase 28 Stage 28.3 slice 4 delivered)  
+**Version:** 1.42 (Phase 28 Stage 28.3 slice 5 delivered)  
 **Status:** Approved  
 **Prepared By:** Product Team  
 **Last Updated:** 10 May 2026  
@@ -27,6 +27,14 @@
 - **Provider selection:** added config-driven media storage provider selection (`MediaStorage:Provider`).
 - **Object-storage adapter:** added `BlobMediaStorageService` with object-key semantics and configurable blob root path.
 - **Configuration:** added `MediaStorage:BlobRootPath` in API appsettings defaults/placeholders.
+- **Schema impact:** no database migration required.
+- **Validation:** solution build passed; automated tests passed **162/162**.
+
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 5
+- **Portal branding storage migration:** migrated logo upload from inline base64 payload generation to provider-backed object persistence.
+- **Streaming endpoint:** added `GET /api/v1/portal-settings/logo-files/{**storageKey}` for logo rendering against provider-backed assets.
+- **Access guardrail:** endpoint only serves `portal-branding/logo` key category to avoid broad anonymous media access.
+- **Backward compatibility:** previously stored data-URI logos continue to render unchanged.
 - **Schema impact:** no database migration required.
 - **Validation:** solution build passed; automated tests passed **162/162**.
 

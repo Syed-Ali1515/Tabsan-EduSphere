@@ -32,6 +32,12 @@
 - Added `BlobRootPath` storage configuration key in API environment appsettings.
 - Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
 
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 5
+- Migrated portal logo upload in `PortalSettingsController` to provider-backed save flow through `IMediaStorageService`.
+- Added `GET /api/v1/portal-settings/logo-files/{**storageKey}` endpoint to stream persisted logo bytes for branding display paths.
+- Added category guardrails so only `portal-branding/logo` keys are anonymously streamable.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
+
 ### 2026-05-09 — Phase 28 Stage 28.1 Complete
 - Completed **API and App Tier Scaling** as the first stage of the scalability architecture roadmap.
 - Replaced Web session-backed connection/auth state with protected-cookie storage to keep portal nodes stateless across a load-balanced deployment.

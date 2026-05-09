@@ -46,6 +46,12 @@ This file tracks the reported portal issues as phased work items so they can be 
 - Added `BlobRootPath` configuration support in API appsettings.
 - Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
 
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 5 Update
+- Migrated portal logo upload flow to provider-backed storage persistence via `IMediaStorageService`.
+- Added anonymous logo streaming endpoint (`GET /api/v1/portal-settings/logo-files/{**storageKey}`) so branding can render without bearer headers.
+- Added guarded key-category check so only `portal-branding/logo` objects are served by the public endpoint.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
+
 ---
 
 ## Refactoring-Hosting-Security — Part A + Part B

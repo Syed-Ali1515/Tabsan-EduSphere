@@ -56,11 +56,11 @@ cmd /c git -C "<repo-root>" push origin main
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
 - Active Phase: **Phase 28 — Scalability Architecture (1M+ Readiness) — IN PROGRESS ⚙️**
-- Active Stage: **Stage 28.3 in progress (Slice 4 delivered: configurable provider selection + blob-style adapter)**
-- Status: **0 build errors; 162/162 tests passed; no database migration required for Stage 28.3 Slice 4**
+- Active Stage: **Stage 28.3 in progress (Slice 5 delivered: portal logo provider persistence + public logo streaming endpoint)**
+- Status: **0 build errors; 162/162 tests passed; no database migration required for Stage 28.3 Slice 5**
 - Last Updated: 2026-05-10
-- Next: **Phase 28 Stage 28.3 — migrate remaining direct file-path flows and harden provider capabilities (metadata, signed URLs, streaming)** (see Docs/Advance-Enhancements.md)
-- Docs Updated: ✅ All 8 tracking files updated for Phase 28 Stage 28.3 Slice 4 progress (2026-05-10)
+- Next: **Phase 28 Stage 28.3 — harden provider capabilities (metadata, signed URLs, controlled streaming) and migrate remaining direct path assumptions** (see Docs/Advance-Enhancements.md)
+- Docs Updated: ✅ All 8 tracking files updated for Phase 28 Stage 28.3 Slice 5 progress (2026-05-10)
 
 ---
 
@@ -213,6 +213,11 @@ Database is fully synchronized with codebase.
   - Added `BlobMediaStorageService` adapter (object-storage style key semantics, isolated root path, reference generation).
   - Extended media storage settings with `BlobRootPath` and updated environment appsettings defaults/placeholders.
   - Local provider remains default to preserve runtime behavior unless provider is explicitly switched.
+- **Phase 28 — Scalability Architecture — Stage 28.3 SLICE 5 DELIVERED ✅**
+  - Migrated portal logo upload from inline base64 return to provider-backed persistence through `IMediaStorageService`.
+  - Added public logo streaming endpoint `GET /api/v1/portal-settings/logo-files/{**storageKey}` for branding rendering without bearer headers.
+  - Added guarded key-category enforcement so only `portal-branding/logo` objects are served by the anonymous endpoint.
+  - Preserved backward compatibility for existing `data:image/*` logo values already stored in portal settings.
 - Continue through Phase 28.3+ per Docs/Advance-Enhancements.md
 
 ## Pending Extra Tasks (Cross-Phase)

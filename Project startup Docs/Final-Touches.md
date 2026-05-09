@@ -170,6 +170,28 @@ For **every completed phase**:
 
 ---
 
+## Phase 28 — Scalability Architecture (Stage 28.3 Slice 5)
+**Status:** ✅ Slice 5 Delivered (2026-05-10)
+
+### Completion Mark
+- [x] Migrate portal logo upload to provider-backed object persistence.
+- [x] Add key-based logo streaming endpoint for branding rendering.
+- [x] Add guardrails to keep anonymous logo streaming scoped to branding-logo objects.
+- [x] Preserve backward compatibility for existing `data:image/*` logo settings values.
+- [x] Confirm no database migration is required.
+
+### Implementation Summary
+- `PortalSettingsController.UploadLogo` now validates and persists uploaded logos via `IMediaStorageService` and returns a provider-backed URL.
+- Added `PortalSettingsController.GetLogoFile` at `GET /api/v1/portal-settings/logo-files/{**storageKey}` to stream stored logos without bearer headers.
+- Added `ResolveImageContentType` helper and a `portal-branding/logo` key-category guard for controlled anonymous access.
+
+### Validation Summary
+- `dotnet build src/Tabsan.EduSphere.API/Tabsan.EduSphere.API.csproj` — passed.
+- `dotnet build Tabsan.EduSphere.sln` — passed.
+- `dotnet test Tabsan.EduSphere.sln --no-build` — **162/162 passed**.
+
+---
+
 ## Refactoring-Hosting-Security — Part A + Part B
 **Status:** ✅ Fully Complete (2026-05-07) | Commits: f56ccd9, 5e80bc9
 

@@ -258,6 +258,14 @@
 | `NotificationFanoutWorker.ExecuteAsync(...)` | Background worker that drains deferred fan-out batches and persists notification recipients in chunks. | `API/Services/NotificationFanoutWorker.cs` |
 | `NotificationService.FanOutRecipientsAsync(...)` | Chooses between inline recipient persistence and deferred background fan-out based on recipient count. | `Application/Notifications/NotificationService.cs` |
 | `ReportService.GetCatalogAsync(roleName, ct)` | Reads/writes report catalog results through distributed cache for shared hot-read reuse across nodes. | `Infrastructure/Reporting/ReportService.cs` |
+
+### API — Phase 28 Stage 28.3 Slice 5 (Portal Branding Logo Storage)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `UploadLogo(file, ct)` | Validates and stores portal logo assets through `IMediaStorageService` and returns a storage-backed logo URL instead of an inline base64 payload. | `API/Controllers/PortalSettingsController.cs` |
+| `GetLogoFile(storageKey, ct)` | Streams provider-backed portal logo content by storage key for anonymous branding rendering on login/landing flows. | `API/Controllers/PortalSettingsController.cs` |
+| `ResolveImageContentType(path)` | Maps stored logo key/file extension to response content type for logo streaming responses. | `API/Controllers/PortalSettingsController.cs` |
 | `ModuleEntitlementResolver.IsActiveAsync(moduleKey, ct)` | Uses local memory + distributed cache to share module-activation decisions across API nodes. | `Infrastructure/Modules/ModuleEntitlementResolver.cs` |
 
 ### API — Phase 28 Stage 28.2 Completion

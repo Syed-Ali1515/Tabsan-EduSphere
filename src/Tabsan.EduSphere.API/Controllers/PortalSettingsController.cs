@@ -16,10 +16,12 @@ namespace Tabsan.EduSphere.API.Controllers;
 public class PortalSettingsController : ControllerBase
 {
     private readonly IPortalBrandingService _service;
+    private readonly IMediaStorageService _mediaStorage;
 
-    public PortalSettingsController(IPortalBrandingService service)
+    public PortalSettingsController(IPortalBrandingService service, IMediaStorageService mediaStorage)
     {
         _service = service;
+        _mediaStorage = mediaStorage;
     }
 
     /// <summary>Returns the current portal branding values.</summary>
@@ -51,6 +53,7 @@ public class PortalSettingsController : ControllerBase
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> UploadLogo(IFormFile file, CancellationToken ct)
     {
+        // Final-Touches Phase 28 Stage 28.3 — persist portal logo through storage provider.
         var error = await FileUploadValidator.ValidateImageAsync(file);
         if (error is not null)
             return BadRequest(new { message = error });
@@ -58,22 +61,44 @@ public class PortalSettingsController : ControllerBase
         var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
 
         await using var read = file.OpenReadStream();
-        await using var ms = new MemoryStream();
-        await read.CopyToAsync(ms, ct);
+        var stored = await _mediaStorage.SaveAsync(read, "portal-branding/logo", ext, ct);
 
-        var mime = ext switch
+        return Ok(new { url = $"/api/v1/portal-settings/logo-files/{stored.StorageKey}" });
+    }
+
+    /// <summary>
+    /// Returns a stored portal logo by storage key.
+    /// Kept anonymous so login/landing pages can render branding without bearer headers.
+    /// </summary>
+    [AllowAnonymous]
+    [HttpGet("logo-files/{**storageKey}")]
+    public async Task<IActionResult> GetLogoFile(string storageKey, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(storageKey))
+            return NotFound();
+
+        // Only permit logo category keys through this public endpoint.
+        if (!storageKey.Contains("portal-branding/logo", StringComparison.OrdinalIgnoreCase))
+            return NotFound();
+
+        var bytes = await _mediaStorage.ReadAsBytesAsync(storageKey, ct);
+        if (bytes is null) return NotFound();
+
+        return File(bytes, ResolveImageContentType(storageKey));
+    }
+
+    private static string ResolveImageContentType(string path)
+    {
+        var ext = Path.GetExtension(path).ToLowerInvariant();
+        return ext switch
         {
-            ".png"  => "image/png",
-            ".jpg"  => "image/jpeg",
+            ".png" => "image/png",
+            ".jpg" => "image/jpeg",
             ".jpeg" => "image/jpeg",
-            ".gif"  => "image/gif",
-            ".svg"  => "image/svg+xml",
+            ".gif" => "image/gif",
+            ".svg" => "image/svg+xml",
             ".webp" => "image/webp",
             _ => "application/octet-stream"
         };
-
-        var b64     = Convert.ToBase64String(ms.ToArray());
-        var dataUri = $"data:{mime};base64,{b64}";
-        return Ok(new { url = dataUri });
     }
 }
