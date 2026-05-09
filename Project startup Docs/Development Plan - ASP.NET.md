@@ -38,6 +38,13 @@
 - Added category guardrails so only `portal-branding/logo` keys are anonymously streamable.
 - Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
 
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 6
+- Extended `IMediaStorageService` with temporary read URL generation (`GenerateTemporaryReadUrlAsync`) for signed URL ready media reads.
+- Added temporary signed URL generation support in both local and blob provider implementations.
+- Updated portal logo-file endpoint to use provider temporary URL redirect when available, then fall back to in-process byte streaming.
+- Added `SignedUrlSecret` placeholders in API appsettings files.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
+
 ### 2026-05-09 — Phase 28 Stage 28.1 Complete
 - Completed **API and App Tier Scaling** as the first stage of the scalability architecture roadmap.
 - Replaced Web session-backed connection/auth state with protected-cookie storage to keep portal nodes stateless across a load-balanced deployment.

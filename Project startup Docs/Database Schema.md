@@ -45,6 +45,11 @@
 - Stage 28.3 slice 5 migrated portal logo uploads to provider-backed storage and added key-based logo streaming from the API.
 - No database schema change and no EF migration were required.
 
+## 2026-05-10 Update — Phase 28 Stage 28.3 Slice 6
+
+- Stage 28.3 slice 6 added temporary signed read URL support in the storage abstraction and provider adapters.
+- No database schema change and no EF migration were required.
+
 ---
 
 # PART 1: UNIVERSITY PORTAL APPLICATION DATABASE

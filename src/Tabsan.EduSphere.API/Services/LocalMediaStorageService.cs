@@ -1,4 +1,6 @@
 using Microsoft.Extensions.Options;
+using System.Security.Cryptography;
+using System.Text;
 using Tabsan.EduSphere.Application.Interfaces;
 
 namespace Tabsan.EduSphere.API.Services;
@@ -57,6 +59,30 @@ public sealed class LocalMediaStorageService : IMediaStorageService
         return await File.ReadAllBytesAsync(fullPath, ct);
     }
 
+    public Task<string?> GenerateTemporaryReadUrlAsync(
+        string storageKey,
+        TimeSpan ttl,
+        CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(storageKey))
+            return Task.FromResult<string?>(null);
+
+        if (string.IsNullOrWhiteSpace(_options.PublicBaseUrl))
+            return Task.FromResult<string?>(null);
+
+        // Final-Touches Phase 28 Stage 28.3 — generate provider-backed temporary signed URL.
+        var baseUrl = _options.PublicBaseUrl!.TrimEnd('/');
+        var expiresAt = DateTimeOffset.UtcNow.Add(ttl <= TimeSpan.Zero ? TimeSpan.FromMinutes(5) : ttl).ToUnixTimeSeconds();
+        var unsignedUrl = $"{baseUrl}/{storageKey}?exp={expiresAt}";
+        var signature = CreateSignature(storageKey, expiresAt);
+
+        var url = signature is null
+            ? unsignedUrl
+            : $"{unsignedUrl}&sig={Uri.EscapeDataString(signature)}";
+
+        return Task.FromResult<string?>(url);
+    }
+
     public Task DeleteAsync(string storageKey, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(storageKey))
@@ -109,5 +135,20 @@ public sealed class LocalMediaStorageService : IMediaStorageService
         var normalized = prefix.Trim().Replace('\\', '/').Trim('/');
         if (string.IsNullOrWhiteSpace(normalized)) return string.Empty;
         return normalized + "/";
+    }
+
+    private string? CreateSignature(string storageKey, long expiresAt)
+    {
+        var secret = _options.SignedUrlSecret;
+        if (string.IsNullOrWhiteSpace(secret))
+            return null;
+
+        var payload = $"{storageKey}|{expiresAt}";
+        var keyBytes = Encoding.UTF8.GetBytes(secret);
+        var payloadBytes = Encoding.UTF8.GetBytes(payload);
+
+        using var hmac = new HMACSHA256(keyBytes);
+        var hash = hmac.ComputeHash(payloadBytes);
+        return Convert.ToHexString(hash).ToLowerInvariant();
     }
 }

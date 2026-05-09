@@ -74,12 +74,17 @@ public class PortalSettingsController : ControllerBase
     [HttpGet("logo-files/{**storageKey}")]
     public async Task<IActionResult> GetLogoFile(string storageKey, CancellationToken ct)
     {
+        // Final-Touches Phase 28 Stage 28.3 — prefer provider temporary URL with safe local fallback.
         if (string.IsNullOrWhiteSpace(storageKey))
             return NotFound();
 
         // Only permit logo category keys through this public endpoint.
         if (!storageKey.Contains("portal-branding/logo", StringComparison.OrdinalIgnoreCase))
             return NotFound();
+
+        var temporaryUrl = await _mediaStorage.GenerateTemporaryReadUrlAsync(storageKey, TimeSpan.FromMinutes(10), ct);
+        if (Uri.TryCreate(temporaryUrl, UriKind.Absolute, out _))
+            return Redirect(temporaryUrl!);
 
         var bytes = await _mediaStorage.ReadAsBytesAsync(storageKey, ct);
         if (bytes is null) return NotFound();

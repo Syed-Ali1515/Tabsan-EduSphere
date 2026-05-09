@@ -52,6 +52,12 @@ This file tracks the reported portal issues as phased work items so they can be 
 - Added guarded key-category check so only `portal-branding/logo` objects are served by the public endpoint.
 - Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
 
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 6 Update
+- Extended media storage abstraction with temporary read URL support (`GenerateTemporaryReadUrlAsync`) to prepare signed URL-based media reads.
+- Added temporary signed URL generation support in local/blob provider adapters using optional `MediaStorage:SignedUrlSecret`.
+- Updated portal logo file endpoint to use redirect-first reads from provider temporary URLs with byte-stream fallback.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
+
 ---
 
 ## Refactoring-Hosting-Security — Part A + Part B

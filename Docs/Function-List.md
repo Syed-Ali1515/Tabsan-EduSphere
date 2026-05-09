@@ -266,6 +266,16 @@
 | `UploadLogo(file, ct)` | Validates and stores portal logo assets through `IMediaStorageService` and returns a storage-backed logo URL instead of an inline base64 payload. | `API/Controllers/PortalSettingsController.cs` |
 | `GetLogoFile(storageKey, ct)` | Streams provider-backed portal logo content by storage key for anonymous branding rendering on login/landing flows. | `API/Controllers/PortalSettingsController.cs` |
 | `ResolveImageContentType(path)` | Maps stored logo key/file extension to response content type for logo streaming responses. | `API/Controllers/PortalSettingsController.cs` |
+
+### Application/API — Phase 28 Stage 28.3 Slice 6 (Temporary Signed Read URLs)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GenerateTemporaryReadUrlAsync(storageKey, ttl, ct)` | Storage-contract method for provider-generated temporary read URLs used by redirect-first media serving paths. | `Application/Interfaces/IMediaStorageService.cs` |
+| `GenerateTemporaryReadUrlAsync(storageKey, ttl, ct)` | Local provider implementation that emits temporary URL references with optional HMAC signature when configured. | `API/Services/LocalMediaStorageService.cs` |
+| `GenerateTemporaryReadUrlAsync(storageKey, ttl, ct)` | Blob-style provider implementation that emits temporary URL references with optional HMAC signature when configured. | `API/Services/BlobMediaStorageService.cs` |
+| `CreateSignature(storageKey, expiresAt)` | Internal helper that signs temporary read URL payloads using `MediaStorage:SignedUrlSecret`. | `API/Services/LocalMediaStorageService.cs`, `API/Services/BlobMediaStorageService.cs` |
+| `GetLogoFile(storageKey, ct)` (redirect-first path) | Updated to prefer provider-generated temporary URL redirects and fall back to in-process streaming when redirect URL is unavailable. | `API/Controllers/PortalSettingsController.cs` |
 | `ModuleEntitlementResolver.IsActiveAsync(moduleKey, ct)` | Uses local memory + distributed cache to share module-activation decisions across API nodes. | `Infrastructure/Modules/ModuleEntitlementResolver.cs` |
 
 ### API — Phase 28 Stage 28.2 Completion

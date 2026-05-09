@@ -57,6 +57,13 @@
 - Preserved compatibility with previously stored `data:image/*` logo values.
 - No database migration or schema change was required for Stage 28.3 Slice 5.
 
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 6 (File and Media Strategy)
+- Extended storage abstraction with temporary read URL capability (`GenerateTemporaryReadUrlAsync`) for signed URL ready provider behavior.
+- Added temporary signed URL generation support in local/blob providers using optional `MediaStorage:SignedUrlSecret`.
+- Updated portal branding logo read flow to prefer provider temporary URL redirect and fall back to internal byte streaming when no URL is available.
+- Added `SignedUrlSecret` configuration placeholders to API appsettings files.
+- No database migration or schema change was required for Stage 28.3 Slice 6.
+
 ---
 
 ## Phase 12 — Academic Calendar System ✅ Implemented

@@ -17,4 +17,7 @@ public sealed class MediaStorageOptions
 
     // Optional key prefix (e.g., tenant or environment), applied to all stored objects.
     public string? KeyPrefix { get; set; }
+
+    // Optional secret used to sign temporary read URLs produced by storage providers.
+    public string? SignedUrlSecret { get; set; }
 }

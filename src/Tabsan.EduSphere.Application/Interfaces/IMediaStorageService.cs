@@ -13,6 +13,11 @@ public interface IMediaStorageService
 
     Task<byte[]?> ReadAsBytesAsync(string storageKey, CancellationToken ct = default);
 
+    Task<string?> GenerateTemporaryReadUrlAsync(
+        string storageKey,
+        TimeSpan ttl,
+        CancellationToken ct = default);
+
     Task DeleteAsync(string storageKey, CancellationToken ct = default);
 }
 

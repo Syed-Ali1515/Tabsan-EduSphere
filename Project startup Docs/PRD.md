@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.42 (Phase 28 Stage 28.3 slice 5 delivered)  
+**Version:** 1.43 (Phase 28 Stage 28.3 slice 6 delivered)  
 **Status:** Approved  
 **Prepared By:** Product Team  
 **Last Updated:** 10 May 2026  
@@ -35,6 +35,14 @@
 - **Streaming endpoint:** added `GET /api/v1/portal-settings/logo-files/{**storageKey}` for logo rendering against provider-backed assets.
 - **Access guardrail:** endpoint only serves `portal-branding/logo` key category to avoid broad anonymous media access.
 - **Backward compatibility:** previously stored data-URI logos continue to render unchanged.
+- **Schema impact:** no database migration required.
+- **Validation:** solution build passed; automated tests passed **162/162**.
+
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 6
+- **Storage contract hardening:** extended `IMediaStorageService` with `GenerateTemporaryReadUrlAsync` for temporary signed URL workflows.
+- **Provider support:** local and blob storage adapters now generate temporary read URLs with optional HMAC signature support (`MediaStorage:SignedUrlSecret`).
+- **Portal logo read path:** `GET /api/v1/portal-settings/logo-files/{**storageKey}` now prefers provider temporary URL redirect with safe byte-stream fallback.
+- **Configuration:** added `SignedUrlSecret` placeholders to API appsettings files.
 - **Schema impact:** no database migration required.
 - **Validation:** solution build passed; automated tests passed **162/162**.
 
