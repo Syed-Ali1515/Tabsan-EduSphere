@@ -272,6 +272,15 @@
 | `ResultPublishJobWorker.ExecuteAsync(...)` | Background worker that executes queued result publish-all jobs and persists job state. | `API/Services/ResultPublishJobWorker.cs` |
 | `ReportExportJobWorker.ExecuteAsync(...)` | Background worker that executes queued result-summary export jobs and stores payloads for deferred download. | `API/Services/ReportExportJobWorker.cs` |
 
+### API — Phase 28 Stage 28.3 Slice 1
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `PaymentReceiptController.SubmitProof(id, file, ct)` | Persists student payment-proof uploads through the storage provider abstraction and stores object-key references. | `API/Controllers/PaymentReceiptController.cs` |
+| `IMediaStorageService.SaveAsync(content, category, fileExtension, ct)` | Defines provider-agnostic media persistence contract for local or future object storage implementations. | `API/Services/IMediaStorageService.cs` |
+| `LocalMediaStorageService.SaveAsync(content, category, fileExtension, ct)` | Stores uploaded media in a configurable local root while issuing stable object keys for metadata-only DB references. | `API/Services/LocalMediaStorageService.cs` |
+| `LocalMediaStorageService.BuildReference(objectKey)` | Builds an external reference using optional `PublicBaseUrl`, enabling CDN/object-storage style references without API contract changes. | `API/Services/LocalMediaStorageService.cs` |
+
 ### API — Program.cs Changes (Part A)
 
 | Change | Purpose | Location |

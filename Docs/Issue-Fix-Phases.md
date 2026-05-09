@@ -22,6 +22,12 @@ This file tracks the reported portal issues as phased work items so they can be 
 - Stage 28.2 is now complete for caching and background workload objectives.
 - Validation: `dotnet build Tabsan.EduSphere.sln` passed and automated tests passed **162/162**.
 
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 1 Update
+- Added a configurable file/media storage abstraction in the API (`IMediaStorageService` + `LocalMediaStorageService`).
+- Payment proof uploads now persist through the storage provider and store object-key metadata instead of hard-coded local file paths.
+- Added `MediaStorage` settings in API configuration for local root path, key prefix, and optional public base URL to prepare for object storage/CDN cutover.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed.
+
 ---
 
 ## Refactoring-Hosting-Security — Part A + Part B

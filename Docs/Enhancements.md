@@ -25,6 +25,13 @@
 - Stage 28.2 is now complete: Redis/distributed cache for hot reads + background processing for notification fan-out, report generation, and large recalculation workloads.
 - No database migration or schema change was required for Stage 28.2 completion.
 
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 1 (File and Media Strategy)
+- Added storage-provider abstraction for media workflows via `IMediaStorageService` and `LocalMediaStorageService`.
+- Added `MediaStorage` configuration section (provider, local root path, optional public base URL, optional key prefix) across API appsettings files.
+- Migrated payment-proof upload flow to provider-backed persistence and object-key storage references instead of hard-coded local file paths.
+- Reused file validation pipeline before persistence for safer uploads.
+- No database migration or schema change was required for Stage 28.3 Slice 1.
+
 ---
 
 ## Phase 12 — Academic Calendar System ✅ Implemented

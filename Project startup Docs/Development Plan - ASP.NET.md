@@ -8,6 +8,12 @@
 
 ## Execution Updates
 
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 1
+- Added provider-based file/media storage abstraction in API (`IMediaStorageService`, `LocalMediaStorageService`, `MediaStorageOptions`).
+- Added `MediaStorage` configuration to API appsettings (provider mode, local root path, key prefix, optional public base URL).
+- Migrated payment-proof upload flow to storage abstraction so database records persist storage object keys instead of hard-coded file system paths.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed.
+
 ### 2026-05-09 — Phase 28 Stage 28.1 Complete
 - Completed **API and App Tier Scaling** as the first stage of the scalability architecture roadmap.
 - Replaced Web session-backed connection/auth state with protected-cookie storage to keep portal nodes stateless across a load-balanced deployment.

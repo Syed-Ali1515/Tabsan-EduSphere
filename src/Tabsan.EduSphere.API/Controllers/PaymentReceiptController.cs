@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Tabsan.EduSphere.API.Services;
 using Tabsan.EduSphere.Application.Dtos;
 using Tabsan.EduSphere.Application.Interfaces;
 
@@ -18,10 +19,12 @@ namespace Tabsan.EduSphere.API.Controllers;
 public class PaymentReceiptController : ControllerBase
 {
     private readonly IStudentLifecycleService _service;
+    private readonly IMediaStorageService _mediaStorage;
 
-    public PaymentReceiptController(IStudentLifecycleService service)
+    public PaymentReceiptController(IStudentLifecycleService service, IMediaStorageService mediaStorage)
     {
         _service = service;
+        _mediaStorage = mediaStorage;
     }
 
     private Guid GetUserId()
@@ -148,27 +151,27 @@ public class PaymentReceiptController : ControllerBase
     [Authorize(Roles = "Student")]
     public async Task<IActionResult> SubmitProof(Guid id, IFormFile file, CancellationToken ct)
     {
+        // Final-Touches Phase 28 Stage 28.3 — route payment proof uploads through the storage abstraction.
         if (file == null || file.Length == 0)
             return BadRequest(new { message = "No file uploaded." });
 
-        // Validate extension — only images and PDFs accepted
+        // Keep this endpoint intentionally strict to payment-proof formats.
         var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
         var allowed = new[] { ".pdf", ".jpg", ".jpeg", ".png" };
         if (!allowed.Contains(ext))
             return BadRequest(new { message = "Only PDF, JPG, or PNG files are accepted as payment proof." });
 
-        // Save file to a secure upload directory — production should use blob storage
-        var uploadsDir = Path.Combine("uploads", "payment-proofs");
-        Directory.CreateDirectory(uploadsDir);
-        var fileName = $"{id}_{DateTime.UtcNow:yyyyMMddHHmmss}{ext}";
-        var filePath = Path.Combine(uploadsDir, fileName);
+        // Final-Touches Phase 28 Stage 28.3 — retain strict extension gate + deep upload validation.
+        var uploadError = await FileUploadValidator.ValidateAsync(file);
+        if (!string.IsNullOrWhiteSpace(uploadError))
+            return BadRequest(new { message = uploadError });
 
-        await using var stream = System.IO.File.Create(filePath);
-        await file.CopyToAsync(stream, ct);
+        await using var stream = file.OpenReadStream();
+        var stored = await _mediaStorage.SaveAsync(stream, "payment-proofs", ext, ct);
 
         try
         {
-            await _service.SubmitPaymentProofAsync(id, filePath, ct);
+            await _service.SubmitPaymentProofAsync(id, stored.StorageKey, ct);
             return NoContent();
         }
         catch (KeyNotFoundException e)

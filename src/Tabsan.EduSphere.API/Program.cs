@@ -146,6 +146,9 @@ else
 }
 builder.Services.AddScoped<IModuleEntitlementResolver, ModuleEntitlementResolver>();
 builder.Services.AddScoped<ModuleEntitlementResolver>(); // concrete needed by LicenseController
+// Final-Touches Phase 28 Stage 28.3 — storage provider abstraction for file/media workflows.
+builder.Services.Configure<MediaStorageOptions>(builder.Configuration.GetSection(MediaStorageOptions.SectionName));
+builder.Services.AddScoped<IMediaStorageService, LocalMediaStorageService>();
 
 // ── Phase 2: Academic repositories ─────────────────────────────────────────────
 builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();

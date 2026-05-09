@@ -1,14 +1,21 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.37 (Phase 28 Stage 28.1 complete)  
+**Version:** 1.38 (Phase 28 Stage 28.3 slice 1 delivered)  
 **Status:** Approved  
 **Prepared By:** Product Team  
-**Last Updated:** 9 May 2026  
+**Last Updated:** 10 May 2026  
 
 ---
 
 ## 0. Implementation Update Log
+
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 1
+- **File/media abstraction:** introduced provider-based API storage contract (`IMediaStorageService`) and local implementation (`LocalMediaStorageService`) to remove endpoint-level hard-coded file persistence.
+- **First migrated flow:** payment proof upload now stores through the provider and persists storage object keys as metadata.
+- **Configuration:** added `MediaStorage` section (provider/local root/public base URL/key prefix) in API appsettings files for future object-storage/CDN migration.
+- **Schema impact:** no database migration required.
+- **Validation:** solution build passed.
 
 ### 2026-05-09 — Phase 28 Stage 28.1 API and App Tier Scaling Complete
 - **Load-balancer readiness:** expanded forwarded-header handling on the API and added forwarded-header handling to the Web tier for reverse-proxy deployments.
