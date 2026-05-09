@@ -127,7 +127,11 @@ obj/Debug/net8.0/
 Program.cs
 ProgramEntry.cs
 Services/
+ BlobMediaStorageService.cs
  FileUploadValidator.cs
+ LocalMediaStorageService.cs
+ MediaStorageOptions.cs
+ MediaStorageServiceCollectionExtensions.cs
  NotificationFanoutQueue.cs
  NotificationFanoutWorker.cs
  ReportExportJobQueue.cs

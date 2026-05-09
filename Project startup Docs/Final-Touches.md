@@ -323,6 +323,28 @@ For **every completed phase**:
 
 ---
 
+## Phase 29 — MSSQL Data and Indexing Optimization (Stage 29.1)
+**Status:** ✅ Stage 29.1 Delivered (2026-05-10)
+
+### Completion Mark
+- [x] Add baseline indexes for high-frequency student/user/course/semester-shaped filters.
+- [x] Add composite indexes for common recency/status query contracts.
+- [x] Generate EF migration for the index baseline.
+- [x] Record current-schema audit for roadmap keys not yet present (`InstitutionId`, `YearId`, `GradeId`).
+
+### Implementation Summary
+- Added composite recency/status indexes to graduation applications, support tickets, notification recipients, payment receipts, quiz attempts, and user sessions.
+- Generated EF migration `20260509155457_20260510_Phase29_IndexBaseline`.
+- Confirmed the current model does not yet contain `InstitutionId`, `YearId`, or `GradeId` columns, so Stage 29.1 focused on the active hot-path key set already present in the schema.
+
+### Validation Summary
+- `dotnet build src/Tabsan.EduSphere.Infrastructure/Tabsan.EduSphere.Infrastructure.csproj` — passed.
+- `dotnet build Tabsan.EduSphere.sln` — passed.
+- `dotnet ef migrations list --project src/Tabsan.EduSphere.Infrastructure --startup-project src/Tabsan.EduSphere.API` — includes `20260509155457_20260510_Phase29_IndexBaseline`.
+- `dotnet test Tabsan.EduSphere.sln --no-build` — **162/162 passed**.
+
+---
+
 ## Refactoring-Hosting-Security — Part A + Part B
 **Status:** ✅ Fully Complete (2026-05-07) | Commits: f56ccd9, 5e80bc9
 

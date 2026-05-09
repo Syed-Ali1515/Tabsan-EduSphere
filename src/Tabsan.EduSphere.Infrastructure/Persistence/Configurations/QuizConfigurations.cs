@@ -90,6 +90,13 @@ internal sealed class QuizAttemptConfiguration : IEntityTypeConfiguration<QuizAt
         // One in-progress attempt per student per quiz
         builder.HasIndex(a => new { a.QuizId, a.StudentProfileId, a.Status });
         builder.HasIndex(a => a.StudentProfileId);
+
+         // Final-Touches Phase 29 Stage 29.1 — support per-student and per-quiz attempt history ordered by recency.
+         builder.HasIndex(a => new { a.StudentProfileId, a.StartedAt })
+             .HasDatabaseName("IX_quiz_attempts_student_started_at");
+
+         builder.HasIndex(a => new { a.QuizId, a.StudentProfileId, a.StartedAt })
+             .HasDatabaseName("IX_quiz_attempts_quiz_student_started_at");
     }
 }
 

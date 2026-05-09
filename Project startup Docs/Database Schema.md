@@ -75,6 +75,12 @@
 - Phase 28 completed with runtime, cache/worker, and media-storage architecture changes only.
 - No database schema change and no EF migration were required for Phase 28 completion.
 
+## 2026-05-10 Update — Phase 29 Stage 29.1
+
+- Stage 29.1 added composite indexes for graduation applications, support tickets, notification recipients, payment receipts, quiz attempts, and user sessions.
+- EF migration added: `20260509155457_20260510_Phase29_IndexBaseline`.
+- Current model audit found no `InstitutionId`, `YearId`, or `GradeId` columns, so no indexes were added for those keys in this stage.
+
 ---
 
 # PART 1: UNIVERSITY PORTAL APPLICATION DATABASE

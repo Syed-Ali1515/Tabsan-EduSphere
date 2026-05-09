@@ -86,6 +86,12 @@ This file tracks the reported portal issues as phased work items so they can be 
 - Stage 28.1, Stage 28.2, and Stage 28.3 are now complete.
 - Phase 28 delivered stateless scale-out readiness, distributed cache/background offload, and provider-backed file/media hardening without schema changes.
 
+### 2026-05-10 — Phase 29 Stage 29.1 Update
+- Added baseline composite indexes for hot student/user/status recency queries on graduation applications, support tickets, notification recipients, payment receipts, quiz attempts, and user sessions.
+- Added EF migration `20260509155457_20260510_Phase29_IndexBaseline`.
+- Model audit confirmed there are currently no `InstitutionId`, `YearId`, or `GradeId` columns to index in the active schema, so Stage 29.1 focused on existing high-frequency key paths.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
+
 ---
 
 ## Refactoring-Hosting-Security — Part A + Part B

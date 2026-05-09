@@ -54,6 +54,9 @@ public class PaymentReceiptConfiguration : IEntityTypeConfiguration<PaymentRecei
         builder.HasIndex(x => x.StudentProfileId).HasDatabaseName("ix_pr_student_profile_id");
         builder.HasIndex(x => x.Status).HasDatabaseName("ix_pr_status");
         builder.HasIndex(x => new { x.StudentProfileId, x.Status }).HasDatabaseName("ix_pr_student_status");
+        // Final-Touches Phase 29 Stage 29.1 — support student receipt history and unpaid queues.
+        builder.HasIndex(x => new { x.StudentProfileId, x.CreatedAt }).HasDatabaseName("ix_pr_student_created_at");
+        builder.HasIndex(x => new { x.Status, x.DueDate }).HasDatabaseName("ix_pr_status_due_date");
         builder.HasIndex(x => x.DueDate).HasDatabaseName("ix_pr_due_date");
     }
 }

@@ -55,12 +55,12 @@ cmd /c git -C "<repo-root>" push origin main
 
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
-- Active Phase: **Phase 28 — Scalability Architecture (1M+ Readiness) — COMPLETE ✅**
-- Active Stage: **Stage 28.3 complete (Slice 10 delivered: integrity/disposition metadata + download semantics hardening)**
-- Status: **0 build errors; 162/162 tests passed; no database migration required for Stage 28.3 completion**
+- Active Phase: **Phase 29 — MSSQL Data and Indexing Optimization — IN PROGRESS ⚙️**
+- Active Stage: **Stage 29.1 complete (index baseline + query-contract coverage delivered)**
+- Status: **0 build errors; 162/162 tests passed; EF migration `20260509155457_20260510_Phase29_IndexBaseline` added for Stage 29.1**
 - Last Updated: 2026-05-10
-- Next: **Phase 29 Stage 29.1 — start MSSQL index baseline and query-contract validation for high-frequency filters** (see Docs/Advance-Enhancements.md)
-- Docs Updated: ✅ All 8 tracking files updated for Phase 28 Stage 28.3 completion (2026-05-10)
+- Next: **Phase 29 Stage 29.2 — enforce pagination/filter discipline and remove heavy unbounded list paths** (see Docs/Advance-Enhancements.md)
+- Docs Updated: ✅ All 8 tracking files updated for Phase 29 Stage 29.1 progress (2026-05-10)
 
 ---
 
@@ -247,6 +247,10 @@ Database is fully synchronized with codebase.
   - Stage 28.1 delivered stateless/load-balanced app behavior.
   - Stage 28.2 delivered distributed cache and background-work offload.
   - Stage 28.3 delivered provider-backed media persistence, signed reads, metadata, and integrity/disposition hardening with no schema changes.
+- **Phase 29 — MSSQL Data and Indexing Optimization — Stage 29.1 DELIVERED ✅**
+  - Added baseline composite indexes for high-frequency student/user/status recency queries across graduation applications, support tickets, notification inbox rows, payment receipts, quiz attempts, and user sessions.
+  - Generated EF migration `20260509155457_20260510_Phase29_IndexBaseline` to apply the new index set.
+  - Validated current model audit: no `InstitutionId`, `YearId`, or `GradeId` columns exist yet, so Stage 29.1 focused on current `StudentId`/`UserId`/`CourseId`/`SemesterId` shaped query contracts.
 
 ## Pending Extra Tasks (Cross-Phase)
 - Keep Report Center menu visible by role and working links.

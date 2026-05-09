@@ -45,6 +45,10 @@ public class NotificationRecipientConfiguration : IEntityTypeConfiguration<Notif
         builder.HasIndex(r => new { r.RecipientUserId, r.IsRead })
                .HasDatabaseName("IX_notification_recipients_user_read");
 
+        // Final-Touches Phase 29 Stage 29.1 — support user inbox pagination ordered by newest first.
+        builder.HasIndex(r => new { r.RecipientUserId, r.CreatedAt })
+               .HasDatabaseName("IX_notification_recipients_user_created_at");
+
         builder.HasOne(r => r.Notification)
                .WithMany()
                .HasForeignKey(r => r.NotificationId)

@@ -215,6 +215,13 @@ public class GraduationApplicationConfiguration : IEntityTypeConfiguration<Gradu
                .HasForeignKey(a => a.StudentProfileId)
                .OnDelete(DeleteBehavior.Restrict);
 
+        // Final-Touches Phase 29 Stage 29.1 — support student inbox/history and status queues by recency.
+        builder.HasIndex(a => new { a.StudentProfileId, a.CreatedAt })
+               .HasDatabaseName("IX_graduation_applications_student_created_at");
+
+        builder.HasIndex(a => new { a.Status, a.CreatedAt })
+               .HasDatabaseName("IX_graduation_applications_status_created_at");
+
         builder.HasMany(a => a.Approvals)
                .WithOne()
                .HasForeignKey(ap => ap.GraduationApplicationId)

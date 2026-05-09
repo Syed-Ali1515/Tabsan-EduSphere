@@ -319,6 +319,18 @@
 | `BuildLocalSignedCertificateUrl(storageKey, ttl)` | Adds signed local certificate URL parameters plus optional download filename propagation. | `API/Controllers/GraduationController.cs` |
 | `ModuleEntitlementResolver.IsActiveAsync(moduleKey, ct)` | Uses local memory + distributed cache to share module-activation decisions across API nodes. | `Infrastructure/Modules/ModuleEntitlementResolver.cs` |
 
+### Infrastructure — Phase 29 Stage 29.1 (Index Baseline and Query Contracts)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GraduationApplicationConfiguration.Configure(builder)` | Adds recency-aware indexes for student and status filtered graduation application queues. | `Infrastructure/Persistence/Configurations/AcademicConfigurations.cs` |
+| `SupportTicketConfiguration.Configure(builder)` | Adds composite recency indexes for submitter, assignee, and department/status ticket views. | `Infrastructure/Persistence/Configurations/SupportTicketConfiguration.cs` |
+| `NotificationRecipientConfiguration.Configure(builder)` | Adds user inbox index for newest-first notification paging. | `Infrastructure/Persistence/Configurations/NotificationConfigurations.cs` |
+| `PaymentReceiptConfiguration.Configure(builder)` | Adds receipt history and unpaid-queue composite indexes for student/status date filtering. | `Infrastructure/Persistence/Configurations/PaymentReceiptConfiguration.cs` |
+| `QuizAttemptConfiguration.Configure(builder)` | Adds student/quiz recency indexes for attempt history queries. | `Infrastructure/Persistence/Configurations/QuizConfigurations.cs` |
+| `UserSessionConfiguration.Configure(builder)` | Adds composite user-session recency index for most-recent refresh session lookup. | `Infrastructure/Persistence/Configurations/UserSessionConfiguration.cs` |
+| `_20260510_Phase29_IndexBaseline.Up(migrationBuilder)` | Applies the Stage 29.1 index baseline migration to SQL Server. | `Infrastructure/Migrations/20260509155457_20260510_Phase29_IndexBaseline.cs` |
+
 ### API — Phase 28 Stage 28.2 Completion
 
 | Function Name | Purpose | Location |

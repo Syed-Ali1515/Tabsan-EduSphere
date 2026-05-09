@@ -115,6 +115,8 @@ Migrations/
  20260508152906_Phase25_AcademicEngineUnification.Designer.cs
  20260509044437_Phase26_SchoolCollegeExpansion.cs
  20260509044437_Phase26_SchoolCollegeExpansion.Designer.cs
+ 20260509155457_20260510_Phase29_IndexBaseline.cs
+ 20260509155457_20260510_Phase29_IndexBaseline.Designer.cs
  ApplicationDbContextModelSnapshot.cs
 Modules/ModuleEntitlementResolver.cs
 obj/Debug/net8.0/

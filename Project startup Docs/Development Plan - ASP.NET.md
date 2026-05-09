@@ -74,6 +74,12 @@
 - Stage 28.1, Stage 28.2, and Stage 28.3 are complete.
 - Phase 28 delivered multi-node readiness, distributed cache/background offload, and provider-backed media hardening without schema changes.
 
+### 2026-05-10 — Phase 29 Stage 29.1
+- Added composite indexes for hot student/user/status recency queries in the EF model.
+- Generated migration `20260509155457_20260510_Phase29_IndexBaseline`.
+- Documented that the current schema has no `InstitutionId`, `YearId`, or `GradeId` columns yet, so Stage 29.1 targeted the active query contracts instead.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
+
 ### 2026-05-09 — Phase 28 Stage 28.1 Complete
 - Completed **API and App Tier Scaling** as the first stage of the scalability architecture roadmap.
 - Replaced Web session-backed connection/auth state with protected-cookie storage to keep portal nodes stateless across a load-balanced deployment.

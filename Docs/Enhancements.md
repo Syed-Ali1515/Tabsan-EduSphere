@@ -92,6 +92,12 @@
 - Restored filename-preserving certificate downloads for signed local and redirect-first media reads.
 - Stage 28.3 and Phase 28 are now complete with no database migration or schema change required.
 
+### 2026-05-10 — Phase 29 Stage 29.1 (MSSQL Data and Indexing Optimization)
+- Added baseline composite indexes for high-frequency recency/status filters on graduation applications, support tickets, notification inbox rows, payment receipts, quiz attempts, and user sessions.
+- Added EF migration `20260509155457_20260510_Phase29_IndexBaseline` to persist the index set.
+- Validated current schema audit: no `InstitutionId`, `YearId`, or `GradeId` columns are present in the current model, so Stage 29.1 focused on active `StudentId`/`UserId`/`CourseId`/`SemesterId` shaped query paths.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
+
 ---
 
 ## Phase 12 — Academic Calendar System ✅ Implemented

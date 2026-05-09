@@ -29,6 +29,10 @@ public class UserSessionConfiguration : IEntityTypeConfiguration<UserSession>
         builder.HasIndex(s => s.UserId)
                .HasDatabaseName("IX_user_sessions_user_id");
 
+        // Final-Touches Phase 29 Stage 29.1 — support most-recent session lookup per user.
+        builder.HasIndex(s => new { s.UserId, s.CreatedAt })
+               .HasDatabaseName("IX_user_sessions_user_created_at");
+
         builder.HasOne(s => s.User)
                .WithMany()
                .HasForeignKey(s => s.UserId)

@@ -26,6 +26,10 @@ public class SupportTicketConfiguration : IEntityTypeConfiguration<SupportTicket
         builder.HasIndex(t => t.SubmitterId)
                .HasDatabaseName("IX_support_tickets_submitter");
 
+        // Final-Touches Phase 29 Stage 29.1 — cover submitter/assignee/department queues ordered by recency.
+        builder.HasIndex(t => new { t.SubmitterId, t.CreatedAt })
+               .HasDatabaseName("IX_support_tickets_submitter_created_at");
+
         builder.HasIndex(t => t.DepartmentId)
                .HasDatabaseName("IX_support_tickets_department");
 
@@ -34,6 +38,12 @@ public class SupportTicketConfiguration : IEntityTypeConfiguration<SupportTicket
 
         builder.HasIndex(t => t.AssignedToId)
                .HasDatabaseName("IX_support_tickets_assigned");
+
+        builder.HasIndex(t => new { t.AssignedToId, t.CreatedAt })
+               .HasDatabaseName("IX_support_tickets_assigned_created_at");
+
+        builder.HasIndex(t => new { t.DepartmentId, t.Status, t.CreatedAt })
+               .HasDatabaseName("IX_support_tickets_department_status_created_at");
 
         builder.HasQueryFilter(t => !t.IsDeleted);
     }

@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.47 (Phase 28 complete; Stage 28.3 slice 10 delivered)  
+**Version:** 1.48 (Phase 29 Stage 29.1 delivered)  
 **Status:** Approved  
 **Prepared By:** Product Team  
 **Last Updated:** 10 May 2026  
@@ -76,6 +76,12 @@
 - **Download behavior:** certificate generation and media streaming now preserve filename-aware downloads across signed local and redirect-first flows.
 - **Phase outcome:** Stage 28.3 is complete, and with Stages 28.1 and 28.2 already delivered, Phase 28 is complete.
 - **Schema impact:** no database migration required.
+- **Validation:** solution build passed; automated tests passed **162/162**.
+
+### 2026-05-10 — Phase 29 Stage 29.1
+- **Index baseline:** added composite indexes for high-frequency student/user/status recency queries across graduation applications, support tickets, notification recipients, payment receipts, quiz attempts, and user sessions.
+- **Migration:** added `20260509155457_20260510_Phase29_IndexBaseline`.
+- **Schema audit:** current model contains no `InstitutionId`, `YearId`, or `GradeId` columns, so Stage 29.1 targeted existing `StudentId`/`UserId`/`CourseId`/`SemesterId` shaped contracts instead.
 - **Validation:** solution build passed; automated tests passed **162/162**.
 
 ### 2026-05-10 — Phase 28 Stage 28.3 Slice 1
