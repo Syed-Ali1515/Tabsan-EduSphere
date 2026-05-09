@@ -245,6 +245,27 @@ Objective: Apply database strategy once, centrally, and safely.
 - Enforce pagination/filtering in all large list endpoints.
 - Add slow-query telemetry and execution-plan review loop.
 
+Delivered updates:
+
+#### 2026-05-10 - Stage 29.2 Slice 1 (Helpdesk Pagination)
+Implementation summary:
+- Replaced unbounded helpdesk list retrieval with server-side paged contracts (`page`, `pageSize`) across repository, application service, API controller, and portal client.
+- Updated helpdesk portal list rendering with previous/next paging controls and filter-preserving navigation.
+
+Validation summary:
+- `dotnet build Tabsan.EduSphere.sln` passed.
+- `dotnet test Tabsan.EduSphere.sln --no-build` passed (**162/162**).
+
+#### 2026-05-10 - Stage 29.2 Slice 2 (Graduation Pagination)
+Implementation summary:
+- Added paged graduation list contracts for student and staff endpoints (`GET /api/v1/graduation/my`, `GET /api/v1/graduation`) including `TotalCount` metadata.
+- Replaced unbounded graduation list materialization with SQL-side paging in repository/service/API layers.
+- Updated portal graduation apply/list pages with previous/next controls while preserving active status/department filters.
+
+Validation summary:
+- `dotnet build Tabsan.EduSphere.sln` passed.
+- `dotnet test Tabsan.EduSphere.sln --no-build` passed (**162/162**).
+
 ### Stage 29.3 - Data Lifecycle and Maintenance
 - Archive policy for old result/report/activity data.
 - Index rebuild/reorg schedule.

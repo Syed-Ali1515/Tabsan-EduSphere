@@ -11,12 +11,10 @@ Before starting any work, the assistant must:
 After **every completed stage** (not just at phase-end), update **all** required tracking files:
 1. Docs/Function-List.md
 2. Docs/Command.md
-3. Docs/Enhancements.md
-4. Docs/Issue-Fix-Phases.md
-5. Project startup Docs/PRD.md
-6. Project startup Docs/Database Schema.md
-7. Project startup Docs/Development Plan - ASP.NET.md
-8. Project startup Docs/Final-Touches.md
+3. Docs/Advance-Enhancements.md
+4. Project startup Docs/PRD.md
+5. Project startup Docs/Database Schema.md
+6. Project startup Docs/Development Plan - ASP.NET.md
 
 After every documentation update, complete mandatory Git sync in this exact order:
 1. Commit all current changes
@@ -30,9 +28,9 @@ Also update this file with:
 - pending extras
 
 **Always-on documentation sync (mandatory workflow — enforced from Phase 20 onward):**
-- After **every completed stage**, update ALL eight tracking files listed above before moving to the next stage.
+- After **every completed stage**, update all tracking files listed above before moving to the next stage.
 - Do not batch documentation to phase-end.
-- Keep `Docs/Function-List.md`, `Docs/Command.md`, `Docs/Enhancements.md`, `Project startup Docs/PRD.md`, `Project startup Docs/Database Schema.md`, `Project startup Docs/Development Plan - ASP.NET.md`, and `Docs/Issue-Fix-Phases.md` updated continuously as work progresses.
+- Keep `Docs/Function-List.md`, `Docs/Command.md`, `Docs/Advance-Enhancements.md`, `Project startup Docs/PRD.md`, `Project startup Docs/Database Schema.md`, and `Project startup Docs/Development Plan - ASP.NET.md` updated continuously as work progresses.
 
 **Always-on Git sync (requested workflow):**
 - Before ending any work session, always run full sync: commit all changes, pull from remote, then push to remote.
@@ -60,7 +58,7 @@ cmd /c git -C "<repo-root>" push origin main
 - Status: **0 build errors; 162/162 tests passed; no database migration required for Stage 29.2 Slice 2**
 - Last Updated: 2026-05-10
 - Next: **Phase 29 Stage 29.2 — continue pagination/filter discipline on other heavy list endpoints (FYP/payment receipts)** (see Docs/Advance-Enhancements.md)
-- Docs Updated: ✅ All 8 tracking files updated for Phase 29 Stage 29.2 Slice 2 progress (2026-05-10)
+- Docs Updated: ✅ All requested tracking files updated for Phase 29 Stage 29.2 Slice 2 progress (2026-05-10)
 
 ---
 
