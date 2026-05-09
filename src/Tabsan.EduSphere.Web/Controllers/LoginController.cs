@@ -130,7 +130,8 @@ public class LoginController : Controller
     [ValidateAntiForgeryToken]
     public IActionResult Logout()
     {
-        HttpContext.Session.Clear();
+        _api.SaveConnection(new ApiConnectionModel());
+        _api.SetForcePasswordChangeRequired(false);
         return RedirectToAction(nameof(Index));
     }
 

@@ -2,6 +2,14 @@
 
 This file tracks the reported portal issues as phased work items so they can be addressed in a controlled order.
 
+### 2026-05-09 — Phase 28 Stage 28.1 Progress Update
+- Completed **Stage 28.1 — API and App Tier Scaling**.
+- API and Web now apply Brotli/Gzip response compression.
+- API and Web JSON serialization now skips null values to reduce payload size.
+- Web portal auth/API connection state was moved from ASP.NET session to protected cookies, removing the main single-node state dependency.
+- Web startup now supports an optional shared data-protection key-ring path for load-balanced multi-node hosting.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed and automated tests passed **160/160**.
+
 ---
 
 ## Refactoring-Hosting-Security — Part A + Part B

@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.RateLimiting;using FluentValidation;
 using FluentValidation.AspNetCore;using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
@@ -35,6 +36,21 @@ using Serilog;
 using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.Providers.Add<BrotliCompressionProvider>();
+    options.Providers.Add<GzipCompressionProvider>();
+});
+builder.Services.Configure<BrotliCompressionProviderOptions>(options =>
+{
+    options.Level = System.IO.Compression.CompressionLevel.Fastest;
+});
+builder.Services.Configure<GzipCompressionProviderOptions>(options =>
+{
+    options.Level = System.IO.Compression.CompressionLevel.Fastest;
+});
 
 // ── Serilog (structured logging — console + rolling file) ───────────────────────
 builder.Host.UseSerilog((ctx, services, config) =>
@@ -313,7 +329,7 @@ if (!builder.Environment.IsDevelopment())
 {
     builder.Services.Configure<ForwardedHeadersOptions>(fwdOpts =>
     {
-        fwdOpts.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+        fwdOpts.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
         fwdOpts.KnownNetworks.Clear();
         fwdOpts.KnownProxies.Clear();
     });
@@ -342,7 +358,11 @@ builder.Services.AddValidatorsFromAssemblyContaining<Tabsan.EduSphere.Applicatio
 builder.Services.AddFluentValidationAutoValidation();
 
 // ── API infrastructure ──────────────────────────────────────────────────────────
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -392,6 +412,7 @@ if (app.Environment.IsDevelopment() || app.Configuration.GetValue<bool>("AppSett
 }
 
 app.UseHttpsRedirection();
+app.UseResponseCompression();
 // Serve uploaded branding assets (e.g., /portal-uploads/logo.png) from API wwwroot.
 var apiWebRoot = app.Environment.WebRootPath;
 if (string.IsNullOrWhiteSpace(apiWebRoot))

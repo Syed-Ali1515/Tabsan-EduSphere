@@ -8,6 +8,13 @@
 
 ## Execution Updates
 
+### 2026-05-09 — Phase 28 Stage 28.1 Complete
+- Completed **API and App Tier Scaling** as the first stage of the scalability architecture roadmap.
+- Replaced Web session-backed connection/auth state with protected-cookie storage to keep portal nodes stateless across a load-balanced deployment.
+- Added optional shared data-protection key-ring configuration to support multi-node cookie decryption.
+- Enabled Brotli/Gzip response compression in API and Web, and configured JSON payload shaping to omit null values.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **160/160**.
+
 ### 2026-05-05 — Phase 1 Remediation Restart (Batch 1)
 - Re-opened Phase 1 workstream to address Observed-Issues Phase 1 items.
 - Implemented role-access remediation for offerings used by Assignments, Attendance, Results, and Quizzes page data loads.
@@ -29,7 +36,7 @@
 - Validated SuperAdmin result summary endpoint response with non-empty records.
 
 ### Next Execution Target
-- Continue Phase 1 remaining tasks: Stage 1.1 completion validation, Stage 1.2 CRUD surfaces, Stage 1.6 themes/branding expansion.
+- Continue **Phase 28 Stage 28.2 — Caching and Background Workloads**.
 
 ### 2026-05-08 — Phase 13 Global Search Complete (commit 00b7b64)
 - **Stage 13.1 — Cross-Entity Search API:**

@@ -1,23 +1,53 @@
 using Tabsan.EduSphere.Web.Services;
 using System.Security.Claims;
 using System.Text.Json;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.ResponseCompression;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.Providers.Add<BrotliCompressionProvider>();
+    options.Providers.Add<GzipCompressionProvider>();
+});
+builder.Services.Configure<BrotliCompressionProviderOptions>(options =>
+{
+    options.Level = System.IO.Compression.CompressionLevel.Fastest;
+});
+builder.Services.Configure<GzipCompressionProviderOptions>(options =>
+{
+    options.Level = System.IO.Compression.CompressionLevel.Fastest;
+});
+var dataProtection = builder.Services.AddDataProtection()
+    .SetApplicationName("Tabsan.EduSphere.Web");
+var sharedKeyRingPath = builder.Configuration["ScaleOut:SharedDataProtectionKeyRingPath"];
+if (!string.IsNullOrWhiteSpace(sharedKeyRingPath))
+{
+    Directory.CreateDirectory(sharedKeyRingPath);
+    dataProtection.PersistKeysToFileSystem(new DirectoryInfo(sharedKeyRingPath));
+}
+builder.Services.AddControllersWithViews()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+    });
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient("EduApi");
 builder.Services.AddScoped<IEduApiClient, EduApiClient>();
-builder.Services.AddSession(options =>
+
+if (!builder.Environment.IsDevelopment())
 {
-    options.Cookie.Name       = "Tabsan.EduSphere.Web.Session";
-    options.IdleTimeout       = TimeSpan.FromHours(8);
-    options.Cookie.HttpOnly   = true;
-    options.Cookie.IsEssential = true;
-    options.Cookie.SameSite   = SameSiteMode.Strict;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-});
+    builder.Services.Configure<ForwardedHeadersOptions>(options =>
+    {
+        options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
+        options.KnownNetworks.Clear();
+        options.KnownProxies.Clear();
+    });
+}
 
 var app = builder.Build();
 
@@ -29,60 +59,57 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+if (!app.Environment.IsDevelopment())
+{
+    app.UseForwardedHeaders();
+}
+
 app.UseHttpsRedirection();
+app.UseResponseCompression();
 app.UseStaticFiles();
 
 app.UseRouting();
-app.UseSession();
 
-// Build a request principal from session identity so User.IsInRole works in Razor/views.
+// Build a request principal from protected cookie identity so User.IsInRole works across stateless web nodes.
 app.Use(async (context, next) =>
 {
-    const string identityKey = "SessionIdentityJson";
-    var raw = context.Session.GetString(identityKey);
+    var api = context.RequestServices.GetRequiredService<IEduApiClient>();
+    var identity = api.GetSessionIdentity();
 
-    if (!string.IsNullOrWhiteSpace(raw))
+    if (identity is not null)
     {
         try
         {
-            using var doc = JsonDocument.Parse(raw);
-            var root = doc.RootElement;
-
             var claims = new List<Claim>();
 
-            if (root.TryGetProperty("UserName", out var userNameEl) &&
-                userNameEl.GetString() is { Length: > 0 } userName)
+            if (!string.IsNullOrWhiteSpace(identity.UserName))
             {
-                claims.Add(new Claim(ClaimTypes.Name, userName));
+                claims.Add(new Claim(ClaimTypes.Name, identity.UserName));
             }
 
-            if (root.TryGetProperty("Email", out var emailEl) &&
-                emailEl.GetString() is { Length: > 0 } email)
+            if (!string.IsNullOrWhiteSpace(identity.Email))
             {
-                claims.Add(new Claim(ClaimTypes.Email, email));
+                claims.Add(new Claim(ClaimTypes.Email, identity.Email));
             }
 
-            if (root.TryGetProperty("Roles", out var rolesEl) && rolesEl.ValueKind == JsonValueKind.Array)
+            foreach (var role in identity.Roles)
             {
-                foreach (var roleEl in rolesEl.EnumerateArray())
-                {
-                    if (roleEl.GetString() is not { Length: > 0 } role)
-                        continue;
+                if (string.IsNullOrWhiteSpace(role))
+                    continue;
 
-                    claims.Add(new Claim(ClaimTypes.Role, role));
-                    claims.Add(new Claim("role", role));
-                }
+                claims.Add(new Claim(ClaimTypes.Role, role));
+                claims.Add(new Claim("role", role));
             }
 
             if (claims.Count > 0)
             {
-                var identity = new ClaimsIdentity(claims, authenticationType: "SessionJwt");
-                context.User = new ClaimsPrincipal(identity);
+                var principalIdentity = new ClaimsIdentity(claims, authenticationType: "SessionJwt");
+                context.User = new ClaimsPrincipal(principalIdentity);
             }
         }
         catch
         {
-            // Ignore malformed session identity and continue without overriding principal.
+            // Ignore malformed identity cookies and continue without overriding principal.
         }
     }
 

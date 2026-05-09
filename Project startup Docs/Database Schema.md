@@ -5,6 +5,11 @@
 **Aligned With PRD:** v1.33  
 **Purpose:** Define database schemas for the University Portal Application and the License Creation Tool  
 
+## 2026-05-09 Update — Phase 28 Stage 28.1
+
+- Stage 28.1 delivered runtime and hosting changes only.
+- No database schema change and no EF migration were required.
+
 ---
 
 # PART 1: UNIVERSITY PORTAL APPLICATION DATABASE

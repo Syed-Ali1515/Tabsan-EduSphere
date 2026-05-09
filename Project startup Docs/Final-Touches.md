@@ -15,6 +15,29 @@ For **every completed phase**:
 
 ---
 
+## Phase 28 — Scalability Architecture (Stage 28.1)
+**Status:** ✅ Stage 28.1 Complete (2026-05-09)
+
+### Completion Mark
+- [x] Enable response compression on API and Web.
+- [x] Apply JSON null-field omission for lighter payloads.
+- [x] Remove Web dependence on ASP.NET session for portal/API auth state.
+- [x] Add optional shared data-protection key-ring support for multi-node Web deployments.
+- [x] Preserve load-balancer forwarded-header support across API and Web.
+- [x] Confirm no database migration is required.
+
+### Implementation Summary
+- API startup now enables Brotli/Gzip response compression, omits null JSON properties, and accepts forwarded host metadata behind reverse proxies.
+- Web startup now enables response compression, forwarded headers, and optional shared data-protection key-ring persistence.
+- `EduApiClient` now persists API base URL, token, department, session identity, and forced-password-change state in protected HttpOnly cookies rather than server session, allowing stateless Web nodes.
+- Logout/connection reset now clears protected cookies instead of depending on session teardown.
+
+### Validation Summary
+- `dotnet build Tabsan.EduSphere.sln` — passed.
+- Automated tests — **160/160 passed**.
+
+---
+
 ## Refactoring-Hosting-Security — Part A + Part B
 **Status:** ✅ Fully Complete (2026-05-07) | Commits: f56ccd9, 5e80bc9
 

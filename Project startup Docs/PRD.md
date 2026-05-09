@@ -1,14 +1,22 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.36 (Phase 16 Faculty Grading System — Fully Complete)  
+**Version:** 1.37 (Phase 28 Stage 28.1 complete)  
 **Status:** Approved  
 **Prepared By:** Product Team  
-**Last Updated:** 8 May 2026  
+**Last Updated:** 9 May 2026  
 
 ---
 
 ## 0. Implementation Update Log
+
+### 2026-05-09 — Phase 28 Stage 28.1 API and App Tier Scaling Complete
+- **Load-balancer readiness:** expanded forwarded-header handling on the API and added forwarded-header handling to the Web tier for reverse-proxy deployments.
+- **Stateless app nodes:** removed Web portal dependence on ASP.NET server session for API base URL, access token, session identity, and forced-password-change state; these now use protected cookies.
+- **Shared key management:** Web startup now supports an optional shared data-protection key-ring path so multiple nodes can decrypt the same protected cookies.
+- **Payload efficiency:** enabled Brotli/Gzip response compression on API and Web, and configured JSON serialization to omit null fields.
+- **Schema impact:** no database migration required.
+- **Validation:** solution build passed; automated test suite passed **160/160**.
 
 ### 2026-05-08 — Phase 16 Faculty Grading System Complete
 - **Stage 16.1 — Gradebook Grid View:** `GradebookController` (GET/PUT/POST endpoints), `GradebookService` (GetGradebookAsync, UpsertEntryAsync, PublishAllAsync), `GradebookRepository` (3-way join for student info), `Gradebook.cshtml` (inline edit + publish-all).

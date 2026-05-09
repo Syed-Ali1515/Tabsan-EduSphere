@@ -5,6 +5,14 @@
 **Phases are ordered by implementation sequence** — lowest complexity and fewest dependencies first.  
 **Status:** All phases are **Planned — Not Started** unless noted.
 
+### 2026-05-09 — Phase 28 Stage 28.1 Complete
+- Phase 28 is now **In Progress** with **Stage 28.1 — API and App Tier Scaling** completed.
+- API and Web now enable Brotli/Gzip response compression for lower payload cost under higher concurrent traffic.
+- API and Web JSON serialization now omits null fields to improve payload shaping without changing endpoint contracts.
+- Web portal auth/API connection state no longer depends on ASP.NET session; it now uses protected cookies so app nodes can stay stateless.
+- Web startup supports an optional shared data-protection key-ring path for multi-node deployments behind a load balancer.
+- No database migration or schema change was required for Stage 28.1.
+
 ---
 
 ## Phase 12 — Academic Calendar System ✅ Implemented

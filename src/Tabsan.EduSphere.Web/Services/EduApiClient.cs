@@ -2,6 +2,7 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.DataProtection;
 using Tabsan.EduSphere.Application.DTOs.Analytics;
 using Tabsan.EduSphere.Web.Models.Portal;
 
@@ -375,20 +376,22 @@ public interface IEduApiClient
 
 public class EduApiClient : IEduApiClient
 {
-    private const string ApiUrlKey    = "ApiBaseUrl";
-    private const string ApiTokenKey  = "ApiAccessToken";
-    private const string DepartmentKey = "DefaultDepartmentId";
-    private const string IdentityKey  = "SessionIdentityJson";
-    private const string ForcePasswordChangeKey = "ForcePasswordChangeRequired";
+    private const string ApiUrlKey    = "Tabsan.EduSphere.ApiBaseUrl";
+    private const string ApiTokenKey  = "Tabsan.EduSphere.ApiAccessToken";
+    private const string DepartmentKey = "Tabsan.EduSphere.DefaultDepartmentId";
+    private const string IdentityKey  = "Tabsan.EduSphere.SessionIdentity";
+    private const string ForcePasswordChangeKey = "Tabsan.EduSphere.ForcePasswordChangeRequired";
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IDataProtector _protector;
     private readonly JsonSerializerOptions _jsonOptions = new() { PropertyNameCaseInsensitive = true };
 
-    public EduApiClient(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor)
+    public EduApiClient(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor, IDataProtectionProvider dataProtectionProvider)
     {
         _httpClientFactory = httpClientFactory;
         _httpContextAccessor = httpContextAccessor;
+        _protector = dataProtectionProvider.CreateProtector("Tabsan.EduSphere.Web.EduApiClientCookies.v1");
     }
 
     // â”€â”€ Connection â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -401,26 +404,24 @@ public class EduApiClient : IEduApiClient
 
     public bool IsForcePasswordChangeRequired()
     {
-        var raw = GetSession().GetString(ForcePasswordChangeKey);
+        var raw = ReadCookie(ForcePasswordChangeKey);
         return bool.TryParse(raw, out var required) && required;
     }
 
     public void SetForcePasswordChangeRequired(bool required)
     {
-        var session = GetSession();
-        session.SetString(ForcePasswordChangeKey, required.ToString());
+        WriteCookie(ForcePasswordChangeKey, required.ToString());
 
         var identity = GetSessionIdentity() ?? new SessionIdentity();
         identity.MustChangePassword = required;
-        session.SetString(IdentityKey, JsonSerializer.Serialize(identity, _jsonOptions));
+        WriteCookie(IdentityKey, JsonSerializer.Serialize(identity, _jsonOptions));
     }
 
     public ApiConnectionModel GetConnection()
     {
-        var session = GetSession();
-        var baseUrl = session.GetString(ApiUrlKey) ?? string.Empty;
-        var token   = session.GetString(ApiTokenKey) ?? string.Empty;
-        var rawDept = session.GetString(DepartmentKey);
+        var baseUrl = ReadCookie(ApiUrlKey) ?? string.Empty;
+        var token   = ReadCookie(ApiTokenKey) ?? string.Empty;
+        var rawDept = ReadCookie(DepartmentKey);
         Guid? dept = Guid.TryParse(rawDept, out var parsed) ? parsed : null;
 
         return new ApiConnectionModel
@@ -433,25 +434,34 @@ public class EduApiClient : IEduApiClient
 
     public void SaveConnection(ApiConnectionModel model)
     {
-        var session = GetSession();
-        session.SetString(ApiUrlKey,   model.ApiBaseUrl.TrimEnd('/'));
-        session.SetString(ApiTokenKey, model.AccessToken.Trim());
+        if (string.IsNullOrWhiteSpace(model.ApiBaseUrl) || string.IsNullOrWhiteSpace(model.AccessToken))
+        {
+            DeleteCookie(ApiUrlKey);
+            DeleteCookie(ApiTokenKey);
+            DeleteCookie(DepartmentKey);
+            DeleteCookie(IdentityKey);
+            DeleteCookie(ForcePasswordChangeKey);
+            return;
+        }
+
+        WriteCookie(ApiUrlKey, model.ApiBaseUrl.TrimEnd('/'));
+        WriteCookie(ApiTokenKey, model.AccessToken.Trim());
 
         if (model.DefaultDepartmentId.HasValue)
-            session.SetString(DepartmentKey, model.DefaultDepartmentId.Value.ToString());
+            WriteCookie(DepartmentKey, model.DefaultDepartmentId.Value.ToString());
         else
-            session.Remove(DepartmentKey);
+            DeleteCookie(DepartmentKey);
 
         // Decode JWT and persist identity claims into session
         var identity = DecodeJwtIdentity(model.AccessToken.Trim());
         var json = JsonSerializer.Serialize(identity, _jsonOptions);
-        session.SetString(IdentityKey, json);
-        session.Remove(ForcePasswordChangeKey);
+        WriteCookie(IdentityKey, json);
+        DeleteCookie(ForcePasswordChangeKey);
     }
 
     public SessionIdentity? GetSessionIdentity()
     {
-        var raw = GetSession().GetString(IdentityKey);
+        var raw = ReadCookie(IdentityKey);
         if (string.IsNullOrWhiteSpace(raw)) return null;
         try { return JsonSerializer.Deserialize<SessionIdentity>(raw, _jsonOptions); }
         catch { return null; }
@@ -795,9 +805,47 @@ public class EduApiClient : IEduApiClient
         return new InvalidOperationException(message);
     }
 
-    private ISession GetSession()
-        => _httpContextAccessor.HttpContext?.Session
-           ?? throw new InvalidOperationException("No active HTTP session found.");
+    private string? ReadCookie(string key)
+    {
+        var value = _httpContextAccessor.HttpContext?.Request.Cookies[key];
+        if (string.IsNullOrWhiteSpace(value))
+            return null;
+
+        try
+        {
+            return _protector.Unprotect(value);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private void WriteCookie(string key, string value)
+    {
+        var response = _httpContextAccessor.HttpContext?.Response
+            ?? throw new InvalidOperationException("No active HTTP response found.");
+
+        response.Cookies.Append(key, _protector.Protect(value), new CookieOptions
+        {
+            HttpOnly = true,
+            IsEssential = true,
+            SameSite = SameSiteMode.Strict,
+            Secure = true,
+            Expires = DateTimeOffset.UtcNow.AddHours(8)
+        });
+    }
+
+    private void DeleteCookie(string key)
+    {
+        _httpContextAccessor.HttpContext?.Response.Cookies.Delete(key, new CookieOptions
+        {
+            HttpOnly = true,
+            IsEssential = true,
+            SameSite = SameSiteMode.Strict,
+            Secure = true
+        });
+    }
 
     // â”€â”€ JWT identity decoding (no signature validation â€” display use only) â”€
 

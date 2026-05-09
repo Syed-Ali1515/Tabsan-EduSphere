@@ -230,6 +230,26 @@
 | `FileUploadValidator.ValidateImageAsync(file)` | Static async validator for logo/image uploads; checks size ≤ 2 MB, extension in allowlist (.png/.jpg/.jpeg/.gif/.svg/.webp), MIME type matches, and magic bytes for raster types (SVG uses ext+MIME only). Returns null on success or user-facing error string on failure. | `API/Services/FileUploadValidator.cs` |
 | `FileUploadValidator.ValidateCoreAsync(file, allowedExts, allowedMimes, magicMap, maxBytes)` | Private shared core of both validate methods; applies size, extension, MIME, and magic-byte checks using caller-provided dictionaries and size limit. | `API/Services/FileUploadValidator.cs` |
 
+## Phase 28 — Scalability Architecture (2026-05-09)
+
+### API — Program.cs (Stage 28.1)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `AddResponseCompression(...)` registration | Enables Brotli/Gzip compression on API responses for scale-out traffic efficiency. | `API/Program.cs` |
+| `AddControllers().AddJsonOptions(...)` | Omits null JSON fields from API responses for lighter payloads. | `API/Program.cs` |
+
+### Web — Program.cs / EduApiClient (Stage 28.1)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `AddDataProtection().SetApplicationName(...)` + optional `PersistKeysToFileSystem(...)` | Configures protected cookie encryption with optional shared key ring for multi-node web deployments. | `Web/Program.cs` |
+| `AddResponseCompression(...)` registration | Enables Brotli/Gzip compression on portal responses. | `Web/Program.cs` |
+| `ReadCookie(key)` | Reads and unprotects stateless portal connection/auth state from HttpOnly cookies. | `Web/Services/EduApiClient.cs` |
+| `WriteCookie(key, value)` | Protects and persists portal connection/auth state in cookies instead of server session. | `Web/Services/EduApiClient.cs` |
+| `DeleteCookie(key)` | Clears protected state cookies during logout or connection reset. | `Web/Services/EduApiClient.cs` |
+| `SaveConnection(model)` | Stores or clears API base URL, JWT token, department, and identity state using protected cookies. | `Web/Services/EduApiClient.cs` |
+
 ### API — Program.cs Changes (Part A)
 
 | Change | Purpose | Location |

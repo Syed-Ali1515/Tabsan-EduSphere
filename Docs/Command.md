@@ -55,12 +55,12 @@ cmd /c git -C "<repo-root>" push origin main
 
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
-- Active Phase: **Phase 27 — University Portal Parity and Student Experience — FULLY COMPLETE ✅**
-- Active Stage: **Stages 27.1 (Portal Capability Matrix) + 27.2 (Authentication and Security UX) + 27.3 (Support/Communication Integration Contracts) done**
-- Status: **0 build errors; 89/89 unit tests passed (latest run); no database migration required**
+- Active Phase: **Phase 28 — Scalability Architecture (1M+ Readiness) — IN PROGRESS ⚙️**
+- Active Stage: **Stage 28.1 (API and App Tier Scaling) complete; Stage 28.2 next**
+- Status: **0 build errors; 160/160 tests passed; no database migration required for Stage 28.1**
 - Last Updated: 2026-05-09
-- Next: **Phase 28 — Scalability Architecture (1M+ Readiness)** (see Docs/Advance-Enhancements.md)
-- Docs Updated: ✅ All 8 tracking files updated for Phase 27 (2026-05-09)
+- Next: **Phase 28 Stage 28.2 — Caching and Background Workloads** (see Docs/Advance-Enhancements.md)
+- Docs Updated: ✅ All 8 tracking files updated for Phase 28 Stage 28.1 (2026-05-09)
 
 ---
 
@@ -183,7 +183,11 @@ Database is fully synchronized with codebase.
   - Stage 27.1 commit `fd3b137`: Portal capability matrix (service + API + web view + tests)
   - Stage 27.2 commit `20dba8d`: MFA toggle, SSO-ready security profile, session risk controls, auth audit improvements
   - Stage 27.3 commit `56cf1dd`: provider abstraction contracts for ticketing, announcements, and email
-- Continue through Phase 28+ per Docs/Advance-Enhancements.md
+- **Phase 28 — Scalability Architecture — Stage 28.1 COMPLETE ✅**
+  - Load-balancer readiness: forwarded headers expanded on API and added to Web.
+  - Stateless web nodes: session-backed portal/API auth state replaced with protected cookies; optional shared key-ring path introduced.
+  - Response compression and payload shaping: Brotli/Gzip compression enabled; null JSON fields omitted in API/Web JSON responses.
+- Continue through Phase 28.2+ per Docs/Advance-Enhancements.md
 
 ## Pending Extra Tasks (Cross-Phase)
 - Keep Report Center menu visible by role and working links.
