@@ -270,6 +270,10 @@ builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IBulkPromotio
 builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IParentPortalService, Tabsan.EduSphere.Application.Academic.ParentPortalService>();
 // ── Phase 27: University Portal Parity and Student Experience ───────────────
 builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IPortalCapabilityMatrixService, Tabsan.EduSphere.Application.Services.PortalCapabilityMatrixService>();
+builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.ISupportTicketingProvider, Tabsan.EduSphere.Infrastructure.Integrations.InAppSupportTicketingProvider>();
+builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IAnnouncementBroadcastProvider, Tabsan.EduSphere.Infrastructure.Integrations.InAppAnnouncementBroadcastProvider>();
+builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IEmailDeliveryProvider, Tabsan.EduSphere.Infrastructure.Integrations.SmtpEmailDeliveryProvider>();
+builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.ICommunicationIntegrationService, Tabsan.EduSphere.Application.Services.CommunicationIntegrationService>();
 // ── Rate limiting (OWASP hardening) ─────────────────────────────────────
 builder.Services.AddRateLimiter(opts =>
 {

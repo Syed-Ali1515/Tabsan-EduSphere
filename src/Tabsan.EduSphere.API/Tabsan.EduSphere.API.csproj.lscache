@@ -67,6 +67,7 @@ Controllers/
  BuildingController.cs
  BulkPromotionController.cs
  CalendarController.cs
+ CommunicationIntegrationsController.cs
  CourseController.cs
  DashboardCompositionController.cs
  DegreeAuditController.cs

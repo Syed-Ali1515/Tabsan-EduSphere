@@ -134,6 +134,7 @@ Interfaces/
  IBuildingRoomService.cs
  IBulkPromotionService.cs
  ICertificateGenerator.cs
+ ICommunicationIntegrationContracts.cs
  ICourseGradingService.cs
  ICourseService.cs
  ICsvRegistrationImportService.cs
@@ -200,6 +201,7 @@ Services/
  AccountSecurityService.cs
  AccreditationService.cs
  BuildingRoomService.cs
+ CommunicationIntegrationService.cs
  CsvRegistrationImportService.cs
  DashboardCompositionService.cs
  InstitutionPolicyService.cs

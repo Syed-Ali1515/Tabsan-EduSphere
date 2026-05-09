@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using Tabsan.EduSphere.Application.Interfaces;
 using Tabsan.EduSphere.Domain.Notifications;
 using Tabsan.EduSphere.Infrastructure.Persistence;
-using Tabsan.EduSphere.Infrastructure.Email;
 namespace Tabsan.EduSphere.BackgroundJobs;
 
 /// <summary>
@@ -62,8 +61,7 @@ public class LicenseExpiryWarningJob : BackgroundService
             using var scope = _services.CreateScope();
             var db               = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             var notifSvc         = scope.ServiceProvider.GetRequiredService<INotificationService>();
-            var emailSender      = scope.ServiceProvider.GetRequiredService<IEmailSender>();
-            var templateRenderer = scope.ServiceProvider.GetRequiredService<IEmailTemplateRenderer>();
+            var emailDelivery    = scope.ServiceProvider.GetRequiredService<IEmailDeliveryProvider>();
 
             var license = await db.LicenseStates
                                   .OrderByDescending(l => l.ActivatedAt)
@@ -113,7 +111,7 @@ public class LicenseExpiryWarningJob : BackgroundService
             // Also send an email to admins who have email addresses configured
             var emailTasks = recipients
                 .Where(r => !string.IsNullOrWhiteSpace(r.Email))
-                .Select(r => SendExpiryEmailAsync(emailSender, templateRenderer, r.Email!, expiryLabel, ct));
+                .Select(r => SendExpiryEmailAsync(emailDelivery, r.Email!, expiryLabel, ct));
 
             await Task.WhenAll(emailTasks);
 
@@ -129,8 +127,7 @@ public class LicenseExpiryWarningJob : BackgroundService
     }
 
     private async Task SendExpiryEmailAsync(
-        IEmailSender emailSender,
-        IEmailTemplateRenderer templateRenderer,
+        IEmailDeliveryProvider emailDelivery,
         string toEmail,
         string expiryLabel,
         CancellationToken ct)
@@ -138,11 +135,10 @@ public class LicenseExpiryWarningJob : BackgroundService
         try
         {
             var subject = "Tabsan EduSphere — License Expiry Warning";
-            var body    = templateRenderer.Render("license-expiry-warning", new Dictionary<string, string>
+            await emailDelivery.SendTemplateAsync(toEmail, subject, "license-expiry-warning", new Dictionary<string, string>
             {
                 ["EXPIRY_LABEL"] = expiryLabel
-            });
-            await emailSender.SendAsync(toEmail, subject, body, ct);
+            }, ct);
         }
         catch (Exception ex)
         {

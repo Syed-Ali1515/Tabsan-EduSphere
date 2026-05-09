@@ -16,16 +16,16 @@ public sealed class HelpdeskService : IHelpdeskService
 {
     private readonly IHelpdeskRepository   _helpdesk;
     private readonly IUserRepository       _users;
-    private readonly INotificationService  _notifications;
+    private readonly ISupportTicketingProvider _ticketingProvider;
 
     public HelpdeskService(
         IHelpdeskRepository  helpdesk,
         IUserRepository      users,
-        INotificationService notifications)
+        ISupportTicketingProvider ticketingProvider)
     {
         _helpdesk      = helpdesk;
         _users         = users;
-        _notifications = notifications;
+        _ticketingProvider = ticketingProvider;
     }
 
     // ── Submission / Viewing ──────────────────────────────────────────────────
@@ -155,11 +155,10 @@ public sealed class HelpdeskService : IHelpdeskService
         if (!request.IsInternalNote && request.AuthorId != ticket.SubmitterId)
         {
             var author = await _users.GetByIdAsync(request.AuthorId, ct);
-            await _notifications.SendSystemAsync(
-                $"New reply on ticket: {ticket.Subject}",
-                $"{author?.Username ?? "Staff"} replied to your support ticket.",
-                NotificationType.System,
-                new[] { ticket.SubmitterId },
+            await _ticketingProvider.NotifyTicketReplyAsync(
+                ticket.SubmitterId,
+                ticket.Subject,
+                author?.Username ?? "Staff",
                 ct);
         }
 
@@ -180,12 +179,7 @@ public sealed class HelpdeskService : IHelpdeskService
         var assignee = await _users.GetByIdAsync(request.AssignedToId, ct);
         if (assignee is not null)
         {
-            await _notifications.SendSystemAsync(
-                "Support ticket assigned to you",
-                $"Ticket \"{ticket.Subject}\" has been assigned to you.",
-                NotificationType.System,
-                new[] { request.AssignedToId },
-                ct);
+            await _ticketingProvider.NotifyTicketAssignedAsync(request.AssignedToId, ticket.Subject, ct);
         }
     }
 
@@ -200,12 +194,7 @@ public sealed class HelpdeskService : IHelpdeskService
         ticket.Resolve();
         await _helpdesk.SaveChangesAsync(ct);
 
-        await _notifications.SendSystemAsync(
-            "Your support ticket has been resolved",
-            $"Ticket \"{ticket.Subject}\" has been marked as resolved.",
-            NotificationType.System,
-            new[] { ticket.SubmitterId },
-            ct);
+        await _ticketingProvider.NotifyTicketResolvedAsync(ticket.SubmitterId, ticket.Subject, ct);
     }
 
     public async Task CloseTicketAsync(Guid ticketId, Guid callerId, string callerRole, CancellationToken ct = default)

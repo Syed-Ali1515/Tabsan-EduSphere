@@ -63,6 +63,10 @@ Auth/
 Email/
  EmailTemplateRenderer.cs
  MailKitEmailSender.cs
+Integrations/
+ InAppAnnouncementBroadcastProvider.cs
+ InAppSupportTicketingProvider.cs
+ SmtpEmailDeliveryProvider.cs
 Licensing/
  EmbeddedKeys.cs
  LicenseValidationService.cs
