@@ -12,6 +12,8 @@ public interface IMediaStorageService
         CancellationToken ct = default);
 
     Task<byte[]?> ReadAsBytesAsync(string storageKey, CancellationToken ct = default);
+
+    Task DeleteAsync(string storageKey, CancellationToken ct = default);
 }
 
 public sealed record MediaStorageSaveResult(string StorageKey, string Reference);

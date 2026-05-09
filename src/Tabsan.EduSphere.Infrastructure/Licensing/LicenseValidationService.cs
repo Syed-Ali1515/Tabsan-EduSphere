@@ -69,6 +69,25 @@ public class LicenseValidationService
         try
         {
             var fileBytes = await File.ReadAllBytesAsync(licenseFilePath, ct);
+            return await ActivateFromBytesAsync(fileBytes, requestDomain, ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error during license activation.");
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Validates and activates a license from in-memory bytes.
+    /// </summary>
+    public async Task<bool> ActivateFromBytesAsync(byte[] fileBytes,
+                                                    string? requestDomain = null,
+                                                    CancellationToken ct = default)
+    {
+        try
+        {
+            // Final-Touches Phase 28 Stage 28.3 — allow provider-backed upload flows to avoid temp-path coupling.
 
             // 1. Magic header
             if (fileBytes.Length < MinFileLength || !fileBytes[..7].SequenceEqual(_magic))

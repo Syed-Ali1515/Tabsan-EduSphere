@@ -34,6 +34,12 @@ This file tracks the reported portal issues as phased work items so they can be 
 - Graduation certificate download now reads through the provider for new keys and preserves legacy `/certificates/*` compatibility fallback.
 - Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
 
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 3 Update
+- Migrated license upload temporary-file handling from direct filesystem path logic to provider-backed save/read/delete operations.
+- Added `ActivateFromBytesAsync` to the license validation service to support in-memory validation from storage-provider reads.
+- Extended storage abstraction with delete support for temporary upload cleanup.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
+
 ---
 
 ## Refactoring-Hosting-Security — Part A + Part B

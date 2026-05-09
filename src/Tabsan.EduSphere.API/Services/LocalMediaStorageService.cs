@@ -57,6 +57,20 @@ public sealed class LocalMediaStorageService : IMediaStorageService
         return await File.ReadAllBytesAsync(fullPath, ct);
     }
 
+    public Task DeleteAsync(string storageKey, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(storageKey))
+            return Task.CompletedTask;
+
+        var fullPath = Path.Combine(GetRootPath(), storageKey.Replace('/', Path.DirectorySeparatorChar));
+        if (File.Exists(fullPath))
+        {
+            File.Delete(fullPath);
+        }
+
+        return Task.CompletedTask;
+    }
+
     private string GetRootPath()
     {
         var configured = _options.LocalRootPath;

@@ -38,6 +38,12 @@
 - Migrated graduation certificate generation/download to storage-provider persistence with legacy `/certificates/*` compatibility fallback.
 - No database migration or schema change was required for Stage 28.3 Slice 2.
 
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 3 (File and Media Strategy)
+- Migrated license upload temporary-file flow to provider-backed save/read/delete operations through `IMediaStorageService`.
+- Added `LicenseValidationService.ActivateFromBytesAsync` to decouple activation from filesystem path assumptions.
+- Extended media storage abstraction with delete support for temporary-object cleanup.
+- No database migration or schema change was required for Stage 28.3 Slice 3.
+
 ---
 
 ## Phase 12 — Academic Calendar System ✅ Implemented

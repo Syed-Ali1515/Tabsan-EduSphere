@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
+using Tabsan.EduSphere.Application.Interfaces;
 using Tabsan.EduSphere.Infrastructure.Licensing;
 
 namespace Tabsan.EduSphere.API.Controllers;
@@ -16,15 +17,14 @@ namespace Tabsan.EduSphere.API.Controllers;
 public class LicenseController : ControllerBase
 {
     private readonly LicenseValidationService _licenseService;
+    private readonly IMediaStorageService _mediaStorage;
 
-    // Temporary directory where uploaded license files are saved before validation.
-    private static readonly string UploadDirectory =
-        Path.Combine(Path.GetTempPath(), "tabsan_license_uploads");
-
-    public LicenseController(LicenseValidationService licenseService)
+    public LicenseController(
+        LicenseValidationService licenseService,
+        IMediaStorageService mediaStorage)
     {
         _licenseService = licenseService;
-        Directory.CreateDirectory(UploadDirectory);
+        _mediaStorage = mediaStorage;
     }
 
     // ── POST /api/v1/license/upload ───────────────────────────────────────────
@@ -40,19 +40,20 @@ public class LicenseController : ControllerBase
     [RequestSizeLimit(65_536)] // 64 KB max license file
     public async Task<IActionResult> Upload(IFormFile file, CancellationToken ct)
     {
+        // Final-Touches Phase 28 Stage 28.3 — move license temp persistence onto storage abstraction.
         if (file is null || file.Length == 0)
             return BadRequest(new { message = "No file provided." });
 
         if (!file.FileName.EndsWith(".tablic", StringComparison.OrdinalIgnoreCase))
             return BadRequest(new { message = "License file must be a .tablic file." });
 
-        // Save to a temp path with a random name to prevent path traversal.
-        var tempFile = Path.Combine(UploadDirectory, $"{Guid.NewGuid()}.tablic");
+        string? tempStorageKey = null;
 
         try
         {
-            await using var stream = System.IO.File.Create(tempFile);
-            await file.CopyToAsync(stream, ct);
+            await using var uploadStream = file.OpenReadStream();
+            var stored = await _mediaStorage.SaveAsync(uploadStream, "license-temp", ".tablic", ct);
+            tempStorageKey = stored.StorageKey;
         }
         catch
         {
@@ -61,10 +62,21 @@ public class LicenseController : ControllerBase
 
         // P2-S3-02 / P2-S3-03: Pass the HTTP host so the service can enforce domain binding.
         var requestDomain = Request.Host.Host;
-        var success = await _licenseService.ActivateFromFileAsync(tempFile, requestDomain, ct);
+        bool success;
+        try
+        {
+            var fileBytes = await _mediaStorage.ReadAsBytesAsync(tempStorageKey!, ct);
+            if (fileBytes is null || fileBytes.Length == 0)
+                return StatusCode(500, new { message = "Failed to read the uploaded license file." });
 
-        // Clean up the temp file regardless of outcome.
-        System.IO.File.Delete(tempFile);
+            success = await _licenseService.ActivateFromBytesAsync(fileBytes, requestDomain, ct);
+        }
+        finally
+        {
+            // Clean up temp file regardless of outcome.
+            if (!string.IsNullOrWhiteSpace(tempStorageKey))
+                await _mediaStorage.DeleteAsync(tempStorageKey, ct);
+        }
 
         if (!success)
             return BadRequest(new { message = "License validation failed. The file may be invalid or tampered." });

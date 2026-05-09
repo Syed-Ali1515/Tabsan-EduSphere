@@ -290,6 +290,15 @@
 | `GraduationService.GenerateCertificateAsync(applicationId, ct)` | Persists generated certificate PDF through storage provider and stores resulting storage key in application record. | `Application/Academic/GraduationService.cs` |
 | `GraduationService.DownloadCertificateAsync(applicationId, requestingStudentProfileId, ct)` | Downloads certificate via storage provider for new keys, while preserving legacy `/certificates/*` file-path fallback. | `Application/Academic/GraduationService.cs` |
 
+### API / Infrastructure — Phase 28 Stage 28.3 Slice 3
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `LicenseController.Upload(file, ct)` | Uses media storage provider to persist/read/delete temporary license uploads before activation. | `API/Controllers/LicenseController.cs` |
+| `LicenseValidationService.ActivateFromBytesAsync(fileBytes, requestDomain, ct)` | Validates and activates license directly from in-memory bytes, enabling provider-backed upload flows. | `Infrastructure/Licensing/LicenseValidationService.cs` |
+| `IMediaStorageService.DeleteAsync(storageKey, ct)` | Defines provider-agnostic deletion for temporary media objects. | `Application/Interfaces/IMediaStorageService.cs` |
+| `LocalMediaStorageService.DeleteAsync(storageKey, ct)` | Deletes stored local-file object by storage key. | `API/Services/LocalMediaStorageService.cs` |
+
 ### API — Program.cs Changes (Part A)
 
 | Change | Purpose | Location |

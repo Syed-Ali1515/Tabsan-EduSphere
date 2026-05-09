@@ -30,6 +30,11 @@
 - Stage 28.3 slice 2 migrated graduation certificate persistence to the shared storage-provider abstraction and added provider-backed read support.
 - No database schema change and no EF migration were required.
 
+## 2026-05-10 Update — Phase 28 Stage 28.3 Slice 3
+
+- Stage 28.3 slice 3 migrated license-upload temporary file handling to provider-backed storage operations and added bytes-based license activation.
+- No database schema change and no EF migration were required.
+
 ---
 
 # PART 1: UNIVERSITY PORTAL APPLICATION DATABASE
