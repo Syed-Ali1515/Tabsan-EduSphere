@@ -91,6 +91,22 @@
 - Stage 29.2 slice 2 added application/query contract pagination for graduation application lists.
 - No database schema change and no EF migration were required.
 
+## 2026-05-10 Update — Phase 29 Stage 29.2 Slice 3
+
+- Stage 29.2 slice 3 added application/query contract pagination for payment receipt lists.
+- No database schema change and no EF migration were required.
+
+## 2026-05-10 Update — Phase 29 Stage 29.3
+
+- Stage 29.3 delivered operational maintenance scripts for retention cleanup, index maintenance, and capacity-growth dashboards.
+- Added scripts: `Scripts/3-Phase29-ArchivePolicy.sql`, `Scripts/4-Phase29-IndexMaintenance.sql`, `Scripts/5-Phase29-CapacityGrowthDashboard.sql`.
+- No database schema change and no EF migration were required.
+
+## 2026-05-10 Update — Phase 29 Complete
+
+- Phase 29 is complete (Stages 29.1, 29.2 slices 1-3, and 29.3).
+- Schema-impacting work concluded in Stage 29.1; Stage 29.2 and Stage 29.3 were application/operations-only updates.
+
 ---
 
 # PART 1: UNIVERSITY PORTAL APPLICATION DATABASE

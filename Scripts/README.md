@@ -13,6 +13,9 @@ multiple times without corrupting data.
 | 0 | `0-Schema.sql` | **Run first.** Creates the `TabsanEduSphere` database (if absent) and applies every EF Core migration idempotently — all tables, indexes, and constraints. |
 | 1 | `1-MinimalSeed.sql` | Minimal baseline — roles, all 14 modules, sidebar menus, report definitions, GPA scale, result component rules, portal settings, license state, 1 department, and 4 test users (SuperAdmin / Admin / Faculty / Student). Enough to log in and exercise every screen. |
 | 2 | `2-FullDummyData.sql` | Full dummy data — 3 departments, 7 programs, 3 semesters, 18 courses, 18 course offerings, 4 roles × many users, timetables, assignments, submissions, attendance, results, quizzes, FYP projects, notifications, and payment receipts. Exercises all portal features across all roles. |
+| 3 | `3-Phase29-ArchivePolicy.sql` | Phase 29 Stage 29.3 archive/retention policy script. Dry-run by default; optionally applies batched cleanup for old operational data. |
+| 4 | `4-Phase29-IndexMaintenance.sql` | Phase 29 Stage 29.3 index maintenance script. Plans/executes REORGANIZE vs REBUILD based on fragmentation thresholds. |
+| 5 | `5-Phase29-CapacityGrowthDashboard.sql` | Phase 29 Stage 29.3 capacity and growth dashboard queries (size, row counts, last-30/7-day growth signals). |
 
 ---
 
@@ -66,6 +69,21 @@ sqlcmd -S "localhost" -E -i "Scripts\2-FullDummyData.sql" # full
 
 > **No `dotnet ef` or API startup required.** `0-Schema.sql` replaces the
 > migration step entirely.
+
+### Optional Operations (Phase 29 Stage 29.3)
+
+Run these after deployment windows to maintain long-term MSSQL performance:
+
+```powershell
+# Dry-run retention/archive candidates
+sqlcmd -S "localhost" -E -i "Scripts\3-Phase29-ArchivePolicy.sql"
+
+# Dry-run index maintenance plan
+sqlcmd -S "localhost" -E -i "Scripts\4-Phase29-IndexMaintenance.sql"
+
+# Capacity and growth dashboard snapshots
+sqlcmd -S "localhost" -E -i "Scripts\5-Phase29-CapacityGrowthDashboard.sql"
+```
 
 ---
 

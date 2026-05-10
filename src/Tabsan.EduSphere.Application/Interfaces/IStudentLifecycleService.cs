@@ -116,15 +116,17 @@ public interface IStudentLifecycleService
         CreatePaymentReceiptCommand cmd,
         CancellationToken ct = default);
 
-    /// <summary>Gets all payment receipts across all students (admin view).</summary>
-    Task<IList<PaymentReceiptDto>> GetAllReceiptsAsync(CancellationToken ct = default);
+    /// <summary>Gets a paged payment receipt slice across all students (admin view).</summary>
+    Task<PaymentReceiptPageDto> GetAllReceiptsAsync(int page, int pageSize, CancellationToken ct = default);
 
-    /// <summary>Gets all active receipts for the student linked to the given user account ID.</summary>
-    Task<IList<PaymentReceiptDto>> GetReceiptsByUserAsync(Guid userId, CancellationToken ct = default);
+    /// <summary>Gets a paged active payment receipt slice for the student linked to the given user account ID.</summary>
+    Task<PaymentReceiptPageDto> GetReceiptsByUserAsync(Guid userId, int page, int pageSize, CancellationToken ct = default);
 
-    /// <summary>Gets all active (unpaid) payment receipts for a student.</summary>
-    Task<IList<PaymentReceiptDto>> GetActiveReceiptsByStudentAsync(
+    /// <summary>Gets a paged active (unpaid) payment receipt slice for a student.</summary>
+    Task<PaymentReceiptPageDto> GetActiveReceiptsByStudentAsync(
         Guid studentProfileId,
+        int page,
+        int pageSize,
         CancellationToken ct = default);
 
     /// <summary>Gets complete fee status for a student (paid + unpaid).</summary>

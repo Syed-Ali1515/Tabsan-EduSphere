@@ -361,6 +361,33 @@
 | `GraduationApply(page, ct)` | Portal action rendering paged student graduation application history. | `Web/Controllers/PortalController.cs` |
 | `GraduationApplications(status, departmentId, page, ct)` | Portal action rendering paged staff graduation application lists with filters. | `Web/Controllers/PortalController.cs` |
 
+### Application/API/Web — Phase 29 Stage 29.2 Slice 3 (Payment Receipts Pagination)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `PaymentReceiptPageDto` | Carries paged payment receipt items plus paging metadata at the application/API boundary. | `Application/DTOs/StudentLifecycleDtos.cs` |
+| `GetAllReceiptsAsync(page, pageSize, ct)` | Returns paged admin payment receipts instead of an unbounded list. | `Application/Interfaces/IStudentLifecycleService.cs`, `Application/Services/StudentLifecycleService.cs` |
+| `GetReceiptsByUserAsync(userId, page, pageSize, ct)` | Returns paged student payment receipts instead of an unbounded list. | `Application/Interfaces/IStudentLifecycleService.cs`, `Application/Services/StudentLifecycleService.cs` |
+| `GetAllReceiptsPagedAsync(skip, take, ct)` | Executes SQL-side paging for admin payment receipt history. | `Domain/Interfaces/IStudentLifecycleRepository.cs`, `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `GetActiveReceiptsByStudentPagedAsync(studentProfileId, skip, take, ct)` | Executes SQL-side paging for student payment receipt history. | `Domain/Interfaces/IStudentLifecycleRepository.cs`, `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `CountAllReceiptsAsync(ct)` | Returns the total number of admin-visible payment receipts for paging metadata. | `Domain/Interfaces/IStudentLifecycleRepository.cs`, `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `CountActiveReceiptsByStudentAsync(studentProfileId, ct)` | Returns the total number of student-visible payment receipts for paging metadata. | `Domain/Interfaces/IStudentLifecycleRepository.cs`, `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+| `GetAll(page, pageSize, ct)` | API endpoint exposing paged admin payment receipts. | `API/Controllers/PaymentReceiptController.cs` |
+| `GetMine(page, pageSize, ct)` | API endpoint exposing paged student payment receipts. | `API/Controllers/PaymentReceiptController.cs` |
+| `GetAllPaymentsAsync(page, pageSize, ct)` | Web client method consuming paged admin payment receipt responses. | `Web/Services/EduApiClient.cs` |
+| `GetMyPaymentsAsync(page, pageSize, ct)` | Web client method consuming paged student payment receipt responses. | `Web/Services/EduApiClient.cs` |
+| `GetPaymentsByStudentAsync(studentId, page, pageSize, ct)` | Web client method consuming paged receipts for a selected student. | `Web/Services/EduApiClient.cs` |
+| `Payments(studentId, page, ct)` | Portal action rendering paged payment receipt lists and student-filtered navigation. | `Web/Controllers/PortalController.cs` |
+
+### Operations — Phase 29 Stage 29.3 (Data Lifecycle and Maintenance)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `3-Phase29-ArchivePolicy.sql` | Defines archive/retention policy windows, shows dry-run candidate counts, and can apply batched cleanup for old operational rows. | `Scripts/3-Phase29-ArchivePolicy.sql` |
+| `4-Phase29-IndexMaintenance.sql` | Produces fragmentation-based index maintenance plans and optionally executes REORGANIZE/REBUILD operations. | `Scripts/4-Phase29-IndexMaintenance.sql` |
+| `5-Phase29-CapacityGrowthDashboard.sql` | Provides table-size capacity snapshots and recent growth telemetry for high-volume tables. | `Scripts/5-Phase29-CapacityGrowthDashboard.sql` |
+| `Scripts/README.md` Phase 29 section | Documents operational run commands for archive policy, index maintenance, and growth dashboards. | `Scripts/README.md` |
+
 ### API — Phase 28 Stage 28.2 Completion
 
 | Function Name | Purpose | Location |

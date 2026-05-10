@@ -303,18 +303,31 @@ public class StudentLifecycleService : IStudentLifecycleService
 
     // ── Payment Receipts ───────────────────────────────────────────────────
     // Final-Touches Phase 7 Stage 7.2 — GetAllReceiptsAsync + GetReceiptsByUserAsync
-    public async Task<IList<PaymentReceiptDto>> GetAllReceiptsAsync(CancellationToken ct = default)
+    public async Task<PaymentReceiptPageDto> GetAllReceiptsAsync(int page, int pageSize, CancellationToken ct = default)
     {
-        var receipts = await _repository.GetAllReceiptsAsync(ct);
-        return receipts.Select(r => MapPaymentReceipt(r, r.StudentProfile?.RegistrationNumber ?? "")).ToList();
+        var normalizedPage = page < 1 ? 1 : page;
+        var normalizedPageSize = Math.Clamp(pageSize, 10, 100);
+        var skip = (normalizedPage - 1) * normalizedPageSize;
+
+        var totalCount = await _repository.CountAllReceiptsAsync(ct);
+        var receipts = await _repository.GetAllReceiptsPagedAsync(skip, normalizedPageSize, ct);
+        var items = receipts.Select(r => MapPaymentReceipt(r, r.StudentProfile?.RegistrationNumber ?? "")).ToList();
+        return new PaymentReceiptPageDto(items, normalizedPage, normalizedPageSize, totalCount);
     }
 
-    public async Task<IList<PaymentReceiptDto>> GetReceiptsByUserAsync(Guid userId, CancellationToken ct = default)
+    public async Task<PaymentReceiptPageDto> GetReceiptsByUserAsync(Guid userId, int page, int pageSize, CancellationToken ct = default)
     {
         var profile = await _repository.GetStudentProfileByUserIdAsync(userId, ct);
-        if (profile is null) return new List<PaymentReceiptDto>();
-        var receipts = await _repository.GetActiveReceiptsByStudentAsync(profile.Id, ct);
-        return receipts.Select(r => MapPaymentReceipt(r, profile.RegistrationNumber)).ToList();
+        if (profile is null) return new PaymentReceiptPageDto(Array.Empty<PaymentReceiptDto>(), 1, Math.Clamp(pageSize, 10, 100), 0);
+
+        var normalizedPage = page < 1 ? 1 : page;
+        var normalizedPageSize = Math.Clamp(pageSize, 10, 100);
+        var skip = (normalizedPage - 1) * normalizedPageSize;
+
+        var totalCount = await _repository.CountActiveReceiptsByStudentAsync(profile.Id, ct);
+        var receipts = await _repository.GetActiveReceiptsByStudentPagedAsync(profile.Id, skip, normalizedPageSize, ct);
+        var items = receipts.Select(r => MapPaymentReceipt(r, profile.RegistrationNumber)).ToList();
+        return new PaymentReceiptPageDto(items, normalizedPage, normalizedPageSize, totalCount);
     }
 
     public async Task<PaymentReceiptDto> CreatePaymentReceiptAsync(
@@ -346,13 +359,21 @@ public class StudentLifecycleService : IStudentLifecycleService
         return MapPaymentReceipt(receipt, student?.RegistrationNumber ?? "");
     }
 
-    public async Task<IList<PaymentReceiptDto>> GetActiveReceiptsByStudentAsync(
+    public async Task<PaymentReceiptPageDto> GetActiveReceiptsByStudentAsync(
         Guid studentProfileId,
+        int page,
+        int pageSize,
         CancellationToken ct = default)
     {
         var student = await _repository.GetByIdAsync(studentProfileId, ct);
-        var receipts = await _repository.GetActiveReceiptsByStudentAsync(studentProfileId, ct);
-        return receipts.Select(r => MapPaymentReceipt(r, student?.RegistrationNumber ?? "")).ToList();
+        var normalizedPage = page < 1 ? 1 : page;
+        var normalizedPageSize = Math.Clamp(pageSize, 10, 100);
+        var skip = (normalizedPage - 1) * normalizedPageSize;
+
+        var totalCount = await _repository.CountActiveReceiptsByStudentAsync(studentProfileId, ct);
+        var receipts = await _repository.GetActiveReceiptsByStudentPagedAsync(studentProfileId, skip, normalizedPageSize, ct);
+        var items = receipts.Select(r => MapPaymentReceipt(r, student?.RegistrationNumber ?? "")).ToList();
+        return new PaymentReceiptPageDto(items, normalizedPage, normalizedPageSize, totalCount);
     }
 
     public async Task<StudentFeeStatusDto> GetStudentFeeStatusAsync(

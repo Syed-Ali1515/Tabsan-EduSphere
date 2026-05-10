@@ -13,7 +13,9 @@ Scope start: After Phase 22
 Execution status update (2026-05-10):
 - Phases 23 through 28 are completed.
 - Phase 29 Stage 29.1 is completed.
-- Phase 29 Stage 29.2 slices 1 and 2 are completed.
+- Phase 29 Stage 29.2 slices 1, 2, and 3 are completed.
+- Phase 29 Stage 29.3 is completed.
+- Phase 29 is completed.
 
 ---
 
@@ -96,6 +98,27 @@ Validation summary:
 Implementation summary:
 - Added paged graduation list contracts with `TotalCount` for student and staff endpoints.
 - Replaced unbounded graduation list materialization with SQL-side paging and updated portal list pagination controls.
+
+Validation summary:
+- `dotnet build Tabsan.EduSphere.sln` passed.
+- `dotnet test Tabsan.EduSphere.sln --no-build` passed (**162/162**).
+
+### Phase 29 Stage 29.2 Slice 3 - Payment Receipts Pagination (Completed)
+Implementation summary:
+- Added paged payment receipt contracts for student and admin receipt endpoints with `TotalCount` metadata.
+- Replaced unbounded payment receipt list loading with SQL-side paging in the application, API, web client, and portal controller.
+- Updated the portal payments page with previous/next navigation while preserving the selected student filter for admin views.
+
+Validation summary:
+- `dotnet build Tabsan.EduSphere.sln` passed.
+- `dotnet test Tabsan.EduSphere.sln --no-build` passed (**162/162**).
+
+### Phase 29 Stage 29.3 - Data Lifecycle and Maintenance (Completed)
+Implementation summary:
+- Added an archive/retention policy script (`Scripts/3-Phase29-ArchivePolicy.sql`) with table-specific retention windows, dry-run mode, and optional batched cleanup execution.
+- Added an index maintenance script (`Scripts/4-Phase29-IndexMaintenance.sql`) to plan and optionally execute reorganize/rebuild operations from fragmentation thresholds.
+- Added a capacity and growth dashboard script (`Scripts/5-Phase29-CapacityGrowthDashboard.sql`) with storage footprint and recent row-growth snapshots for high-volume tables.
+- Updated `Scripts/README.md` with Stage 29.3 operational runbook commands.
 
 Validation summary:
 - `dotnet build Tabsan.EduSphere.sln` passed.
@@ -364,6 +387,15 @@ Validation summary:
 
 Done when:
 - DB performance remains stable as row counts grow to enterprise scale.
+
+#### 2026-05-10 - Stage 29.3 Completion
+Implementation summary:
+- Delivered executable operational SQL artifacts for retention cleanup, index maintenance, and size/growth observability under `Scripts/3-Phase29-ArchivePolicy.sql`, `Scripts/4-Phase29-IndexMaintenance.sql`, and `Scripts/5-Phase29-CapacityGrowthDashboard.sql`.
+- Added Stage 29.3 run instructions to `Scripts/README.md`.
+
+Validation summary:
+- `dotnet build Tabsan.EduSphere.sln` passed.
+- `dotnet test Tabsan.EduSphere.sln --no-build` passed (**162/162**).
 
 ---
 

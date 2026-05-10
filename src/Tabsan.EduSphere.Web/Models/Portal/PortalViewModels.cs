@@ -873,6 +873,15 @@ public class PaymentReceiptItem
     public string?  Notes              { get; set; }
 }
 
+public class PaymentReceiptPageItem
+{
+    public List<PaymentReceiptItem> Items { get; set; } = new();
+    public int Page { get; set; } = 1;
+    public int PageSize { get; set; } = 20;
+    public int TotalCount { get; set; }
+    public int TotalPages => PageSize > 0 ? (int)Math.Ceiling((double)TotalCount / PageSize) : 0;
+}
+
 // Final-Touches Phase 7 Stage 7.2 — form for creating a new receipt
 public class CreatePaymentForm
 {
@@ -887,6 +896,10 @@ public class PaymentsPageModel
     public bool   IsConnected { get; set; }
     public string? Message    { get; set; }
     public List<PaymentReceiptItem> Payments    { get; set; } = new();
+    public int Page { get; set; } = 1;
+    public int PageSize { get; set; } = 20;
+    public int TotalCount { get; set; }
+    public int TotalPages => PageSize > 0 ? (int)Math.Ceiling((double)TotalCount / PageSize) : 0;
     public List<LookupItem>         Departments { get; set; } = new();
     public List<StudentItem>         Students    { get; set; } = new();
     public Guid?  SelectedStudentId { get; set; }

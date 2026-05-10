@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.50 (Phase 29 Stage 29.2 slice 2 delivered)  
+**Version:** 1.52 (Phase 29 Stage 29.3 delivered; Phase 29 complete)  
 **Status:** Approved  
 **Prepared By:** Product Team  
 **Last Updated:** 10 May 2026  
@@ -97,6 +97,25 @@
 - **User experience:** portal graduation apply/list pages now support next/previous navigation while preserving active filters.
 - **Schema impact:** no database migration required.
 - **Validation:** solution build passed; automated tests passed **162/162**.
+
+### 2026-05-10 — Phase 29 Stage 29.2 Slice 3
+- **Pagination discipline:** payment receipt list endpoints now use server-side paging with `page` and `pageSize` parameters.
+- **Contract update:** payment API/application/repository/web contracts now exchange paged list results with total-count metadata.
+- **User experience:** portal payments page now supports next/previous navigation while preserving the selected student filter for admin views.
+- **Schema impact:** no database migration required.
+- **Validation:** solution build passed; automated tests passed **162/162**.
+
+### 2026-05-10 — Phase 29 Stage 29.3
+- **Archive policy:** added `Scripts/3-Phase29-ArchivePolicy.sql` with retention matrix, dry-run candidate counts, and optional batched cleanup mode.
+- **Index maintenance:** added `Scripts/4-Phase29-IndexMaintenance.sql` with fragmentation-threshold reorganize/rebuild planning and execution mode.
+- **Capacity dashboards:** added `Scripts/5-Phase29-CapacityGrowthDashboard.sql` for table-size snapshots and recent growth signals.
+- **Operational runbook:** updated `Scripts/README.md` with Stage 29.3 command flow.
+- **Schema impact:** no database migration required.
+- **Validation:** solution build passed; automated tests passed **162/162**.
+
+### 2026-05-10 — Phase 29 Complete
+- Stage 29.1, Stage 29.2 (all slices), and Stage 29.3 are complete.
+- MSSQL optimization scope now includes index baseline, heavy-list pagination discipline, and operational lifecycle maintenance artifacts.
 
 ### 2026-05-10 — Phase 28 Stage 28.3 Slice 1
 - **File/media abstraction:** introduced provider-based API storage contract (`IMediaStorageService`) and local implementation (`LocalMediaStorageService`) to remove endpoint-level hard-coded file persistence.

@@ -200,6 +200,27 @@ public class StudentLifecycleRepository : IStudentLifecycleRepository
             .ToListAsync(ct);
     }
 
+    public async Task<IList<PaymentReceipt>> GetActiveReceiptsByStudentPagedAsync(
+        Guid studentProfileId,
+        int skip,
+        int take,
+        CancellationToken ct = default)
+    {
+        return await _db.PaymentReceipts
+            .AsNoTracking()
+            .Where(pr => pr.StudentProfileId == studentProfileId && pr.Status != PaymentReceiptStatus.Cancelled)
+            .Include(pr => pr.CreatedByUser)
+            .Include(pr => pr.ConfirmedByUser)
+            .OrderByDescending(pr => pr.CreatedAt)
+            .Skip(skip)
+            .Take(take)
+            .ToListAsync(ct);
+    }
+
+    public Task<int> CountActiveReceiptsByStudentAsync(Guid studentProfileId, CancellationToken ct = default)
+        => _db.PaymentReceipts.AsNoTracking()
+            .CountAsync(pr => pr.StudentProfileId == studentProfileId && pr.Status != PaymentReceiptStatus.Cancelled, ct);
+
     public async Task<IList<PaymentReceipt>> GetAllReceiptsByStudentAsync(
         Guid studentProfileId,
         CancellationToken ct = default)
@@ -212,6 +233,26 @@ public class StudentLifecycleRepository : IStudentLifecycleRepository
             .OrderByDescending(pr => pr.CreatedAt)
             .ToListAsync(ct);
     }
+
+    public async Task<IList<PaymentReceipt>> GetAllReceiptsByStudentPagedAsync(
+        Guid studentProfileId,
+        int skip,
+        int take,
+        CancellationToken ct = default)
+    {
+        return await _db.PaymentReceipts
+            .AsNoTracking()
+            .Where(pr => pr.StudentProfileId == studentProfileId)
+            .Include(pr => pr.CreatedByUser)
+            .Include(pr => pr.ConfirmedByUser)
+            .OrderByDescending(pr => pr.CreatedAt)
+            .Skip(skip)
+            .Take(take)
+            .ToListAsync(ct);
+    }
+
+    public Task<int> CountAllReceiptsByStudentAsync(Guid studentProfileId, CancellationToken ct = default)
+        => _db.PaymentReceipts.AsNoTracking().CountAsync(pr => pr.StudentProfileId == studentProfileId, ct);
 
     public async Task<PaymentReceipt?> GetReceiptByIdAsync(Guid receiptId, CancellationToken ct = default)
     {
@@ -244,6 +285,21 @@ public class StudentLifecycleRepository : IStudentLifecycleRepository
             .ToListAsync(ct);
     }
 
+    public async Task<IList<PaymentReceipt>> GetAllUnpaidReceiptsPagedAsync(int skip, int take, CancellationToken ct = default)
+    {
+        return await _db.PaymentReceipts
+            .AsNoTracking()
+            .Where(pr => pr.Status == PaymentReceiptStatus.Pending || pr.Status == PaymentReceiptStatus.Submitted)
+            .Include(pr => pr.StudentProfile)
+            .OrderByDescending(pr => pr.DueDate)
+            .Skip(skip)
+            .Take(take)
+            .ToListAsync(ct);
+    }
+
+    public Task<int> CountAllUnpaidReceiptsAsync(CancellationToken ct = default)
+        => _db.PaymentReceipts.AsNoTracking().CountAsync(pr => pr.Status == PaymentReceiptStatus.Pending || pr.Status == PaymentReceiptStatus.Submitted, ct);
+
     // Final-Touches Phase 7 Stage 7.2 — all receipts for admin + student profile by user ID
     public async Task<IList<PaymentReceipt>> GetAllReceiptsAsync(CancellationToken ct = default)
     {
@@ -253,6 +309,20 @@ public class StudentLifecycleRepository : IStudentLifecycleRepository
             .OrderByDescending(pr => pr.CreatedAt)
             .ToListAsync(ct);
     }
+
+    public async Task<IList<PaymentReceipt>> GetAllReceiptsPagedAsync(int skip, int take, CancellationToken ct = default)
+    {
+        return await _db.PaymentReceipts
+            .AsNoTracking()
+            .Include(pr => pr.StudentProfile)
+            .OrderByDescending(pr => pr.CreatedAt)
+            .Skip(skip)
+            .Take(take)
+            .ToListAsync(ct);
+    }
+
+    public Task<int> CountAllReceiptsAsync(CancellationToken ct = default)
+        => _db.PaymentReceipts.AsNoTracking().CountAsync(ct);
 
     public async Task<StudentProfile?> GetStudentProfileByUserIdAsync(Guid userId, CancellationToken ct = default)
     {

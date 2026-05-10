@@ -50,12 +50,12 @@ public class PaymentReceiptController : ControllerBase
     // ── GET /api/v1/payments ──────────────────────────────────────────────
 
     // Final-Touches Phase 7 Stage 7.2 — all receipts for admin view
-    /// <summary>Returns all payment receipts across all students. Admin / Finance only.</summary>
+    /// <summary>Returns a paged set of payment receipts across all students. Admin / Finance only.</summary>
     [HttpGet]
     [Authorize(Roles = "SuperAdmin,Admin,Finance")]
-    public async Task<IActionResult> GetAll(CancellationToken ct)
+    public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 20, CancellationToken ct = default)
     {
-        var receipts = await _service.GetAllReceiptsAsync(ct);
+        var receipts = await _service.GetAllReceiptsAsync(page, pageSize, ct);
         return Ok(receipts);
     }
 
@@ -65,11 +65,11 @@ public class PaymentReceiptController : ControllerBase
     /// <summary>Student views their own payment receipts (resolved from JWT user ID).</summary>
     [HttpGet("mine")]
     [Authorize(Roles = "Student")]
-    public async Task<IActionResult> GetMine(CancellationToken ct)
+    public async Task<IActionResult> GetMine([FromQuery] int page = 1, [FromQuery] int pageSize = 20, CancellationToken ct = default)
     {
         var userId = GetUserId();
         if (userId == Guid.Empty) return Forbid();
-        var receipts = await _service.GetReceiptsByUserAsync(userId, ct);
+        var receipts = await _service.GetReceiptsByUserAsync(userId, page, pageSize, ct);
         return Ok(receipts);
     }
     // ── GET /api/v1/payments/student/{studentProfileId} ──────────────────────
@@ -77,9 +77,9 @@ public class PaymentReceiptController : ControllerBase
     /// <summary>Returns all active (non-cancelled) receipts for a student. Admin or Finance only.</summary>
     [HttpGet("student/{studentProfileId:guid}")]
     [Authorize(Roles = "SuperAdmin,Admin,Finance")]
-    public async Task<IActionResult> GetByStudent(Guid studentProfileId, CancellationToken ct)
+    public async Task<IActionResult> GetByStudent(Guid studentProfileId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20, CancellationToken ct = default)
     {
-        var receipts = await _service.GetActiveReceiptsByStudentAsync(studentProfileId, ct);
+        var receipts = await _service.GetActiveReceiptsByStudentAsync(studentProfileId, page, pageSize, ct);
         return Ok(receipts);
     }
 
@@ -88,9 +88,9 @@ public class PaymentReceiptController : ControllerBase
     /// <summary>Student views their own active payment receipts.</summary>
     [HttpGet("my/{studentProfileId:guid}")]
     [Authorize(Roles = "Student")]
-    public async Task<IActionResult> GetMine(Guid studentProfileId, CancellationToken ct)
+    public async Task<IActionResult> GetMine(Guid studentProfileId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20, CancellationToken ct = default)
     {
-        var receipts = await _service.GetActiveReceiptsByStudentAsync(studentProfileId, ct);
+        var receipts = await _service.GetActiveReceiptsByStudentAsync(studentProfileId, page, pageSize, ct);
         return Ok(receipts);
     }
 

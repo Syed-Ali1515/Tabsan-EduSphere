@@ -131,6 +131,13 @@ public record ConfirmPaymentCommand(
     string? Notes = null
 );
 
+public sealed record PaymentReceiptPageDto(
+    IReadOnlyList<PaymentReceiptDto> Items,
+    int Page,
+    int PageSize,
+    int TotalCount
+);
+
 public record StudentFeeStatusDto(
     Guid StudentProfileId,
     bool HasUnpaidReceipts,

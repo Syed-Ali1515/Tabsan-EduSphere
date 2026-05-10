@@ -53,12 +53,12 @@ cmd /c git -C "<repo-root>" push origin main
 
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
-- Active Phase: **Phase 29 — MSSQL Data and Indexing Optimization — IN PROGRESS ⚙️**
-- Active Stage: **Stage 29.2 in progress (Slice 2 delivered: graduation application pagination)**
-- Status: **0 build errors; 162/162 tests passed; no database migration required for Stage 29.2 Slice 2**
+- Active Phase: **Phase 30 — Integrations and SaaS Operations — READY ▶**
+- Active Stage: **Stage 30.1 not started (Phase 29 complete)**
+- Status: **Phase 29 complete; 0 build errors; 162/162 tests passed; no database migration required for Stage 29.3**
 - Last Updated: 2026-05-10
-- Next: **Phase 29 Stage 29.2 — continue pagination/filter discipline on other heavy list endpoints (FYP/payment receipts)** (see Docs/Advance-Enhancements.md)
-- Docs Updated: ✅ All requested tracking files updated for Phase 29 Stage 29.2 Slice 2 progress (2026-05-10)
+- Next: **Phase 30 Stage 30.1 — Integration Gateway Layer** (see Docs/Advance-Enhancements.md)
+- Docs Updated: ✅ All requested tracking files updated for Phase 29 Stage 29.3 completion (2026-05-10)
 
 ---
 
@@ -259,6 +259,21 @@ Database is fully synchronized with codebase.
   - Replaced unbounded graduation list materialization with server-side `page` and `pageSize` SQL paging in repository/service/API layers.
   - Updated portal graduation list pages with previous/next pagination controls while preserving status/department filters.
   - No database migration was required.
+- **Phase 29 — MSSQL Data and Indexing Optimization — Stage 29.2 SLICE 3 DELIVERED ✅**
+  - Added paged payment receipt list contract for admin/student receipt endpoints and student-filtered admin listing.
+  - Replaced unbounded payment receipt list materialization with server-side `page` and `pageSize` SQL paging in repository/service/API/web layers.
+  - Updated portal payments page with previous/next pagination controls while preserving selected student filters.
+  - No database migration was required.
+- **Phase 29 — MSSQL Data and Indexing Optimization — Stage 29.3 DELIVERED ✅**
+  - Added archive/retention policy script (`Scripts/3-Phase29-ArchivePolicy.sql`) with dry-run and optional batched cleanup mode.
+  - Added index maintenance script (`Scripts/4-Phase29-IndexMaintenance.sql`) with fragmentation-driven reorganize/rebuild planning.
+  - Added capacity and growth dashboard script (`Scripts/5-Phase29-CapacityGrowthDashboard.sql`) with table-size and recent-growth telemetry.
+  - Updated `Scripts/README.md` with operations runbook commands.
+  - No database migration was required.
+- **Phase 29 COMPLETE ✅**
+  - Stage 29.1 delivered index baseline and query contracts.
+  - Stage 29.2 delivered pagination discipline for helpdesk, graduation, and payment receipt heavy-list endpoints.
+  - Stage 29.3 delivered lifecycle maintenance scripts for archive policy, index maintenance, and capacity-growth observability.
 
 ## Pending Extra Tasks (Cross-Phase)
 - Keep Report Center menu visible by role and working links.

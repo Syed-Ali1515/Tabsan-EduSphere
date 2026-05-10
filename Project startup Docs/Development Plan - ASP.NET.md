@@ -8,7 +8,23 @@
 
 ## Execution Updates
 
-### 2026-05-10 — Phase 28 Stage 28.3 Slice 1
+### 2026-05-10 — Phase 29 Stage 29.3
+- Added `Scripts/3-Phase29-ArchivePolicy.sql` with retention policy windows, dry-run visibility, and optional batched cleanup execution.
+- Added `Scripts/4-Phase29-IndexMaintenance.sql` with fragmentation threshold planning and optional reorganize/rebuild execution.
+- Added `Scripts/5-Phase29-CapacityGrowthDashboard.sql` for capacity footprint and recent growth telemetry.
+- Updated `Scripts/README.md` with Stage 29.3 operations run commands.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed `162/162`.
+
+### 2026-05-10 — Phase 29 Complete
+- Stage 29.1 (index baseline), Stage 29.2 (heavy-list pagination), and Stage 29.3 (lifecycle maintenance operations) are complete.
+
+### 2026-05-10 — Phase 29 Stage 29.2 Slice 3
+- Added server-side pagination for payment receipt lists across repository, application service, API controller, portal client, and portal page.
+- Replaced previous unbounded payment list paths with `page` and `pageSize` aware queries plus total-count metadata.
+- Preserved the admin student-filtered Payments workflow while adding previous/next navigation.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed `162/162`.
+
+### 2026-05-10 — Phase 28 Stage 28.3 Slice 3
 - Added provider-based file/media storage abstraction in API (`IMediaStorageService`, `LocalMediaStorageService`, `MediaStorageOptions`).
 - Added `MediaStorage` configuration to API appsettings (provider mode, local root path, key prefix, optional public base URL).
 - Migrated payment-proof upload flow to storage abstraction so database records persist storage object keys instead of hard-coded file system paths.

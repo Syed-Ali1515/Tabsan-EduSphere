@@ -2223,13 +2223,14 @@ public class PortalController : Controller
     // Final-Touches Phase 7 — admin all-receipts view + student own receipts
 
     [HttpGet]
-    public async Task<IActionResult> Payments(Guid? studentId, CancellationToken ct)
+    public async Task<IActionResult> Payments(Guid? studentId, int page = 1, CancellationToken ct = default)
     {
         ViewData["Title"] = "Payments";
         var model = new PaymentsPageModel
         {
             IsConnected       = _api.IsConnected(),
             SelectedStudentId = studentId,
+            Page = page < 1 ? 1 : page,
             Message           = TempData["PortalMessage"]?.ToString()
         };
         if (!model.IsConnected) return View(model);
@@ -2239,15 +2240,26 @@ public class PortalController : Controller
             var identity = _api.GetSessionIdentity();
             if (identity?.IsStudent == true)
             {
-                model.Payments = await _api.GetMyPaymentsAsync(ct);
+                var pageResult = await _api.GetMyPaymentsAsync(model.Page, model.PageSize, ct);
+                model.Payments = pageResult.Items;
+                model.TotalCount = pageResult.TotalCount;
+                model.Page = pageResult.Page;
+                model.PageSize = pageResult.PageSize;
             }
             else
             {
-                // Admin / Finance: load all receipts + student list for create form
-                model.Payments = await _api.GetAllPaymentsAsync(ct);
                 model.Students = await _api.GetStudentsAsync(null, ct);
+                // Admin / Finance: load paged receipts and optionally filter by student
+                PaymentReceiptPageItem pageResult;
                 if (studentId.HasValue)
-                    model.Payments = await _api.GetPaymentsByStudentAsync(studentId.Value, ct);
+                    pageResult = await _api.GetPaymentsByStudentAsync(studentId.Value, model.Page, model.PageSize, ct);
+                else
+                    pageResult = await _api.GetAllPaymentsAsync(model.Page, model.PageSize, ct);
+
+                model.Payments = pageResult.Items;
+                model.TotalCount = pageResult.TotalCount;
+                model.Page = pageResult.Page;
+                model.PageSize = pageResult.PageSize;
             }
         }
         catch (Exception ex) { model.Message = ex.Message; }
@@ -3109,15 +3121,13 @@ public class PortalController : Controller
         Guid.TryParse(callerIdStr, out var callerId);
         var model = new HelpdeskListPageModel
         {
-            IsConnected  = _api.IsConnected(),
-            CallerRole   = session?.Roles.FirstOrDefault() ?? "",
-            CallerId     = callerId,
+            IsConnected = _api.IsConnected(),
+            CallerRole = session?.Roles.FirstOrDefault() ?? string.Empty,
+            CallerId = callerId,
             StatusFilter = status,
-            Page         = page
+            Page = page < 1 ? 1 : page
         };
-
         if (!model.IsConnected) return View(model);
-
         try
         {
             var ticketPage = await _api.GetTicketsAsync(status, model.Page, model.PageSize, ct);
@@ -3902,6 +3912,21 @@ public class PortalController : Controller
         return View(model);
     }
 
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateDiscussionThread(Guid offeringId, string title, CancellationToken ct)
+    {
+        if (_api.IsConnected())
+        {
+            try
+            {
+                await _api.CreateDiscussionThreadAsync(offeringId, Guid.Empty, title, ct);
+                TempData["SuccessMessage"] = "Thread created.";
+            }
+            catch (Exception ex) { TempData["ErrorMessage"] = ex.Message; }
+        }
+        return RedirectToAction(nameof(Discussion), new { offeringId });
+    }
+
     [HttpGet]
     public async Task<IActionResult> DiscussionThreadDetail(Guid threadId, Guid offeringId, CancellationToken ct)
     {
@@ -3921,34 +3946,29 @@ public class PortalController : Controller
             {
                 model.Thread = new DiscussionThreadItem
                 {
-                    Id = t.Id, OfferingId = t.OfferingId, Title = t.Title,
-                    AuthorName = t.AuthorName, IsPinned = t.IsPinned,
-                    IsClosed = t.IsClosed, ReplyCount = t.ReplyCount, CreatedAt = t.CreatedAt,
+                    Id = t.Id,
+                    OfferingId = t.OfferingId,
+                    Title = t.Title,
+                    AuthorName = t.AuthorName,
+                    IsPinned = t.IsPinned,
+                    IsClosed = t.IsClosed,
+                    ReplyCount = t.ReplyCount,
+                    CreatedAt = t.CreatedAt,
                     Replies = t.Replies.Select(r => new DiscussionReplyItem
                     {
-                        Id = r.Id, ThreadId = r.ThreadId, AuthorId = r.AuthorId,
-                        AuthorName = r.AuthorName, Body = r.Body, CreatedAt = r.CreatedAt
+                        Id = r.Id,
+                        ThreadId = r.ThreadId,
+                        AuthorId = r.AuthorId,
+                        AuthorName = r.AuthorName,
+                        Body = r.Body,
+                        CreatedAt = r.CreatedAt
                     }).ToList()
                 };
             }
+
         }
         catch (Exception ex) { model.ErrorMessage = ex.Message; }
         return View(model);
-    }
-
-    [HttpPost, ValidateAntiForgeryToken]
-    public async Task<IActionResult> CreateDiscussionThread(Guid offeringId, string title, CancellationToken ct)
-    {
-        if (_api.IsConnected())
-        {
-            try
-            {
-                await _api.CreateDiscussionThreadAsync(offeringId, Guid.Empty, title, ct);
-                TempData["SuccessMessage"] = "Thread created.";
-            }
-            catch (Exception ex) { TempData["ErrorMessage"] = ex.Message; }
-        }
-        return RedirectToAction(nameof(Discussion), new { offeringId });
     }
 
     [HttpPost, ValidateAntiForgeryToken]
@@ -3958,8 +3978,16 @@ public class PortalController : Controller
         {
             try
             {
-                await _api.AddDiscussionReplyAsync(threadId, Guid.Empty, body, ct);
-                TempData["SuccessMessage"] = "Reply posted.";
+                var callerIdStr = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (Guid.TryParse(callerIdStr, out var authorId))
+                {
+                    await _api.AddDiscussionReplyAsync(threadId, authorId, body, ct);
+                    TempData["SuccessMessage"] = "Reply posted.";
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "Unable to resolve the current user.";
+                }
             }
             catch (Exception ex) { TempData["ErrorMessage"] = ex.Message; }
         }

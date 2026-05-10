@@ -240,10 +240,10 @@ public interface IEduApiClient
     Task PromoteStudentAsync(Guid studentId, CancellationToken ct);
 
     // Payments
-    Task<List<PaymentReceiptItem>> GetPaymentsByStudentAsync(Guid studentId, CancellationToken ct);
+    Task<PaymentReceiptPageItem> GetPaymentsByStudentAsync(Guid studentId, int page, int pageSize, CancellationToken ct);
     // Final-Touches Phase 7 — admin all-receipts, student own, create, confirm, cancel, submit proof
-    Task<List<PaymentReceiptItem>> GetAllPaymentsAsync(CancellationToken ct);
-    Task<List<PaymentReceiptItem>> GetMyPaymentsAsync(CancellationToken ct);
+    Task<PaymentReceiptPageItem> GetAllPaymentsAsync(int page, int pageSize, CancellationToken ct);
+    Task<PaymentReceiptPageItem> GetMyPaymentsAsync(int page, int pageSize, CancellationToken ct);
     Task CreatePaymentAsync(Guid studentProfileId, decimal amount, string description, DateTime dueDate, CancellationToken ct);
     Task ConfirmPaymentAsync(Guid receiptId, CancellationToken ct);
     Task CancelPaymentAsync(Guid receiptId, CancellationToken ct);
@@ -2323,10 +2323,10 @@ public class EduApiClient : IEduApiClient
 
     // ── Payments ──────────────────────────────────────────────────────────────
 
-    public async Task<List<PaymentReceiptItem>> GetPaymentsByStudentAsync(Guid studentId, CancellationToken ct)
+    public async Task<PaymentReceiptPageItem> GetPaymentsByStudentAsync(Guid studentId, int page, int pageSize, CancellationToken ct)
     {
-        var raw = await GetAsync<List<PaymentApiDto>>($"api/v1/payments/student/{studentId}", ct) ?? new();
-        return raw.Select(MapPayment).ToList();
+        var raw = await GetAsync<PaymentPageApiDto>($"api/v1/payments/student/{studentId}?page={page}&pageSize={pageSize}", ct);
+        return raw is null ? new PaymentReceiptPageItem() : MapPaymentPage(raw);
     }
 
     private static PaymentReceiptItem MapPayment(PaymentApiDto p) => new()
@@ -2345,17 +2345,25 @@ public class EduApiClient : IEduApiClient
     };
 
     // Final-Touches Phase 7 — admin and student payment actions
-    public async Task<List<PaymentReceiptItem>> GetAllPaymentsAsync(CancellationToken ct)
+    public async Task<PaymentReceiptPageItem> GetAllPaymentsAsync(int page, int pageSize, CancellationToken ct)
     {
-        var raw = await GetAsync<List<PaymentApiDto>>("api/v1/payments", ct) ?? new();
-        return raw.Select(MapPayment).ToList();
+        var raw = await GetAsync<PaymentPageApiDto>($"api/v1/payments?page={page}&pageSize={pageSize}", ct);
+        return raw is null ? new PaymentReceiptPageItem() : MapPaymentPage(raw);
     }
 
-    public async Task<List<PaymentReceiptItem>> GetMyPaymentsAsync(CancellationToken ct)
+    public async Task<PaymentReceiptPageItem> GetMyPaymentsAsync(int page, int pageSize, CancellationToken ct)
     {
-        var raw = await GetAsync<List<PaymentApiDto>>("api/v1/payments/mine", ct) ?? new();
-        return raw.Select(MapPayment).ToList();
+        var raw = await GetAsync<PaymentPageApiDto>($"api/v1/payments/mine?page={page}&pageSize={pageSize}", ct);
+        return raw is null ? new PaymentReceiptPageItem() : MapPaymentPage(raw);
     }
+
+    private static PaymentReceiptPageItem MapPaymentPage(PaymentPageApiDto raw) => new()
+    {
+        Items = raw.Items?.Select(MapPayment).ToList() ?? new(),
+        Page = raw.Page,
+        PageSize = raw.PageSize,
+        TotalCount = raw.TotalCount
+    };
 
     public Task CreatePaymentAsync(Guid studentProfileId, decimal amount, string description, DateTime dueDate, CancellationToken ct)
         => PostAsync<object, object>("api/v1/payments", new { studentProfileId, amount, description, dueDate }, ct);
@@ -2383,6 +2391,14 @@ public class EduApiClient : IEduApiClient
         public DateTime? PaidDate          { get; set; }
         public string?  ProofOfPaymentPath { get; set; }
         public string?  Notes              { get; set; }
+    }
+
+    private sealed class PaymentPageApiDto
+    {
+        public List<PaymentApiDto>? Items { get; set; }
+        public int Page { get; set; }
+        public int PageSize { get; set; }
+        public int TotalCount { get; set; }
     }
 
     // ── Enrollments ───────────────────────────────────────────────────────────

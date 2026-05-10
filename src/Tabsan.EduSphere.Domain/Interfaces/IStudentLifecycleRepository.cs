@@ -69,8 +69,20 @@ public interface IStudentLifecycleRepository
     /// <summary>Gets all active (non-cancelled) payment receipts for a student.</summary>
     Task<IList<PaymentReceipt>> GetActiveReceiptsByStudentAsync(Guid studentProfileId, CancellationToken ct = default);
 
+    /// <summary>Gets a paged active (non-cancelled) payment receipt slice for a student.</summary>
+    Task<IList<PaymentReceipt>> GetActiveReceiptsByStudentPagedAsync(Guid studentProfileId, int skip, int take, CancellationToken ct = default);
+
+    /// <summary>Counts all active (non-cancelled) payment receipts for a student.</summary>
+    Task<int> CountActiveReceiptsByStudentAsync(Guid studentProfileId, CancellationToken ct = default);
+
     /// <summary>Gets all payment receipts (including cancelled) for a student.</summary>
     Task<IList<PaymentReceipt>> GetAllReceiptsByStudentAsync(Guid studentProfileId, CancellationToken ct = default);
+
+    /// <summary>Gets a paged payment receipt slice (including cancelled) for a student.</summary>
+    Task<IList<PaymentReceipt>> GetAllReceiptsByStudentPagedAsync(Guid studentProfileId, int skip, int take, CancellationToken ct = default);
+
+    /// <summary>Counts all payment receipts (including cancelled) for a student.</summary>
+    Task<int> CountAllReceiptsByStudentAsync(Guid studentProfileId, CancellationToken ct = default);
 
     /// <summary>Gets a specific payment receipt by ID with related data loaded.</summary>
     Task<PaymentReceipt?> GetReceiptByIdAsync(Guid receiptId, CancellationToken ct = default);
@@ -81,8 +93,20 @@ public interface IStudentLifecycleRepository
     /// <summary>Gets all unpaid receipts across all students.</summary>
     Task<IList<PaymentReceipt>> GetAllUnpaidReceiptsAsync(CancellationToken ct = default);
 
+    /// <summary>Gets a paged unpaid receipt slice across all students.</summary>
+    Task<IList<PaymentReceipt>> GetAllUnpaidReceiptsPagedAsync(int skip, int take, CancellationToken ct = default);
+
+    /// <summary>Counts unpaid receipts across all students.</summary>
+    Task<int> CountAllUnpaidReceiptsAsync(CancellationToken ct = default);
+
     /// <summary>Gets all receipts across all students (for admin view).</summary>
     Task<IList<PaymentReceipt>> GetAllReceiptsAsync(CancellationToken ct = default);
+
+    /// <summary>Gets a paged receipt slice across all students (for admin view).</summary>
+    Task<IList<PaymentReceipt>> GetAllReceiptsPagedAsync(int skip, int take, CancellationToken ct = default);
+
+    /// <summary>Counts receipts across all students (for admin view).</summary>
+    Task<int> CountAllReceiptsAsync(CancellationToken ct = default);
 
     /// <summary>Gets a student profile by the linked user account ID.</summary>
     Task<StudentProfile?> GetStudentProfileByUserIdAsync(Guid userId, CancellationToken ct = default);
