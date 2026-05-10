@@ -31,11 +31,17 @@ k6 run --env BAND=10k-100k tests/load/k6-certification-bands.js
 k6 run --env BAND=100k-500k tests/load/k6-certification-bands.js
 k6 run --env BAND=500k-1m tests/load/k6-certification-bands.js
 
+# Optional duration override for constrained CI/terminal runtimes
+k6 run --env BASE_URL=http://localhost:5181 --env BAND=500k-1m --env DURATION_OVERRIDE=90s tests/load/k6-certification-bands.js
+
 # Optional: include an admin token for authenticated paths
 k6 run --env BAND=10k-100k --env ADMIN_TOKEN=<jwt-token> tests/load/k6-certification-bands.js
 
 # Recovery smoke (node/service failure simulation)
 powershell -ExecutionPolicy Bypass -File tests/load/recovery-smoke.ps1 -BaseUrl http://localhost:5181
+
+# Recovery smoke with explicit DB connection override
+powershell -ExecutionPolicy Bypass -File tests/load/recovery-smoke.ps1 -BaseUrl http://localhost:5181 -ConnectionString "Server=(localdb)\MSSQLLocalDB;Database=TabsanEduSphere;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True"
 ```
 
 ## Interpreting Results
@@ -75,5 +81,6 @@ Common threshold for all bands:
 `recovery-smoke.ps1` validates node/service failure recovery by:
 
 1. Starting the API and validating `/health` returns 200.
-2. Stopping the API process to simulate node failure.
-3. Restarting the API process and polling `/health` until recovery or timeout.
+2. Running API startup with `--no-launch-profile` to avoid environment/profile drift.
+3. Stopping the API process to simulate node failure.
+4. Restarting the API process and polling `/health` until recovery or timeout.

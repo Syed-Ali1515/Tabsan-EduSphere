@@ -2,7 +2,8 @@ param(
     [string]$ApiProject = "src/Tabsan.EduSphere.API/Tabsan.EduSphere.API.csproj",
     [string]$BaseUrl = "http://localhost:5181",
     [int]$StartupTimeoutSeconds = 90,
-    [int]$RecoveryTimeoutSeconds = 90
+    [int]$RecoveryTimeoutSeconds = 90,
+    [string]$ConnectionString = ""
 )
 
 # Final-Touches Phase 31 Stage 31.3 — node/service recovery smoke certification.
@@ -13,7 +14,7 @@ function Test-Health {
     param([string]$Url)
 
     try {
-        $res = Invoke-WebRequest -Uri "$Url/health" -Method Get -TimeoutSec 5
+        $res = Invoke-WebRequest -Uri "$Url/health" -Method Get -UseBasicParsing -TimeoutSec 5
         return $res.StatusCode -eq 200
     }
     catch {
@@ -47,7 +48,41 @@ function Wait-ForHealthy {
 }
 
 Write-Host "[Stage31.3] Starting API process for recovery smoke..."
-$process = Start-Process dotnet -ArgumentList @("run", "--project", $ApiProject, "--no-build") -PassThru
+$processArgs = @("run", "--project", $ApiProject, "--no-build", "--no-launch-profile", "--urls", $BaseUrl)
+
+function Start-ApiProcess {
+    param(
+        [string[]]$ApiArgs,
+        [string]$ConnString
+    )
+
+    $hadPrevious = Test-Path Env:ConnectionStrings__DefaultConnection
+    $previous = $env:ConnectionStrings__DefaultConnection
+
+    try {
+        if ([string]::IsNullOrWhiteSpace($ConnString)) {
+            if ($hadPrevious) {
+                $env:ConnectionStrings__DefaultConnection = $previous
+            } else {
+                Remove-Item Env:ConnectionStrings__DefaultConnection -ErrorAction SilentlyContinue
+            }
+        } else {
+            $env:ConnectionStrings__DefaultConnection = $ConnString
+        }
+
+        $argLine = ($ApiArgs | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) -join " "
+        return Start-Process dotnet -ArgumentList $argLine -PassThru
+    }
+    finally {
+        if ($hadPrevious) {
+            $env:ConnectionStrings__DefaultConnection = $previous
+        } else {
+            Remove-Item Env:ConnectionStrings__DefaultConnection -ErrorAction SilentlyContinue
+        }
+    }
+}
+
+$process = Start-ApiProcess -ApiArgs $processArgs -ConnString $ConnectionString
 
 try {
     # Final-Touches Phase 31 Stage 31.3 — fail fast with actionable startup diagnostics.
@@ -57,7 +92,7 @@ try {
     Stop-Process -Id $process.Id -Force
 
     Write-Host "[Stage31.3] Restarting API process..."
-    $process = Start-Process dotnet -ArgumentList @("run", "--project", $ApiProject, "--no-build") -PassThru
+    $process = Start-ApiProcess -ApiArgs $processArgs -ConnString $ConnectionString
 
     Wait-ForHealthy -Url $BaseUrl -TargetProcess $process -TimeoutSeconds $RecoveryTimeoutSeconds -Phase "Recovery"
 

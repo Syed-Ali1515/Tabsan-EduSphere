@@ -18,6 +18,7 @@ import { Rate } from 'k6/metrics';
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:5000';
 const ADMIN_TOKEN = __ENV.ADMIN_TOKEN || '';
 const BAND = (__ENV.BAND || 'up-to-10k').toLowerCase();
+const DURATION_OVERRIDE = (__ENV.DURATION_OVERRIDE || '').trim();
 
 const errorRate = new Rate('error_rate');
 
@@ -45,13 +46,14 @@ const BAND_CONFIG = {
 };
 
 const selected = BAND_CONFIG[BAND] || BAND_CONFIG['up-to-10k'];
+const selectedDuration = DURATION_OVERRIDE || selected.duration;
 
 export const options = {
   scenarios: {
     certification_band: {
       executor: 'constant-vus',
       vus: selected.vus,
-      duration: selected.duration,
+      duration: selectedDuration,
       tags: { scenario: `cert-${BAND}` },
     },
   },
