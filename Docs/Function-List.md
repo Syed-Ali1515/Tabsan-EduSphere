@@ -5,6 +5,29 @@
 
 ## Final-Touches Phase 30 - Integrations and SaaS Operations (2026-05-10)
 
+### Application - Tenant and Subscription Operations (Stage 30.2)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `ITenantOperationsService.GetOnboardingTemplateAsync(ct)` | Returns tenant onboarding template defaults used for new tenant operational setup. | `Application/Interfaces/ISettingsServices.cs` |
+| `ITenantOperationsService.SaveOnboardingTemplateAsync(cmd, ct)` | Persists tenant onboarding template defaults to settings storage. | `Application/Interfaces/ISettingsServices.cs` |
+| `ITenantOperationsService.GetSubscriptionPlanAsync(ct)` | Returns active tenant subscription plan controls (limits and feature toggles). | `Application/Interfaces/ISettingsServices.cs` |
+| `ITenantOperationsService.SaveSubscriptionPlanAsync(cmd, ct)` | Persists subscription plan controls for tenant operations governance. | `Application/Interfaces/ISettingsServices.cs` |
+| `ITenantOperationsService.GetTenantProfileAsync(ct)` | Returns tenant profile and branding metadata settings. | `Application/Interfaces/ISettingsServices.cs` |
+| `ITenantOperationsService.SaveTenantProfileAsync(cmd, ct)` | Persists tenant profile and branding metadata settings. | `Application/Interfaces/ISettingsServices.cs` |
+| `TenantOperationsService.GetOnboardingTemplateAsync(ct)` | Reads onboarding template defaults from portal settings key-value storage. | `Application/Services/SettingsServices.cs` |
+| `TenantOperationsService.SaveOnboardingTemplateAsync(cmd, ct)` | Upserts onboarding template fields into settings storage and commits changes. | `Application/Services/SettingsServices.cs` |
+| `TenantOperationsService.GetSubscriptionPlanAsync(ct)` | Resolves subscription plan values (price, user limits, feature flags) with safe defaults. | `Application/Services/SettingsServices.cs` |
+| `TenantOperationsService.SaveSubscriptionPlanAsync(cmd, ct)` | Upserts subscription plan values to settings storage with guardrails for minimum limits. | `Application/Services/SettingsServices.cs` |
+| `TenantOperationsService.GetTenantProfileAsync(ct)` | Reads tenant profile settings (code, display, locale, currency, support contacts). | `Application/Services/SettingsServices.cs` |
+| `TenantOperationsService.SaveTenantProfileAsync(cmd, ct)` | Upserts tenant profile settings to support per-tenant branding/profile management. | `Application/Services/SettingsServices.cs` |
+| `TenantOperationsController.GetOnboardingTemplate(ct)` | SuperAdmin endpoint to read onboarding template settings. | `API/Controllers/TenantOperationsController.cs` |
+| `TenantOperationsController.SaveOnboardingTemplate(command, ct)` | SuperAdmin endpoint to persist onboarding template settings. | `API/Controllers/TenantOperationsController.cs` |
+| `TenantOperationsController.GetSubscriptionPlan(ct)` | SuperAdmin endpoint to read subscription plan controls. | `API/Controllers/TenantOperationsController.cs` |
+| `TenantOperationsController.SaveSubscriptionPlan(command, ct)` | SuperAdmin endpoint to persist subscription plan controls. | `API/Controllers/TenantOperationsController.cs` |
+| `TenantOperationsController.GetTenantProfile(ct)` | SuperAdmin endpoint to read tenant profile settings. | `API/Controllers/TenantOperationsController.cs` |
+| `TenantOperationsController.SaveTenantProfile(command, ct)` | SuperAdmin endpoint to persist tenant profile settings. | `API/Controllers/TenantOperationsController.cs` |
+
 ### Application - Integration Gateway Contracts (Stage 30.1)
 
 | Function Name | Purpose | Location |

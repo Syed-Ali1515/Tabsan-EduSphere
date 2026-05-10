@@ -112,6 +112,7 @@ Controllers/
  StudentLifecycleController.cs
  StudyPlanController.cs
  TeacherModificationController.cs
+ TenantOperationsController.cs
  ThemeController.cs
  TimetableController.cs
  UserImportController.cs

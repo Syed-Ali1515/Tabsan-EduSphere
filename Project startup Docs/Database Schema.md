@@ -11,6 +11,12 @@
 - Changes were limited to application/service/integration runtime and configuration paths.
 - No database schema change and no EF migration were required.
 
+## 2026-05-10 Update — Phase 30 Stage 30.2
+
+- Stage 30.2 delivered tenant onboarding templates, subscription plan controls, and tenant profile settings operations.
+- Persistence uses the existing `portal_settings` key-value table with new operational keys.
+- No database schema change and no EF migration were required.
+
 ## 2026-05-09 Update — Phase 28 Stage 28.1
 
 - Stage 28.1 delivered runtime and hosting changes only.

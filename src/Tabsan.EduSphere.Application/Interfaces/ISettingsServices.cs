@@ -92,3 +92,18 @@ public interface IPortalBrandingService
     /// <summary>Saves (upserts) all branding fields.</summary>
     Task SaveAsync(SavePortalBrandingCommand cmd, CancellationToken ct = default);
 }
+
+/// <summary>
+/// Final-Touches Phase 30 Stage 30.2 — tenant onboarding, subscription, and profile settings service.
+/// </summary>
+public interface ITenantOperationsService
+{
+    Task<TenantOnboardingTemplateDto> GetOnboardingTemplateAsync(CancellationToken ct = default);
+    Task SaveOnboardingTemplateAsync(SaveTenantOnboardingTemplateCommand cmd, CancellationToken ct = default);
+
+    Task<TenantSubscriptionPlanDto> GetSubscriptionPlanAsync(CancellationToken ct = default);
+    Task SaveSubscriptionPlanAsync(SaveTenantSubscriptionPlanCommand cmd, CancellationToken ct = default);
+
+    Task<TenantProfileSettingsDto> GetTenantProfileAsync(CancellationToken ct = default);
+    Task SaveTenantProfileAsync(SaveTenantProfileSettingsCommand cmd, CancellationToken ct = default);
+}

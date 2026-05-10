@@ -8,6 +8,14 @@
 
 ## Execution Updates
 
+### 2026-05-10 — Phase 30 Stage 30.2
+- Added tenant/subscription operations DTOs and service contract (`ITenantOperationsService`) for onboarding template, subscription plan controls, and tenant profile settings.
+- Implemented `TenantOperationsService` in Application settings services, backed by `portal_settings` key-value persistence.
+- Added SuperAdmin API controller `TenantOperationsController` with `GET/PUT` endpoints for onboarding-template, subscription-plan, and tenant-profile operations.
+- Registered tenant operations service in API DI.
+- Added focused unit tests (`Phase30Stage2Tests`) for defaults and persistence round-trip behavior.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed `169/169`.
+
 ### 2026-05-10 — Phase 30 Stage 30.1
 - Added centralized outbound integration gateway contracts and runtime (`IOutboundIntegrationGateway`, `ResilientOutboundIntegrationGateway`) with channel-based retry/timeout policies.
 - Added distributed-cache-backed dead-letter capture for terminal outbound integration failures.
@@ -158,7 +166,7 @@
 - Validated SuperAdmin result summary endpoint response with non-empty records.
 
 ### Next Execution Target
-- Continue **Phase 30 Stage 30.2 — Tenant and Subscription Operations**.
+- Continue **Phase 30 Stage 30.3 — Reliability and Rollback Controls**.
 
 ### 2026-05-08 — Phase 13 Global Search Complete (commit 00b7b64)
 - **Stage 13.1 — Cross-Entity Search API:**

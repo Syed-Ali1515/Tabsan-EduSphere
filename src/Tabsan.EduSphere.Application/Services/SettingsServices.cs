@@ -374,3 +374,129 @@ public class PortalBrandingService : IPortalBrandingService
         await _repo.SaveChangesAsync(ct);
     }
 }
+
+// -----------------------------------------------------------------------------
+// TenantOperationsService
+// -----------------------------------------------------------------------------
+
+// Final-Touches Phase 30 Stage 30.2 — Tenant and Subscription Operations service.
+public class TenantOperationsService : ITenantOperationsService
+{
+    private const string KeyOnboardingTemplateName     = "tenant_onboarding_template_name";
+    private const string KeyOnboardingInstitutionMode  = "tenant_onboarding_institution_mode";
+    private const string KeyOnboardingAdminRole        = "tenant_onboarding_admin_role";
+    private const string KeyOnboardingWelcomeMessage   = "tenant_onboarding_welcome_message";
+    private const string KeyOnboardingStarterModules   = "tenant_onboarding_starter_modules_csv";
+
+    private const string KeyPlanKey                = "tenant_subscription_plan_key";
+    private const string KeyPlanName               = "tenant_subscription_plan_name";
+    private const string KeyPlanMonthlyPrice       = "tenant_subscription_monthly_price";
+    private const string KeyPlanMaxUsers           = "tenant_subscription_max_users";
+    private const string KeyPlanEnableLms          = "tenant_subscription_enable_lms";
+    private const string KeyPlanEnablePayments     = "tenant_subscription_enable_payments";
+    private const string KeyPlanEnableIntegrations = "tenant_subscription_enable_integrations";
+    private const string KeyPlanIsActive           = "tenant_subscription_is_active";
+
+    private const string KeyTenantCode         = "tenant_profile_code";
+    private const string KeyTenantDisplayName  = "tenant_profile_display_name";
+    private const string KeyTenantSupportEmail = "tenant_profile_support_email";
+    private const string KeyTenantSupportPhone = "tenant_profile_support_phone";
+    private const string KeyTenantTimeZone     = "tenant_profile_time_zone";
+    private const string KeyTenantLocale       = "tenant_profile_locale";
+    private const string KeyTenantCurrency     = "tenant_profile_currency_code";
+    private const string KeyTenantBrandTheme   = "tenant_profile_branding_theme";
+
+    private readonly ISettingsRepository _repo;
+
+    public TenantOperationsService(ISettingsRepository repo) => _repo = repo;
+
+    public async Task<TenantOnboardingTemplateDto> GetOnboardingTemplateAsync(CancellationToken ct = default)
+    {
+        var all = await _repo.GetAllPortalSettingsAsync(ct);
+        return new TenantOnboardingTemplateDto(
+            all.GetValueOrDefault(KeyOnboardingTemplateName, "Standard University"),
+            all.GetValueOrDefault(KeyOnboardingInstitutionMode, "University"),
+            all.GetValueOrDefault(KeyOnboardingAdminRole, "Admin"),
+            all.GetValueOrDefault(KeyOnboardingWelcomeMessage, "Welcome to Tabsan EduSphere."),
+            all.GetValueOrDefault(KeyOnboardingStarterModules, "dashboard,students,courses,results")
+        );
+    }
+
+    public async Task SaveOnboardingTemplateAsync(SaveTenantOnboardingTemplateCommand cmd, CancellationToken ct = default)
+    {
+        await _repo.UpsertPortalSettingAsync(KeyOnboardingTemplateName, cmd.TemplateName ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(KeyOnboardingInstitutionMode, cmd.DefaultInstitutionMode ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(KeyOnboardingAdminRole, cmd.DefaultAdminRole ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(KeyOnboardingWelcomeMessage, cmd.WelcomeMessage ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(KeyOnboardingStarterModules, cmd.StarterModulesCsv ?? string.Empty, ct);
+        await _repo.SaveChangesAsync(ct);
+    }
+
+    public async Task<TenantSubscriptionPlanDto> GetSubscriptionPlanAsync(CancellationToken ct = default)
+    {
+        var all = await _repo.GetAllPortalSettingsAsync(ct);
+
+        var monthlyPrice = decimal.TryParse(all.GetValueOrDefault(KeyPlanMonthlyPrice), out var parsedPrice)
+            ? parsedPrice
+            : 0m;
+
+        var maxUsers = int.TryParse(all.GetValueOrDefault(KeyPlanMaxUsers), out var parsedUsers)
+            ? parsedUsers
+            : 1000;
+
+        return new TenantSubscriptionPlanDto(
+            all.GetValueOrDefault(KeyPlanKey, "standard"),
+            all.GetValueOrDefault(KeyPlanName, "Standard"),
+            monthlyPrice,
+            maxUsers,
+            ParseBool(all.GetValueOrDefault(KeyPlanEnableLms), true),
+            ParseBool(all.GetValueOrDefault(KeyPlanEnablePayments), true),
+            ParseBool(all.GetValueOrDefault(KeyPlanEnableIntegrations), true),
+            ParseBool(all.GetValueOrDefault(KeyPlanIsActive), true)
+        );
+    }
+
+    public async Task SaveSubscriptionPlanAsync(SaveTenantSubscriptionPlanCommand cmd, CancellationToken ct = default)
+    {
+        await _repo.UpsertPortalSettingAsync(KeyPlanKey, cmd.PlanKey ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(KeyPlanName, cmd.PlanName ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(KeyPlanMonthlyPrice, cmd.MonthlyPrice.ToString(System.Globalization.CultureInfo.InvariantCulture), ct);
+        await _repo.UpsertPortalSettingAsync(KeyPlanMaxUsers, Math.Max(1, cmd.MaxUsers).ToString(), ct);
+        await _repo.UpsertPortalSettingAsync(KeyPlanEnableLms, cmd.EnableLms.ToString(), ct);
+        await _repo.UpsertPortalSettingAsync(KeyPlanEnablePayments, cmd.EnablePayments.ToString(), ct);
+        await _repo.UpsertPortalSettingAsync(KeyPlanEnableIntegrations, cmd.EnableIntegrations.ToString(), ct);
+        await _repo.UpsertPortalSettingAsync(KeyPlanIsActive, cmd.IsActive.ToString(), ct);
+        await _repo.SaveChangesAsync(ct);
+    }
+
+    public async Task<TenantProfileSettingsDto> GetTenantProfileAsync(CancellationToken ct = default)
+    {
+        var all = await _repo.GetAllPortalSettingsAsync(ct);
+        return new TenantProfileSettingsDto(
+            all.GetValueOrDefault(KeyTenantCode, "default-tenant"),
+            all.GetValueOrDefault(KeyTenantDisplayName, "Tabsan EduSphere"),
+            all.GetValueOrDefault(KeyTenantSupportEmail, "support@tabsan-edusphere.com"),
+            all.GetValueOrDefault(KeyTenantSupportPhone, "+1-000-000-0000"),
+            all.GetValueOrDefault(KeyTenantTimeZone, "UTC"),
+            all.GetValueOrDefault(KeyTenantLocale, "en-US"),
+            all.GetValueOrDefault(KeyTenantCurrency, "USD"),
+            all.GetValueOrDefault(KeyTenantBrandTheme, "default")
+        );
+    }
+
+    public async Task SaveTenantProfileAsync(SaveTenantProfileSettingsCommand cmd, CancellationToken ct = default)
+    {
+        await _repo.UpsertPortalSettingAsync(KeyTenantCode, cmd.TenantCode ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(KeyTenantDisplayName, cmd.TenantDisplayName ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(KeyTenantSupportEmail, cmd.SupportEmail ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(KeyTenantSupportPhone, cmd.SupportPhone ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(KeyTenantTimeZone, cmd.TimeZone ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(KeyTenantLocale, cmd.Locale ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(KeyTenantCurrency, cmd.CurrencyCode ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(KeyTenantBrandTheme, cmd.BrandingTheme ?? string.Empty, ct);
+        await _repo.SaveChangesAsync(ct);
+    }
+
+    private static bool ParseBool(string? value, bool defaultValue)
+        => bool.TryParse(value, out var parsed) ? parsed : defaultValue;
+}

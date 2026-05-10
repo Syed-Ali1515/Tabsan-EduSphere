@@ -122,3 +122,67 @@ public record SavePortalBrandingCommand(
     string? FontFamily = null,
     string? FontSize = null
 );
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tenant / Subscription Operations DTOs (Phase 30 Stage 30.2)
+// ─────────────────────────────────────────────────────────────────────────────
+
+public record TenantOnboardingTemplateDto(
+    string TemplateName,
+    string DefaultInstitutionMode,
+    string DefaultAdminRole,
+    string WelcomeMessage,
+    string StarterModulesCsv
+);
+
+public record SaveTenantOnboardingTemplateCommand(
+    string TemplateName,
+    string DefaultInstitutionMode,
+    string DefaultAdminRole,
+    string WelcomeMessage,
+    string StarterModulesCsv
+);
+
+public record TenantSubscriptionPlanDto(
+    string PlanKey,
+    string PlanName,
+    decimal MonthlyPrice,
+    int MaxUsers,
+    bool EnableLms,
+    bool EnablePayments,
+    bool EnableIntegrations,
+    bool IsActive
+);
+
+public record SaveTenantSubscriptionPlanCommand(
+    string PlanKey,
+    string PlanName,
+    decimal MonthlyPrice,
+    int MaxUsers,
+    bool EnableLms,
+    bool EnablePayments,
+    bool EnableIntegrations,
+    bool IsActive
+);
+
+public record TenantProfileSettingsDto(
+    string TenantCode,
+    string TenantDisplayName,
+    string SupportEmail,
+    string SupportPhone,
+    string TimeZone,
+    string Locale,
+    string CurrencyCode,
+    string BrandingTheme
+);
+
+public record SaveTenantProfileSettingsCommand(
+    string TenantCode,
+    string TenantDisplayName,
+    string SupportEmail,
+    string SupportPhone,
+    string TimeZone,
+    string Locale,
+    string CurrencyCode,
+    string BrandingTheme
+);

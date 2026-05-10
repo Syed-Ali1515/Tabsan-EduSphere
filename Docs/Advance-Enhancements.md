@@ -431,6 +431,23 @@ Validation summary:
 - Subscription plan controls.
 - Branding/profile settings per tenant.
 
+#### 2026-05-10 - Stage 30.2 Completion
+Implementation summary:
+- Added tenant-operations service contracts and DTOs for onboarding templates, subscription plan controls, and tenant profile settings.
+- Implemented `TenantOperationsService` backed by `portal_settings` key-value persistence (no schema changes) to support:
+  - onboarding template defaults,
+  - subscription plan feature toggles/limits,
+  - tenant profile/branding metadata.
+- Added SuperAdmin API endpoints under `api/v1/tenant-operations`:
+  - `GET/PUT onboarding-template`
+  - `GET/PUT subscription-plan`
+  - `GET/PUT tenant-profile`
+- Registered the new service in API DI and added focused unit tests for defaults and persistence round-trips.
+
+Validation summary:
+- `dotnet build Tabsan.EduSphere.sln` passed.
+- `dotnet test Tabsan.EduSphere.sln --no-build` passed (**169/169**).
+
 ### Stage 30.3 - Reliability and Rollback Controls
 - Feature flags for risky rollouts.
 - Safe deployment and rollback runbooks.

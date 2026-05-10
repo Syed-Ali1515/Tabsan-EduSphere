@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.53 (Phase 30 Stage 30.1 delivered)  
+**Version:** 1.54 (Phase 30 Stage 30.2 delivered)  
 **Status:** Approved  
 **Prepared By:** Product Team  
 **Last Updated:** 10 May 2026  
@@ -9,6 +9,15 @@
 ---
 
 ## 0. Implementation Update Log
+
+### 2026-05-10 — Phase 30 Stage 30.2
+- **Tenant onboarding templates:** added onboarding-template operations to manage default institution mode, admin role, welcome message, and starter modules.
+- **Subscription plan controls:** added plan-level controls for user limits, monthly pricing, and module/integration feature toggles.
+- **Tenant profile settings:** added tenant profile metadata controls (tenant code/name, support contacts, locale, timezone, currency, branding theme).
+- **Operational API:** added SuperAdmin endpoints under `api/v1/tenant-operations` for onboarding-template, subscription-plan, and tenant-profile GET/PUT workflows.
+- **Persistence strategy:** implemented using existing `portal_settings` key-value store to avoid schema churn.
+- **Schema impact:** no database migration required.
+- **Validation:** solution build passed; automated tests passed **169/169**.
 
 ### 2026-05-10 — Phase 30 Stage 30.1
 - **Unified outbound gateway:** introduced `IOutboundIntegrationGateway` and resilient runtime execution with channel-specific retry/timeout policy enforcement.
