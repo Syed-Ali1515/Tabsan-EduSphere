@@ -6,7 +6,7 @@ param(
     [string]$Suite = 'auth',
 
     [Parameter(Position = 1)]
-    [ValidateSet('smoke', 'load', 'stress', 'max')]
+    [ValidateSet('smoke', 'load', 'stress', 'max', 'max-50k', 'max-100k', 'max-1m')]
     [string]$Profile = 'smoke',
 
     [Parameter(Position = 2)]
@@ -75,12 +75,19 @@ $k6Args += @('-e', "BASE_URL=$targetUrl")
 $k6Args += @('-e', "TEST_PROFILE=$Profile")
 $k6Args += @('-e', "SUMMARY_TXT_PATH=$summaryTxtPath")
 
-if ($Profile -eq 'max') {
-    $k6Args += @('-e', 'MAX_USERS=10000')
-    $k6Args += @('-e', 'MAX_RAMP_1=2m')
-    $k6Args += @('-e', 'MAX_RAMP_2=4m')
-    $k6Args += @('-e', 'MAX_HOLD=10m')
-    $k6Args += @('-e', 'MAX_RAMP_DOWN=2m')
+if ($Profile -in @('max', 'max-50k', 'max-100k', 'max-1m')) {
+    $maxUsers = switch ($Profile) {
+        'max-50k' { 50000 }
+        'max-100k' { 100000 }
+        'max-1m' { 1000000 }
+        default { 10000 }
+    }
+
+    $k6Args += @('-e', "MAX_USERS=$maxUsers")
+    $k6Args += @('-e', 'MAX_RAMP_1=3m')
+    $k6Args += @('-e', 'MAX_RAMP_2=8m')
+    $k6Args += @('-e', 'MAX_HOLD=15m')
+    $k6Args += @('-e', 'MAX_RAMP_DOWN=3m')
 }
 
 if ($TestUsername) {

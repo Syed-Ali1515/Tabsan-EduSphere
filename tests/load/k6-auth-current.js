@@ -12,15 +12,24 @@ function toInt(value, fallback) {
   return Number.isFinite(n) && n > 0 ? n : fallback;
 }
 
+function profileDefaultMaxUsers(profile) {
+  if (profile === 'max-50k') return 50000;
+  if (profile === 'max-100k') return 100000;
+  if (profile === 'max-1m') return 1000000;
+  return 10000;
+}
+
+const CONFIGURED_MAX_USERS = toInt(__ENV.MAX_USERS, profileDefaultMaxUsers(PROFILE));
+
 function buildStagesForProfile(profile) {
-  if (profile === 'max') {
-    const maxUsers = toInt(__ENV.MAX_USERS, 10000);
+  if (profile === 'max' || profile === 'max-50k' || profile === 'max-100k' || profile === 'max-1m') {
+    const maxUsers = CONFIGURED_MAX_USERS;
     const ramp1 = Math.max(1, Math.floor(maxUsers * 0.25));
     const ramp2 = Math.max(1, Math.floor(maxUsers * 0.6));
     return [
       { duration: __ENV.MAX_RAMP_1 || '2m', target: ramp1 },
-      { duration: __ENV.MAX_RAMP_2 || '4m', target: ramp2 },
-      { duration: __ENV.MAX_HOLD || '8m', target: maxUsers },
+      { duration: __ENV.MAX_RAMP_2 || '6m', target: ramp2 },
+      { duration: __ENV.MAX_HOLD || '12m', target: maxUsers },
       { duration: __ENV.MAX_RAMP_DOWN || '2m', target: 0 },
     ];
   }
@@ -145,6 +154,7 @@ export function handleSummary(data) {
   const lines = [
     `suite=auth`,
     `profile=${PROFILE}`,
+    `configured_max_users=${CONFIGURED_MAX_USERS}`,
     `baseUrl=${BASE_URL}`,
     `iterations=${data.metrics.iterations ? data.metrics.iterations.values.count : 0}`,
     `http_req_failed=${data.metrics.http_req_failed ? data.metrics.http_req_failed.values.rate : 0}`,
