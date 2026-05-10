@@ -10,6 +10,11 @@
 - Stage 32.1 delivered report-catalog and report-route regression guardrail integration tests only.
 - No database schema change and no EF migration were required.
 
+## 2026-05-10 Update — Phase 32 Stage 32.2
+
+- Stage 32.2 delivered report export action/endpoint regression guardrail integration tests only.
+- No database schema change and no EF migration were required.
+
 ## 2026-05-10 Update — Phase 31 Stage 31.1
 
 - Stage 31.1 delivered regression-matrix test coverage and matrix documentation only.

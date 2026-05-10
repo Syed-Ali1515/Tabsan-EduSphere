@@ -53,12 +53,12 @@ cmd /c git -C "<repo-root>" push origin main
 
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
-- Active Phase: **Phase 32 — Cross-Phase Operational Guardrails — Stage 32.1 COMPLETE ✅**
-- Active Stage: **Stage 32.1 complete (Report Center and report-link regression guardrails)**
-- Status: **Added report-catalog and report-route guardrail integration tests; targeted suite passed 8/8; no database migration required**
+- Active Phase: **Phase 32 — Cross-Phase Operational Guardrails — Stage 32.2 COMPLETE ✅**
+- Active Stage: **Stage 32.2 complete (Report export action and endpoint regression guardrails)**
+- Status: **Added report-export integration guardrails validating auth, media types, attachment filenames, and non-empty payloads; targeted suite passed 13/13; no database migration required**
 - Last Updated: 2026-05-10
-- Next: **Awaiting next phase/stage directive after Stage 32.1 completion**
-- Docs Updated: ✅ All requested tracking files updated for Phase 32 Stage 32.1 completion (2026-05-10)
+- Next: **Awaiting next phase/stage directive after Stage 32.2 completion**
+- Docs Updated: ✅ All requested tracking files updated for Phase 32 Stage 32.2 completion (2026-05-10)
 
 ---
 

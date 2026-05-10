@@ -25,6 +25,7 @@ Execution status update (2026-05-10):
 - Phase 31 Stage 31.3 is completed.
 - Phase 31 is completed.
 - Phase 32 Stage 32.1 is completed.
+- Phase 32 Stage 32.2 is completed.
 
 ---
 
@@ -140,6 +141,14 @@ Implementation summary:
 
 Validation summary:
 - `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~ReportCatalogIntegrationTests"` passed (**8/8**).
+
+### Phase 32 Stage 32.2 - Report Export Endpoint Guardrails (Completed)
+Implementation summary:
+- Added focused export integration regression tests to validate attendance/result/assignment/quiz export endpoint contracts.
+- Added assertions for anonymous access rejection, expected export media types (`xlsx`, `csv`, `pdf`), attachment filename conventions, and non-empty response payload bytes.
+
+Validation summary:
+- `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~ReportExportsIntegrationTests"` passed (**13/13**).
 
 ---
 

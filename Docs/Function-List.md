@@ -14,6 +14,13 @@
 | `ReportCatalogIntegrationTests.ReportCatalog_Student_ReturnsOnlyStudentAllowedReports()` | Verifies student report catalog remains scoped to student-allowed report definitions. | `tests/Tabsan.EduSphere.IntegrationTests/ReportCatalogIntegrationTests.cs` |
 | `ReportCatalogIntegrationTests.ReportCatalog_PrivilegedRoles_AllCatalogKeysMapToLiveReportDataRoutes(role)` | Verifies every catalog key maps to a live report data route (no broken links/404 routes). | `tests/Tabsan.EduSphere.IntegrationTests/ReportCatalogIntegrationTests.cs` |
 
+### Report Export Action Guardrails (Stage 32.2)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `ReportExportsIntegrationTests.AttendanceSummary_Export_Unauthenticated_Returns401()` | Verifies report export endpoints remain protected from anonymous access. | `tests/Tabsan.EduSphere.IntegrationTests/ReportExportsIntegrationTests.cs` |
+| `ReportExportsIntegrationTests.ReportExports_WithSuperAdmin_ReturnExpectedFileMetadata(route, expectedContentType, expectedFileName)` | Verifies attendance/result/assignment/quiz export routes return expected media type, attachment filename contract, and non-empty payload bytes. | `tests/Tabsan.EduSphere.IntegrationTests/ReportExportsIntegrationTests.cs` |
+
 ## Final-Touches Phase 31 - Quality, Security, and Go-Live Gates (2026-05-10)
 
 ### Load and Reliability Certification (Stage 31.3)

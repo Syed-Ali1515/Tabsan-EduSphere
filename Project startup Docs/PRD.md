@@ -10,6 +10,12 @@
 
 ## 0. Implementation Update Log
 
+### 2026-05-10 — Phase 32 Stage 32.2
+- **Report export guardrail coverage:** added integration tests that lock report export action routes for attendance/result/assignment/quiz across Excel/CSV/PDF variants.
+- **Export contract guardrails:** added assertions for anonymous rejection, expected export media types, attachment filename conventions, and non-empty payload bytes.
+- **Schema impact:** no database migration required.
+- **Validation:** targeted integration suite passed **13/13** (`ReportExportsIntegrationTests`).
+
 ### 2026-05-10 — Phase 32 Stage 32.1
 - **Report Center guardrail coverage:** added integration tests that lock report-catalog role visibility and seeded key availability for SuperAdmin/Admin/Faculty.
 - **Report-link guardrail coverage:** added catalog-key-to-route validation to ensure report catalog entries continue to resolve to live report endpoints (no 404 link regressions).

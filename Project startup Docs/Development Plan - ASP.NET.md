@@ -8,6 +8,14 @@
 
 ## Execution Updates
 
+### 2026-05-10 — Phase 32 Stage 32.2
+- Added `ReportExportsIntegrationTests` to preserve cross-phase report-export guardrails:
+  - anonymous requests to export endpoints remain blocked,
+  - attendance/result/assignment/quiz export routes return expected media types,
+  - export responses preserve attachment filename contracts,
+  - export payloads remain non-empty for downloadable output integrity checks.
+- Validation: targeted integration tests passed `13/13`.
+
 ### 2026-05-10 — Phase 32 Stage 32.1
 - Added `ReportCatalogIntegrationTests` to preserve cross-phase report-center guardrails:
   - report catalog remains role-scoped,
