@@ -30,7 +30,7 @@ Execution status update (2026-05-10):
 - Phase 32 Stage 32.4 is completed.
 - Phase 32 Stage 32.5 is completed.
 - Phase 33 is initialized.
-- Phase 33 Stage 33.1 is planned (not started).
+- Phase 33 Stage 33.1 is completed.
 
 ---
 
@@ -187,6 +187,16 @@ Implementation summary:
 Validation summary:
 - `dotnet build Tabsan.EduSphere.sln` passed.
 - `dotnet test Tabsan.EduSphere.sln --no-build` passed (**230/230**).
+
+### Phase 33 Stage 33.1 - Hosting Configuration Foundation (Completed)
+Implementation summary:
+- Added explicit environment-aware configuration loading bootstrap in API, Web, and BackgroundJobs startup paths (`appsettings.json`, `appsettings.{Environment}.json`, environment variables).
+- Added startup-time critical configuration validation for required connection and base URL settings.
+- Aligned API/Web/BackgroundJobs appsettings metadata with `AppSettings` identity/version/base URL values to centralize environment-specific runtime settings.
+- Converted BackgroundJobs base connection string to required environment override placeholder (`NOT_SET_USE_ENVIRONMENT_OVERRIDE`) and enforced startup guard.
+
+Validation summary:
+- `dotnet build Tabsan.EduSphere.sln` passed.
 
 ---
 
@@ -607,32 +617,32 @@ Done when:
 
 ---
 
-## Phase 33 - Release Closure and Operational Sign-Off
-Objective: Convert remaining release-readiness checklist items into executable, auditable completion artifacts.
+## Phase 33 - Hosting Configuration and Security Hardening
+Objective: align hosting configuration and security controls for reliable production deployment across API, Web, and BackgroundJobs.
 
-### Stage 33.1 - Performance and Load Sign-Off
-- Execute and record p95/p99 latency and error-rate outcomes for target load profiles.
-- Capture run commands, environment assumptions, and pass/fail thresholds in a single artifact.
-- Ensure evidence is reproducible from repository scripts and runbook instructions.
-
-Done when:
-- Load and performance sign-off evidence is documented with executable commands and measured outcomes.
-
-### Stage 33.2 - Security Checklist Closure
-- Execute the security/pentest checklist and capture status per control.
-- Record remediations or explicit risk acceptances for any non-pass item.
-- Ensure security closure artifact is committed with date, owner, and evidence references.
+### Stage 33.1 - Hosting Configuration Foundation (Completed)
+- Centralize environment-aware appsettings loading across API/Web/BackgroundJobs.
+- Validate required startup configuration early (connection strings and critical base URLs).
+- Normalize appsettings metadata (`AppSettings`) for environment portability.
 
 Done when:
-- Security checklist has no unresolved blocker items for release.
+- Startup and configuration baselines compile cleanly and support environment-driven behavior.
 
-### Stage 33.3 - UAT and Release Candidate Sign-Off
-- Run UAT checklist across role-based critical paths.
-- Capture sign-off status and known-release notes for the candidate build.
-- Publish final go/no-go summary and operational handover notes.
+### Stage 33.2 - Runtime Hosting Hardening
+- Enforce production-first runtime behavior (forwarded headers, HTTPS policy clarity, CORS origin discipline, startup diagnostics).
+- Remove remaining hardcoded endpoint/path assumptions and route through configuration.
+- Verify development and production startup behavior with explicit runbook commands.
 
 Done when:
-- UAT and release-candidate sign-off are documented and approved for production go-live.
+- Runtime hosting behavior is environment-correct and operationally reproducible.
+
+### Stage 33.3 - Security Hardening Execution
+- Apply prioritized security controls from `Docs/Refactoring-Hosting-Security.md` (validation, headers, lockout/rate limiting verification, upload safety, exception handling consistency).
+- Add/refresh targeted tests and verification commands for hardened paths.
+- Publish closure artifact with implemented controls and residual-risk notes.
+
+Done when:
+- Security hardening checklist for scoped controls is completed with validation evidence.
 
 ---
 

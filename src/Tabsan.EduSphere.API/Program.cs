@@ -39,6 +39,26 @@ using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var env = builder.Environment;
+builder.Configuration
+    .SetBasePath(env.ContentRootPath)
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables();
+
+Console.WriteLine($"[Startup] Environment: {env.EnvironmentName} | App: {env.ApplicationName}");
+Console.WriteLine("[Startup] Configuration sources: appsettings.json, appsettings.{Environment}.json, environment variables");
+
+var configuredConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrWhiteSpace(configuredConnectionString))
+{
+    throw new InvalidOperationException("DefaultConnection string is missing. Configure ConnectionStrings:DefaultConnection.");
+}
+
+var isDevDatabase = configuredConnectionString.Contains("localhost", StringComparison.OrdinalIgnoreCase)
+    || configuredConnectionString.Contains("(localdb)", StringComparison.OrdinalIgnoreCase);
+Console.WriteLine($"[Startup] Database mode: {(isDevDatabase ? "Development" : "Production/External")}");
+
 builder.Services.AddResponseCompression(options =>
 {
     options.EnableForHttps = true;
@@ -420,8 +440,6 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
-
-Console.WriteLine($"[Startup] Environment: {builder.Environment.EnvironmentName} | App: {builder.Environment.ApplicationName}");
 
 var app = builder.Build();
 

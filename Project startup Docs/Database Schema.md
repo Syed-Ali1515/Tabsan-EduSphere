@@ -10,10 +10,10 @@
 - Stage 32.1 delivered report-catalog and report-route regression guardrail integration tests only.
 - No database schema change and no EF migration were required.
 
-## 2026-05-10 Update — Phase 33 Initialization
+## 2026-05-10 Update — Phase 33 Stage 33.1
 
-- Phase 33 (Release Closure and Operational Sign-Off) was initialized with Stage 33.1, 33.2, and 33.3 execution scope.
-- This update is planning/documentation only.
+- Phase 33 was re-scoped to hosting configuration and security hardening.
+- Stage 33.1 delivered startup/configuration foundation updates in API/Web/BackgroundJobs only.
 - No database schema change and no EF migration were required.
 
 ## 2026-05-10 Update — Phase 32 Stage 32.2

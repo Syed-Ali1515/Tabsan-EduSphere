@@ -3,10 +3,18 @@
 > **Maintenance rule**: Every function added to the codebase must be registered here with Name, Purpose, and Location.
 > Format: `Name | Purpose | Location`
 
-## Final-Touches Phase 33 - Release Closure and Operational Sign-Off (2026-05-10)
+## Final-Touches Phase 33 - Hosting Configuration and Security Hardening (2026-05-10)
 
-- Phase 33 is initialized as a release-closure roadmap phase.
-- No runtime/application functions were added during this initialization step.
+### Hosting Configuration Foundation (Stage 33.1)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `Program` startup configuration bootstrap (`SetBasePath` + `AddJsonFile` + `AddEnvironmentVariables`) | Forces explicit environment-aware configuration load order and startup diagnostics for API host. | `src/Tabsan.EduSphere.API/Program.cs` |
+| `Program` startup config guard (`DefaultConnection`) | Fails API startup early when required DB connection setting is missing. | `src/Tabsan.EduSphere.API/Program.cs` |
+| `Program` startup configuration bootstrap (`SetBasePath` + `AddJsonFile` + `AddEnvironmentVariables`) | Forces explicit environment-aware configuration load order for background workers. | `src/Tabsan.EduSphere.BackgroundJobs/Program.cs` |
+| `Program` startup config guard (`DefaultConnection` placeholder rejection) | Prevents BackgroundJobs startup with non-overridden placeholder connection string in base config. | `src/Tabsan.EduSphere.BackgroundJobs/Program.cs` |
+| `Program` startup configuration bootstrap (`SetBasePath` + `AddJsonFile` + `AddEnvironmentVariables`) | Forces explicit environment-aware configuration load order for Web host. | `src/Tabsan.EduSphere.Web/Program.cs` |
+| `Program` startup config guard (`EduApi:BaseUrl`) | Fails Web startup early when API base URL configuration is missing. | `src/Tabsan.EduSphere.Web/Program.cs` |
 
 ## Final-Touches Phase 32 - Cross-Phase Operational Guardrails (2026-05-10)
 

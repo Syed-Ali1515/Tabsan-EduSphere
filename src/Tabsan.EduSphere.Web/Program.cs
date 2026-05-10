@@ -7,6 +7,21 @@ using Microsoft.AspNetCore.ResponseCompression;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var env = builder.Environment;
+builder.Configuration
+    .SetBasePath(env.ContentRootPath)
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables();
+
+Console.WriteLine($"[Web] Environment: {env.EnvironmentName} | App: {env.ApplicationName}");
+
+var eduApiBaseUrl = builder.Configuration["EduApi:BaseUrl"];
+if (string.IsNullOrWhiteSpace(eduApiBaseUrl))
+{
+    throw new InvalidOperationException("EduApi:BaseUrl is required for Tabsan.EduSphere.Web startup.");
+}
+
 // Add services to the container.
 builder.Services.AddResponseCompression(options =>
 {

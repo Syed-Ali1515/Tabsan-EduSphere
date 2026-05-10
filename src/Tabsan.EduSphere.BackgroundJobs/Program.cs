@@ -10,9 +10,22 @@ using Tabsan.EduSphere.Infrastructure.Repositories;
 
 var builder = Host.CreateApplicationBuilder(args);
 
+var env = builder.Environment;
+builder.Configuration
+    .SetBasePath(env.ContentRootPath)
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables();
+
+Console.WriteLine($"[BackgroundJobs] Environment: {env.EnvironmentName} | App: {env.ApplicationName}");
+
 // ── Database ──────────────────────────────────────────────────────────────────
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("DefaultConnection is required.");
+if (connectionString.Contains("NOT_SET", StringComparison.OrdinalIgnoreCase))
+{
+    throw new InvalidOperationException("DefaultConnection must be overridden by environment-specific configuration.");
+}
 builder.Services.AddDbContext<ApplicationDbContext>(o => o.UseSqlServer(connectionString));
 
 // ── Repository + notification services ───────────────────────────────────────

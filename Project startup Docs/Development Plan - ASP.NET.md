@@ -8,13 +8,15 @@
 
 ## Execution Updates
 
-### 2026-05-10 — Phase 33 Initialization
-- Initialized Phase 33 roadmap scope as release-closure track:
-  - Stage 33.1: performance/load sign-off artifact and metrics evidence,
-  - Stage 33.2: security checklist execution and closure,
-  - Stage 33.3: UAT and release-candidate sign-off.
-- Moved active execution target to Stage 33.1 kickoff in command tracking.
-- This update is planning/documentation initialization only; no runtime code changes.
+### 2026-05-10 — Phase 33 Stage 33.1
+- Re-scoped Phase 33 to `Hosting Configuration and Security Hardening` using `Docs/Refactoring-Hosting-Security.md` as execution baseline.
+- Added explicit config-load bootstrapping in API/Web/BackgroundJobs startup paths:
+  - `appsettings.json`,
+  - `appsettings.{Environment}.json`,
+  - environment variables.
+- Added startup setting guards for required values (`DefaultConnection`, `EduApi:BaseUrl`) and placeholder-rejection for BackgroundJobs base connection string.
+- Aligned `AppSettings` metadata in environment appsettings files for API/Web/BackgroundJobs portability.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed.
 
 ### 2026-05-10 — Phase 32 Stage 32.5
 - Added `CredentialVerificationIntegrationTests` to preserve credential/run-command guardrails:
