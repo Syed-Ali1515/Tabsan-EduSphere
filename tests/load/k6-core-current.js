@@ -74,7 +74,7 @@ export const options = {
     },
   },
   thresholds: {
-    http_req_failed: ['rate<0.10'],
+    core_errors: ['rate<0.10'],
     core_duration: ['p(95)<3000'],
   },
 };

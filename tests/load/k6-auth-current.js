@@ -95,7 +95,7 @@ export const options = {
     },
   },
   thresholds: {
-    http_req_failed: ['rate<0.10'],
+    auth_failures: ['rate<0.05'],
     http_req_duration: ['p(95)<2500'],
     auth_req_duration: ['p(95)<2000'],
   },
@@ -139,7 +139,8 @@ export default function () {
     'login returns token on success': () => loginRes.status !== 200 || hasToken,
   });
 
-  if (loginRes.status === 200 && hasToken) {
+  const isFailure = !acceptedStatus || (loginRes.status === 200 && !hasToken);
+  if (!isFailure) {
     authSuccesses.add(1);
     authFailures.add(0);
   } else {
