@@ -66,6 +66,8 @@ Email/
 Integrations/
  InAppAnnouncementBroadcastProvider.cs
  InAppSupportTicketingProvider.cs
+ IntegrationGatewayOptions.cs
+ ResilientOutboundIntegrationGateway.cs
  SmtpEmailDeliveryProvider.cs
 Licensing/
  EmbeddedKeys.cs

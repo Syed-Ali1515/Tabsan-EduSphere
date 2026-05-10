@@ -11,13 +11,16 @@ public sealed class InAppAnnouncementBroadcastProvider : IAnnouncementBroadcastP
 {
     private readonly IEnrollmentRepository _enrollments;
     private readonly INotificationService _notifications;
+    private readonly IOutboundIntegrationGateway _gateway;
 
     public InAppAnnouncementBroadcastProvider(
         IEnrollmentRepository enrollments,
-        INotificationService notifications)
+        INotificationService notifications,
+        IOutboundIntegrationGateway gateway)
     {
         _enrollments = enrollments;
         _notifications = notifications;
+        _gateway = gateway;
     }
 
     public string ProviderKey => "inapp-fanout";
@@ -37,7 +40,11 @@ public sealed class InAppAnnouncementBroadcastProvider : IAnnouncementBroadcastP
         if (recipientIds.Count == 0)
             return 0;
 
-        await _notifications.SendSystemAsync(title, body, NotificationType.Announcement, recipientIds, ct);
+        await _gateway.ExecuteAsync(
+            channel: "push",
+            operation: "announcement.broadcast",
+            action: gatewayCt => _notifications.SendSystemAsync(title, body, NotificationType.Announcement, recipientIds, gatewayCt),
+            ct);
         return recipientIds.Count;
     }
 }

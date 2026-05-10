@@ -31,6 +31,7 @@ using Tabsan.EduSphere.Infrastructure.Persistence;
 using Tabsan.EduSphere.Infrastructure.Repositories;
 using Tabsan.EduSphere.Application.Services;
 using Tabsan.EduSphere.Infrastructure.Exporters;
+using Tabsan.EduSphere.Infrastructure.Integrations;
 using Tabsan.EduSphere.API.Services;
 using Microsoft.AspNetCore.HttpOverrides;
 using Serilog;
@@ -311,6 +312,9 @@ builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IBulkPromotio
 builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IParentPortalService, Tabsan.EduSphere.Application.Academic.ParentPortalService>();
 // ── Phase 27: University Portal Parity and Student Experience ───────────────
 builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IPortalCapabilityMatrixService, Tabsan.EduSphere.Application.Services.PortalCapabilityMatrixService>();
+// ── Phase 30: Integration Gateway Layer ─────────────────────────────────────
+builder.Services.Configure<IntegrationGatewayOptions>(builder.Configuration.GetSection("IntegrationGateway"));
+builder.Services.AddSingleton<Tabsan.EduSphere.Application.Interfaces.IOutboundIntegrationGateway, ResilientOutboundIntegrationGateway>();
 builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.ISupportTicketingProvider, Tabsan.EduSphere.Infrastructure.Integrations.InAppSupportTicketingProvider>();
 builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IAnnouncementBroadcastProvider, Tabsan.EduSphere.Infrastructure.Integrations.InAppAnnouncementBroadcastProvider>();
 builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IEmailDeliveryProvider, Tabsan.EduSphere.Infrastructure.Integrations.SmtpEmailDeliveryProvider>();

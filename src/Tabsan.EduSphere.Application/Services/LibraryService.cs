@@ -20,11 +20,16 @@ public class LibraryService : ILibraryService
 
     private readonly ISettingsRepository _settings;
     private readonly HttpClient          _http;
+    private readonly IOutboundIntegrationGateway _gateway;
 
-    public LibraryService(ISettingsRepository settings, HttpClient http)
+    public LibraryService(
+        ISettingsRepository settings,
+        HttpClient http,
+        IOutboundIntegrationGateway gateway)
     {
         _settings = settings;
         _http     = http;
+        _gateway  = gateway;
     }
 
     // ── Configuration ─────────────────────────────────────────────────────────
@@ -67,11 +72,17 @@ public class LibraryService : ILibraryService
             if (!string.IsNullOrWhiteSpace(apiToken))
                 request.Headers.Add("Authorization", $"Bearer {apiToken}");
 
-            using var response = await _http.SendAsync(request, ct);
-            response.EnsureSuccessStatusCode();
-
-            var raw = await response.Content.ReadFromJsonAsync<IEnumerable<ExternalLoanDto>>(cancellationToken: ct)
-                      ?? Enumerable.Empty<ExternalLoanDto>();
+            var raw = await _gateway.ExecuteAsync(
+                channel: "lms-external-api",
+                operation: "library.loan-lookup",
+                action: async gatewayCt =>
+                {
+                    using var response = await _http.SendAsync(request, gatewayCt);
+                    response.EnsureSuccessStatusCode();
+                    return await response.Content.ReadFromJsonAsync<IEnumerable<ExternalLoanDto>>(cancellationToken: gatewayCt)
+                           ?? Enumerable.Empty<ExternalLoanDto>();
+                },
+                ct);
 
             var loans = raw.Select(r => new LibraryLoanItem(
                 r.Title   ?? "",

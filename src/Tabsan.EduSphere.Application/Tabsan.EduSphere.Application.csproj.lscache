@@ -154,11 +154,13 @@ Interfaces/
  ILibraryService.cs
  ILlmClient.cs
  ILmsService.cs
+ IMediaStorageService.cs
  IModuleEntitlementResolver.cs
  IModuleRegistryService.cs
  IModuleService.cs
  INotificationFanoutQueue.cs
  INotificationService.cs
+ IOutboundIntegrationGateway.cs
  IParentPortalService.cs
  IPasswordHasher.cs
  IPortalCapabilityMatrixService.cs

@@ -409,6 +409,23 @@ Objective: Expand integrations with clean contracts and tenant safety.
   - LMS/external APIs
 - Retry policies, timeout policies, dead-letter handling.
 
+#### 2026-05-10 - Stage 30.1 Completion
+Implementation summary:
+- Added a unified outbound gateway contract (`IOutboundIntegrationGateway`) with channel-aware retry/timeout policy execution and dead-letter capture.
+- Implemented resilient gateway runtime (`ResilientOutboundIntegrationGateway`) backed by distributed cache dead-letter storage and configurable channel policies (`IntegrationGateway` config section).
+- Routed existing outbound provider flows through the gateway:
+  - Email: `SmtpEmailDeliveryProvider`
+  - Push/in-app notifications: `InAppSupportTicketingProvider`, `InAppAnnouncementBroadcastProvider`
+  - LMS/external API: `LibraryService` loan lookup path
+- Added integration gateway diagnostics endpoints:
+  - `GET /api/v1/communication-integrations/gateway/policies`
+  - `GET /api/v1/communication-integrations/gateway/dead-letters` (Admin/SuperAdmin)
+- Added focused unit tests for retry success, timeout/dead-letter capture, and policy fallback behavior.
+
+Validation summary:
+- `dotnet build Tabsan.EduSphere.sln` passed.
+- `dotnet test Tabsan.EduSphere.sln --no-build` passed (**166/166**).
+
 ### Stage 30.2 - Tenant and Subscription Operations
 - Tenant onboarding templates.
 - Subscription plan controls.

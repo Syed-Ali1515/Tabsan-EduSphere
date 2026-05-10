@@ -24,6 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Tabsan.EduSphere.Domain\Tabsan.EduSphere.Domain.csproj" />
     <ProjectReference Include="..\..\src\Tabsan.EduSphere.Application\Tabsan.EduSphere.Application.csproj" />
+    <ProjectReference Include="..\..\src\Tabsan.EduSphere.Infrastructure\Tabsan.EduSphere.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

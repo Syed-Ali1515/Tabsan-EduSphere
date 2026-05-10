@@ -3,6 +3,42 @@
 > **Maintenance rule**: Every function added to the codebase must be registered here with Name, Purpose, and Location.
 > Format: `Name | Purpose | Location`
 
+## Final-Touches Phase 30 - Integrations and SaaS Operations (2026-05-10)
+
+### Application - Integration Gateway Contracts (Stage 30.1)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `IOutboundIntegrationGateway.ExecuteAsync(channel, operation, action, ct)` | Executes outbound integration operations through centralized resilience policy handling (retry, timeout, dead-letter). | `Application/Interfaces/IOutboundIntegrationGateway.cs` |
+| `IOutboundIntegrationGateway.ExecuteAsync<T>(channel, operation, action, ct)` | Generic execution path for operations that return payloads while preserving resilience behavior. | `Application/Interfaces/IOutboundIntegrationGateway.cs` |
+| `IOutboundIntegrationGateway.GetRecentDeadLettersAsync(take, ct)` | Returns recent failed outbound integration operations from dead-letter storage. | `Application/Interfaces/IOutboundIntegrationGateway.cs` |
+| `IOutboundIntegrationGateway.GetDeadLetterCountAsync(ct)` | Returns current dead-letter backlog count. | `Application/Interfaces/IOutboundIntegrationGateway.cs` |
+| `IOutboundIntegrationGateway.GetPolicySnapshot(channel)` | Returns effective retry/timeout policy for a given integration channel. | `Application/Interfaces/IOutboundIntegrationGateway.cs` |
+
+### Infrastructure - Gateway Runtime (Stage 30.1)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `ResilientOutboundIntegrationGateway.ExecuteAsync(...)` | Applies bounded retry and timeout policy for non-returning integration operations and dead-letters terminal failures. | `Infrastructure/Integrations/ResilientOutboundIntegrationGateway.cs` |
+| `ResilientOutboundIntegrationGateway.ExecuteAsync<T>(...)` | Core resilient execution loop with per-channel policy resolution and timeout conversion handling. | `Infrastructure/Integrations/ResilientOutboundIntegrationGateway.cs` |
+| `ResilientOutboundIntegrationGateway.GetRecentDeadLettersAsync(...)` | Reads recent dead-letter records from distributed cache-backed storage. | `Infrastructure/Integrations/ResilientOutboundIntegrationGateway.cs` |
+| `ResilientOutboundIntegrationGateway.GetDeadLetterCountAsync(...)` | Returns persisted dead-letter count for operational monitoring. | `Infrastructure/Integrations/ResilientOutboundIntegrationGateway.cs` |
+| `ResilientOutboundIntegrationGateway.GetPolicySnapshot(channel)` | Exposes effective policy values used for a channel at runtime. | `Infrastructure/Integrations/ResilientOutboundIntegrationGateway.cs` |
+
+### API and Provider Integrations (Stage 30.1)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `CommunicationIntegrationsController.GetGatewayPolicies()` | Exposes configured effective outbound gateway policies for payment/email/sms/push/lms-external channels. | `API/Controllers/CommunicationIntegrationsController.cs` |
+| `CommunicationIntegrationsController.GetGatewayDeadLetters(take, ct)` | Returns dead-letter backlog details for admin operational review. | `API/Controllers/CommunicationIntegrationsController.cs` |
+| `SmtpEmailDeliveryProvider.SendHtmlAsync(...)` | Routes SMTP HTML email sending through centralized gateway policies. | `Infrastructure/Integrations/SmtpEmailDeliveryProvider.cs` |
+| `SmtpEmailDeliveryProvider.SendTemplateAsync(...)` | Routes template-based SMTP email sending through centralized gateway policies. | `Infrastructure/Integrations/SmtpEmailDeliveryProvider.cs` |
+| `InAppSupportTicketingProvider.NotifyTicketReplyAsync(...)` | Routes support reply push notifications through centralized gateway policies. | `Infrastructure/Integrations/InAppSupportTicketingProvider.cs` |
+| `InAppSupportTicketingProvider.NotifyTicketAssignedAsync(...)` | Routes support assignment push notifications through centralized gateway policies. | `Infrastructure/Integrations/InAppSupportTicketingProvider.cs` |
+| `InAppSupportTicketingProvider.NotifyTicketResolvedAsync(...)` | Routes support resolution push notifications through centralized gateway policies. | `Infrastructure/Integrations/InAppSupportTicketingProvider.cs` |
+| `InAppAnnouncementBroadcastProvider.BroadcastAsync(...)` | Routes announcement fan-out notification dispatch through centralized gateway policies. | `Infrastructure/Integrations/InAppAnnouncementBroadcastProvider.cs` |
+| `LibraryService.GetLoansAsync(...)` | Routes outbound library loan API lookups through centralized gateway policies for LMS/external API resiliency. | `Application/Services/LibraryService.cs` |
+
 ## Issue-Fix Phase 3 — Faculty Workflow Repair (2026-05-07)
 
 ### API — CourseController (Phase 3)

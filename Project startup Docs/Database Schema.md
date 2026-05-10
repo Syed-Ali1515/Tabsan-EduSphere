@@ -5,6 +5,12 @@
 **Aligned With PRD:** v1.33  
 **Purpose:** Define database schemas for the University Portal Application and the License Creation Tool  
 
+## 2026-05-10 Update — Phase 30 Stage 30.1
+
+- Stage 30.1 delivered a centralized outbound integration gateway layer (retry/timeout/dead-letter handling) and integration diagnostics endpoints.
+- Changes were limited to application/service/integration runtime and configuration paths.
+- No database schema change and no EF migration were required.
+
 ## 2026-05-09 Update — Phase 28 Stage 28.1
 
 - Stage 28.1 delivered runtime and hosting changes only.
