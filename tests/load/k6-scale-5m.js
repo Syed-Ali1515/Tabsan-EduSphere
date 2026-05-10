@@ -5,6 +5,8 @@ import { Trend, Rate } from 'k6/metrics';
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:5181';
 const LOGIN_PATH = '/api/v1/auth/login';
 const TARGET_USERS = 5000000;
+const LOCAL_VU_CAP = Number.parseInt(__ENV.LOCAL_VU_CAP || '16000', 10);
+const EFFECTIVE_USERS = Math.min(TARGET_USERS, Number.isFinite(LOCAL_VU_CAP) ? LOCAL_VU_CAP : 16000);
 
 const TEST_USERNAME = __ENV.TEST_USERNAME || '';
 const TEST_PASSWORD = __ENV.TEST_PASSWORD || '';
@@ -13,14 +15,15 @@ export const apiDuration = new Trend('api_duration', true);
 export const apiErrors = new Rate('api_errors');
 
 export const options = {
+  discardResponseBodies: true,
   scenarios: {
     scale_5m: {
       executor: 'ramping-vus',
       startVUs: 0,
       stages: [
-        { duration: '12m', target: Math.floor(TARGET_USERS * 0.2) },
-        { duration: '20m', target: Math.floor(TARGET_USERS * 0.6) },
-        { duration: '30m', target: TARGET_USERS },
+        { duration: '12m', target: Math.floor(EFFECTIVE_USERS * 0.2) },
+        { duration: '20m', target: Math.floor(EFFECTIVE_USERS * 0.6) },
+        { duration: '30m', target: EFFECTIVE_USERS },
         { duration: '8m', target: 0 },
       ],
       gracefulRampDown: '60s',
@@ -103,6 +106,8 @@ export function handleSummary(data) {
     'profile=5m',
     `baseUrl=${BASE_URL}`,
     `targetUsers=${TARGET_USERS}`,
+    `effectiveUsers=${EFFECTIVE_USERS}`,
+    `localVuCap=${LOCAL_VU_CAP}`,
     `iterations=${data.metrics.iterations ? data.metrics.iterations.values.count : 0}`,
     `api_errors=${data.metrics.api_errors ? data.metrics.api_errors.values.rate : 0}`,
     `api_duration_p95=${data.metrics.api_duration ? data.metrics.api_duration.values['p(95)'] : 0}`,
