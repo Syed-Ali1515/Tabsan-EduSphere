@@ -15,6 +15,16 @@
 - Stage 31.2 delivered authorization/data-exposure/audit hardening in API controllers and integration tests.
 - No database schema change and no EF migration were required.
 
+## 2026-05-10 Update — Phase 31 Stage 31.3
+
+- Stage 31.3 delivered performance-band load test and recovery-smoke certification scripts plus runbook updates.
+- No database schema change and no EF migration were required.
+
+## 2026-05-10 Update — Phase 31 Complete
+
+- Phase 31 completed as release hardening (regression matrix, security hardening, and performance/reliability certification).
+- No database schema change and no EF migration were required across Stage 31.1, 31.2, and 31.3.
+
 ## 2026-05-10 Update — Phase 30 Stage 30.1
 
 - Stage 30.1 delivered a centralized outbound integration gateway layer (retry/timeout/dead-letter handling) and integration diagnostics endpoints.

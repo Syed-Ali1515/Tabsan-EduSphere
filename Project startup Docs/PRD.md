@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.57 (Phase 31 Stage 31.2 complete)  
+**Version:** 1.58 (Phase 31 complete through Stage 31.3)  
 **Status:** Approved  
 **Prepared By:** Product Team  
 **Last Updated:** 10 May 2026  
@@ -9,6 +9,17 @@
 ---
 
 ## 0. Implementation Update Log
+
+### 2026-05-10 — Phase 31 Stage 31.3
+- **Load certification bands:** added executable k6 certification-band script for `up-to-10k`, `10k-100k`, `100k-500k`, and `500k-1m` target bands.
+- **Recovery certification:** added node/service failure recovery smoke script that validates restart recovery via `/health`.
+- **Operational runbook:** updated load-test README and added Stage 31.3 certification artifact `Docs/Phase31-Stage31.3-Performance-Reliability-Certification.md`.
+- **Schema impact:** no database migration required.
+- **Validation:** full automated suite passed **201/201**.
+
+### 2026-05-10 — Phase 31 Complete
+- Stage 31.1, Stage 31.2, and Stage 31.3 are complete.
+- Release hardening now includes regression matrix coverage, security-hardening enforcement, and performance/reliability certification assets.
 
 ### 2026-05-10 — Phase 31 Stage 31.2
 - **Endpoint authorization audit:** added executable checks to ensure every API endpoint is explicitly authorized or explicitly anonymous.

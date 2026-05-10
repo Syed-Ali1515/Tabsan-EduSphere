@@ -8,6 +8,20 @@
 
 ## Execution Updates
 
+### 2026-05-10 — Phase 31 Stage 31.3
+- Added Stage 31.3 load certification script `tests/load/k6-certification-bands.js` with executable band profiles for:
+  - up-to-10k
+  - 10k-100k
+  - 100k-500k
+  - 500k-1m
+- Added Stage 31.3 recovery-smoke script `tests/load/recovery-smoke.ps1` for node/service restart recovery validation.
+- Updated `tests/load/README.md` with Stage 31.3 run commands and threshold tables.
+- Added Stage 31.3 certification document: `Docs/Phase31-Stage31.3-Performance-Reliability-Certification.md`.
+- Validation: full automated tests passed `201/201`.
+
+### 2026-05-10 — Phase 31 Complete
+- Stage 31.1, Stage 31.2, and Stage 31.3 are complete.
+
 ### 2026-05-10 — Phase 31 Stage 31.2
 - Added explicit audit-log emission to sensitive control-plane mutation endpoints in `FeatureFlagsController`, `TenantOperationsController`, and `InstitutionPolicyController`.
 - Added Stage 31.2 integration suite (`Phase31Stage2SecurityHardeningTests`) for:
@@ -193,7 +207,7 @@
 - Validated SuperAdmin result summary endpoint response with non-empty records.
 
 ### Next Execution Target
-- Continue **Phase 31 Stage 31.3 — Performance and Reliability Certification**.
+- Continue **next phase planning/execution per roadmap directive**.
 
 ### 2026-05-08 — Phase 13 Global Search Complete (commit 00b7b64)
 - **Stage 13.1 — Cross-Entity Search API:**

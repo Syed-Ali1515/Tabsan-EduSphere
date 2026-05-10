@@ -22,6 +22,8 @@ Execution status update (2026-05-10):
 - Phase 30 is completed.
 - Phase 31 Stage 31.1 is completed.
 - Phase 31 Stage 31.2 is completed.
+- Phase 31 Stage 31.3 is completed.
+- Phase 31 is completed.
 
 ---
 
@@ -526,6 +528,23 @@ Validation summary:
   - 100k-500k users
   - 500k-1M+
 - Recovery tests for node/service failures.
+
+#### 2026-05-10 - Stage 31.3 Completion
+Implementation summary:
+- Added Stage 31.3 load-band certification script `tests/load/k6-certification-bands.js` with executable bands for:
+  - `up-to-10k`
+  - `10k-100k`
+  - `100k-500k`
+  - `500k-1m`
+- Added Stage 31.3 node/service recovery smoke script `tests/load/recovery-smoke.ps1` to validate restart recovery via `/health`.
+- Updated `tests/load/README.md` with Stage 31.3 runbook commands and threshold mapping.
+- Added Stage 31.3 certification artifact document: `Docs/Phase31-Stage31.3-Performance-Reliability-Certification.md`.
+
+Validation summary:
+- `dotnet test Tabsan.EduSphere.sln --no-build` passed (**201/201**).
+
+#### 2026-05-10 - Phase 31 Complete
+- Stage 31.1 (regression matrix), Stage 31.2 (security hardening), and Stage 31.3 (performance/reliability certification) are complete.
 
 Done when:
 - Release is certified across functionality, security, and scale thresholds.

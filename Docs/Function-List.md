@@ -5,6 +5,14 @@
 
 ## Final-Touches Phase 31 - Quality, Security, and Go-Live Gates (2026-05-10)
 
+### Load and Reliability Certification (Stage 31.3)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `k6-certification-bands.js (certification_band scenario)` | Runs Stage 31.3 load certification per selected target band (`up-to-10k`, `10k-100k`, `100k-500k`, `500k-1m`) with latency/error thresholds. | `tests/load/k6-certification-bands.js` |
+| `recovery-smoke.ps1::Test-Health(url)` | Probes API health endpoint and returns pass/fail used by recovery automation flow. | `tests/load/recovery-smoke.ps1` |
+| `recovery-smoke.ps1` main flow | Simulates node/service failure by stopping/restarting API process and verifying recovery window SLA via `/health`. | `tests/load/recovery-smoke.ps1` |
+
 ### API and Tests - Security Hardening (Stage 31.2)
 
 | Function Name | Purpose | Location |
