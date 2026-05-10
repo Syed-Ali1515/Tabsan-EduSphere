@@ -29,6 +29,8 @@ Execution status update (2026-05-10):
 - Phase 32 Stage 32.3 is completed.
 - Phase 32 Stage 32.4 is completed.
 - Phase 32 Stage 32.5 is completed.
+- Phase 33 is initialized.
+- Phase 33 Stage 33.1 is planned (not started).
 
 ---
 
@@ -602,6 +604,35 @@ Validation summary:
 
 Done when:
 - Release is certified across functionality, security, and scale thresholds.
+
+---
+
+## Phase 33 - Release Closure and Operational Sign-Off
+Objective: Convert remaining release-readiness checklist items into executable, auditable completion artifacts.
+
+### Stage 33.1 - Performance and Load Sign-Off
+- Execute and record p95/p99 latency and error-rate outcomes for target load profiles.
+- Capture run commands, environment assumptions, and pass/fail thresholds in a single artifact.
+- Ensure evidence is reproducible from repository scripts and runbook instructions.
+
+Done when:
+- Load and performance sign-off evidence is documented with executable commands and measured outcomes.
+
+### Stage 33.2 - Security Checklist Closure
+- Execute the security/pentest checklist and capture status per control.
+- Record remediations or explicit risk acceptances for any non-pass item.
+- Ensure security closure artifact is committed with date, owner, and evidence references.
+
+Done when:
+- Security checklist has no unresolved blocker items for release.
+
+### Stage 33.3 - UAT and Release Candidate Sign-Off
+- Run UAT checklist across role-based critical paths.
+- Capture sign-off status and known-release notes for the candidate build.
+- Publish final go/no-go summary and operational handover notes.
+
+Done when:
+- UAT and release-candidate sign-off are documented and approved for production go-live.
 
 ---
 
