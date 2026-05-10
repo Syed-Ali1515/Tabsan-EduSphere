@@ -31,6 +31,7 @@ Execution status update (2026-05-10):
 - Phase 32 Stage 32.5 is completed.
 - Phase 33 is initialized.
 - Phase 33 Stage 33.1 is completed.
+- Phase 33 Stage 33.2 is completed.
 
 ---
 
@@ -197,6 +198,17 @@ Implementation summary:
 
 Validation summary:
 - `dotnet build Tabsan.EduSphere.sln` passed.
+
+### Phase 33 Stage 33.2 - Runtime Hosting Hardening (Completed)
+Implementation summary:
+- Hardened reverse-proxy handling in API and Web with config-driven enablement (`ReverseProxy:Enabled`) and trusted proxy allow-listing (`ReverseProxy:KnownProxies`).
+- Added startup guardrails requiring known proxies when reverse-proxy mode is enabled outside Development.
+- Added production CORS-origin startup guard for API (while preserving Testing host compatibility used by integration tests).
+- Removed remaining localhost fallback assumptions from Web login/runtime connection model and dashboard placeholder text.
+
+Validation summary:
+- `dotnet build Tabsan.EduSphere.sln` passed.
+- `dotnet test Tabsan.EduSphere.sln --no-build` passed (**230/230**).
 
 ---
 
@@ -628,7 +640,7 @@ Objective: align hosting configuration and security controls for reliable produc
 Done when:
 - Startup and configuration baselines compile cleanly and support environment-driven behavior.
 
-### Stage 33.2 - Runtime Hosting Hardening
+### Stage 33.2 - Runtime Hosting Hardening (Completed)
 - Enforce production-first runtime behavior (forwarded headers, HTTPS policy clarity, CORS origin discipline, startup diagnostics).
 - Remove remaining hardcoded endpoint/path assumptions and route through configuration.
 - Verify development and production startup behavior with explicit runbook commands.

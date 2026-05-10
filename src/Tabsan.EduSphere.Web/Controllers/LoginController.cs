@@ -11,6 +11,7 @@ public class LoginController : Controller
     private readonly IEduApiClient _api;
     private readonly IConfiguration _config;
     private readonly IHttpClientFactory _http;
+    private readonly string _configuredApiBaseUrl;
     private readonly JsonSerializerOptions _json = new() { PropertyNameCaseInsensitive = true };
 
     public LoginController(IEduApiClient api, IConfiguration config, IHttpClientFactory http)
@@ -18,6 +19,8 @@ public class LoginController : Controller
         _api    = api;
         _config = config;
         _http   = http;
+        _configuredApiBaseUrl = (_config["EduApi:BaseUrl"] ?? throw new InvalidOperationException("EduApi:BaseUrl is required."))
+            .TrimEnd('/');
     }
 
     // GET /Login
@@ -27,7 +30,7 @@ public class LoginController : Controller
         if (_api.IsConnected())
             return RedirectToAction("Dashboard", "Portal");
 
-        var apiBase = ((_config["EduApi:BaseUrl"] ?? "http://localhost:5181").TrimEnd('/'));
+        var apiBase = _configuredApiBaseUrl;
         await PopulateSecurityProfileAsync(apiBase, ct);
 
         ViewData["ReturnUrl"] = returnUrl;
@@ -43,13 +46,13 @@ public class LoginController : Controller
         {
             ViewData["Error"] = "Username and password are required.";
             ViewData["ReturnUrl"] = returnUrl;
-            await PopulateSecurityProfileAsync((_config["EduApi:BaseUrl"] ?? "http://localhost:5181").TrimEnd('/'), ct);
+            await PopulateSecurityProfileAsync(_configuredApiBaseUrl, ct);
             return View();
         }
 
         var existingConnection = _api.GetConnection();
         var apiBase = (string.IsNullOrWhiteSpace(existingConnection.ApiBaseUrl)
-            ? (_config["EduApi:BaseUrl"] ?? "http://localhost:5181")
+            ? _configuredApiBaseUrl
             : existingConnection.ApiBaseUrl).TrimEnd('/');
 
         try

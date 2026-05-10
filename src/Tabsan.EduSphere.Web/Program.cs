@@ -1,5 +1,6 @@
 using Tabsan.EduSphere.Web.Services;
 using System.Security.Claims;
+using System.Net;
 using System.Text.Json;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -20,6 +21,12 @@ var eduApiBaseUrl = builder.Configuration["EduApi:BaseUrl"];
 if (string.IsNullOrWhiteSpace(eduApiBaseUrl))
 {
     throw new InvalidOperationException("EduApi:BaseUrl is required for Tabsan.EduSphere.Web startup.");
+}
+var useForwardedHeaders = builder.Configuration.GetValue<bool>("ReverseProxy:Enabled");
+var configuredKnownProxies = builder.Configuration.GetSection("ReverseProxy:KnownProxies").Get<string[]>() ?? [];
+if (useForwardedHeaders && !builder.Environment.IsDevelopment() && configuredKnownProxies.Length == 0)
+{
+    throw new InvalidOperationException("ReverseProxy is enabled but no known proxy IPs are configured in ReverseProxy:KnownProxies.");
 }
 
 // Add services to the container.
@@ -54,13 +61,23 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient("EduApi");
 builder.Services.AddScoped<IEduApiClient, EduApiClient>();
 
-if (!builder.Environment.IsDevelopment())
+if (useForwardedHeaders)
 {
     builder.Services.Configure<ForwardedHeadersOptions>(options =>
     {
         options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
+        options.RequireHeaderSymmetry = builder.Configuration.GetValue("ReverseProxy:RequireHeaderSymmetry", true);
+        options.ForwardLimit = builder.Configuration.GetValue<int?>("ReverseProxy:ForwardLimit") ?? 2;
         options.KnownNetworks.Clear();
         options.KnownProxies.Clear();
+
+        foreach (var proxyIp in configuredKnownProxies)
+        {
+            if (IPAddress.TryParse(proxyIp, out var parsedIp))
+            {
+                options.KnownProxies.Add(parsedIp);
+            }
+        }
     });
 }
 
@@ -74,7 +91,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-if (!app.Environment.IsDevelopment())
+if (useForwardedHeaders)
 {
     app.UseForwardedHeaders();
 }

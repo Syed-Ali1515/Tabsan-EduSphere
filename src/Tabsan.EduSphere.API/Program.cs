@@ -1,5 +1,6 @@
 // ── Builder configuration ──────────────────────────────────────────────────────
 
+using System.Net;
 using System.Text;
 using System.Threading.RateLimiting;using FluentValidation;
 using FluentValidation.AspNetCore;using Microsoft.AspNetCore.RateLimiting;
@@ -53,6 +54,13 @@ var configuredConnectionString = builder.Configuration.GetConnectionString("Defa
 if (string.IsNullOrWhiteSpace(configuredConnectionString))
 {
     throw new InvalidOperationException("DefaultConnection string is missing. Configure ConnectionStrings:DefaultConnection.");
+}
+
+var useForwardedHeaders = builder.Configuration.GetValue<bool>("ReverseProxy:Enabled");
+var configuredKnownProxies = builder.Configuration.GetSection("ReverseProxy:KnownProxies").Get<string[]>() ?? [];
+if (useForwardedHeaders && !builder.Environment.IsDevelopment() && configuredKnownProxies.Length == 0)
+{
+    throw new InvalidOperationException("ReverseProxy is enabled but no known proxy IPs are configured in ReverseProxy:KnownProxies.");
 }
 
 var isDevDatabase = configuredConnectionString.Contains("localhost", StringComparison.OrdinalIgnoreCase)
@@ -365,6 +373,10 @@ builder.Services.AddRateLimiter(opts =>
 
 // ── CORS (configured from AppSettings:CorsOrigins) ───────────────────────────
 var corsOrigins = builder.Configuration.GetSection("AppSettings:CorsOrigins").Get<string[]>() ?? [];
+if (!builder.Environment.IsDevelopment() && !builder.Environment.IsEnvironment("Testing") && corsOrigins.Length == 0)
+{
+    throw new InvalidOperationException("AppSettings:CorsOrigins must include at least one origin outside Development.");
+}
 if (corsOrigins.Length > 0)
 {
     builder.Services.AddCors(corsOpts =>
@@ -376,13 +388,23 @@ if (corsOrigins.Length > 0)
 }
 
 // ── Forwarded headers (reverse proxy: IIS / nginx / Cloudflare) ──────────────
-if (!builder.Environment.IsDevelopment())
+if (useForwardedHeaders)
 {
     builder.Services.Configure<ForwardedHeadersOptions>(fwdOpts =>
     {
         fwdOpts.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
+        fwdOpts.RequireHeaderSymmetry = builder.Configuration.GetValue("ReverseProxy:RequireHeaderSymmetry", true);
+        fwdOpts.ForwardLimit = builder.Configuration.GetValue<int?>("ReverseProxy:ForwardLimit") ?? 2;
         fwdOpts.KnownNetworks.Clear();
         fwdOpts.KnownProxies.Clear();
+
+        foreach (var proxyIp in configuredKnownProxies)
+        {
+            if (IPAddress.TryParse(proxyIp, out var parsedIp))
+            {
+                fwdOpts.KnownProxies.Add(parsedIp);
+            }
+        }
     });
 }
 
@@ -449,7 +471,7 @@ await DatabaseSeeder.SeedAsync(app.Services);
 // ── HTTP pipeline ────────────────────────────────────────────────────────────────
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-if (!app.Environment.IsDevelopment())
+if (useForwardedHeaders)
 {
     app.UseForwardedHeaders();
 }

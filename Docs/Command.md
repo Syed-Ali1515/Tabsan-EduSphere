@@ -53,12 +53,18 @@ cmd /c git -C "<repo-root>" push origin main
 
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
-- Active Phase: **Phase 33 — Hosting Configuration and Security Hardening — Stage 33.1 COMPLETE ✅**
-- Active Stage: **Stage 33.1 complete (Hosting configuration foundation)**
-- Status: **Implemented environment-aware startup configuration loading and critical startup config guards across API/Web/BackgroundJobs, plus appsettings metadata alignment for environment portability.**
+- Active Phase: **Phase 33 — Hosting Configuration and Security Hardening — Stage 33.2 COMPLETE ✅**
+- Active Stage: **Stage 33.2 complete (Runtime hosting hardening)**
+- Status: **Hardened API/Web reverse-proxy trust handling, enforced startup proxy/CORS guardrails for production paths, and removed remaining localhost runtime fallbacks in Web login/connection flows.**
 - Last Updated: 2026-05-10
-- Next: **Execute Stage 33.2 runtime hosting hardening (forwarded headers/HTTPS/CORS/path-configuration cleanup and runbook validation)**
-- Docs Updated: ✅ Phase 33 Stage 33.1 trackers updated (2026-05-10)
+- Next: **Execute Stage 33.3 security hardening execution from `Docs/Refactoring-Hosting-Security.md`**
+- Docs Updated: ✅ Phase 33 Stage 33.2 trackers updated (2026-05-10)
+
+### 2026-05-10 - Phase 33 Stage 33.2 Completion
+- Added config-driven reverse-proxy trust controls in API/Web (`ReverseProxy:Enabled`, `KnownProxies`, symmetry/forward-limit settings).
+- Added startup guardrails to reject unsafe reverse-proxy and production CORS-empty startup conditions.
+- Removed `localhost` fallback defaults from Web login and portal API connection model.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; `dotnet test Tabsan.EduSphere.sln --no-build` passed (**230/230**).
 
 ### 2026-05-10 - Phase 33 Stage 33.1 Completion
 - Re-scoped Phase 33 to `Hosting Configuration and Security Hardening` from `Docs/Refactoring-Hosting-Security.md`.

@@ -4,7 +4,7 @@ namespace Tabsan.EduSphere.Web.Models.Portal;
 
 public class ApiConnectionModel
 {
-    public string ApiBaseUrl { get; set; } = "https://localhost:5001";
+    public string ApiBaseUrl { get; set; } = string.Empty;
     public string AccessToken { get; set; } = string.Empty;
     public Guid? DefaultDepartmentId { get; set; }
 }

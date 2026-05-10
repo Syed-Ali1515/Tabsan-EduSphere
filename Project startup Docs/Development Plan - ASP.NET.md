@@ -8,6 +8,20 @@
 
 ## Execution Updates
 
+### 2026-05-10 — Phase 33 Stage 33.2
+- Hardened runtime hosting behavior in API/Web:
+  - added config-driven reverse-proxy trust options (`ReverseProxy:Enabled`, `KnownProxies`, `ForwardLimit`, `RequireHeaderSymmetry`),
+  - restricted forwarded-header middleware activation to configured reverse-proxy mode,
+  - added startup guardrails for unsafe production startup conditions.
+- API-specific hardening:
+  - startup guard requires non-empty `AppSettings:CorsOrigins` outside Development/Testing.
+- Web-specific hardening:
+  - removed localhost fallback behavior in login API base URL resolution,
+  - removed localhost default from portal API connection model.
+- Validation:
+  - `dotnet build Tabsan.EduSphere.sln` passed.
+  - `dotnet test Tabsan.EduSphere.sln --no-build` passed `230/230`.
+
 ### 2026-05-10 — Phase 33 Stage 33.1
 - Re-scoped Phase 33 to `Hosting Configuration and Security Hardening` using `Docs/Refactoring-Hosting-Security.md` as execution baseline.
 - Added explicit config-load bootstrapping in API/Web/BackgroundJobs startup paths:

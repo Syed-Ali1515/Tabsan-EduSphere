@@ -16,6 +16,16 @@
 | `Program` startup configuration bootstrap (`SetBasePath` + `AddJsonFile` + `AddEnvironmentVariables`) | Forces explicit environment-aware configuration load order for Web host. | `src/Tabsan.EduSphere.Web/Program.cs` |
 | `Program` startup config guard (`EduApi:BaseUrl`) | Fails Web startup early when API base URL configuration is missing. | `src/Tabsan.EduSphere.Web/Program.cs` |
 
+### Runtime Hosting Hardening (Stage 33.2)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `Program` reverse-proxy bootstrap (`ReverseProxy:Enabled`, `KnownProxies`, `ForwardLimit`, `RequireHeaderSymmetry`) | Restricts forwarded-header trust to configured proxy IPs and avoids implicit trust-all proxy behavior in API host. | `src/Tabsan.EduSphere.API/Program.cs` |
+| `Program` production CORS startup guard | Prevents API startup with empty `AppSettings:CorsOrigins` outside Development/Testing. | `src/Tabsan.EduSphere.API/Program.cs` |
+| `Program` reverse-proxy bootstrap (`ReverseProxy:Enabled`, `KnownProxies`, `ForwardLimit`, `RequireHeaderSymmetry`) | Restricts forwarded-header trust to configured proxy IPs in Web host. | `src/Tabsan.EduSphere.Web/Program.cs` |
+| `LoginController` API base URL resolution (`_configuredApiBaseUrl`) | Removes localhost fallback assumptions and requires configured `EduApi:BaseUrl` for login/security profile calls. | `src/Tabsan.EduSphere.Web/Controllers/LoginController.cs` |
+| `ApiConnectionModel.ApiBaseUrl` default | Removes hardcoded localhost default from persisted portal API connection model. | `src/Tabsan.EduSphere.Web/Models/Portal/PortalViewModels.cs` |
+
 ## Final-Touches Phase 32 - Cross-Phase Operational Guardrails (2026-05-10)
 
 ### Report Center and Link Regression Guardrails (Stage 32.1)
