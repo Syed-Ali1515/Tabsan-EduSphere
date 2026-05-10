@@ -10,6 +10,12 @@
 
 ## 0. Implementation Update Log
 
+### 2026-05-10 — Phase 32 Stage 32.3
+- **Sidebar Settings guardrail coverage:** added integration test coverage to ensure all seeded sidebar menu items remain assignable through role-assignment actions.
+- **Operational safety:** validates Sidebar Settings role mutation endpoint works for every top-level and sub-menu key to prevent silent menu-configuration drift.
+- **Schema impact:** no database migration required.
+- **Validation:** targeted integration suite passed **9/9** (`SidebarMenuIntegrationTests`).
+
 ### 2026-05-10 — Phase 32 Stage 32.2
 - **Report export guardrail coverage:** added integration tests that lock report export action routes for attendance/result/assignment/quiz across Excel/CSV/PDF variants.
 - **Export contract guardrails:** added assertions for anonymous rejection, expected export media types, attachment filename conventions, and non-empty payload bytes.

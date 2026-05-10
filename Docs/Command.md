@@ -53,12 +53,12 @@ cmd /c git -C "<repo-root>" push origin main
 
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
-- Active Phase: **Phase 32 — Cross-Phase Operational Guardrails — Stage 32.2 COMPLETE ✅**
-- Active Stage: **Stage 32.2 complete (Report export action and endpoint regression guardrails)**
-- Status: **Added report-export integration guardrails validating auth, media types, attachment filenames, and non-empty payloads; targeted suite passed 13/13; no database migration required**
+- Active Phase: **Phase 32 — Cross-Phase Operational Guardrails — Stage 32.3 COMPLETE ✅**
+- Active Stage: **Stage 32.3 complete (Sidebar Settings menu-assignability guardrails)**
+- Status: **Added sidebar-settings integration guardrail validating all seeded menu keys accept role-assignment updates; targeted suite passed 9/9; no database migration required**
 - Last Updated: 2026-05-10
-- Next: **Awaiting next phase/stage directive after Stage 32.2 completion**
-- Docs Updated: ✅ All requested tracking files updated for Phase 32 Stage 32.2 completion (2026-05-10)
+- Next: **Awaiting next phase/stage directive after Stage 32.3 completion**
+- Docs Updated: ✅ All requested tracking files updated for Phase 32 Stage 32.3 completion (2026-05-10)
 
 ---
 
@@ -277,8 +277,6 @@ Database is fully synchronized with codebase.
 
 ## Pending Extra Tasks (Cross-Phase)
 - Keep Report Center menu visible by role and working links.
-- Ensure all menus are assignable in Sidebar Settings.
-- Ensure export button text and actions are validated when reporting phase is executed.
 - Keep test credentials and run commands verified after major backend changes.
 
 ---

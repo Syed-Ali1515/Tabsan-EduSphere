@@ -26,6 +26,7 @@ Execution status update (2026-05-10):
 - Phase 31 is completed.
 - Phase 32 Stage 32.1 is completed.
 - Phase 32 Stage 32.2 is completed.
+- Phase 32 Stage 32.3 is completed.
 
 ---
 
@@ -149,6 +150,14 @@ Implementation summary:
 
 Validation summary:
 - `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~ReportExportsIntegrationTests"` passed (**13/13**).
+
+### Phase 32 Stage 32.3 - Sidebar Settings Assignability Guardrails (Completed)
+Implementation summary:
+- Added a focused sidebar integration regression test that validates all seeded menu keys remain assignable through Sidebar Settings role-assignment actions.
+- Preserved existing role matrix/system-menu safety tests and added platform-wide assignability coverage for top-level and sub-menu keys.
+
+Validation summary:
+- `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~SidebarMenuIntegrationTests"` passed (**9/9**).
 
 ---
 

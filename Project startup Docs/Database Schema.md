@@ -15,6 +15,11 @@
 - Stage 32.2 delivered report export action/endpoint regression guardrail integration tests only.
 - No database schema change and no EF migration were required.
 
+## 2026-05-10 Update — Phase 32 Stage 32.3
+
+- Stage 32.3 delivered sidebar-settings menu-assignability regression guardrail integration tests only.
+- No database schema change and no EF migration were required.
+
 ## 2026-05-10 Update — Phase 31 Stage 31.1
 
 - Stage 31.1 delivered regression-matrix test coverage and matrix documentation only.

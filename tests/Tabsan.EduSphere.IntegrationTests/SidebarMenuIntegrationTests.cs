@@ -300,6 +300,35 @@ public class SidebarMenuIntegrationTests
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }
 
+    /// <summary>
+    /// Every seeded menu item (top-level and sub-menu) must accept role-assignment updates
+    /// through Sidebar Settings so menu assignment remains operational platform-wide.
+    /// </summary>
+    [Fact]
+    public async Task SetRoles_AllSeededMenus_AreAssignable()
+    {
+        // Final-Touches Phase 32 Stage 32.3 — enforce Sidebar Settings assignability guardrail for all menu keys.
+        using var superClient = CreateClient("SuperAdmin");
+
+        var allMenus = await GetVisibleAsync(superClient);
+        var allItems = FlatItems(allMenus).ToList();
+
+        Assert.Equal(29, allItems.Count);
+
+        foreach (var menu in allItems)
+        {
+            var payload = new
+            {
+                entries = menu.RoleAccesses
+                    .Select(a => new { roleName = a.RoleName, isAllowed = a.IsAllowed })
+                    .ToArray()
+            };
+
+            var response = await superClient.PutAsJsonAsync($"api/v1/sidebar-menu/{menu.Id}/roles", payload);
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        }
+    }
+
     // ── 401 for unauthenticated requests ─────────────────────────────────────
 
     /// <summary>Unauthenticated requests to my-visible must be rejected with 401.</summary>

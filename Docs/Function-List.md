@@ -21,6 +21,12 @@
 | `ReportExportsIntegrationTests.AttendanceSummary_Export_Unauthenticated_Returns401()` | Verifies report export endpoints remain protected from anonymous access. | `tests/Tabsan.EduSphere.IntegrationTests/ReportExportsIntegrationTests.cs` |
 | `ReportExportsIntegrationTests.ReportExports_WithSuperAdmin_ReturnExpectedFileMetadata(route, expectedContentType, expectedFileName)` | Verifies attendance/result/assignment/quiz export routes return expected media type, attachment filename contract, and non-empty payload bytes. | `tests/Tabsan.EduSphere.IntegrationTests/ReportExportsIntegrationTests.cs` |
 
+### Sidebar Settings Assignability Guardrails (Stage 32.3)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `SidebarMenuIntegrationTests.SetRoles_AllSeededMenus_AreAssignable()` | Verifies every seeded sidebar menu key accepts role-assignment updates through Sidebar Settings (no broken menu assignment actions). | `tests/Tabsan.EduSphere.IntegrationTests/SidebarMenuIntegrationTests.cs` |
+
 ## Final-Touches Phase 31 - Quality, Security, and Go-Live Gates (2026-05-10)
 
 ### Load and Reliability Certification (Stage 31.3)

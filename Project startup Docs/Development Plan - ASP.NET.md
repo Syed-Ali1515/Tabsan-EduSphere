@@ -8,6 +8,13 @@
 
 ## Execution Updates
 
+### 2026-05-10 — Phase 32 Stage 32.3
+- Added `SidebarMenuIntegrationTests.SetRoles_AllSeededMenus_AreAssignable` to preserve cross-phase Sidebar Settings guardrails:
+  - every seeded top-level and sub-menu key accepts role-assignment updates,
+  - menu-configuration actions remain operational for full sidebar inventory,
+  - existing role visibility and system-menu protections remain intact.
+- Validation: targeted integration tests passed `9/9`.
+
 ### 2026-05-10 — Phase 32 Stage 32.2
 - Added `ReportExportsIntegrationTests` to preserve cross-phase report-export guardrails:
   - anonymous requests to export endpoints remain blocked,
