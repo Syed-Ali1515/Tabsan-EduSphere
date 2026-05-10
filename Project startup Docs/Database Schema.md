@@ -10,6 +10,11 @@
 - Stage 31.1 delivered regression-matrix test coverage and matrix documentation only.
 - No database schema change and no EF migration were required.
 
+## 2026-05-10 Update — Phase 31 Stage 31.2
+
+- Stage 31.2 delivered authorization/data-exposure/audit hardening in API controllers and integration tests.
+- No database schema change and no EF migration were required.
+
 ## 2026-05-10 Update — Phase 30 Stage 30.1
 
 - Stage 30.1 delivered a centralized outbound integration gateway layer (retry/timeout/dead-letter handling) and integration diagnostics endpoints.

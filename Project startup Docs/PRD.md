@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.56 (Phase 31 Stage 31.1 complete)  
+**Version:** 1.57 (Phase 31 Stage 31.2 complete)  
 **Status:** Approved  
 **Prepared By:** Product Team  
 **Last Updated:** 10 May 2026  
@@ -9,6 +9,14 @@
 ---
 
 ## 0. Implementation Update Log
+
+### 2026-05-10 — Phase 31 Stage 31.2
+- **Endpoint authorization audit:** added executable checks to ensure every API endpoint is explicitly authorized or explicitly anonymous.
+- **Data exposure control:** added strict anonymous endpoint whitelist tests to detect unapproved public-surface expansion.
+- **Sensitive-action audit coverage:** added explicit audit-log writes for feature-flag mutations, tenant operations control-plane writes, and institution policy updates.
+- **Coverage artifact:** added Stage 31.2 hardening runbook at `Docs/Phase31-Stage31.2-Security-Hardening.md`.
+- **Schema impact:** no database migration required.
+- **Validation:** targeted tests passed **4/4**; full automated suite passed **201/201**.
 
 ### 2026-05-10 — Phase 31 Stage 31.1
 - **Regression matrix baseline:** added executable matrix tests for role x institution mode x license combinations.

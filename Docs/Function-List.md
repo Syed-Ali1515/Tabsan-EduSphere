@@ -5,6 +5,21 @@
 
 ## Final-Touches Phase 31 - Quality, Security, and Go-Live Gates (2026-05-10)
 
+### API and Tests - Security Hardening (Stage 31.2)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `FeatureFlagsController.Save(key, command, ct)` | Persists feature-flag changes and emits control-plane audit log entry (`FeatureFlagSave`). | `API/Controllers/FeatureFlagsController.cs` |
+| `FeatureFlagsController.Rollback(command, ct)` | Executes feature-flag rollback and emits control-plane audit log entry (`FeatureFlagRollback`). | `API/Controllers/FeatureFlagsController.cs` |
+| `TenantOperationsController.SaveOnboardingTemplate(command, ct)` | Persists onboarding-template settings and emits audit entries for successful or blocked writes. | `API/Controllers/TenantOperationsController.cs` |
+| `TenantOperationsController.SaveSubscriptionPlan(command, ct)` | Persists subscription-plan settings and emits audit entries for successful or blocked writes. | `API/Controllers/TenantOperationsController.cs` |
+| `TenantOperationsController.SaveTenantProfile(command, ct)` | Persists tenant-profile settings and emits audit entries for successful or blocked writes. | `API/Controllers/TenantOperationsController.cs` |
+| `InstitutionPolicyController.Save(request, ct)` | Persists institution policy flags and emits audit log entry (`InstitutionPolicySave`). | `API/Controllers/InstitutionPolicyController.cs` |
+| `Phase31Stage2SecurityHardeningTests.All_Api_Endpoints_Are_Explicitly_Authorized_Or_Anonymous()` | Prevents unguarded API endpoints by enforcing explicit auth or explicit anonymous declaration. | `tests/Tabsan.EduSphere.IntegrationTests/Phase31Stage2SecurityHardeningTests.cs` |
+| `Phase31Stage2SecurityHardeningTests.AllowAnonymous_Surface_Is_Whitelisted()` | Enforces strict whitelist of anonymous endpoints to control data exposure surface. | `tests/Tabsan.EduSphere.IntegrationTests/Phase31Stage2SecurityHardeningTests.cs` |
+| `Phase31Stage2SecurityHardeningTests.Sensitive_ControlPlane_Mutations_Write_Audit_Logs()` | Verifies sensitive control-plane writes emit expected audit events. | `tests/Tabsan.EduSphere.IntegrationTests/Phase31Stage2SecurityHardeningTests.cs` |
+| `Phase31Stage2SecurityHardeningTests.Blocked_Tenant_Write_Is_Audited()` | Verifies rollback-safety blocked write paths are also audit logged. | `tests/Tabsan.EduSphere.IntegrationTests/Phase31Stage2SecurityHardeningTests.cs` |
+
 ### Unit Tests - Regression Matrix (Stage 31.1)
 
 | Function Name | Purpose | Location |

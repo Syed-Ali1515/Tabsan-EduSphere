@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Tabsan.EduSphere.Application.Interfaces;
+using Tabsan.EduSphere.Domain.Auditing;
+using Tabsan.EduSphere.Domain.Interfaces;
 
 namespace Tabsan.EduSphere.API.Controllers;
 
@@ -15,9 +17,15 @@ namespace Tabsan.EduSphere.API.Controllers;
 public sealed class InstitutionPolicyController : ControllerBase
 {
     private readonly IInstitutionPolicyService _policy;
+    private readonly IAuditService _audit;
 
-    public InstitutionPolicyController(IInstitutionPolicyService policy)
-        => _policy = policy;
+    public InstitutionPolicyController(
+        IInstitutionPolicyService policy,
+        IAuditService audit)
+    {
+        _policy = policy;
+        _audit = audit;
+    }
 
     // ── GET ───────────────────────────────────────────────────────────────────
 
@@ -44,10 +52,18 @@ public sealed class InstitutionPolicyController : ControllerBase
     {
         try
         {
+            // Final-Touches Phase 31 Stage 31.2 — audit institution policy mutations.
             await _policy.SavePolicyAsync(new SaveInstitutionPolicyCommand(
                 request.IncludeSchool,
                 request.IncludeCollege,
                 request.IncludeUniversity), ct);
+
+            await _audit.LogAsync(new AuditLog(
+                action: "InstitutionPolicySave",
+                entityName: "InstitutionPolicy",
+                actorUserId: GetUserId(),
+                newValuesJson: $"{{\"includeSchool\":{request.IncludeSchool.ToString().ToLowerInvariant()},\"includeCollege\":{request.IncludeCollege.ToString().ToLowerInvariant()},\"includeUniversity\":{request.IncludeUniversity.ToString().ToLowerInvariant()}}}",
+                ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString()), ct);
 
             return NoContent();
         }
@@ -55,6 +71,13 @@ public sealed class InstitutionPolicyController : ControllerBase
         {
             return BadRequest(new { error = ex.Message });
         }
+    }
+
+    private Guid GetUserId()
+    {
+        var raw = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+               ?? User.FindFirst("sub")?.Value;
+        return Guid.TryParse(raw, out var id) ? id : Guid.Empty;
     }
 }
 

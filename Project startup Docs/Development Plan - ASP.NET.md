@@ -8,6 +8,15 @@
 
 ## Execution Updates
 
+### 2026-05-10 — Phase 31 Stage 31.2
+- Added explicit audit-log emission to sensitive control-plane mutation endpoints in `FeatureFlagsController`, `TenantOperationsController`, and `InstitutionPolicyController`.
+- Added Stage 31.2 integration suite (`Phase31Stage2SecurityHardeningTests`) for:
+  - endpoint authorization guard coverage,
+  - anonymous endpoint whitelist enforcement,
+  - audit log coverage validation for sensitive actions.
+- Added Stage 31.2 artifact document: `Docs/Phase31-Stage31.2-Security-Hardening.md`.
+- Validation: targeted tests passed `4/4`; full automated tests passed `201/201`.
+
 ### 2026-05-10 — Phase 31 Stage 31.1
 - Added Stage 31.1 regression matrix unit suite (`Phase31Stage1RegressionMatrixTests`) with 24 scenario combinations across institution mode, role, and license profile states.
 - Added tenant isolation baseline verification using isolated settings repositories.
@@ -184,7 +193,7 @@
 - Validated SuperAdmin result summary endpoint response with non-empty records.
 
 ### Next Execution Target
-- Continue **Phase 31 Stage 31.2 — Security Hardening**.
+- Continue **Phase 31 Stage 31.3 — Performance and Reliability Certification**.
 
 ### 2026-05-08 — Phase 13 Global Search Complete (commit 00b7b64)
 - **Stage 13.1 — Cross-Entity Search API:**

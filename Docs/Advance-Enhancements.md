@@ -21,6 +21,7 @@ Execution status update (2026-05-10):
 - Phase 30 Stage 30.3 is completed.
 - Phase 30 is completed.
 - Phase 31 Stage 31.1 is completed.
+- Phase 31 Stage 31.2 is completed.
 
 ---
 
@@ -501,6 +502,22 @@ Validation summary:
 - Endpoint authorization audit.
 - Data exposure checks.
 - Audit log coverage for sensitive actions.
+
+#### 2026-05-10 - Stage 31.2 Completion
+Implementation summary:
+- Added explicit audit-log emission for sensitive control-plane mutations in:
+  - `FeatureFlagsController` (save/rollback)
+  - `TenantOperationsController` (onboarding/subscription/profile saves and blocked-write attempts)
+  - `InstitutionPolicyController` (policy save)
+- Added executable security hardening regression suite in `tests/Tabsan.EduSphere.IntegrationTests/Phase31Stage2SecurityHardeningTests.cs` covering:
+  - endpoint authorization guard audit,
+  - anonymous endpoint exposure whitelist checks,
+  - audit-log emission validation for sensitive writes.
+- Added Stage 31.2 hardening artifact: `Docs/Phase31-Stage31.2-Security-Hardening.md`.
+
+Validation summary:
+- `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter FullyQualifiedName~Phase31Stage2SecurityHardeningTests` passed (**4/4**).
+- `dotnet test Tabsan.EduSphere.sln --no-build` passed (**201/201**).
 
 ### Stage 31.3 - Performance and Reliability Certification
 - Load tests by target bands:

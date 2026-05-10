@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Tabsan.EduSphere.Application.Dtos;
 using Tabsan.EduSphere.Application.Interfaces;
+using Tabsan.EduSphere.Domain.Auditing;
+using Tabsan.EduSphere.Domain.Interfaces;
 
 namespace Tabsan.EduSphere.API.Controllers;
 
@@ -12,10 +14,14 @@ namespace Tabsan.EduSphere.API.Controllers;
 public sealed class FeatureFlagsController : ControllerBase
 {
     private readonly IFeatureFlagService _featureFlags;
+    private readonly IAuditService _audit;
 
-    public FeatureFlagsController(IFeatureFlagService featureFlags)
+    public FeatureFlagsController(
+        IFeatureFlagService featureFlags,
+        IAuditService audit)
     {
         _featureFlags = featureFlags;
+        _audit = audit;
     }
 
     [HttpGet]
@@ -32,7 +38,17 @@ public sealed class FeatureFlagsController : ControllerBase
         [FromBody] SaveFeatureFlagCommand command,
         CancellationToken ct)
     {
+        // Final-Touches Phase 31 Stage 31.2 — audit sensitive feature-flag mutations.
         await _featureFlags.SaveAsync(command with { Key = key }, ct);
+
+        await _audit.LogAsync(new AuditLog(
+            action: "FeatureFlagSave",
+            entityName: "FeatureFlag",
+            entityId: key,
+            actorUserId: GetUserId(),
+            newValuesJson: $"{{\"key\":\"{key}\",\"isEnabled\":{command.IsEnabled.ToString().ToLowerInvariant()}}}",
+            ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString()), ct);
+
         return NoContent();
     }
 
@@ -41,7 +57,24 @@ public sealed class FeatureFlagsController : ControllerBase
         [FromBody] RollbackFeatureFlagsCommand command,
         CancellationToken ct)
     {
+        // Final-Touches Phase 31 Stage 31.2 — audit rollback operations for incident traceability.
         await _featureFlags.RollbackAsync(command, ct);
+
+        await _audit.LogAsync(new AuditLog(
+            action: "FeatureFlagRollback",
+            entityName: "FeatureFlag",
+            entityId: string.Join(",", command.Keys ?? []),
+            actorUserId: GetUserId(),
+            newValuesJson: $"{{\"reason\":\"{command.Reason ?? string.Empty}\"}}",
+            ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString()), ct);
+
         return NoContent();
+    }
+
+    private Guid GetUserId()
+    {
+        var raw = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+               ?? User.FindFirst("sub")?.Value;
+        return Guid.TryParse(raw, out var id) ? id : Guid.Empty;
     }
 }
