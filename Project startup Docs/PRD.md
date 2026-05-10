@@ -1,14 +1,21 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.58 (Phase 31 complete through Stage 31.3)  
+**Version:** 1.59 (Phase 1 Stage 1.2 load-optimization tuning complete)  
 **Status:** Approved  
 **Prepared By:** Product Team  
-**Last Updated:** 10 May 2026  
+**Last Updated:** 11 May 2026  
 
 ---
 
 ## 0. Implementation Update Log
+
+### 2026-05-11 — Phase 1 Stage 1.2
+- **Connection-pool hardening:** updated API SQL connection strings to include explicit pool sizing and timeout controls.
+- **Profiles updated:** base, development, and production appsettings profiles for `ConnectionStrings:DefaultConnection`.
+- **Operational intent:** reduce connection exhaustion and timeout behavior under increased concurrent request pressure.
+- **Schema impact:** no database migration required.
+- **Validation plan:** execute 12k/16k load-cap reruns and compare p95 latency + error-rate deltas before Stage 1.3 query optimization.
 
 ### 2026-05-10 — Phase 33 Stage 33.3
 - **Security hardening execution:** added DataAnnotations validation to auth/admin DTOs so invalid login, refresh, password-change, and admin-user payloads fail model validation.

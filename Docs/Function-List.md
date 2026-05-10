@@ -3,6 +3,16 @@
 > **Maintenance rule**: Every function added to the codebase must be registered here with Name, Purpose, and Location.
 > Format: `Name | Purpose | Location`
 
+## Final-Touches Phase 34 - High-Load Optimization (2026-05-11)
+
+### Stage 1.2 - Connection Pooling and Timeout Tuning
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `ConnectionStrings:DefaultConnection` (pool tuning - default profile) | Adds explicit SQL client connection pooling controls (`Min Pool Size`, `Max Pool Size`, `Connect Timeout`) for baseline high-load stability. | `src/Tabsan.EduSphere.API/appsettings.json` |
+| `ConnectionStrings:DefaultConnection` (pool tuning - development profile) | Applies explicit development pool sizing and connection timeout to reduce local exhaustion during higher VU runs. | `src/Tabsan.EduSphere.API/appsettings.Development.json` |
+| `ConnectionStrings:DefaultConnection` (pool tuning - production profile guidance) | Defines production-target pool sizing guidance in profile placeholder connection string for deployment hardening. | `src/Tabsan.EduSphere.API/appsettings.Production.json` |
+
 ## Final-Touches Phase 33 - Hosting Configuration and Security Hardening (2026-05-10)
 
 ### Hosting Configuration Foundation (Stage 33.1)

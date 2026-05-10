@@ -8,6 +8,13 @@
 
 ## Execution Updates
 
+### 2026-05-11 — Phase 1 Stage 1.2
+- Tuned SQL connection pooling settings for API runtime profiles:
+  - `appsettings.json` and `appsettings.Development.json` now include `Min Pool Size=20;Max Pool Size=500;Connect Timeout=30`.
+  - `appsettings.Production.json` connection string placeholder now includes guidance values `Min Pool Size=50;Max Pool Size=800;Connect Timeout=30`.
+- Objective: reduce connection churn and timeout spikes during high-concurrency load-test stages.
+- Validation plan: rerun 12k and 16k caps and compare p95 latency/error deltas before Stage 1.3 query tuning.
+
 ### 2026-05-10 — Phase 33 Stage 33.3
 - Added DataAnnotations-based validation to auth/admin DTOs:
   - login, refresh, change-password, and forced-password-change requests now enforce required and length-constrained inputs,

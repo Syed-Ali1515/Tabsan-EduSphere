@@ -53,12 +53,19 @@ cmd /c git -C "<repo-root>" push origin main
 
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
-- Active Phase: **Phase 33 — Hosting Configuration and Security Hardening — Stage 33.3 COMPLETE ✅**
-- Active Stage: **Stage 33.3 complete (Security hardening execution)**
-- Status: **Added DataAnnotations-based auth/admin request validation plus executable validation tests; full solution regression now passes 234/234.**
-- Last Updated: 2026-05-10
-- Next: **Awaiting next phase/stage directive after Phase 33 completion**
-- Docs Updated: ✅ Phase 33 Stage 33.3 trackers updated (2026-05-10)
+- Active Phase: **Phase 1 — High-Load Optimization — Stage 1.2 COMPLETE ✅**
+- Active Stage: **Stage 1.2 complete (connection pooling and timeout tuning)**
+- Status: **Updated API connection strings for default/development/production with explicit Min/Max pool sizes and connect timeout; documentation sync completed.**
+- Last Updated: 2026-05-11
+- Next: **Execute Phase 1 Stage 1.3 query-path optimization for dashboard, sidebar, and notification inbox.**
+- Docs Updated: ✅ Phase 1 Stage 1.2 trackers updated (2026-05-11)
+
+### 2026-05-11 - Phase 1 Stage 1.2 Completion
+- Tuned API SQL connection strings in `appsettings.json`, `appsettings.Development.json`, and `appsettings.Production.json`.
+- Added explicit pool and timeout controls:
+  - Development and default: `Min Pool Size=20;Max Pool Size=500;Connect Timeout=30`
+  - Production profile guidance: `Min Pool Size=50;Max Pool Size=800;Connect Timeout=30`
+- Validation target: use existing 12k/16k run gates and compare error/latency behavior before Stage 1.3 query tuning.
 
 ### 2026-05-10 - Phase 33 Stage 33.3 Completion
 - Added DataAnnotations to `LoginRequest`, `RefreshRequest`, `ChangePasswordRequest`, `ForceChangePasswordRequest`, `CreateAdminUserRequest`, and `UpdateAdminUserRequest`.
