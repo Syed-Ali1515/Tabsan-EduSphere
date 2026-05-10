@@ -10,6 +10,13 @@
 
 ## 0. Implementation Update Log
 
+### 2026-05-10 — Phase 32 Stage 32.4
+- **Report Center sidebar guardrail coverage:** aligned sidebar role visibility so `report_center` remains visible for Admin, Faculty, and Student roles.
+- **Link-operability guardrails:** added integration coverage to verify report-center-visible roles can successfully resolve report catalog payloads via `GET /api/v1/reports`.
+- **Seeder hardening:** sidebar role-access seeding now self-heals existing role rows by updating `IsAllowed` values when they drift from baseline.
+- **Schema impact:** no database migration required.
+- **Validation:** targeted integration suite passed **12/12** (`SidebarMenuIntegrationTests`).
+
 ### 2026-05-10 — Phase 32 Stage 32.3
 - **Sidebar Settings guardrail coverage:** added integration test coverage to ensure all seeded sidebar menu items remain assignable through role-assignment actions.
 - **Operational safety:** validates Sidebar Settings role mutation endpoint works for every top-level and sub-menu key to prevent silent menu-configuration drift.

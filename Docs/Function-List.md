@@ -27,6 +27,14 @@
 |---|---|---|
 | `SidebarMenuIntegrationTests.SetRoles_AllSeededMenus_AreAssignable()` | Verifies every seeded sidebar menu key accepts role-assignment updates through Sidebar Settings (no broken menu assignment actions). | `tests/Tabsan.EduSphere.IntegrationTests/SidebarMenuIntegrationTests.cs` |
 
+### Report Center Sidebar Visibility and Link Guardrails (Stage 32.4)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `DatabaseSeeder.SeedSidebarMenusAsync(...)` (`EnsureRoleAccess` helper) | Makes sidebar role seeding self-healing by updating existing role-access values, ensuring corrected visibility rules are enforced on already-seeded databases. | `src/Tabsan.EduSphere.Infrastructure/Persistence/DatabaseSeeder.cs` |
+| `SidebarMenuIntegrationTests.GetVisible_Student_ReturnsStudentMenusOnly()` | Verifies student sidebar includes `report_center` and updated menu-count contract after visibility correction. | `tests/Tabsan.EduSphere.IntegrationTests/SidebarMenuIntegrationTests.cs` |
+| `SidebarMenuIntegrationTests.ReportCenter_VisibleRoles_HaveMenuAndReachableCatalog(role)` | Verifies Admin/Faculty/Student can see `report_center` and can successfully load report catalog data via API (working link behavior by role). | `tests/Tabsan.EduSphere.IntegrationTests/SidebarMenuIntegrationTests.cs` |
+
 ## Final-Touches Phase 31 - Quality, Security, and Go-Live Gates (2026-05-10)
 
 ### Load and Reliability Certification (Stage 31.3)

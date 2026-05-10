@@ -39,6 +39,14 @@ public class SidebarMenuIntegrationTests
                ?? new List<MenuDto>();
     }
 
+    private static async Task<ReportCatalogDto> GetReportCatalogAsync(HttpClient client)
+    {
+        var response = await client.GetAsync("api/v1/reports");
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<ReportCatalogDto>()
+               ?? new ReportCatalogDto();
+    }
+
     /// <summary>Flattens top-level + sub-menu keys into a single set.</summary>
     private static HashSet<string> FlatKeys(IEnumerable<MenuDto> menus)
     {
@@ -170,7 +178,7 @@ public class SidebarMenuIntegrationTests
         Assert.Equal(16, keys.Count);
     }
 
-    /// <summary>Student should see all menus with IsAllowed=true for Student role (12 total).</summary>
+    /// <summary>Student should see all menus with IsAllowed=true for Student role (13 total).</summary>
     [Fact]
     public async Task GetVisible_Student_ReturnsStudentMenusOnly()
     {
@@ -189,11 +197,28 @@ public class SidebarMenuIntegrationTests
         Assert.Contains("fyp",               keys);
         Assert.Contains("ai_chat",           keys);
         Assert.Contains("payments",          keys);
+        Assert.Contains("report_center",     keys);
         Assert.Contains("system_settings",  keys); // parent carrier for theme_settings
         Assert.Contains("theme_settings",    keys);
         Assert.DoesNotContain("timetable_admin",  keys);
         Assert.DoesNotContain("module_settings",  keys); // SuperAdmin only
-        Assert.Equal(12, keys.Count);
+        Assert.Equal(13, keys.Count);
+    }
+
+    [Theory]
+    [InlineData("Admin")]
+    [InlineData("Faculty")]
+    [InlineData("Student")]
+    public async Task ReportCenter_VisibleRoles_HaveMenuAndReachableCatalog(string role)
+    {
+        // Final-Touches Phase 32 Stage 32.4 — keep report-center sidebar visibility and report-link behavior aligned by role.
+        using var client = CreateClient(role);
+
+        var sidebarKeys = FlatKeys(await GetVisibleAsync(client));
+        Assert.Contains("report_center", sidebarKeys);
+
+        var catalog = await GetReportCatalogAsync(client);
+        Assert.NotEmpty(catalog.Reports);
     }
 
     // ── Status toggle ─────────────────────────────────────────────────────────
@@ -357,5 +382,17 @@ public class SidebarMenuIntegrationTests
     {
         public string RoleName  { get; set; } = string.Empty;
         public bool   IsAllowed { get; set; }
+    }
+
+    private sealed class ReportCatalogDto
+    {
+        public List<ReportCatalogItemDto> Reports { get; set; } = new();
+    }
+
+    private sealed class ReportCatalogItemDto
+    {
+        public Guid   Id   { get; set; }
+        public string Key  { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
     }
 }

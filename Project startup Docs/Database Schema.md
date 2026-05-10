@@ -35,6 +35,12 @@
 - Stage 31.3 delivered performance-band load test and recovery-smoke certification scripts plus runbook updates.
 - No database schema change and no EF migration were required.
 
+## 2026-05-10 Update — Phase 32 Stage 32.4
+
+- Stage 32.4 delivered report-center menu-visibility/link guardrail integration tests and sidebar role-seeding self-heal logic.
+- Changes were limited to seed behavior and integration coverage.
+- No database schema change and no EF migration were required.
+
 ## 2026-05-10 Update — Phase 31 Complete
 
 - Phase 31 completed as release hardening (regression matrix, security hardening, and performance/reliability certification).

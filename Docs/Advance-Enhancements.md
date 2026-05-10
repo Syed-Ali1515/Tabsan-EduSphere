@@ -27,6 +27,7 @@ Execution status update (2026-05-10):
 - Phase 32 Stage 32.1 is completed.
 - Phase 32 Stage 32.2 is completed.
 - Phase 32 Stage 32.3 is completed.
+- Phase 32 Stage 32.4 is completed.
 
 ---
 
@@ -158,6 +159,15 @@ Implementation summary:
 
 Validation summary:
 - `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~SidebarMenuIntegrationTests"` passed (**9/9**).
+
+### Phase 32 Stage 32.4 - Report Center Menu Visibility and Link Guardrails (Completed)
+Implementation summary:
+- Corrected sidebar visibility contract so `report_center` remains available to Admin, Faculty, and Student roles.
+- Updated sidebar role seeding helper logic to be self-healing for existing records (updates existing `IsAllowed` values, not only missing rows).
+- Added focused integration guardrail coverage to ensure report-center menu visibility by role and report-catalog API reachability remain aligned.
+
+Validation summary:
+- `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~SidebarMenuIntegrationTests"` passed (**12/12**).
 
 ---
 

@@ -8,6 +8,15 @@
 
 ## Execution Updates
 
+### 2026-05-10 — Phase 32 Stage 32.4
+- Added report-center visibility/link guardrails in sidebar integration tests:
+  - `report_center` is visible for Admin, Faculty, and Student,
+  - report-center-visible roles can successfully load report catalog data,
+  - student sidebar visibility baseline now includes `report_center`.
+- Hardened sidebar seed role-access logic to self-heal existing role rows by applying expected allow/deny values during seeding.
+- Synced SQL minimal seed role-access matrix so student includes `report_center`.
+- Validation: targeted integration tests passed `12/12`.
+
 ### 2026-05-10 — Phase 32 Stage 32.3
 - Added `SidebarMenuIntegrationTests.SetRoles_AllSeededMenus_AreAssignable` to preserve cross-phase Sidebar Settings guardrails:
   - every seeded top-level and sub-menu key accepts role-assignment updates,

@@ -181,9 +181,25 @@ public static class DatabaseSeeder
 
         void EnsureRoleAccess(Guid itemId, string role, bool isAllowed)
         {
-            if (!db.SidebarMenuRoleAccesses.Local.Any(r => r.SidebarMenuItemId == itemId && r.RoleName == role)
-             && !db.SidebarMenuRoleAccesses.Any(r => r.SidebarMenuItemId == itemId && r.RoleName == role))
-                db.SidebarMenuRoleAccesses.Add(new SidebarMenuRoleAccess(itemId, role, isAllowed));
+            var local = db.SidebarMenuRoleAccesses.Local
+                .FirstOrDefault(r => r.SidebarMenuItemId == itemId && r.RoleName == role);
+            if (local is not null)
+            {
+                if (local.IsAllowed != isAllowed)
+                    local.SetAllowed(isAllowed);
+                return;
+            }
+
+            var existing = db.SidebarMenuRoleAccesses
+                .FirstOrDefault(r => r.SidebarMenuItemId == itemId && r.RoleName == role);
+            if (existing is not null)
+            {
+                if (existing.IsAllowed != isAllowed)
+                    existing.SetAllowed(isAllowed);
+                return;
+            }
+
+            db.SidebarMenuRoleAccesses.Add(new SidebarMenuRoleAccess(itemId, role, isAllowed));
         }
 
         // ── Top-level menus ──────────────────────────────────────────────────
@@ -353,10 +369,10 @@ public static class DatabaseSeeder
         EnsureRoleAccess(enrollments.Id, "Faculty", isAllowed: true);
         EnsureRoleAccess(enrollments.Id, "Student", isAllowed: false);
 
-        // Report Center: Admin + Faculty
+        // Report Center: Admin + Faculty + Student
         EnsureRoleAccess(reportCenter.Id, "Admin",   isAllowed: true);
         EnsureRoleAccess(reportCenter.Id, "Faculty", isAllowed: true);
-        EnsureRoleAccess(reportCenter.Id, "Student", isAllowed: false);
+        EnsureRoleAccess(reportCenter.Id, "Student", isAllowed: true);
 
         await db.SaveChangesAsync();
     }
