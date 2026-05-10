@@ -1,8 +1,8 @@
 # Load Testing Suite — Tabsan-EduSphere
 
-Complete load testing framework using K6 to simulate high-traffic scenarios (up to 1 million concurrent users).
+Current load scripts are aligned to live API routes under `api/v1/*` and local development URL `http://localhost:5181`.
 
-**Performance Baseline Target**: p95 < 500ms, error rate < 1%, RPS > 1000 under load
+**Current Focus**: auth and core authenticated flows (auth, dashboard, sidebar, notification inbox)
 
 ---
 
@@ -10,11 +10,10 @@ Complete load testing framework using K6 to simulate high-traffic scenarios (up 
 
 | File | Purpose |
 |------|---------|
-| `login-load-test.js` | Main K6 script - Login endpoint load testing |
-| `config-presets.js` | Pre-configured test scenarios (light/medium/high/extreme) |
+| `k6-auth-current.js` | Auth-focused load test for `/api/v1/auth/login` + `/api/v1/auth/security-profile` |
+| `k6-core-current.js` | Core authenticated flow test for dashboard, sidebar, and notifications |
 | `run-load-test.ps1` | PowerShell runner (recommended) |
-| `run-load-test.bat` | Windows batch runner |
-| `LOAD_TESTING_GUIDE.md` | Complete documentation & optimization guide |
+| `run-load-test.bat` | Windows batch wrapper |
 | `README.md` | This file |
 
 ---
@@ -40,30 +39,27 @@ sudo apt-get install k6
 ### 2. Run Test (Recommended - PowerShell)
 
 ```powershell
-# Light load (10 VUs, 4 minutes)
-.\run-load-test.ps1 -Scenario light -Environment local
+# Auth suite (smoke)
+.\run-load-test.ps1 -Suite auth -Profile smoke -Environment local
 
-# Medium load (1000 VUs, 14 minutes)
-.\run-load-test.ps1 -Scenario medium -Environment staging
+# Auth suite (load)
+.\run-load-test.ps1 -Suite auth -Profile load -Environment local -OutputJson
 
-# High load (10k VUs, 27 minutes)
-.\run-load-test.ps1 -Scenario high -Environment staging
-
-# Extreme load (1M VUs, 60+ minutes)
-.\run-load-test.ps1 -Scenario extreme -Environment production
+# Core suite with credentials (dashboard/sidebar/notification)
+.\run-load-test.ps1 -Suite core -Profile load -Environment local -TestUsername "admin" -TestPassword "Admin@123"
 ```
 
 ### 3. Direct K6 Execution
 
 ```bash
-# Simple test
-k6 run login-load-test.js
+# Auth script direct
+k6 run -e BASE_URL=http://localhost:5181 k6-auth-current.js
 
-# With custom target URL
-k6 run -e TARGET_URL=http://api.example.com login-load-test.js
+# Core script direct
+k6 run -e BASE_URL=http://localhost:5181 -e TEST_USERNAME=admin -e TEST_PASSWORD=Admin@123 k6-core-current.js
 
-# With JSON output for analysis
-k6 run --out json=results.json login-load-test.js
+# JSON output
+k6 run --out json=results.json -e BASE_URL=http://localhost:5181 k6-auth-current.js
 ```
 
 ---
