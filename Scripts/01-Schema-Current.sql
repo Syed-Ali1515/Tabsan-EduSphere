@@ -1,35 +1,4 @@
-﻿-- ============================================================
--- Tabsan EduSphere — Script 0: Full Schema
--- ============================================================
--- PURPOSE  : Creates the TabsanEduSphere database (if absent)
---            and applies all EF Core migrations idempotently:
---            tables, indexes, views, and stored procedures.
---
--- RUN THIS FIRST, then run 1-MinimalSeed.sql or 2-FullDummyData.sql.
---
--- SAFE TO RE-RUN — every statement is guarded by migration history
--- checks, so no data is lost and no errors are thrown on repeat runs.
--- ============================================================
-
--- ── 1. Create database if missing ────────────────────────────
-IF DB_ID(N'TabsanEduSphere') IS NULL
-BEGIN
-    PRINT 'Creating database TabsanEduSphere...';
-    CREATE DATABASE [TabsanEduSphere];
-    PRINT 'Database created.';
-END
-GO
-
-USE [TabsanEduSphere];
-GO
-
-SET ANSI_NULLS ON;
-SET QUOTED_IDENTIFIER ON;
-GO
-
--- ── 2. EF Core migration history + all DDL ───────────────────
-
-IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
+﻿IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
 BEGIN
     CREATE TABLE [__EFMigrationsHistory] (
         [MigrationId] nvarchar(150) NOT NULL,
@@ -2387,68 +2356,82 @@ GO
 COMMIT;
 GO
 
--- ── Phase10StoredProcedures ──────────────────────────────────
--- CREATE OR ALTER PROCEDURE must be the first statement in its batch (after GO).
--- The migration-history guard below keeps the INSERT idempotent.
--- The procedures themselves are idempotent via CREATE OR ALTER.
+BEGIN TRANSACTION;
+GO
 
-CREATE OR ALTER PROCEDURE [dbo].[sp_get_attendance_below_threshold]
-    @ThresholdPercent DECIMAL(5,2) = 75.0,
-    @CourseOfferingId UNIQUEIDENTIFIER = NULL
-AS
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260430142338_Phase10StoredProcedures'
+)
 BEGIN
-    SET NOCOUNT ON;
 
-    SELECT
-        ar.StudentProfileId,
-        ar.CourseOfferingId,
-        COUNT(*) AS TotalSessions,
-        SUM(CASE WHEN ar.Status = 'Present' THEN 1 ELSE 0 END) AS AttendedSessions,
-        CAST(
+    CREATE OR ALTER PROCEDURE sp_get_attendance_below_threshold
+        @ThresholdPercent DECIMAL(5,2) = 75.0,
+        @CourseOfferingId UNIQUEIDENTIFIER = NULL
+    AS
+    BEGIN
+        SET NOCOUNT ON;
+
+        SELECT
+            ar.StudentProfileId,
+            ar.CourseOfferingId,
+            COUNT(*) AS TotalSessions,
+            SUM(CASE WHEN ar.Status = 'Present' THEN 1 ELSE 0 END) AS AttendedSessions,
+            CAST(
+                CASE WHEN COUNT(*) = 0 THEN 0.0
+                     ELSE (SUM(CASE WHEN ar.Status = 'Present' THEN 1.0 ELSE 0.0 END) / COUNT(*)) * 100.0
+                END AS DECIMAL(5,2)
+            ) AS AttendancePercentage
+        FROM attendance_records ar
+        WHERE (@CourseOfferingId IS NULL OR ar.CourseOfferingId = @CourseOfferingId)
+        GROUP BY ar.StudentProfileId, ar.CourseOfferingId
+        HAVING
             CASE WHEN COUNT(*) = 0 THEN 0.0
                  ELSE (SUM(CASE WHEN ar.Status = 'Present' THEN 1.0 ELSE 0.0 END) / COUNT(*)) * 100.0
-            END AS DECIMAL(5,2)
-        ) AS AttendancePercentage
-    FROM attendance_records ar
-    WHERE (@CourseOfferingId IS NULL OR ar.CourseOfferingId = @CourseOfferingId)
-    GROUP BY ar.StudentProfileId, ar.CourseOfferingId
-    HAVING
-        CASE WHEN COUNT(*) = 0 THEN 0.0
-             ELSE (SUM(CASE WHEN ar.Status = 'Present' THEN 1.0 ELSE 0.0 END) / COUNT(*)) * 100.0
-        END < @ThresholdPercent;
+            END < @ThresholdPercent;
+    END;
+
 END;
 GO
 
-CREATE OR ALTER PROCEDURE [dbo].[sp_recalculate_student_cgpa]
-    @StudentProfileId UNIQUEIDENTIFIER
-AS
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260430142338_Phase10StoredProcedures'
+)
 BEGIN
-    SET NOCOUNT ON;
 
-    DECLARE @TotalWeightedMarks DECIMAL(18,4) = 0;
-    DECLARE @TotalMaxMarks DECIMAL(18,4) = 0;
-    DECLARE @NewCgpa DECIMAL(4,2) = 0;
-
-    SELECT
-        @TotalWeightedMarks = SUM(CAST(r.MarksObtained AS DECIMAL(18,4))),
-        @TotalMaxMarks = SUM(CAST(r.MaxMarks AS DECIMAL(18,4)))
-    FROM results r
-    WHERE r.StudentProfileId = @StudentProfileId
-      AND r.IsPublished = 1
-      AND r.MaxMarks > 0;
-
-    IF @TotalMaxMarks > 0
+    CREATE OR ALTER PROCEDURE sp_recalculate_student_cgpa
+        @StudentProfileId UNIQUEIDENTIFIER
+    AS
     BEGIN
-        -- Convert percentage to 4.0 GPA scale (proportional mapping: 100% -> 4.0)
-        SET @NewCgpa = CAST((@TotalWeightedMarks / @TotalMaxMarks) * 4.0 AS DECIMAL(4,2));
-        IF @NewCgpa > 4.0 SET @NewCgpa = 4.0;
-    END
+        SET NOCOUNT ON;
 
-    UPDATE student_profiles
-    SET Cgpa = @NewCgpa
-    WHERE Id = @StudentProfileId;
+        DECLARE @TotalWeightedMarks DECIMAL(18,4) = 0;
+        DECLARE @TotalMaxMarks DECIMAL(18,4) = 0;
+        DECLARE @NewCgpa DECIMAL(4,2) = 0;
 
-    SELECT @NewCgpa AS NewCgpa;
+        SELECT
+            @TotalWeightedMarks = SUM(CAST(r.MarksObtained AS DECIMAL(18,4))),
+            @TotalMaxMarks = SUM(CAST(r.MaxMarks AS DECIMAL(18,4)))
+        FROM results r
+        WHERE r.StudentProfileId = @StudentProfileId
+          AND r.IsPublished = 1
+          AND r.MaxMarks > 0;
+
+        IF @TotalMaxMarks > 0
+        BEGIN
+            -- Convert percentage to 4.0 GPA scale (proportional mapping: 100% -> 4.0)
+            SET @NewCgpa = CAST((@TotalWeightedMarks / @TotalMaxMarks) * 4.0 AS DECIMAL(4,2));
+            IF @NewCgpa > 4.0 SET @NewCgpa = 4.0;
+        END
+
+        UPDATE student_profiles
+        SET Cgpa = @NewCgpa
+        WHERE Id = @StudentProfileId;
+
+        SELECT @NewCgpa AS NewCgpa;
+    END;
+
 END;
 GO
 
@@ -2462,72 +2445,89 @@ BEGIN
 END;
 GO
 
--- ── Phase10SqlViews ──────────────────────────────────────────
--- CREATE VIEW must be the first statement in its batch (after GO).
--- DROP VIEW IF EXISTS in the preceding batch makes this idempotent.
-
-DROP VIEW IF EXISTS [dbo].[vw_student_attendance_summary];
+COMMIT;
 GO
 
-CREATE VIEW [dbo].[vw_student_attendance_summary] AS
-SELECT
-    ar.StudentProfileId,
-    ar.CourseOfferingId,
-    COUNT(*) AS TotalSessions,
-    SUM(CASE WHEN ar.Status = 'Present' THEN 1 ELSE 0 END) AS AttendedSessions,
-    CAST(
-        CASE WHEN COUNT(*) = 0 THEN 0.0
-             ELSE (SUM(CASE WHEN ar.Status = 'Present' THEN 1.0 ELSE 0.0 END) / COUNT(*)) * 100.0
-        END AS decimal(5,2)
-    ) AS AttendancePercentage
-FROM attendance_records ar
-GROUP BY ar.StudentProfileId, ar.CourseOfferingId;
+BEGIN TRANSACTION;
 GO
 
-DROP VIEW IF EXISTS [dbo].[vw_student_results_summary];
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260430143000_Phase10SqlViews'
+)
+BEGIN
+
+    CREATE VIEW vw_student_attendance_summary AS
+    SELECT
+        ar.StudentProfileId,
+        ar.CourseOfferingId,
+        COUNT(*) AS TotalSessions,
+        SUM(CASE WHEN ar.Status = 'Present' THEN 1 ELSE 0 END) AS AttendedSessions,
+        CAST(
+            CASE WHEN COUNT(*) = 0 THEN 0.0
+                 ELSE (SUM(CASE WHEN ar.Status = 'Present' THEN 1.0 ELSE 0.0 END) / COUNT(*)) * 100.0
+            END AS decimal(5,2)
+        ) AS AttendancePercentage
+    FROM attendance_records ar
+    GROUP BY ar.StudentProfileId, ar.CourseOfferingId;
+
+END;
 GO
 
-CREATE VIEW [dbo].[vw_student_results_summary] AS
-SELECT
-    r.StudentProfileId,
-    r.CourseOfferingId,
-    r.ResultType,
-    r.MarksObtained,
-    r.MaxMarks,
-    CAST(
-        CASE WHEN r.MaxMarks = 0 THEN 0.0
-             ELSE (CAST(r.MarksObtained AS decimal(10,2)) / r.MaxMarks) * 100.0
-        END AS decimal(5,2)
-    ) AS Percentage,
-    r.PublishedAt,
-    co.CourseId,
-    c.Code AS CourseCode,
-    c.Title AS CourseTitle,
-    co.SemesterId
-FROM results r
-INNER JOIN course_offerings co ON co.Id = r.CourseOfferingId
-INNER JOIN courses c ON c.Id = co.CourseId
-WHERE r.IsPublished = 1;
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260430143000_Phase10SqlViews'
+)
+BEGIN
+
+    CREATE VIEW vw_student_results_summary AS
+    SELECT
+        r.StudentProfileId,
+        r.CourseOfferingId,
+        r.ResultType,
+        r.MarksObtained,
+        r.MaxMarks,
+        CAST(
+            CASE WHEN r.MaxMarks = 0 THEN 0.0
+                 ELSE (CAST(r.MarksObtained AS decimal(10,2)) / r.MaxMarks) * 100.0
+            END AS decimal(5,2)
+        ) AS Percentage,
+        r.PublishedAt,
+        co.CourseId,
+        c.Code AS CourseCode,
+        c.Title AS CourseTitle,
+        co.SemesterId
+    FROM results r
+    INNER JOIN course_offerings co ON co.Id = r.CourseOfferingId
+    INNER JOIN courses c ON c.Id = co.CourseId
+    WHERE r.IsPublished = 1;
+
+END;
 GO
 
-DROP VIEW IF EXISTS [dbo].[vw_course_enrollment_summary];
-GO
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260430143000_Phase10SqlViews'
+)
+BEGIN
 
-CREATE VIEW [dbo].[vw_course_enrollment_summary] AS
-SELECT
-    co.Id AS CourseOfferingId,
-    co.CourseId,
-    c.Code AS CourseCode,
-    c.Title AS CourseTitle,
-    co.SemesterId,
-    co.MaxEnrollment,
-    COUNT(e.Id) AS EnrolledCount,
-    co.MaxEnrollment - COUNT(e.Id) AS AvailableSeats
-FROM course_offerings co
-INNER JOIN courses c ON c.Id = co.CourseId
-LEFT JOIN enrollments e ON e.CourseOfferingId = co.Id AND e.Status = 'Active'
-WHERE co.IsOpen = 1
-GROUP BY co.Id, co.CourseId, c.Code, c.Title, co.SemesterId, co.MaxEnrollment;
+    CREATE VIEW vw_course_enrollment_summary AS
+    SELECT
+        co.Id AS CourseOfferingId,
+        co.CourseId,
+        c.Code AS CourseCode,
+        c.Title AS CourseTitle,
+        co.SemesterId,
+        co.MaxEnrollment,
+        COUNT(e.Id) AS EnrolledCount,
+        co.MaxEnrollment - COUNT(e.Id) AS AvailableSeats
+    FROM course_offerings co
+    INNER JOIN courses c ON c.Id = co.CourseId
+    LEFT JOIN enrollments e ON e.CourseOfferingId = co.Id AND e.Status = 'Active'
+    WHERE co.IsOpen = 1
+    GROUP BY co.Id, co.CourseId, c.Code, c.Title, co.SemesterId, co.MaxEnrollment;
+
+END;
 GO
 
 IF NOT EXISTS (
@@ -2540,9 +2540,9 @@ BEGIN
 END;
 GO
 
--- ============================================================
--- Migration: 20260502134611_Phase11ResultCalculation
--- ============================================================
+COMMIT;
+GO
+
 BEGIN TRANSACTION;
 GO
 
@@ -2551,20 +2551,7 @@ IF NOT EXISTS (
     WHERE [MigrationId] = N'20260502134611_Phase11ResultCalculation'
 )
 BEGIN
-    IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'result_component_rules')
-    BEGIN
-        CREATE TABLE [result_component_rules] (
-            [Id] uniqueidentifier NOT NULL,
-            [Name] nvarchar(200) NOT NULL,
-            [Weightage] decimal(5,2) NOT NULL,
-            [DisplayOrder] int NOT NULL,
-            [IsActive] bit NOT NULL,
-            [CreatedAt] datetime2 NOT NULL,
-            [UpdatedAt] datetime2 NULL,
-            [RowVersion] rowversion NULL,
-            CONSTRAINT [PK_result_component_rules] PRIMARY KEY ([Id])
-        );
-    END;
+    ALTER TABLE [student_profiles] ADD [CurrentSemesterGpa] decimal(4,2) NOT NULL DEFAULT 0.0;
 END;
 GO
 
@@ -2573,19 +2560,79 @@ IF NOT EXISTS (
     WHERE [MigrationId] = N'20260502134611_Phase11ResultCalculation'
 )
 BEGIN
-    IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'gpa_scale_rules')
-    BEGIN
-        CREATE TABLE [gpa_scale_rules] (
-            [Id] uniqueidentifier NOT NULL,
-            [GradePoint] decimal(4,2) NOT NULL,
-            [MinimumScore] decimal(5,2) NOT NULL,
-            [DisplayOrder] int NOT NULL,
-            [CreatedAt] datetime2 NOT NULL,
-            [UpdatedAt] datetime2 NULL,
-            [RowVersion] rowversion NULL,
-            CONSTRAINT [PK_gpa_scale_rules] PRIMARY KEY ([Id])
-        );
-    END;
+    DROP INDEX [IX_results_student_offering_type] ON [results];
+    DECLARE @var3 sysname;
+    SELECT @var3 = [d].[name]
+    FROM [sys].[default_constraints] [d]
+    INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+    WHERE ([d].[parent_object_id] = OBJECT_ID(N'[results]') AND [c].[name] = N'ResultType');
+    IF @var3 IS NOT NULL EXEC(N'ALTER TABLE [results] DROP CONSTRAINT [' + @var3 + '];');
+    ALTER TABLE [results] ALTER COLUMN [ResultType] nvarchar(100) NOT NULL;
+    CREATE UNIQUE INDEX [IX_results_student_offering_type] ON [results] ([StudentProfileId], [CourseOfferingId], [ResultType]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260502134611_Phase11ResultCalculation'
+)
+BEGIN
+    ALTER TABLE [results] ADD [GradePoint] decimal(4,2) NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260502134611_Phase11ResultCalculation'
+)
+BEGIN
+    CREATE TABLE [gpa_scale_rules] (
+        [Id] uniqueidentifier NOT NULL,
+        [GradePoint] decimal(4,2) NOT NULL,
+        [MinimumScore] decimal(5,2) NOT NULL,
+        [DisplayOrder] int NOT NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NULL,
+        [RowVersion] rowversion NULL,
+        CONSTRAINT [PK_gpa_scale_rules] PRIMARY KEY ([Id])
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260502134611_Phase11ResultCalculation'
+)
+BEGIN
+    CREATE TABLE [result_component_rules] (
+        [Id] uniqueidentifier NOT NULL,
+        [Name] nvarchar(100) NOT NULL,
+        [Weightage] decimal(5,2) NOT NULL,
+        [DisplayOrder] int NOT NULL,
+        [IsActive] bit NOT NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NULL,
+        [RowVersion] rowversion NULL,
+        CONSTRAINT [PK_result_component_rules] PRIMARY KEY ([Id])
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260502134611_Phase11ResultCalculation'
+)
+BEGIN
+    CREATE UNIQUE INDEX [IX_gpa_scale_rules_minimum_score] ON [gpa_scale_rules] ([MinimumScore]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260502134611_Phase11ResultCalculation'
+)
+BEGIN
+    CREATE UNIQUE INDEX [IX_result_component_rules_name] ON [result_component_rules] ([Name]);
 END;
 GO
 
@@ -2602,9 +2649,6 @@ GO
 COMMIT;
 GO
 
--- ============================================================
--- Migration: 20260503210356_Phase1DashboardBranding
--- ============================================================
 BEGIN TRANSACTION;
 GO
 
@@ -2613,19 +2657,24 @@ IF NOT EXISTS (
     WHERE [MigrationId] = N'20260503210356_Phase1DashboardBranding'
 )
 BEGIN
-    IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'portal_settings')
-    BEGIN
-        CREATE TABLE [portal_settings] (
-            [Id] uniqueidentifier NOT NULL,
-            [Key] nvarchar(100) NOT NULL,
-            [Value] nvarchar(1000) NOT NULL,
-            [CreatedAt] datetime2 NOT NULL,
-            [UpdatedAt] datetime2 NULL,
-            [RowVersion] rowversion NULL,
-            CONSTRAINT [PK_portal_settings] PRIMARY KEY ([Id])
-        );
-        CREATE UNIQUE INDEX [IX_portal_settings_key] ON [portal_settings] ([Key]);
-    END;
+    CREATE TABLE [portal_settings] (
+        [Id] uniqueidentifier NOT NULL,
+        [Key] nvarchar(100) NOT NULL,
+        [Value] nvarchar(1000) NOT NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NULL,
+        [RowVersion] rowversion NULL,
+        CONSTRAINT [PK_portal_settings] PRIMARY KEY ([Id])
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260503210356_Phase1DashboardBranding'
+)
+BEGIN
+    CREATE UNIQUE INDEX [IX_portal_settings_key] ON [portal_settings] ([Key]);
 END;
 GO
 
@@ -2642,9 +2691,6 @@ GO
 COMMIT;
 GO
 
--- ============================================================
--- Migration: 20260505_Phase2LicenseConcurrency
--- ============================================================
 BEGIN TRANSACTION;
 GO
 
@@ -2653,14 +2699,16 @@ IF NOT EXISTS (
     WHERE [MigrationId] = N'20260505_Phase2LicenseConcurrency'
 )
 BEGIN
-    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('license_state') AND name = 'ActivatedDomain')
-    BEGIN
-        ALTER TABLE [license_state] ADD [ActivatedDomain] nvarchar(253) NULL;
-    END;
-    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('license_state') AND name = 'MaxUsers')
-    BEGIN
-        ALTER TABLE [license_state] ADD [MaxUsers] int NOT NULL DEFAULT 0;
-    END;
+    ALTER TABLE [license_state] ADD [ActivatedDomain] nvarchar(253) NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260505_Phase2LicenseConcurrency'
+)
+BEGIN
+    ALTER TABLE [license_state] ADD [MaxUsers] int NOT NULL DEFAULT 0;
 END;
 GO
 
@@ -2677,9 +2725,6 @@ GO
 COMMIT;
 GO
 
--- ============================================================
--- Migration: 20260506_Phase4UserImport
--- ============================================================
 BEGIN TRANSACTION;
 GO
 
@@ -2688,10 +2733,7 @@ IF NOT EXISTS (
     WHERE [MigrationId] = N'20260506_Phase4UserImport'
 )
 BEGIN
-    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('users') AND name = 'MustChangePassword')
-    BEGIN
-        ALTER TABLE [users] ADD [MustChangePassword] bit NOT NULL DEFAULT 0;
-    END;
+    ALTER TABLE [users] ADD [MustChangePassword] bit NOT NULL DEFAULT CAST(0 AS bit);
 END;
 GO
 
@@ -2708,9 +2750,6 @@ GO
 COMMIT;
 GO
 
--- ============================================================
--- Migration: 20260506035554_Phase4FypCompletionApprovalFlow
--- ============================================================
 BEGIN TRANSACTION;
 GO
 
@@ -2719,13 +2758,62 @@ IF NOT EXISTS (
     WHERE [MigrationId] = N'20260506035554_Phase4FypCompletionApprovalFlow'
 )
 BEGIN
-    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('fyp_projects') AND name = 'IsCompletionRequested')
+
+    IF COL_LENGTH('license_state', 'ActivatedDomain') IS NULL
     BEGIN
-        ALTER TABLE [fyp_projects] ADD [IsCompletionRequested] bit NOT NULL DEFAULT 0;
-        ALTER TABLE [fyp_projects] ADD [CompletionRequestedAt] datetime2 NULL;
-        ALTER TABLE [fyp_projects] ADD [CompletionRequestedByStudentProfileId] uniqueidentifier NULL;
-        ALTER TABLE [fyp_projects] ADD [CompletionApprovedByUserIdsCsv] nvarchar(max) NULL;
-    END;
+        ALTER TABLE [license_state] ADD [ActivatedDomain] nvarchar(253) NULL;
+    END
+
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260506035554_Phase4FypCompletionApprovalFlow'
+)
+BEGIN
+
+    IF COL_LENGTH('license_state', 'MaxUsers') IS NULL
+    BEGIN
+        ALTER TABLE [license_state] ADD [MaxUsers] int NOT NULL CONSTRAINT [DF_license_state_MaxUsers] DEFAULT (0);
+    END
+
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260506035554_Phase4FypCompletionApprovalFlow'
+)
+BEGIN
+    ALTER TABLE [fyp_projects] ADD [CompletionApprovedByUserIdsCsv] nvarchar(max) NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260506035554_Phase4FypCompletionApprovalFlow'
+)
+BEGIN
+    ALTER TABLE [fyp_projects] ADD [CompletionRequestedAt] datetime2 NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260506035554_Phase4FypCompletionApprovalFlow'
+)
+BEGIN
+    ALTER TABLE [fyp_projects] ADD [CompletionRequestedByStudentProfileId] uniqueidentifier NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260506035554_Phase4FypCompletionApprovalFlow'
+)
+BEGIN
+    ALTER TABLE [fyp_projects] ADD [IsCompletionRequested] bit NOT NULL DEFAULT CAST(0 AS bit);
 END;
 GO
 
@@ -2742,9 +2830,6 @@ GO
 COMMIT;
 GO
 
--- ============================================================
--- Migration: 20260506044806_20260506_Phase6AdminDepartmentAssignments
--- ============================================================
 BEGIN TRANSACTION;
 GO
 
@@ -2753,24 +2838,18 @@ IF NOT EXISTS (
     WHERE [MigrationId] = N'20260506044806_20260506_Phase6AdminDepartmentAssignments'
 )
 BEGIN
-    IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'admin_department_assignments')
-    BEGIN
-        CREATE TABLE [admin_department_assignments] (
-            [Id] uniqueidentifier NOT NULL,
-            [AdminUserId] uniqueidentifier NOT NULL,
-            [DepartmentId] uniqueidentifier NOT NULL,
-            [AssignedAt] datetime2 NOT NULL,
-            [RemovedAt] datetime2 NULL,
-            [CreatedAt] datetime2 NOT NULL,
-            [UpdatedAt] datetime2 NULL,
-            [RowVersion] rowversion NULL,
-            CONSTRAINT [PK_admin_department_assignments] PRIMARY KEY ([Id]),
-            CONSTRAINT [FK_admin_department_assignments_departments_DepartmentId]
-                FOREIGN KEY ([DepartmentId]) REFERENCES [departments] ([Id]) ON DELETE NO ACTION
-        );
-        CREATE INDEX [IX_admin_dept_assignments_admin] ON [admin_department_assignments] ([AdminUserId]);
-        CREATE INDEX [IX_admin_dept_assignments_dept] ON [admin_department_assignments] ([DepartmentId]);
-    END;
+    CREATE TABLE [admin_department_assignments] (
+        [Id] uniqueidentifier NOT NULL,
+        [AdminUserId] uniqueidentifier NOT NULL,
+        [DepartmentId] uniqueidentifier NOT NULL,
+        [AssignedAt] datetime2 NOT NULL,
+        [RemovedAt] datetime2 NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NULL,
+        [RowVersion] rowversion NULL,
+        CONSTRAINT [PK_admin_department_assignments] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_admin_department_assignments_departments_DepartmentId] FOREIGN KEY ([DepartmentId]) REFERENCES [departments] ([Id]) ON DELETE NO ACTION
+    );
 END;
 GO
 
@@ -2779,21 +2858,16 @@ IF NOT EXISTS (
     WHERE [MigrationId] = N'20260506044806_20260506_Phase6AdminDepartmentAssignments'
 )
 BEGIN
-    IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'module_role_assignments')
-    BEGIN
-        CREATE TABLE [module_role_assignments] (
-            [Id] uniqueidentifier NOT NULL,
-            [ModuleId] uniqueidentifier NOT NULL,
-            [RoleName] nvarchar(50) NOT NULL,
-            [CreatedAt] datetime2 NOT NULL,
-            [UpdatedAt] datetime2 NULL,
-            [RowVersion] rowversion NULL,
-            CONSTRAINT [PK_module_role_assignments] PRIMARY KEY ([Id]),
-            CONSTRAINT [FK_module_role_assignments_modules_ModuleId]
-                FOREIGN KEY ([ModuleId]) REFERENCES [modules] ([Id]) ON DELETE CASCADE
-        );
-        CREATE INDEX [IX_module_role_assignments_module] ON [module_role_assignments] ([ModuleId]);
-    END;
+    CREATE INDEX [IX_admin_department_assignments_DepartmentId] ON [admin_department_assignments] ([DepartmentId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260506044806_20260506_Phase6AdminDepartmentAssignments'
+)
+BEGIN
+    CREATE INDEX [IX_admin_dept_assignments_admin_dept] ON [admin_department_assignments] ([AdminUserId], [DepartmentId]);
 END;
 GO
 
@@ -2810,9 +2884,181 @@ GO
 COMMIT;
 GO
 
--- ============================================================
--- Migration: 20260507103000_PortalBrandingLogoValueMaxLength
--- ============================================================
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507044625_20260507_Phase12AcademicCalendar'
+)
+BEGIN
+    CREATE TABLE [academic_deadlines] (
+        [Id] uniqueidentifier NOT NULL,
+        [SemesterId] uniqueidentifier NOT NULL,
+        [Title] nvarchar(200) NOT NULL,
+        [Description] nvarchar(1000) NULL,
+        [DeadlineDate] datetime2 NOT NULL,
+        [ReminderDaysBefore] int NOT NULL,
+        [IsActive] bit NOT NULL,
+        [LastReminderSentAt] datetime2 NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NULL,
+        [RowVersion] rowversion NULL,
+        [IsDeleted] bit NOT NULL,
+        [DeletedAt] datetime2 NULL,
+        CONSTRAINT [PK_academic_deadlines] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_academic_deadlines_semesters_SemesterId] FOREIGN KEY ([SemesterId]) REFERENCES [semesters] ([Id]) ON DELETE CASCADE
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507044625_20260507_Phase12AcademicCalendar'
+)
+BEGIN
+    CREATE INDEX [IX_academic_deadlines_date_active] ON [academic_deadlines] ([DeadlineDate], [IsActive]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507044625_20260507_Phase12AcademicCalendar'
+)
+BEGIN
+    CREATE INDEX [IX_academic_deadlines_semester] ON [academic_deadlines] ([SemesterId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507044625_20260507_Phase12AcademicCalendar'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260507044625_20260507_Phase12AcademicCalendar', N'8.0.8');
+END;
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507055009_Phase14_Helpdesk'
+)
+BEGIN
+    CREATE TABLE [support_tickets] (
+        [Id] uniqueidentifier NOT NULL,
+        [SubmitterId] uniqueidentifier NOT NULL,
+        [DepartmentId] uniqueidentifier NULL,
+        [Category] int NOT NULL,
+        [Subject] nvarchar(300) NOT NULL,
+        [Body] nvarchar(4000) NOT NULL,
+        [Status] int NOT NULL,
+        [AssignedToId] uniqueidentifier NULL,
+        [ResolvedAt] datetime2 NULL,
+        [ReopenWindowDays] int NOT NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NULL,
+        [RowVersion] rowversion NULL,
+        [IsDeleted] bit NOT NULL,
+        [DeletedAt] datetime2 NULL,
+        CONSTRAINT [PK_support_tickets] PRIMARY KEY ([Id])
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507055009_Phase14_Helpdesk'
+)
+BEGIN
+    CREATE TABLE [support_ticket_messages] (
+        [Id] uniqueidentifier NOT NULL,
+        [TicketId] uniqueidentifier NOT NULL,
+        [AuthorId] uniqueidentifier NOT NULL,
+        [Body] nvarchar(4000) NOT NULL,
+        [IsInternalNote] bit NOT NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NULL,
+        [RowVersion] rowversion NULL,
+        CONSTRAINT [PK_support_ticket_messages] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_support_ticket_messages_support_tickets_TicketId] FOREIGN KEY ([TicketId]) REFERENCES [support_tickets] ([Id]) ON DELETE CASCADE
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507055009_Phase14_Helpdesk'
+)
+BEGIN
+    CREATE INDEX [IX_support_ticket_messages_author] ON [support_ticket_messages] ([AuthorId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507055009_Phase14_Helpdesk'
+)
+BEGIN
+    CREATE INDEX [IX_support_ticket_messages_ticket] ON [support_ticket_messages] ([TicketId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507055009_Phase14_Helpdesk'
+)
+BEGIN
+    CREATE INDEX [IX_support_tickets_assigned] ON [support_tickets] ([AssignedToId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507055009_Phase14_Helpdesk'
+)
+BEGIN
+    CREATE INDEX [IX_support_tickets_department] ON [support_tickets] ([DepartmentId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507055009_Phase14_Helpdesk'
+)
+BEGIN
+    CREATE INDEX [IX_support_tickets_status] ON [support_tickets] ([Status]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507055009_Phase14_Helpdesk'
+)
+BEGIN
+    CREATE INDEX [IX_support_tickets_submitter] ON [support_tickets] ([SubmitterId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507055009_Phase14_Helpdesk'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260507055009_Phase14_Helpdesk', N'8.0.8');
+END;
+GO
+
+COMMIT;
+GO
+
 BEGIN TRANSACTION;
 GO
 
@@ -2821,15 +3067,13 @@ IF NOT EXISTS (
     WHERE [MigrationId] = N'20260507103000_PortalBrandingLogoValueMaxLength'
 )
 BEGIN
-    IF EXISTS (
-        SELECT * FROM sys.columns c
-        JOIN sys.tables t ON c.object_id = t.object_id
-        WHERE t.name = 'portal_settings' AND c.name = 'Value'
-          AND c.max_length <> -1
-    )
-    BEGIN
-        ALTER TABLE [portal_settings] ALTER COLUMN [Value] nvarchar(max) NOT NULL;
-    END;
+    DECLARE @var4 sysname;
+    SELECT @var4 = [d].[name]
+    FROM [sys].[default_constraints] [d]
+    INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+    WHERE ([d].[parent_object_id] = OBJECT_ID(N'[portal_settings]') AND [c].[name] = N'Value');
+    IF @var4 IS NOT NULL EXEC(N'ALTER TABLE [portal_settings] DROP CONSTRAINT [' + @var4 + '];');
+    ALTER TABLE [portal_settings] ALTER COLUMN [Value] nvarchar(max) NOT NULL;
 END;
 GO
 
@@ -2846,6 +3090,1169 @@ GO
 COMMIT;
 GO
 
-PRINT '✓ Schema script complete. All tables, views, and stored procedures are ready.';
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507133254_Phase15_EnrollmentRules'
+)
+BEGIN
+    CREATE TABLE [course_prerequisites] (
+        [Id] uniqueidentifier NOT NULL,
+        [CourseId] uniqueidentifier NOT NULL,
+        [PrerequisiteCourseId] uniqueidentifier NOT NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NULL,
+        [RowVersion] rowversion NULL,
+        CONSTRAINT [PK_course_prerequisites] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_course_prerequisites_courses_CourseId] FOREIGN KEY ([CourseId]) REFERENCES [courses] ([Id]) ON DELETE CASCADE,
+        CONSTRAINT [FK_course_prerequisites_courses_PrerequisiteCourseId] FOREIGN KEY ([PrerequisiteCourseId]) REFERENCES [courses] ([Id]) ON DELETE NO ACTION
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507133254_Phase15_EnrollmentRules'
+)
+BEGIN
+    CREATE UNIQUE INDEX [IX_course_prerequisites_course_prereq] ON [course_prerequisites] ([CourseId], [PrerequisiteCourseId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507133254_Phase15_EnrollmentRules'
+)
+BEGIN
+    CREATE INDEX [IX_course_prerequisites_PrerequisiteCourseId] ON [course_prerequisites] ([PrerequisiteCourseId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507133254_Phase15_EnrollmentRules'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260507133254_Phase15_EnrollmentRules', N'8.0.8');
+END;
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507223356_Phase16_FacultyGrading'
+)
+BEGIN
+    CREATE TABLE [rubric_student_grades] (
+        [Id] uniqueidentifier NOT NULL,
+        [AssignmentSubmissionId] uniqueidentifier NOT NULL,
+        [RubricCriterionId] uniqueidentifier NOT NULL,
+        [RubricLevelId] uniqueidentifier NOT NULL,
+        [PointsAwarded] decimal(8,2) NOT NULL,
+        [GradedByUserId] uniqueidentifier NOT NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NULL,
+        [RowVersion] rowversion NULL,
+        CONSTRAINT [PK_rubric_student_grades] PRIMARY KEY ([Id])
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507223356_Phase16_FacultyGrading'
+)
+BEGIN
+    CREATE TABLE [rubrics] (
+        [Id] uniqueidentifier NOT NULL,
+        [AssignmentId] uniqueidentifier NOT NULL,
+        [Title] nvarchar(300) NOT NULL,
+        [IsActive] bit NOT NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NULL,
+        [RowVersion] rowversion NULL,
+        [IsDeleted] bit NOT NULL,
+        [DeletedAt] datetime2 NULL,
+        CONSTRAINT [PK_rubrics] PRIMARY KEY ([Id])
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507223356_Phase16_FacultyGrading'
+)
+BEGIN
+    CREATE TABLE [rubric_criteria] (
+        [Id] uniqueidentifier NOT NULL,
+        [RubricId] uniqueidentifier NOT NULL,
+        [Name] nvarchar(300) NOT NULL,
+        [MaxPoints] decimal(8,2) NOT NULL,
+        [DisplayOrder] int NOT NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NULL,
+        [RowVersion] rowversion NULL,
+        CONSTRAINT [PK_rubric_criteria] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_rubric_criteria_rubrics_RubricId] FOREIGN KEY ([RubricId]) REFERENCES [rubrics] ([Id]) ON DELETE CASCADE
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507223356_Phase16_FacultyGrading'
+)
+BEGIN
+    CREATE TABLE [rubric_levels] (
+        [Id] uniqueidentifier NOT NULL,
+        [CriterionId] uniqueidentifier NOT NULL,
+        [Label] nvarchar(200) NOT NULL,
+        [PointsAwarded] decimal(8,2) NOT NULL,
+        [DisplayOrder] int NOT NULL,
+        [RubricCriterionId] uniqueidentifier NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NULL,
+        [RowVersion] rowversion NULL,
+        CONSTRAINT [PK_rubric_levels] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_rubric_levels_rubric_criteria_RubricCriterionId] FOREIGN KEY ([RubricCriterionId]) REFERENCES [rubric_criteria] ([Id])
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507223356_Phase16_FacultyGrading'
+)
+BEGIN
+    CREATE INDEX [IX_rubric_criteria_rubric_id] ON [rubric_criteria] ([RubricId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507223356_Phase16_FacultyGrading'
+)
+BEGIN
+    CREATE INDEX [IX_rubric_levels_criterion_id] ON [rubric_levels] ([CriterionId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507223356_Phase16_FacultyGrading'
+)
+BEGIN
+    CREATE INDEX [IX_rubric_levels_RubricCriterionId] ON [rubric_levels] ([RubricCriterionId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507223356_Phase16_FacultyGrading'
+)
+BEGIN
+    CREATE UNIQUE INDEX [IX_rubric_student_grades_submission_criterion] ON [rubric_student_grades] ([AssignmentSubmissionId], [RubricCriterionId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507223356_Phase16_FacultyGrading'
+)
+BEGIN
+    CREATE INDEX [IX_rubric_student_grades_submission_id] ON [rubric_student_grades] ([AssignmentSubmissionId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507223356_Phase16_FacultyGrading'
+)
+BEGIN
+    CREATE INDEX [IX_rubrics_assignment_active] ON [rubrics] ([AssignmentId], [IsActive]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507223356_Phase16_FacultyGrading'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260507223356_Phase16_FacultyGrading', N'8.0.8');
+END;
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507231326_Phase17_DegreeAudit'
+)
+BEGIN
+    ALTER TABLE [courses] ADD [CourseType] int NOT NULL DEFAULT 1;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507231326_Phase17_DegreeAudit'
+)
+BEGIN
+    CREATE TABLE [degree_rules] (
+        [Id] uniqueidentifier NOT NULL,
+        [AcademicProgramId] uniqueidentifier NOT NULL,
+        [MinTotalCredits] int NOT NULL,
+        [MinCoreCredits] int NOT NULL,
+        [MinElectiveCredits] int NOT NULL,
+        [MinGpa] decimal(4,2) NOT NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NULL,
+        [RowVersion] rowversion NULL,
+        [IsDeleted] bit NOT NULL,
+        [DeletedAt] datetime2 NULL,
+        CONSTRAINT [PK_degree_rules] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_degree_rules_academic_programs_AcademicProgramId] FOREIGN KEY ([AcademicProgramId]) REFERENCES [academic_programs] ([Id]) ON DELETE NO ACTION
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507231326_Phase17_DegreeAudit'
+)
+BEGIN
+    CREATE TABLE [degree_rule_required_courses] (
+        [Id] uniqueidentifier NOT NULL,
+        [DegreeRuleId] uniqueidentifier NOT NULL,
+        [CourseId] uniqueidentifier NOT NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NULL,
+        [RowVersion] rowversion NULL,
+        CONSTRAINT [PK_degree_rule_required_courses] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_degree_rule_required_courses_courses_CourseId] FOREIGN KEY ([CourseId]) REFERENCES [courses] ([Id]) ON DELETE NO ACTION,
+        CONSTRAINT [FK_degree_rule_required_courses_degree_rules_DegreeRuleId] FOREIGN KEY ([DegreeRuleId]) REFERENCES [degree_rules] ([Id]) ON DELETE CASCADE
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507231326_Phase17_DegreeAudit'
+)
+BEGIN
+    CREATE INDEX [IX_degree_rule_required_courses_CourseId] ON [degree_rule_required_courses] ([CourseId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507231326_Phase17_DegreeAudit'
+)
+BEGIN
+    CREATE UNIQUE INDEX [IX_degree_rule_required_courses_rule_course] ON [degree_rule_required_courses] ([DegreeRuleId], [CourseId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507231326_Phase17_DegreeAudit'
+)
+BEGIN
+    CREATE UNIQUE INDEX [IX_degree_rules_program] ON [degree_rules] ([AcademicProgramId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260507231326_Phase17_DegreeAudit'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260507231326_Phase17_DegreeAudit', N'8.0.8');
+END;
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508003259_Phase18_GraduationWorkflow'
+)
+BEGIN
+    CREATE TABLE [graduation_applications] (
+        [Id] uniqueidentifier NOT NULL,
+        [StudentProfileId] uniqueidentifier NOT NULL,
+        [Status] int NOT NULL,
+        [StudentNote] nvarchar(2000) NULL,
+        [SubmittedAt] datetime2 NULL,
+        [CertificatePath] nvarchar(500) NULL,
+        [CertificateGeneratedAt] datetime2 NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NULL,
+        [RowVersion] rowversion NULL,
+        [IsDeleted] bit NOT NULL,
+        [DeletedAt] datetime2 NULL,
+        CONSTRAINT [PK_graduation_applications] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_graduation_applications_student_profiles_StudentProfileId] FOREIGN KEY ([StudentProfileId]) REFERENCES [student_profiles] ([Id]) ON DELETE NO ACTION
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508003259_Phase18_GraduationWorkflow'
+)
+BEGIN
+    CREATE TABLE [graduation_application_approvals] (
+        [Id] uniqueidentifier NOT NULL,
+        [GraduationApplicationId] uniqueidentifier NOT NULL,
+        [Stage] int NOT NULL,
+        [ApproverUserId] uniqueidentifier NOT NULL,
+        [IsApproved] bit NOT NULL,
+        [Note] nvarchar(1000) NULL,
+        [ActedAt] datetime2 NOT NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NULL,
+        [RowVersion] rowversion NULL,
+        CONSTRAINT [PK_graduation_application_approvals] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_graduation_application_approvals_graduation_applications_GraduationApplicationId] FOREIGN KEY ([GraduationApplicationId]) REFERENCES [graduation_applications] ([Id]) ON DELETE CASCADE
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508003259_Phase18_GraduationWorkflow'
+)
+BEGIN
+    CREATE INDEX [IX_graduation_application_approvals_GraduationApplicationId] ON [graduation_application_approvals] ([GraduationApplicationId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508003259_Phase18_GraduationWorkflow'
+)
+BEGIN
+    CREATE INDEX [IX_graduation_applications_StudentProfileId] ON [graduation_applications] ([StudentProfileId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508003259_Phase18_GraduationWorkflow'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260508003259_Phase18_GraduationWorkflow', N'8.0.8');
+END;
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508043559_Phase19_CourseTypeAndGrading'
+)
+BEGIN
+    ALTER TABLE [courses] ADD [DurationUnit] nvarchar(20) NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508043559_Phase19_CourseTypeAndGrading'
+)
+BEGIN
+    ALTER TABLE [courses] ADD [DurationValue] int NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508043559_Phase19_CourseTypeAndGrading'
+)
+BEGIN
+    ALTER TABLE [courses] ADD [GradingType] nvarchar(20) NOT NULL DEFAULT N'GPA';
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508043559_Phase19_CourseTypeAndGrading'
+)
+BEGIN
+    ALTER TABLE [courses] ADD [HasSemesters] bit NOT NULL DEFAULT CAST(1 AS bit);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508043559_Phase19_CourseTypeAndGrading'
+)
+BEGIN
+    ALTER TABLE [courses] ADD [TotalSemesters] int NULL;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508043559_Phase19_CourseTypeAndGrading'
+)
+BEGIN
+    CREATE TABLE [course_grading_configs] (
+        [Id] uniqueidentifier NOT NULL,
+        [CourseId] uniqueidentifier NOT NULL,
+        [PassThreshold] decimal(5,2) NOT NULL,
+        [GradingType] nvarchar(20) NOT NULL,
+        [GradeRangesJson] nvarchar(4000) NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NULL,
+        [RowVersion] rowversion NULL,
+        CONSTRAINT [PK_course_grading_configs] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_course_grading_configs_courses_CourseId] FOREIGN KEY ([CourseId]) REFERENCES [courses] ([Id]) ON DELETE CASCADE
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508043559_Phase19_CourseTypeAndGrading'
+)
+BEGIN
+    CREATE UNIQUE INDEX [IX_course_grading_configs_courseId] ON [course_grading_configs] ([CourseId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508043559_Phase19_CourseTypeAndGrading'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260508043559_Phase19_CourseTypeAndGrading', N'8.0.8');
+END;
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508050712_Phase20_LMS'
+)
+BEGIN
+    CREATE TABLE [course_announcements] (
+        [Id] uniqueidentifier NOT NULL,
+        [OfferingId] uniqueidentifier NULL,
+        [AuthorId] uniqueidentifier NOT NULL,
+        [Title] nvarchar(300) NOT NULL,
+        [Body] nvarchar(max) NOT NULL,
+        [PostedAt] datetime2 NOT NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NULL,
+        [RowVersion] rowversion NULL,
+        [IsDeleted] bit NOT NULL,
+        [DeletedAt] datetime2 NULL,
+        CONSTRAINT [PK_course_announcements] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_course_announcements_course_offerings_OfferingId] FOREIGN KEY ([OfferingId]) REFERENCES [course_offerings] ([Id]) ON DELETE SET NULL
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508050712_Phase20_LMS'
+)
+BEGIN
+    CREATE TABLE [course_content_modules] (
+        [Id] uniqueidentifier NOT NULL,
+        [OfferingId] uniqueidentifier NOT NULL,
+        [Title] nvarchar(300) NOT NULL,
+        [WeekNumber] int NOT NULL,
+        [Body] nvarchar(max) NULL,
+        [IsPublished] bit NOT NULL,
+        [PublishedAt] datetime2 NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NULL,
+        [RowVersion] rowversion NULL,
+        [IsDeleted] bit NOT NULL,
+        [DeletedAt] datetime2 NULL,
+        CONSTRAINT [PK_course_content_modules] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_course_content_modules_course_offerings_OfferingId] FOREIGN KEY ([OfferingId]) REFERENCES [course_offerings] ([Id]) ON DELETE CASCADE
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508050712_Phase20_LMS'
+)
+BEGIN
+    CREATE TABLE [discussion_threads] (
+        [Id] uniqueidentifier NOT NULL,
+        [OfferingId] uniqueidentifier NOT NULL,
+        [Title] nvarchar(500) NOT NULL,
+        [AuthorId] uniqueidentifier NOT NULL,
+        [IsPinned] bit NOT NULL,
+        [IsClosed] bit NOT NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NULL,
+        [RowVersion] rowversion NULL,
+        [IsDeleted] bit NOT NULL,
+        [DeletedAt] datetime2 NULL,
+        CONSTRAINT [PK_discussion_threads] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_discussion_threads_course_offerings_OfferingId] FOREIGN KEY ([OfferingId]) REFERENCES [course_offerings] ([Id]) ON DELETE CASCADE
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508050712_Phase20_LMS'
+)
+BEGIN
+    CREATE TABLE [content_videos] (
+        [Id] uniqueidentifier NOT NULL,
+        [ModuleId] uniqueidentifier NOT NULL,
+        [Title] nvarchar(300) NOT NULL,
+        [StorageUrl] nvarchar(1000) NULL,
+        [EmbedUrl] nvarchar(1000) NULL,
+        [DurationSeconds] int NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NULL,
+        [RowVersion] rowversion NULL,
+        [IsDeleted] bit NOT NULL,
+        [DeletedAt] datetime2 NULL,
+        CONSTRAINT [PK_content_videos] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_content_videos_course_content_modules_ModuleId] FOREIGN KEY ([ModuleId]) REFERENCES [course_content_modules] ([Id]) ON DELETE CASCADE
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508050712_Phase20_LMS'
+)
+BEGIN
+    CREATE TABLE [discussion_replies] (
+        [Id] uniqueidentifier NOT NULL,
+        [ThreadId] uniqueidentifier NOT NULL,
+        [AuthorId] uniqueidentifier NOT NULL,
+        [Body] nvarchar(max) NOT NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NULL,
+        [RowVersion] rowversion NULL,
+        [IsDeleted] bit NOT NULL,
+        [DeletedAt] datetime2 NULL,
+        CONSTRAINT [PK_discussion_replies] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_discussion_replies_discussion_threads_ThreadId] FOREIGN KEY ([ThreadId]) REFERENCES [discussion_threads] ([Id]) ON DELETE CASCADE
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508050712_Phase20_LMS'
+)
+BEGIN
+    CREATE INDEX [IX_content_videos_ModuleId] ON [content_videos] ([ModuleId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508050712_Phase20_LMS'
+)
+BEGIN
+    CREATE INDEX [IX_course_announcements_OfferingId] ON [course_announcements] ([OfferingId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508050712_Phase20_LMS'
+)
+BEGIN
+    CREATE INDEX [IX_course_content_modules_OfferingId] ON [course_content_modules] ([OfferingId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508050712_Phase20_LMS'
+)
+BEGIN
+    CREATE INDEX [IX_discussion_replies_ThreadId] ON [discussion_replies] ([ThreadId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508050712_Phase20_LMS'
+)
+BEGIN
+    CREATE INDEX [IX_discussion_threads_OfferingId] ON [discussion_threads] ([OfferingId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508050712_Phase20_LMS'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260508050712_Phase20_LMS', N'8.0.8');
+END;
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508054215_Phase21_StudyPlanner'
+)
+BEGIN
+    ALTER TABLE [academic_programs] ADD [MaxCreditLoadPerSemester] int NOT NULL DEFAULT 18;
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508054215_Phase21_StudyPlanner'
+)
+BEGIN
+    CREATE TABLE [study_plans] (
+        [Id] uniqueidentifier NOT NULL,
+        [StudentProfileId] uniqueidentifier NOT NULL,
+        [PlannedSemesterName] nvarchar(100) NOT NULL,
+        [Notes] nvarchar(2000) NULL,
+        [AdvisorStatus] int NOT NULL,
+        [AdvisorNotes] nvarchar(2000) NULL,
+        [ReviewedByUserId] uniqueidentifier NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NULL,
+        [RowVersion] rowversion NULL,
+        [IsDeleted] bit NOT NULL,
+        [DeletedAt] datetime2 NULL,
+        CONSTRAINT [PK_study_plans] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_study_plans_student_profiles_StudentProfileId] FOREIGN KEY ([StudentProfileId]) REFERENCES [student_profiles] ([Id]) ON DELETE CASCADE
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508054215_Phase21_StudyPlanner'
+)
+BEGIN
+    CREATE TABLE [study_plan_courses] (
+        [Id] uniqueidentifier NOT NULL,
+        [StudyPlanId] uniqueidentifier NOT NULL,
+        [CourseId] uniqueidentifier NOT NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NULL,
+        [RowVersion] rowversion NULL,
+        CONSTRAINT [PK_study_plan_courses] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_study_plan_courses_courses_CourseId] FOREIGN KEY ([CourseId]) REFERENCES [courses] ([Id]) ON DELETE NO ACTION,
+        CONSTRAINT [FK_study_plan_courses_study_plans_StudyPlanId] FOREIGN KEY ([StudyPlanId]) REFERENCES [study_plans] ([Id]) ON DELETE CASCADE
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508054215_Phase21_StudyPlanner'
+)
+BEGIN
+    CREATE INDEX [IX_study_plan_courses_CourseId] ON [study_plan_courses] ([CourseId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508054215_Phase21_StudyPlanner'
+)
+BEGIN
+    CREATE UNIQUE INDEX [UQ_study_plan_courses_plan_course] ON [study_plan_courses] ([StudyPlanId], [CourseId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508054215_Phase21_StudyPlanner'
+)
+BEGIN
+    CREATE INDEX [IX_study_plans_StudentProfileId] ON [study_plans] ([StudentProfileId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508054215_Phase21_StudyPlanner'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260508054215_Phase21_StudyPlanner', N'8.0.8');
+END;
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508132355_Phase22_ExternalIntegrations'
+)
+BEGIN
+    CREATE TABLE [accreditation_templates] (
+        [Id] uniqueidentifier NOT NULL,
+        [Name] nvarchar(200) NOT NULL,
+        [Description] nvarchar(500) NULL,
+        [Format] nvarchar(10) NOT NULL,
+        [FieldMappingsJson] nvarchar(2000) NULL,
+        [IsActive] bit NOT NULL DEFAULT CAST(1 AS bit),
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NULL,
+        [RowVersion] rowversion NULL,
+        CONSTRAINT [PK_accreditation_templates] PRIMARY KEY ([Id])
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508132355_Phase22_ExternalIntegrations'
+)
+BEGIN
+    CREATE INDEX [IX_accreditation_templates_name] ON [accreditation_templates] ([Name]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508132355_Phase22_ExternalIntegrations'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260508132355_Phase22_ExternalIntegrations', N'8.0.8');
+END;
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508152906_Phase25_AcademicEngineUnification'
+)
+BEGIN
+    CREATE TABLE [institution_grading_profiles] (
+        [Id] uniqueidentifier NOT NULL,
+        [InstitutionType] int NOT NULL,
+        [PassThreshold] decimal(5,2) NOT NULL,
+        [GradeRangesJson] nvarchar(max) NULL,
+        [IsActive] bit NOT NULL DEFAULT CAST(1 AS bit),
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NULL,
+        [RowVersion] rowversion NULL,
+        CONSTRAINT [PK_institution_grading_profiles] PRIMARY KEY ([Id])
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508152906_Phase25_AcademicEngineUnification'
+)
+BEGIN
+    CREATE UNIQUE INDEX [IX_institution_grading_profiles_type] ON [institution_grading_profiles] ([InstitutionType]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260508152906_Phase25_AcademicEngineUnification'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260508152906_Phase25_AcademicEngineUnification', N'8.0.8');
+END;
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260509044437_Phase26_SchoolCollegeExpansion'
+)
+BEGIN
+    CREATE TABLE [bulk_promotion_batches] (
+        [Id] uniqueidentifier NOT NULL,
+        [Title] nvarchar(180) NOT NULL,
+        [Status] int NOT NULL,
+        [CreatedByUserId] uniqueidentifier NOT NULL,
+        [ApprovedByUserId] uniqueidentifier NULL,
+        [ReviewedAt] datetime2 NULL,
+        [AppliedAt] datetime2 NULL,
+        [ReviewNote] nvarchar(1000) NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NULL,
+        [RowVersion] rowversion NULL,
+        [IsDeleted] bit NOT NULL,
+        [DeletedAt] datetime2 NULL,
+        CONSTRAINT [PK_bulk_promotion_batches] PRIMARY KEY ([Id])
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260509044437_Phase26_SchoolCollegeExpansion'
+)
+BEGIN
+    CREATE TABLE [bulk_promotion_entries] (
+        [Id] uniqueidentifier NOT NULL,
+        [BatchId] uniqueidentifier NOT NULL,
+        [StudentProfileId] uniqueidentifier NOT NULL,
+        [Decision] int NOT NULL,
+        [Reason] nvarchar(500) NULL,
+        [IsApplied] bit NOT NULL,
+        [AppliedAt] datetime2 NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NULL,
+        [RowVersion] rowversion NULL,
+        CONSTRAINT [PK_bulk_promotion_entries] PRIMARY KEY ([Id])
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260509044437_Phase26_SchoolCollegeExpansion'
+)
+BEGIN
+    CREATE TABLE [parent_student_links] (
+        [Id] uniqueidentifier NOT NULL,
+        [ParentUserId] uniqueidentifier NOT NULL,
+        [StudentProfileId] uniqueidentifier NOT NULL,
+        [Relationship] nvarchar(60) NULL,
+        [IsActive] bit NOT NULL DEFAULT CAST(1 AS bit),
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NULL,
+        [RowVersion] rowversion NULL,
+        [IsDeleted] bit NOT NULL,
+        [DeletedAt] datetime2 NULL,
+        CONSTRAINT [PK_parent_student_links] PRIMARY KEY ([Id])
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260509044437_Phase26_SchoolCollegeExpansion'
+)
+BEGIN
+    CREATE TABLE [school_streams] (
+        [Id] uniqueidentifier NOT NULL,
+        [Name] nvarchar(120) NOT NULL,
+        [Description] nvarchar(500) NULL,
+        [IsActive] bit NOT NULL DEFAULT CAST(1 AS bit),
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NULL,
+        [RowVersion] rowversion NULL,
+        [IsDeleted] bit NOT NULL,
+        [DeletedAt] datetime2 NULL,
+        CONSTRAINT [PK_school_streams] PRIMARY KEY ([Id])
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260509044437_Phase26_SchoolCollegeExpansion'
+)
+BEGIN
+    CREATE TABLE [student_report_cards] (
+        [Id] uniqueidentifier NOT NULL,
+        [StudentProfileId] uniqueidentifier NOT NULL,
+        [InstitutionType] int NOT NULL,
+        [PeriodLabel] nvarchar(80) NOT NULL,
+        [PayloadJson] nvarchar(max) NOT NULL,
+        [GeneratedByUserId] uniqueidentifier NOT NULL,
+        [GeneratedAt] datetime2 NOT NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NULL,
+        [RowVersion] rowversion NULL,
+        CONSTRAINT [PK_student_report_cards] PRIMARY KEY ([Id])
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260509044437_Phase26_SchoolCollegeExpansion'
+)
+BEGIN
+    CREATE TABLE [student_stream_assignments] (
+        [Id] uniqueidentifier NOT NULL,
+        [StudentProfileId] uniqueidentifier NOT NULL,
+        [SchoolStreamId] uniqueidentifier NOT NULL,
+        [AssignedAt] datetime2 NOT NULL,
+        [AssignedByUserId] uniqueidentifier NOT NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NULL,
+        [RowVersion] rowversion NULL,
+        CONSTRAINT [PK_student_stream_assignments] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_student_stream_assignments_school_streams_SchoolStreamId] FOREIGN KEY ([SchoolStreamId]) REFERENCES [school_streams] ([Id]) ON DELETE NO ACTION
+    );
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260509044437_Phase26_SchoolCollegeExpansion'
+)
+BEGIN
+    CREATE INDEX [IX_bulk_promotion_batches_status_created] ON [bulk_promotion_batches] ([Status], [CreatedAt]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260509044437_Phase26_SchoolCollegeExpansion'
+)
+BEGIN
+    CREATE INDEX [IX_bulk_promotion_entries_batch] ON [bulk_promotion_entries] ([BatchId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260509044437_Phase26_SchoolCollegeExpansion'
+)
+BEGIN
+    CREATE UNIQUE INDEX [IX_bulk_promotion_entries_batch_student] ON [bulk_promotion_entries] ([BatchId], [StudentProfileId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260509044437_Phase26_SchoolCollegeExpansion'
+)
+BEGIN
+    CREATE UNIQUE INDEX [IX_parent_student_links_parent_student] ON [parent_student_links] ([ParentUserId], [StudentProfileId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260509044437_Phase26_SchoolCollegeExpansion'
+)
+BEGIN
+    CREATE UNIQUE INDEX [IX_school_streams_name] ON [school_streams] ([Name]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260509044437_Phase26_SchoolCollegeExpansion'
+)
+BEGIN
+    CREATE INDEX [IX_student_report_cards_student_generated] ON [student_report_cards] ([StudentProfileId], [GeneratedAt]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260509044437_Phase26_SchoolCollegeExpansion'
+)
+BEGIN
+    CREATE INDEX [IX_student_stream_assignments_SchoolStreamId] ON [student_stream_assignments] ([SchoolStreamId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260509044437_Phase26_SchoolCollegeExpansion'
+)
+BEGIN
+    CREATE UNIQUE INDEX [IX_student_stream_assignments_student] ON [student_stream_assignments] ([StudentProfileId]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260509044437_Phase26_SchoolCollegeExpansion'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260509044437_Phase26_SchoolCollegeExpansion', N'8.0.8');
+END;
+GO
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260509155457_20260510_Phase29_IndexBaseline'
+)
+BEGIN
+    DROP INDEX [IX_graduation_applications_StudentProfileId] ON [graduation_applications];
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260509155457_20260510_Phase29_IndexBaseline'
+)
+BEGIN
+    CREATE INDEX [IX_user_sessions_user_created_at] ON [user_sessions] ([UserId], [CreatedAt]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260509155457_20260510_Phase29_IndexBaseline'
+)
+BEGIN
+    CREATE INDEX [IX_support_tickets_assigned_created_at] ON [support_tickets] ([AssignedToId], [CreatedAt]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260509155457_20260510_Phase29_IndexBaseline'
+)
+BEGIN
+    CREATE INDEX [IX_support_tickets_department_status_created_at] ON [support_tickets] ([DepartmentId], [Status], [CreatedAt]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260509155457_20260510_Phase29_IndexBaseline'
+)
+BEGIN
+    CREATE INDEX [IX_support_tickets_submitter_created_at] ON [support_tickets] ([SubmitterId], [CreatedAt]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260509155457_20260510_Phase29_IndexBaseline'
+)
+BEGIN
+    CREATE INDEX [IX_quiz_attempts_quiz_student_started_at] ON [quiz_attempts] ([QuizId], [StudentProfileId], [StartedAt]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260509155457_20260510_Phase29_IndexBaseline'
+)
+BEGIN
+    CREATE INDEX [IX_quiz_attempts_student_started_at] ON [quiz_attempts] ([StudentProfileId], [StartedAt]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260509155457_20260510_Phase29_IndexBaseline'
+)
+BEGIN
+    CREATE INDEX [ix_pr_status_due_date] ON [payment_receipts] ([Status], [DueDate]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260509155457_20260510_Phase29_IndexBaseline'
+)
+BEGIN
+    CREATE INDEX [ix_pr_student_created_at] ON [payment_receipts] ([StudentProfileId], [CreatedAt]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260509155457_20260510_Phase29_IndexBaseline'
+)
+BEGIN
+    CREATE INDEX [IX_notification_recipients_user_created_at] ON [notification_recipients] ([RecipientUserId], [CreatedAt]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260509155457_20260510_Phase29_IndexBaseline'
+)
+BEGIN
+    CREATE INDEX [IX_graduation_applications_status_created_at] ON [graduation_applications] ([Status], [CreatedAt]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260509155457_20260510_Phase29_IndexBaseline'
+)
+BEGIN
+    CREATE INDEX [IX_graduation_applications_student_created_at] ON [graduation_applications] ([StudentProfileId], [CreatedAt]);
+END;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260509155457_20260510_Phase29_IndexBaseline'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260509155457_20260510_Phase29_IndexBaseline', N'8.0.8');
+END;
+GO
+
+COMMIT;
 GO
 
