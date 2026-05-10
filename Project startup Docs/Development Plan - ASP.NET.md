@@ -8,6 +8,14 @@
 
 ## Execution Updates
 
+### 2026-05-10 — Phase 32 Stage 32.1
+- Added `ReportCatalogIntegrationTests` to preserve cross-phase report-center guardrails:
+  - report catalog remains role-scoped,
+  - seeded report keys remain present for privileged roles,
+  - student catalog remains restricted to student-allowed definitions,
+  - each catalog key maps to a live report endpoint route (no 404 regressions).
+- Validation: targeted integration tests passed `8/8`.
+
 ### 2026-05-10 — Phase 31 Stage 31.3
 - Added Stage 31.3 load certification script `tests/load/k6-certification-bands.js` with executable band profiles for:
   - up-to-10k

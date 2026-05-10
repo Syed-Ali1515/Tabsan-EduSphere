@@ -24,6 +24,7 @@ Execution status update (2026-05-10):
 - Phase 31 Stage 31.2 is completed.
 - Phase 31 Stage 31.3 is completed.
 - Phase 31 is completed.
+- Phase 32 Stage 32.1 is completed.
 
 ---
 
@@ -131,6 +132,14 @@ Implementation summary:
 Validation summary:
 - `dotnet build Tabsan.EduSphere.sln` passed.
 - `dotnet test Tabsan.EduSphere.sln --no-build` passed (**162/162**).
+
+### Phase 32 Stage 32.1 - Cross-Phase Operational Guardrails (Completed)
+Implementation summary:
+- Added focused report-catalog integration regression tests to protect Report Center visibility and report-route availability across roles.
+- Added route-mapping assertions to ensure catalog report keys continue to map to live data endpoints (no 404 regressions).
+
+Validation summary:
+- `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~ReportCatalogIntegrationTests"` passed (**8/8**).
 
 ---
 

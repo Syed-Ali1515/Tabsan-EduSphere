@@ -3,6 +3,17 @@
 > **Maintenance rule**: Every function added to the codebase must be registered here with Name, Purpose, and Location.
 > Format: `Name | Purpose | Location`
 
+## Final-Touches Phase 32 - Cross-Phase Operational Guardrails (2026-05-10)
+
+### Report Center and Link Regression Guardrails (Stage 32.1)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `ReportCatalogIntegrationTests.ReportCatalog_Unauthenticated_Returns401()` | Verifies report catalog endpoint remains protected from anonymous access. | `tests/Tabsan.EduSphere.IntegrationTests/ReportCatalogIntegrationTests.cs` |
+| `ReportCatalogIntegrationTests.ReportCatalog_PrivilegedRoles_ReturnsExpectedSeededKeys(role)` | Verifies seeded report keys remain visible to SuperAdmin/Admin/Faculty in catalog responses. | `tests/Tabsan.EduSphere.IntegrationTests/ReportCatalogIntegrationTests.cs` |
+| `ReportCatalogIntegrationTests.ReportCatalog_Student_ReturnsOnlyStudentAllowedReports()` | Verifies student report catalog remains scoped to student-allowed report definitions. | `tests/Tabsan.EduSphere.IntegrationTests/ReportCatalogIntegrationTests.cs` |
+| `ReportCatalogIntegrationTests.ReportCatalog_PrivilegedRoles_AllCatalogKeysMapToLiveReportDataRoutes(role)` | Verifies every catalog key maps to a live report data route (no broken links/404 routes). | `tests/Tabsan.EduSphere.IntegrationTests/ReportCatalogIntegrationTests.cs` |
+
 ## Final-Touches Phase 31 - Quality, Security, and Go-Live Gates (2026-05-10)
 
 ### Load and Reliability Certification (Stage 31.3)

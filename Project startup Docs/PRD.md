@@ -10,6 +10,12 @@
 
 ## 0. Implementation Update Log
 
+### 2026-05-10 — Phase 32 Stage 32.1
+- **Report Center guardrail coverage:** added integration tests that lock report-catalog role visibility and seeded key availability for SuperAdmin/Admin/Faculty.
+- **Report-link guardrail coverage:** added catalog-key-to-route validation to ensure report catalog entries continue to resolve to live report endpoints (no 404 link regressions).
+- **Schema impact:** no database migration required.
+- **Validation:** targeted integration suite passed **8/8** (`ReportCatalogIntegrationTests`).
+
 ### 2026-05-10 — Phase 31 Stage 31.3
 - **Load certification bands:** added executable k6 certification-band script for `up-to-10k`, `10k-100k`, `100k-500k`, and `500k-1m` target bands.
 - **Recovery certification:** added node/service failure recovery smoke script that validates restart recovery via `/health`.
