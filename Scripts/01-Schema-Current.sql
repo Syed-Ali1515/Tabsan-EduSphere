@@ -2386,7 +2386,11 @@ GO
 BEGIN TRANSACTION;
 GO
 
-CREATE OR ALTER PROCEDURE sp_get_attendance_below_threshold
+IF OBJECT_ID(N'dbo.sp_get_attendance_below_threshold', N'P') IS NOT NULL
+    DROP PROCEDURE dbo.sp_get_attendance_below_threshold;
+GO
+
+CREATE PROCEDURE dbo.sp_get_attendance_below_threshold
     @ThresholdPercent DECIMAL(5,2) = 75.0,
     @CourseOfferingId UNIQUEIDENTIFIER = NULL
 AS
@@ -2413,7 +2417,11 @@ BEGIN
 END;
 GO
 
-CREATE OR ALTER PROCEDURE sp_recalculate_student_cgpa
+IF OBJECT_ID(N'dbo.sp_recalculate_student_cgpa', N'P') IS NOT NULL
+    DROP PROCEDURE dbo.sp_recalculate_student_cgpa;
+GO
+
+CREATE PROCEDURE dbo.sp_recalculate_student_cgpa
     @StudentProfileId UNIQUEIDENTIFIER
 AS
 BEGIN
@@ -2462,7 +2470,11 @@ GO
 BEGIN TRANSACTION;
 GO
 
-CREATE OR ALTER VIEW vw_student_attendance_summary AS
+IF OBJECT_ID(N'dbo.vw_student_attendance_summary', N'V') IS NOT NULL
+    DROP VIEW dbo.vw_student_attendance_summary;
+GO
+
+CREATE VIEW dbo.vw_student_attendance_summary AS
 SELECT
     ar.StudentProfileId,
     ar.CourseOfferingId,
@@ -2477,7 +2489,11 @@ FROM attendance_records ar
 GROUP BY ar.StudentProfileId, ar.CourseOfferingId;
 GO
 
-CREATE OR ALTER VIEW vw_student_results_summary AS
+IF OBJECT_ID(N'dbo.vw_student_results_summary', N'V') IS NOT NULL
+    DROP VIEW dbo.vw_student_results_summary;
+GO
+
+CREATE VIEW dbo.vw_student_results_summary AS
 SELECT
     r.StudentProfileId,
     r.CourseOfferingId,
@@ -2500,7 +2516,11 @@ INNER JOIN courses c ON c.Id = co.CourseId
 WHERE r.IsPublished = 1;
 GO
 
-CREATE OR ALTER VIEW vw_course_enrollment_summary AS
+IF OBJECT_ID(N'dbo.vw_course_enrollment_summary', N'V') IS NOT NULL
+    DROP VIEW dbo.vw_course_enrollment_summary;
+GO
+
+CREATE VIEW dbo.vw_course_enrollment_summary AS
 SELECT
     co.Id AS CourseOfferingId,
     co.CourseId,
