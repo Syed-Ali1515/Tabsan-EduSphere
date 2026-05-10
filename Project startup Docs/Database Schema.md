@@ -37,8 +37,11 @@
 
 ## 2026-05-10 Update — Phase 32 Stage 32.4
 
-- Stage 32.4 delivered report-center menu-visibility/link guardrail integration tests and sidebar role-seeding self-heal logic.
-- Changes were limited to seed behavior and integration coverage.
+
+## 2026-05-10 Update — Phase 32 Stage 32.5
+
+- Stage 32.5 delivered credential and run-command verification guardrail integration tests.
+- Changes were limited to integration test coverage and operational verification documentation.
 - No database schema change and no EF migration were required.
 
 ## 2026-05-10 Update — Phase 31 Complete

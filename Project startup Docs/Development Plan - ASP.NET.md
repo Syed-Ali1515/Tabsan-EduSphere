@@ -8,6 +8,15 @@
 
 ## Execution Updates
 
+### 2026-05-10 — Phase 32 Stage 32.5
+- Added `CredentialVerificationIntegrationTests` to preserve credential/run-command guardrails:
+  - deterministic smoke users are provisioned for SuperAdmin/Admin/Faculty/Student,
+  - `POST /api/v1/auth/login` is verified for each role,
+  - login response token + expected role contract is asserted.
+- Validation command (targeted):
+  - `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~CredentialVerificationIntegrationTests"`
+- Validation: targeted integration tests passed `4/4`.
+
 ### 2026-05-10 — Phase 32 Stage 32.4
 - Added report-center visibility/link guardrails in sidebar integration tests:
   - `report_center` is visible for Admin, Faculty, and Student,

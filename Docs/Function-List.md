@@ -35,6 +35,13 @@
 | `SidebarMenuIntegrationTests.GetVisible_Student_ReturnsStudentMenusOnly()` | Verifies student sidebar includes `report_center` and updated menu-count contract after visibility correction. | `tests/Tabsan.EduSphere.IntegrationTests/SidebarMenuIntegrationTests.cs` |
 | `SidebarMenuIntegrationTests.ReportCenter_VisibleRoles_HaveMenuAndReachableCatalog(role)` | Verifies Admin/Faculty/Student can see `report_center` and can successfully load report catalog data via API (working link behavior by role). | `tests/Tabsan.EduSphere.IntegrationTests/SidebarMenuIntegrationTests.cs` |
 
+### Credential and Command Verification Guardrails (Stage 32.5)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `CredentialVerificationIntegrationTests.EnsureUserAsync(username, password, role)` | Seeds deterministic role-based auth smoke users in integration DB so credential checks remain executable after backend changes. | `tests/Tabsan.EduSphere.IntegrationTests/CredentialVerificationIntegrationTests.cs` |
+| `CredentialVerificationIntegrationTests.Login_WithVerifiedCredentials_ReturnsTokenAndExpectedRole(username, password, expectedRole)` | Verifies `api/v1/auth/login` succeeds for SuperAdmin/Admin/Faculty/Student smoke credentials and returns token + expected role. | `tests/Tabsan.EduSphere.IntegrationTests/CredentialVerificationIntegrationTests.cs` |
+
 ## Final-Touches Phase 31 - Quality, Security, and Go-Live Gates (2026-05-10)
 
 ### Load and Reliability Certification (Stage 31.3)

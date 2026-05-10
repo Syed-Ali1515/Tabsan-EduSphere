@@ -53,12 +53,12 @@ cmd /c git -C "<repo-root>" push origin main
 
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
-- Active Phase: **Phase 32 — Cross-Phase Operational Guardrails — Stage 32.4 COMPLETE ✅**
-- Active Stage: **Stage 32.4 complete (Report Center menu visibility and link guardrails)**
-- Status: **Aligned sidebar role visibility so report_center is available to Admin/Faculty/Student, added self-healing role-access seeding for existing rows, and added report-center visibility/catalog reachability guardrail tests; targeted suite passed 12/12; no database migration required**
+- Active Phase: **Phase 32 — Cross-Phase Operational Guardrails — Stage 32.5 COMPLETE ✅**
+- Active Stage: **Stage 32.5 complete (Credential and run-command verification guardrails)**
+- Status: **Added executable auth credential smoke tests for SuperAdmin/Admin/Faculty/Student login and validated targeted command run; targeted suite passed 4/4; no database migration required**
 - Last Updated: 2026-05-10
-- Next: **Awaiting next phase/stage directive after Stage 32.4 completion**
-- Docs Updated: ✅ All requested tracking files updated for Phase 32 Stage 32.4 completion (2026-05-10)
+- Next: **Awaiting next phase/stage directive after Stage 32.5 completion**
+- Docs Updated: ✅ All requested tracking files updated for Phase 32 Stage 32.5 completion (2026-05-10)
 
 ---
 
@@ -276,7 +276,7 @@ Database is fully synchronized with codebase.
   - Stage 29.3 delivered lifecycle maintenance scripts for archive policy, index maintenance, and capacity-growth observability.
 
 ## Pending Extra Tasks (Cross-Phase)
-- Keep test credentials and run commands verified after major backend changes.
+- None. All pending extras are complete.
 
 ---
 

@@ -28,6 +28,7 @@ Execution status update (2026-05-10):
 - Phase 32 Stage 32.2 is completed.
 - Phase 32 Stage 32.3 is completed.
 - Phase 32 Stage 32.4 is completed.
+- Phase 32 Stage 32.5 is completed.
 
 ---
 
@@ -168,6 +169,14 @@ Implementation summary:
 
 Validation summary:
 - `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~SidebarMenuIntegrationTests"` passed (**12/12**).
+
+### Phase 32 Stage 32.5 - Credential and Run-Command Verification Guardrails (Completed)
+Implementation summary:
+- Added focused credential verification integration tests that create deterministic smoke users per role and validate auth login responses.
+- Added executable verification for SuperAdmin/Admin/Faculty/Student credential flow via `api/v1/auth/login` to keep post-change run commands and credentials continuously validated.
+
+Validation summary:
+- `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~CredentialVerificationIntegrationTests"` passed (**4/4**).
 
 ---
 

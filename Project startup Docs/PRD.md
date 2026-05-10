@@ -10,6 +10,12 @@
 
 ## 0. Implementation Update Log
 
+### 2026-05-10 — Phase 32 Stage 32.5
+- **Credential verification guardrail coverage:** added executable integration tests that seed deterministic smoke users and validate login for SuperAdmin/Admin/Faculty/Student.
+- **Run-command verification:** established targeted post-change verification command for auth smoke coverage (`CredentialVerificationIntegrationTests`) to keep operational checks reproducible.
+- **Schema impact:** no database migration required.
+- **Validation:** targeted integration suite passed **4/4** (`CredentialVerificationIntegrationTests`).
+
 ### 2026-05-10 — Phase 32 Stage 32.4
 - **Report Center sidebar guardrail coverage:** aligned sidebar role visibility so `report_center` remains visible for Admin, Faculty, and Student roles.
 - **Link-operability guardrails:** added integration coverage to verify report-center-visible roles can successfully resolve report catalog payloads via `GET /api/v1/reports`.
