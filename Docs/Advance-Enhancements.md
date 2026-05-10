@@ -16,6 +16,11 @@ Execution status update (2026-05-10):
 - Phase 29 Stage 29.2 slices 1, 2, and 3 are completed.
 - Phase 29 Stage 29.3 is completed.
 - Phase 29 is completed.
+- Phase 30 Stage 30.1 is completed.
+- Phase 30 Stage 30.2 is completed.
+- Phase 30 Stage 30.3 is completed.
+- Phase 30 is completed.
+- Phase 31 Stage 31.1 is completed.
 
 ---
 
@@ -481,6 +486,16 @@ Objective: Prevent regressions and enforce release quality.
   - License combinations
   - Roles (SuperAdmin/Admin/Faculty/Student)
   - Tenant isolation
+
+#### 2026-05-10 - Stage 31.1 Completion
+Implementation summary:
+- Added executable regression matrix coverage in `tests/Tabsan.EduSphere.UnitTests/Phase31Stage1RegressionMatrixTests.cs` for 24 role x institution-mode x license scenarios.
+- Added baseline tenant-isolation verification using isolated settings repositories to ensure tenant profile values do not leak across tenant boundaries.
+- Added Stage 31.1 matrix runbook and coverage map in `Docs/Phase31-Stage31.1-Regression-Matrix.md`.
+
+Validation summary:
+- `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj --filter FullyQualifiedName~Phase31Stage1RegressionMatrixTests` passed (**25/25**).
+- `dotnet test Tabsan.EduSphere.sln --no-build` passed (**197/197**).
 
 ### Stage 31.2 - Security Hardening
 - Endpoint authorization audit.

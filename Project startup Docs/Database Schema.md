@@ -5,6 +5,11 @@
 **Aligned With PRD:** v1.33  
 **Purpose:** Define database schemas for the University Portal Application and the License Creation Tool  
 
+## 2026-05-10 Update — Phase 31 Stage 31.1
+
+- Stage 31.1 delivered regression-matrix test coverage and matrix documentation only.
+- No database schema change and no EF migration were required.
+
 ## 2026-05-10 Update — Phase 30 Stage 30.1
 
 - Stage 30.1 delivered a centralized outbound integration gateway layer (retry/timeout/dead-letter handling) and integration diagnostics endpoints.

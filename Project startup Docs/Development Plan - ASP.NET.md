@@ -8,6 +8,12 @@
 
 ## Execution Updates
 
+### 2026-05-10 — Phase 31 Stage 31.1
+- Added Stage 31.1 regression matrix unit suite (`Phase31Stage1RegressionMatrixTests`) with 24 scenario combinations across institution mode, role, and license profile states.
+- Added tenant isolation baseline verification using isolated settings repositories.
+- Added matrix artifact and traceability document: `Docs/Phase31-Stage31.1-Regression-Matrix.md`.
+- Validation: targeted tests passed `25/25`; full automated tests passed `197/197`.
+
 ### 2026-05-10 — Phase 30 Stage 30.3
 - Added feature-flag DTOs/contracts and `IFeatureFlagService` for rollout/rollback operations.
 - Implemented `FeatureFlagService` using `portal_settings` persistence with default flags and batch rollback disable flow.
@@ -178,7 +184,7 @@
 - Validated SuperAdmin result summary endpoint response with non-empty records.
 
 ### Next Execution Target
-- Continue **Phase 31 Stage 31.1 — Regression Matrix**.
+- Continue **Phase 31 Stage 31.2 — Security Hardening**.
 
 ### 2026-05-08 — Phase 13 Global Search Complete (commit 00b7b64)
 - **Stage 13.1 — Cross-Entity Search API:**

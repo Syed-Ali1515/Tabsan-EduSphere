@@ -3,6 +3,19 @@
 > **Maintenance rule**: Every function added to the codebase must be registered here with Name, Purpose, and Location.
 > Format: `Name | Purpose | Location`
 
+## Final-Touches Phase 31 - Quality, Security, and Go-Live Gates (2026-05-10)
+
+### Unit Tests - Regression Matrix (Stage 31.1)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `Phase31Stage1RegressionMatrixTests.Matrix_RoleModeLicense_Combinations_AreConsistent(role, institutionMode, aiChatLicensed)` | Executes 24-scenario regression matrix coverage for role x institution mode x license combination invariants. | `tests/Tabsan.EduSphere.UnitTests/Phase31Stage1RegressionMatrixTests.cs` |
+| `Phase31Stage1RegressionMatrixTests.TenantIsolation_Baseline_SeparateStores_DoNotLeakData()` | Verifies baseline tenant isolation behavior by ensuring tenant profile settings do not leak across isolated stores. | `tests/Tabsan.EduSphere.UnitTests/Phase31Stage1RegressionMatrixTests.cs` |
+| `MatrixEntitlementResolver.IsActiveAsync(moduleKey, ct)` | Provides deterministic license profile behavior in matrix tests (licensed vs restricted `ai_chat`). | `tests/Tabsan.EduSphere.UnitTests/Phase31Stage1RegressionMatrixTests.cs` |
+| `MatrixModuleService.GetAllAsync(ct)` | Supplies registry-backed module inventory for matrix visibility assertions in tests. | `tests/Tabsan.EduSphere.UnitTests/Phase31Stage1RegressionMatrixTests.cs` |
+| `MatrixSettingsRepository.GetPortalSettingAsync(key, ct)` | Supports test-time tenant settings reads used by tenant isolation baseline assertions. | `tests/Tabsan.EduSphere.UnitTests/Phase31Stage1RegressionMatrixTests.cs` |
+| `MatrixSettingsRepository.UpsertPortalSettingAsync(key, value, ct)` | Supports test-time tenant settings writes used by tenant isolation baseline assertions. | `tests/Tabsan.EduSphere.UnitTests/Phase31Stage1RegressionMatrixTests.cs` |
+
 ## Final-Touches Phase 30 - Integrations and SaaS Operations (2026-05-10)
 
 ### Application - Reliability and Rollback Controls (Stage 30.3)

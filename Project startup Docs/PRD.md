@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.55 (Phase 30 complete through Stage 30.3)  
+**Version:** 1.56 (Phase 31 Stage 31.1 complete)  
 **Status:** Approved  
 **Prepared By:** Product Team  
 **Last Updated:** 10 May 2026  
@@ -9,6 +9,13 @@
 ---
 
 ## 0. Implementation Update Log
+
+### 2026-05-10 — Phase 31 Stage 31.1
+- **Regression matrix baseline:** added executable matrix tests for role x institution mode x license combinations.
+- **Tenant isolation baseline:** added isolated-store tests to verify tenant profile setting values do not leak between tenant scopes.
+- **Coverage runbook:** added explicit Stage 31.1 matrix artifact at `Docs/Phase31-Stage31.1-Regression-Matrix.md`.
+- **Schema impact:** no database migration required.
+- **Validation:** targeted tests passed **25/25**; full automated suite passed **197/197**.
 
 ### 2026-05-10 — Phase 30 Stage 30.3
 - **Feature-flag control plane:** added feature-flag service and SuperAdmin API endpoints for rollout control and emergency rollback.
