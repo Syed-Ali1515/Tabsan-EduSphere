@@ -1,4 +1,31 @@
-﻿IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
+﻿-- ============================================================
+-- DATABASE CREATION
+-- Run this script against the master database, or let the
+-- IF NOT EXISTS block create the DB automatically.
+-- ============================================================
+USE master;
+GO
+
+IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = N'TabsanEduSphere')
+BEGIN
+    CREATE DATABASE TabsanEduSphere
+        COLLATE SQL_Latin1_General_CP1_CI_AS;
+    PRINT 'Database TabsanEduSphere created.';
+END
+ELSE
+BEGIN
+    PRINT 'Database TabsanEduSphere already exists. Skipping creation.';
+END
+GO
+
+USE TabsanEduSphere;
+GO
+
+-- ============================================================
+-- SCHEMA / MIGRATIONS
+-- ============================================================
+
+IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
 BEGIN
     CREATE TABLE [__EFMigrationsHistory] (
         [MigrationId] nvarchar(150) NOT NULL,
