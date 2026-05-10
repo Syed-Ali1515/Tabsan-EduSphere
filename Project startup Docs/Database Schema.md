@@ -17,6 +17,17 @@
 - Persistence uses the existing `portal_settings` key-value table with new operational keys.
 - No database schema change and no EF migration were required.
 
+## 2026-05-10 Update — Phase 30 Stage 30.3
+
+- Stage 30.3 delivered feature-flag rollout controls and emergency rollback operations.
+- Persistence uses existing `portal_settings` key-value entries for feature-flag state and rollback metadata.
+- No database schema change and no EF migration were required.
+
+## 2026-05-10 Update — Phase 30 Complete
+
+- Phase 30 completed with integration gateway controls, tenant/subscription operations, and rollback-safe feature-flag controls.
+- No schema changes were required across Stage 30.1, 30.2, and 30.3.
+
 ## 2026-05-09 Update — Phase 28 Stage 28.1
 
 - Stage 28.1 delivered runtime and hosting changes only.

@@ -186,3 +186,25 @@ public record SaveTenantProfileSettingsCommand(
     string CurrencyCode,
     string BrandingTheme
 );
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Reliability / Rollback DTOs (Phase 30 Stage 30.3)
+// ─────────────────────────────────────────────────────────────────────────────
+
+public record FeatureFlagDto(
+    string Key,
+    bool IsEnabled,
+    string? Description,
+    DateTime UpdatedAtUtc
+);
+
+public record SaveFeatureFlagCommand(
+    string Key,
+    bool IsEnabled,
+    string? Description = null
+);
+
+public record RollbackFeatureFlagsCommand(
+    IList<string> Keys,
+    string? Reason = null
+);

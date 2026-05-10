@@ -74,6 +74,7 @@ Controllers/
  DepartmentController.cs
  DiscussionController.cs
  EnrollmentController.cs
+ FeatureFlagsController.cs
  FypController.cs
  GradebookController.cs
  GradingConfigController.cs

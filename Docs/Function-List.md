@@ -5,6 +5,26 @@
 
 ## Final-Touches Phase 30 - Integrations and SaaS Operations (2026-05-10)
 
+### Application - Reliability and Rollback Controls (Stage 30.3)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `IFeatureFlagService.GetAllAsync(ct)` | Returns all rollout control flags including defaults and persisted overrides. | `Application/Interfaces/ISettingsServices.cs` |
+| `IFeatureFlagService.GetAsync(key, ct)` | Resolves a specific feature flag with default fallback behavior. | `Application/Interfaces/ISettingsServices.cs` |
+| `IFeatureFlagService.SaveAsync(command, ct)` | Persists a feature flag state update for controlled rollout. | `Application/Interfaces/ISettingsServices.cs` |
+| `IFeatureFlagService.RollbackAsync(command, ct)` | Performs bulk rollback by disabling specified feature flags and recording rollback metadata. | `Application/Interfaces/ISettingsServices.cs` |
+| `FeatureFlagService.GetAllAsync(ct)` | Enumerates feature flags from settings storage and merges runtime defaults. | `Application/Services/SettingsServices.cs` |
+| `FeatureFlagService.GetAsync(key, ct)` | Returns effective state for a single feature flag key. | `Application/Services/SettingsServices.cs` |
+| `FeatureFlagService.SaveAsync(command, ct)` | Writes feature flag state/description/update timestamp to settings storage. | `Application/Services/SettingsServices.cs` |
+| `FeatureFlagService.RollbackAsync(command, ct)` | Disables a selected feature-flag set for emergency rollback and stores rollback context fields. | `Application/Services/SettingsServices.cs` |
+| `FeatureFlagsController.GetAll(ct)` | SuperAdmin endpoint to list all feature flags. | `API/Controllers/FeatureFlagsController.cs` |
+| `FeatureFlagsController.GetByKey(key, ct)` | SuperAdmin endpoint to inspect a single feature flag. | `API/Controllers/FeatureFlagsController.cs` |
+| `FeatureFlagsController.Save(key, command, ct)` | SuperAdmin endpoint to set a feature-flag state for rollout control. | `API/Controllers/FeatureFlagsController.cs` |
+| `FeatureFlagsController.Rollback(command, ct)` | SuperAdmin endpoint to execute rollback disable flow for a group of flags. | `API/Controllers/FeatureFlagsController.cs` |
+| `TenantOperationsController.SaveOnboardingTemplate(command, ct)` (flag-guarded) | Enforces `tenant-operations.write` kill-switch before mutating onboarding template settings. | `API/Controllers/TenantOperationsController.cs` |
+| `TenantOperationsController.SaveSubscriptionPlan(command, ct)` (flag-guarded) | Enforces `tenant-operations.write` kill-switch before mutating subscription plan settings. | `API/Controllers/TenantOperationsController.cs` |
+| `TenantOperationsController.SaveTenantProfile(command, ct)` (flag-guarded) | Enforces `tenant-operations.write` kill-switch before mutating tenant profile settings. | `API/Controllers/TenantOperationsController.cs` |
+
 ### Application - Tenant and Subscription Operations (Stage 30.2)
 
 | Function Name | Purpose | Location |

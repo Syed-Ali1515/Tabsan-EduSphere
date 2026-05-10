@@ -69,6 +69,7 @@ Phase27Tests.cs
 Phase28Stage2Tests.cs
 Phase30Stage1Tests.cs
 Phase30Stage2Tests.cs
+Phase30Stage3Tests.cs
 UnitTest1.cs
 
 [metadataReferences]

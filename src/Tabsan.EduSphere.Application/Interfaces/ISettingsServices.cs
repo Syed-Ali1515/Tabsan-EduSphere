@@ -107,3 +107,14 @@ public interface ITenantOperationsService
     Task<TenantProfileSettingsDto> GetTenantProfileAsync(CancellationToken ct = default);
     Task SaveTenantProfileAsync(SaveTenantProfileSettingsCommand cmd, CancellationToken ct = default);
 }
+
+/// <summary>
+/// Final-Touches Phase 30 Stage 30.3 — feature flag operations for safe rollout and rollback.
+/// </summary>
+public interface IFeatureFlagService
+{
+    Task<IList<FeatureFlagDto>> GetAllAsync(CancellationToken ct = default);
+    Task<FeatureFlagDto> GetAsync(string key, CancellationToken ct = default);
+    Task SaveAsync(SaveFeatureFlagCommand command, CancellationToken ct = default);
+    Task RollbackAsync(RollbackFeatureFlagsCommand command, CancellationToken ct = default);
+}

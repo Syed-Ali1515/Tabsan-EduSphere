@@ -500,3 +500,131 @@ public class TenantOperationsService : ITenantOperationsService
     private static bool ParseBool(string? value, bool defaultValue)
         => bool.TryParse(value, out var parsed) ? parsed : defaultValue;
 }
+
+// -----------------------------------------------------------------------------
+// FeatureFlagService
+// -----------------------------------------------------------------------------
+
+// Final-Touches Phase 30 Stage 30.3 — safe rollout and rollback flag operations.
+public class FeatureFlagService : IFeatureFlagService
+{
+    private const string Prefix = "feature_flag:";
+    private const string MetaSuffixDescription = ":description";
+    private const string MetaSuffixUpdatedAt = ":updated_at_utc";
+    private const string RollbackReasonKey = "feature_flag:last_rollback_reason";
+    private const string RollbackAtKey = "feature_flag:last_rollback_at_utc";
+
+    private static readonly Dictionary<string, bool> DefaultFlags = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["tenant-operations.write"] = true,
+        ["integration-gateway.enabled"] = true,
+        ["gateway-diagnostics.enabled"] = true
+    };
+
+    private readonly ISettingsRepository _repo;
+
+    public FeatureFlagService(ISettingsRepository repo)
+    {
+        _repo = repo;
+    }
+
+    public async Task<IList<FeatureFlagDto>> GetAllAsync(CancellationToken ct = default)
+    {
+        var all = await _repo.GetAllPortalSettingsAsync(ct);
+        var keysFromStore = all.Keys
+            .Where(k => k.StartsWith(Prefix, StringComparison.OrdinalIgnoreCase) && !k.EndsWith(MetaSuffixDescription, StringComparison.OrdinalIgnoreCase) && !k.EndsWith(MetaSuffixUpdatedAt, StringComparison.OrdinalIgnoreCase))
+            .Select(k => k[Prefix.Length..])
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var defaultKey in DefaultFlags.Keys)
+            keysFromStore.Add(defaultKey);
+
+        var result = new List<FeatureFlagDto>(keysFromStore.Count);
+        foreach (var key in keysFromStore.OrderBy(x => x, StringComparer.OrdinalIgnoreCase))
+        {
+            result.Add(ToDto(key, all));
+        }
+
+        return result;
+    }
+
+    public async Task<FeatureFlagDto> GetAsync(string key, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(key))
+            throw new ArgumentException("Feature flag key is required.", nameof(key));
+
+        var all = await _repo.GetAllPortalSettingsAsync(ct);
+        return ToDto(key.Trim().ToLowerInvariant(), all);
+    }
+
+    public async Task SaveAsync(SaveFeatureFlagCommand command, CancellationToken ct = default)
+    {
+        var key = NormalizeKey(command.Key);
+        var now = DateTime.UtcNow;
+
+        await _repo.UpsertPortalSettingAsync(WithPrefix(key), command.IsEnabled.ToString(), ct);
+        await _repo.UpsertPortalSettingAsync(WithPrefix(key) + MetaSuffixUpdatedAt, now.ToString("O"), ct);
+        if (command.Description is not null)
+            await _repo.UpsertPortalSettingAsync(WithPrefix(key) + MetaSuffixDescription, command.Description, ct);
+
+        await _repo.SaveChangesAsync(ct);
+    }
+
+    public async Task RollbackAsync(RollbackFeatureFlagsCommand command, CancellationToken ct = default)
+    {
+        var keys = (command.Keys ?? [])
+            .Where(k => !string.IsNullOrWhiteSpace(k))
+            .Select(NormalizeKey)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        if (keys.Count == 0)
+            throw new InvalidOperationException("At least one feature flag key is required for rollback.");
+
+        var now = DateTime.UtcNow;
+        foreach (var key in keys)
+        {
+            await _repo.UpsertPortalSettingAsync(WithPrefix(key), bool.FalseString, ct);
+            await _repo.UpsertPortalSettingAsync(WithPrefix(key) + MetaSuffixUpdatedAt, now.ToString("O"), ct);
+        }
+
+        await _repo.UpsertPortalSettingAsync(RollbackAtKey, now.ToString("O"), ct);
+        if (!string.IsNullOrWhiteSpace(command.Reason))
+            await _repo.UpsertPortalSettingAsync(RollbackReasonKey, command.Reason, ct);
+
+        await _repo.SaveChangesAsync(ct);
+    }
+
+    private static FeatureFlagDto ToDto(string key, IReadOnlyDictionary<string, string> all)
+    {
+        var normalized = NormalizeKey(key);
+        var rawValue = all.GetValueOrDefault(WithPrefix(normalized));
+        var isEnabled = bool.TryParse(rawValue, out var parsed)
+            ? parsed
+            : DefaultFlags.GetValueOrDefault(normalized, false);
+
+        var rawDescription = all.GetValueOrDefault(WithPrefix(normalized) + MetaSuffixDescription);
+        var rawUpdatedAt = all.GetValueOrDefault(WithPrefix(normalized) + MetaSuffixUpdatedAt);
+        var updatedAt = DateTime.TryParse(rawUpdatedAt, out var parsedTime)
+            ? DateTime.SpecifyKind(parsedTime, DateTimeKind.Utc)
+            : DateTime.UtcNow;
+
+        return new FeatureFlagDto(
+            normalized,
+            isEnabled,
+            string.IsNullOrWhiteSpace(rawDescription) ? null : rawDescription,
+            updatedAt);
+    }
+
+    private static string WithPrefix(string key) => Prefix + key;
+
+    private static string NormalizeKey(string key)
+    {
+        var normalized = key.Trim().ToLowerInvariant();
+        if (string.IsNullOrWhiteSpace(normalized))
+            throw new ArgumentException("Feature flag key is required.", nameof(key));
+
+        return normalized;
+    }
+}
