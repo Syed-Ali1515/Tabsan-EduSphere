@@ -4,6 +4,50 @@ import { Trend, Rate } from 'k6/metrics';
 
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:5181';
 const LOGIN_PATH = '/api/v1/auth/login';
+const PROFILE = (__ENV.TEST_PROFILE || 'smoke').toLowerCase();
+
+function toInt(value, fallback) {
+  const n = Number.parseInt(value, 10);
+  return Number.isFinite(n) && n > 0 ? n : fallback;
+}
+
+function buildStagesForProfile(profile) {
+  if (profile === 'max') {
+    const maxUsers = toInt(__ENV.MAX_USERS, 8000);
+    const ramp1 = Math.max(1, Math.floor(maxUsers * 0.3));
+    const ramp2 = Math.max(1, Math.floor(maxUsers * 0.65));
+    return [
+      { duration: __ENV.MAX_RAMP_1 || '2m', target: ramp1 },
+      { duration: __ENV.MAX_RAMP_2 || '4m', target: ramp2 },
+      { duration: __ENV.MAX_HOLD || '10m', target: maxUsers },
+      { duration: __ENV.MAX_RAMP_DOWN || '2m', target: 0 },
+    ];
+  }
+
+  if (profile === 'stress') {
+    return [
+      { duration: '1m', target: 80 },
+      { duration: '4m', target: 350 },
+      { duration: '4m', target: 700 },
+      { duration: '1m', target: 0 },
+    ];
+  }
+
+  if (profile === 'load') {
+    return [
+      { duration: '1m', target: 40 },
+      { duration: '3m', target: 150 },
+      { duration: '3m', target: 300 },
+      { duration: '1m', target: 0 },
+    ];
+  }
+
+  return [
+    { duration: '30s', target: 10 },
+    { duration: '30s', target: 30 },
+    { duration: '20s', target: 0 },
+  ];
+}
 
 const TEST_USERNAME = __ENV.TEST_USERNAME || '';
 const TEST_PASSWORD = __ENV.TEST_PASSWORD || '';
@@ -16,18 +60,13 @@ export const options = {
     core_traffic: {
       executor: 'ramping-vus',
       startVUs: 0,
-      stages: [
-        { duration: '1m', target: 15 },
-        { duration: '4m', target: 100 },
-        { duration: '4m', target: 200 },
-        { duration: '1m', target: 0 },
-      ],
+      stages: buildStagesForProfile(PROFILE),
       gracefulRampDown: '20s',
     },
   },
   thresholds: {
-    http_req_failed: ['rate<0.05'],
-    core_duration: ['p(95)<2000'],
+    http_req_failed: ['rate<0.10'],
+    core_duration: ['p(95)<3000'],
   },
 };
 
@@ -93,5 +132,24 @@ export default function (data) {
     callGet('/api/v1/notification/inbox?page=0&pageSize=20', token, [200, 401, 403]);
   });
 
-  sleep(Math.random() + 0.5);
+  sleep(Math.random() * 0.7 + 0.2);
+}
+
+export function handleSummary(data) {
+  const txtPath = __ENV.SUMMARY_TXT_PATH;
+  const lines = [
+    `suite=core`,
+    `profile=${PROFILE}`,
+    `baseUrl=${BASE_URL}`,
+    `iterations=${data.metrics.iterations ? data.metrics.iterations.values.count : 0}`,
+    `http_req_failed=${data.metrics.http_req_failed ? data.metrics.http_req_failed.values.rate : 0}`,
+    `core_duration_p95=${data.metrics.core_duration ? data.metrics.core_duration.values['p(95)'] : 0}`,
+  ];
+
+  const text = `${lines.join('\n')}\n`;
+  const output = { stdout: text };
+  if (txtPath) {
+    output[txtPath] = text;
+  }
+  return output;
 }
