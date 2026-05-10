@@ -32,6 +32,7 @@ Execution status update (2026-05-10):
 - Phase 33 is initialized.
 - Phase 33 Stage 33.1 is completed.
 - Phase 33 Stage 33.2 is completed.
+- Phase 33 Stage 33.3 is completed.
 
 ---
 
@@ -209,6 +210,17 @@ Implementation summary:
 Validation summary:
 - `dotnet build Tabsan.EduSphere.sln` passed.
 - `dotnet test Tabsan.EduSphere.sln --no-build` passed (**230/230**).
+
+### Phase 33 Stage 33.3 - Security Hardening Execution (Completed)
+Implementation summary:
+- Added DataAnnotations-based request validation to auth and admin-user DTOs so invalid login/password/admin-management inputs are rejected automatically by `ApiController` model validation.
+- Added executable DTO validation coverage for login, admin user creation, and password-change requests.
+- Preserved existing upload validation pipeline and security-header/exception-handling middleware as part of the staged hardening baseline.
+
+Validation summary:
+- `dotnet build Tabsan.EduSphere.sln` passed.
+- `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj --filter "FullyQualifiedName~SecurityValidationTests"` passed (**4/4**).
+- `dotnet test Tabsan.EduSphere.sln --no-build` passed (**234/234**).
 
 ---
 
@@ -648,7 +660,7 @@ Done when:
 Done when:
 - Runtime hosting behavior is environment-correct and operationally reproducible.
 
-### Stage 33.3 - Security Hardening Execution
+### Stage 33.3 - Security Hardening Execution (Completed)
 - Apply prioritized security controls from `Docs/Refactoring-Hosting-Security.md` (validation, headers, lockout/rate limiting verification, upload safety, exception handling consistency).
 - Add/refresh targeted tests and verification commands for hardened paths.
 - Publish closure artifact with implemented controls and residual-risk notes.

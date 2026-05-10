@@ -1,7 +1,23 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Tabsan.EduSphere.Application.DTOs.Auth;
 
 /// <summary>Request body sent by a client to the POST /api/v1/auth/login endpoint.</summary>
-public sealed record LoginRequest(string Username, string Password, string? MfaCode = null, string? DeviceInfo = null);
+public sealed record LoginRequest(
+    [property: Required]
+    [property: StringLength(100, MinimumLength = 3)]
+    [property: RegularExpression("^[a-zA-Z0-9._-]+$")]
+    string Username,
+
+    [property: Required]
+    [property: StringLength(256, MinimumLength = 8)]
+    string Password,
+
+    [property: StringLength(64)]
+    string? MfaCode = null,
+
+    [property: StringLength(512)]
+    string? DeviceInfo = null);
 
 /// <summary>
 /// Returned on a successful login.
@@ -24,13 +40,23 @@ public sealed record LoginResponse(
     string SessionRiskLevel = "low");
 
 /// <summary>Request body sent to POST /api/v1/auth/refresh.</summary>
-public sealed record RefreshRequest(string RefreshToken);
+public sealed record RefreshRequest([property: Required] string RefreshToken);
 
 /// <summary>Request body for POST /api/v1/auth/change-password.</summary>
-public sealed record ChangePasswordRequest(string CurrentPassword, string NewPassword);
+public sealed record ChangePasswordRequest(
+    [property: Required]
+    [property: StringLength(256, MinimumLength = 8)]
+    string CurrentPassword,
+
+    [property: Required]
+    [property: StringLength(256, MinimumLength = 8)]
+    string NewPassword);
 
 /// <summary>Request body for POST /api/v1/auth/force-change-password (P4-S2-02).</summary>
-public sealed record ForceChangePasswordRequest(string NewPassword);
+public sealed record ForceChangePasswordRequest(
+    [property: Required]
+    [property: StringLength(256, MinimumLength = 8)]
+    string NewPassword);
 
 // ── P2-S1-01: Login result with failure reason for concurrency enforcement ──
 

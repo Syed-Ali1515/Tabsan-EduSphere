@@ -53,12 +53,17 @@ cmd /c git -C "<repo-root>" push origin main
 
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
-- Active Phase: **Phase 33 — Hosting Configuration and Security Hardening — Stage 33.2 COMPLETE ✅**
-- Active Stage: **Stage 33.2 complete (Runtime hosting hardening)**
-- Status: **Hardened API/Web reverse-proxy trust handling, enforced startup proxy/CORS guardrails for production paths, and removed remaining localhost runtime fallbacks in Web login/connection flows.**
+- Active Phase: **Phase 33 — Hosting Configuration and Security Hardening — Stage 33.3 COMPLETE ✅**
+- Active Stage: **Stage 33.3 complete (Security hardening execution)**
+- Status: **Added DataAnnotations-based auth/admin request validation plus executable validation tests; full solution regression now passes 234/234.**
 - Last Updated: 2026-05-10
-- Next: **Execute Stage 33.3 security hardening execution from `Docs/Refactoring-Hosting-Security.md`**
-- Docs Updated: ✅ Phase 33 Stage 33.2 trackers updated (2026-05-10)
+- Next: **Awaiting next phase/stage directive after Phase 33 completion**
+- Docs Updated: ✅ Phase 33 Stage 33.3 trackers updated (2026-05-10)
+
+### 2026-05-10 - Phase 33 Stage 33.3 Completion
+- Added DataAnnotations to `LoginRequest`, `RefreshRequest`, `ChangePasswordRequest`, `ForceChangePasswordRequest`, `CreateAdminUserRequest`, and `UpdateAdminUserRequest`.
+- Added `SecurityValidationTests` to verify the hardened DTO validation paths.
+- Validation: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj --filter "FullyQualifiedName~SecurityValidationTests"` passed (**4/4**); `dotnet test Tabsan.EduSphere.sln --no-build` passed (**234/234**).
 
 ### 2026-05-10 - Phase 33 Stage 33.2 Completion
 - Added config-driven reverse-proxy trust controls in API/Web (`ReverseProxy:Enabled`, `KnownProxies`, symmetry/forward-limit settings).

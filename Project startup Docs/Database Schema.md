@@ -22,6 +22,12 @@
 - Changes were limited to configuration and startup/runtime guards.
 - No database schema change and no EF migration were required.
 
+## 2026-05-10 Update — Phase 33 Stage 33.3
+
+- Stage 33.3 delivered DTO-level security hardening and executable validation coverage.
+- Changes were limited to model validation attributes and unit tests.
+- No database schema change and no EF migration were required.
+
 ## 2026-05-10 Update — Phase 32 Stage 32.2
 
 - Stage 32.2 delivered report export action/endpoint regression guardrail integration tests only.

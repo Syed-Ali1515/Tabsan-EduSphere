@@ -1,7 +1,29 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Tabsan.EduSphere.Application.DTOs.Auth;
 
 /// <summary>Request body for creating an Admin user account.</summary>
-public sealed record CreateAdminUserRequest(string Username, string? Email, string Password);
+public sealed record CreateAdminUserRequest(
+	[property: Required]
+	[property: StringLength(100, MinimumLength = 3)]
+	[property: RegularExpression("^[a-zA-Z0-9._-]+$")]
+	string Username,
+
+	[property: EmailAddress]
+	[property: StringLength(256)]
+	string? Email,
+
+	[property: Required]
+	[property: StringLength(256, MinimumLength = 8)]
+	string Password);
 
 /// <summary>Request body for updating an Admin user account.</summary>
-public sealed record UpdateAdminUserRequest(string? Email, bool IsActive, string? NewPassword);
+public sealed record UpdateAdminUserRequest(
+	[property: EmailAddress]
+	[property: StringLength(256)]
+	string? Email,
+
+	bool IsActive,
+
+	[property: StringLength(256, MinimumLength = 8)]
+	string? NewPassword);

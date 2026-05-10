@@ -26,6 +26,21 @@
 | `LoginController` API base URL resolution (`_configuredApiBaseUrl`) | Removes localhost fallback assumptions and requires configured `EduApi:BaseUrl` for login/security profile calls. | `src/Tabsan.EduSphere.Web/Controllers/LoginController.cs` |
 | `ApiConnectionModel.ApiBaseUrl` default | Removes hardcoded localhost default from persisted portal API connection model. | `src/Tabsan.EduSphere.Web/Models/Portal/PortalViewModels.cs` |
 
+### Security Hardening Execution (Stage 33.3)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `LoginRequest` validation attributes | Enforces username/password length and allowed-character constraints for auth login requests. | `src/Tabsan.EduSphere.Application/DTOs/Auth/AuthDtos.cs` |
+| `RefreshRequest` validation attribute | Ensures refresh token input is required for auth refresh/logout flows. | `src/Tabsan.EduSphere.Application/DTOs/Auth/AuthDtos.cs` |
+| `ChangePasswordRequest` validation attributes | Enforces required current/new password input with minimum strength length. | `src/Tabsan.EduSphere.Application/DTOs/Auth/AuthDtos.cs` |
+| `ForceChangePasswordRequest` validation attribute | Enforces required password input for forced password change flow. | `src/Tabsan.EduSphere.Application/DTOs/Auth/AuthDtos.cs` |
+| `CreateAdminUserRequest` validation attributes | Enforces username/email/password validation for admin user creation. | `src/Tabsan.EduSphere.Application/DTOs/Auth/AdminUserManagementDtos.cs` |
+| `UpdateAdminUserRequest` validation attributes | Enforces safe email/password validation for admin user updates. | `src/Tabsan.EduSphere.Application/DTOs/Auth/AdminUserManagementDtos.cs` |
+| `SecurityValidationTests.LoginRequest_InvalidUsernameAndShortPassword_FailsValidation()` | Verifies hardened login validation rejects invalid usernames and weak passwords. | `tests/Tabsan.EduSphere.UnitTests/SecurityValidationTests.cs` |
+| `SecurityValidationTests.LoginRequest_ValidValues_PassesValidation()` | Verifies valid login inputs remain accepted by validation. | `tests/Tabsan.EduSphere.UnitTests/SecurityValidationTests.cs` |
+| `SecurityValidationTests.CreateAdminUserRequest_InvalidEmail_FailsValidation()` | Verifies invalid admin email values are rejected. | `tests/Tabsan.EduSphere.UnitTests/SecurityValidationTests.cs` |
+| `SecurityValidationTests.ForceChangePasswordRequest_EmptyPassword_FailsValidation()` | Verifies forced password change requires a non-empty password. | `tests/Tabsan.EduSphere.UnitTests/SecurityValidationTests.cs` |
+
 ## Final-Touches Phase 32 - Cross-Phase Operational Guardrails (2026-05-10)
 
 ### Report Center and Link Regression Guardrails (Stage 32.1)

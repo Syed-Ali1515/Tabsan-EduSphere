@@ -8,6 +8,16 @@
 
 ## Execution Updates
 
+### 2026-05-10 — Phase 33 Stage 33.3
+- Added DataAnnotations-based validation to auth/admin DTOs:
+  - login, refresh, change-password, and forced-password-change requests now enforce required and length-constrained inputs,
+  - admin user create/update requests now enforce required username/email/password constraints.
+- Added `SecurityValidationTests` for executable coverage of the hardened validation paths.
+- Validation:
+  - `dotnet build Tabsan.EduSphere.sln` passed.
+  - `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj --filter "FullyQualifiedName~SecurityValidationTests"` passed `4/4`.
+  - `dotnet test Tabsan.EduSphere.sln --no-build` passed `234/234`.
+
 ### 2026-05-10 — Phase 33 Stage 33.2
 - Hardened runtime hosting behavior in API/Web:
   - added config-driven reverse-proxy trust options (`ReverseProxy:Enabled`, `KnownProxies`, `ForwardLimit`, `RequireHeaderSymmetry`),

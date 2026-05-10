@@ -71,6 +71,7 @@ Phase30Stage1Tests.cs
 Phase30Stage2Tests.cs
 Phase30Stage3Tests.cs
 Phase31Stage1RegressionMatrixTests.cs
+SecurityValidationTests.cs
 UnitTest1.cs
 
 [metadataReferences]
