@@ -4,6 +4,7 @@ SET XACT_ABORT ON;
 /*
   Lightweight maintenance script aligned with current hierarchy.
   Safe to run repeatedly.
+  Run this script after major upgrades or bulk imports to ensure all indexes and views are current.
 */
 
 /* 1) Missing supportive indexes */

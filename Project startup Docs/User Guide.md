@@ -1,7 +1,9 @@
+
+(Moved to User Guide/User Guide.md. This file is deprecated.)
 # Tabsan EduSphere – User Guide
 
-**Version:** 1.0  
-**Date:** 29 April 2026  
+**Version:** 1.1  
+**Date:** 11 May 2026  
 **Aligned With PRD:** v1.7 | Modules v1.2  
 **Audience:** Students, Faculty, Admins, Super Admins
 
@@ -9,182 +11,32 @@
 
 ## 1. Introduction
 
-Tabsan EduSphere is a secure, license-based university management portal. It is accessible via any modern web browser. Features available to you depend on your assigned role and the modules your institution has activated.
+Tabsan EduSphere is a secure, license-based university management portal. It is accessible via any modern web browser. Features available to you depend on your assigned role, the modules your institution has activated, and the current license scope (School, College, University).
+---
+
+## 0. What’s New (May 2026)
+
+- License tool now supports 1 month, 1/2/3 year, and permanent expiry, and explicit School/College/University scope.
+- UAT, SAT, and Output documentation are available in the Docs folder for validation and acceptance.
+- Import/export (CSV, PDF, Excel) and index maintenance scripts are included for admins and IT staff.
+### 2.6 Import/Export and Reports
+
+Admins and SuperAdmins can:
+- Import users from CSV (see Admin Guide)
+- Export timetables and results as PDF/Excel
+- Use the Reports section for operational exports
+### 2.7 Database Index Maintenance
+
+DBAs/IT staff: See Scripts/04-Maintenance-Indexes-And-Views.sql for index and view maintenance. Run after major upgrades or bulk imports.
+### 2.8 UAT/SAT/Output Docs
+
+Acceptance and validation checklists are in Docs/UAT.md, Docs/SAT.md, Docs/Output.md.
 
 This guide is organised by role. Navigate to your section to get started.
 
 ---
 
 ## 2. Getting Started
-
-### 2.1 Supported Browsers
-
-- Google Chrome 110+
-- Microsoft Edge 110+
-- Mozilla Firefox 110+
-- Safari 16+
-
-### 2.2 Accessing the Portal
-
-1. Open your browser and navigate to the URL provided by your institution.
-2. You will land on the **Login** page.
-
-### 2.3 First-Time Login
-
-**Students**
-1. Click **Sign Up**.
-2. Enter your official **Registration Number** issued by the university.
-3. Create a password following the displayed password policy.
-4. Submit. Your account is immediately linked to your department, program, and current semester.
-
-**Faculty / Admin / Super Admin**
-Accounts are created by the Super Admin. You will receive login credentials directly. Change your password on first login when prompted.
-
-### 2.4 Logging In
-
-1. Enter your **Username** and **Password**.
-2. Click **Login**.
-3. You will be directed to your role-specific dashboard.
-
-### 2.5 Logging Out
-
-Click your profile avatar in the top-right corner and select **Logout**. Always log out when using a shared device.
-
----
-
-## 3. Student Guide
-
-### 3.1 Dashboard
-
-Upon login you see a personalised dashboard showing:
-- Upcoming assignment deadlines
-- Recent notifications
-- Current semester summary (GPA, enrolled courses)
-- FYP meeting schedule (if FYP module is active)
-
----
-
-### 3.2 Viewing Academic History
-
-1. Navigate to **My Academic Record** in the sidebar.
-2. Select a semester from the semester dropdown to view:
-   - Enrolled courses
-   - Grades and GPA
-   - Attendance summary
-   - CGPA across all semesters
-3. Records from all semesters are always visible and are never deleted.
-
----
-
-### 3.3 Assignments
-
-**Viewing Assignments**
-1. Go to **Assignments** in the sidebar.
-2. Assignments are grouped by **Semester → Course → Assignment**.
-3. Each card shows the title, due date, and submission status.
-
-**Submitting an Assignment**
-1. Click an assignment title to open the detail view.
-2. Click **Submit**.
-3. Upload your file or enter your response text.
-4. Click **Confirm Submission**.
-5. A confirmation message and timestamp will be displayed.
-
-> Each assignment allows one submission. Review your work before confirming.
-
-**Viewing Grades and Feedback**
-- Once marked by your faculty member, the grade and feedback appear on the assignment detail page.
-
----
-
-### 3.4 Quizzes
-
-1. Go to **Quizzes** in the sidebar.
-2. Active quizzes display a countdown timer and an **Attempt** button.
-3. Click **Attempt** to start. Read all instructions before beginning.
-4. Answer each question and click **Submit Quiz** when finished.
-5. The number of allowed attempts is shown on each quiz card. Once exhausted, the attempt button is disabled.
-
----
-
-### 3.5 Attendance
-
-1. Go to **Attendance** in the sidebar.
-2. View attendance per course for the current or any previous semester.
-3. If your attendance falls below the institution threshold, you will receive a notification and the course card will display a warning indicator.
-
----
-
-### 3.6 Results and Transcripts
-
-1. Go to **Results** in the sidebar.
-2. View grades for all courses in the selected semester.
-3. To download a transcript:
-   - Click **Download Transcript**.
-   - Select the format (PDF or Excel).
-   - Click **Generate**. The file will download to your device.
-
----
-
-### 3.7 Notifications
-
-1. Click the **bell icon** in the top navigation bar.
-2. All notifications are listed newest first.
-3. Click a notification to open it and mark it as read.
-4. Notification categories: Assignment, Quiz, Result, Attendance Warning, FYP, Admin Notice.
-
----
-
-### 3.8 FYP Schedule
-
-1. Go to **Final Year Project** in the sidebar.
-2. View your assigned project, supervisor, and upcoming meeting schedule.
-3. Each meeting entry shows: date, time, department, room number, and panel members.
-4. Meeting updates trigger a notification automatically.
-
----
-
-### 3.9 AI Chatbot
-
-1. Click the **chat bubble** icon in the bottom-right corner.
-2. Type your query in plain language.
-3. The chatbot understands your academic context (assignments, attendance, results, FYP) and your current role.
-4. Use the chatbot to ask about deadlines, grades, or upcoming meetings.
-
-> The chatbot is only available when activated and licensed by your institution.
-
----
-
-### 3.10 Personalisation – UI Themes
-
-1. Click your profile avatar → **Settings** → **Appearance**.
-2. Browse and preview available themes (light, dark, high-contrast, and extended packs).
-3. Click **Apply** to save. Your selection persists across sessions.
-
----
-
-## 4. Faculty Guide
-
-### 4.1 Dashboard
-
-Your dashboard shows:
-- Pending assignment submissions to grade
-- Upcoming FYP meetings
-- Recent notifications
-- Course summary for the current semester
-
----
-
-### 4.2 Managing Assignments
-
-**Creating an Assignment**
-1. Go to **Assignments** → **Create New**.
-2. Select the **Course**, **Semester**, and enter:
-   - Title
-   - Description
-   - Due Date
-3. Toggle **Publish** when ready to make it visible to students.
-4. Students enrolled in the course receive a notification automatically.
 
 **Grading Submissions**
 1. Open an assignment and click **View Submissions**.

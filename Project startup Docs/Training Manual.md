@@ -1,7 +1,9 @@
+
+(Moved to User Guide/Training Manual.md. This file is deprecated.)
 # Tabsan EduSphere – Training Manual
 
-**Version:** 1.0  
-**Date:** 29 April 2026  
+**Version:** 1.1  
+**Date:** 11 May 2026  
 **Aligned With PRD:** v1.7 | Modules v1.2  
 **Audience:** Trainers, IT Staff, Super Admins, Department Coordinators
 
@@ -15,17 +17,22 @@ Each session is designed to stand alone. Trainers may deliver sessions in sequen
 
 ---
 
-## 2. Pre-Training Setup Checklist
+## 2. Pre-Training Setup Checklist (Updated)
 
 Before delivering any training session, ensure the following are in place:
 
 - [ ] Training environment (separate from production) is available and accessible
-- [ ] A valid license has been uploaded and is active on the training environment
+- [ ] A valid license (with correct institution scope and expiry) has been uploaded and is active on the training environment
 - [ ] At least one test account per role exists (Student, Faculty, Admin, Super Admin)
 - [ ] Sample data is seeded: at least two departments, two programs, five courses, three semesters, and ten students
 - [ ] At least one assignment, one quiz, one result set, and one FYP meeting are pre-created
 - [ ] All trainers have reviewed the User Guide before delivery
 - [ ] Projector or screen share is ready for live demonstration
+- [ ] UAT, SAT, and Output docs in Docs/ are reviewed
+- [ ] Import/export and index maintenance scripts are available for IT staff
+## 2.1 License Tool and Acceptance Docs
+
+The Tabsan.Lic tool now supports institution scope (School/College/University) and multiple expiry options. See Docs/UAT.md and Docs/SAT.md for acceptance criteria.
 
 ---
 

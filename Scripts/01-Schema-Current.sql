@@ -87,6 +87,8 @@ BEGIN
         [Id] uniqueidentifier NOT NULL,
         [LicenseHash] nvarchar(128) NOT NULL,
         [LicenseType] nvarchar(max) NOT NULL,
+        [InstitutionScope] nvarchar(32) NOT NULL, -- School, College, University
+        [ExpiryType] nvarchar(32) NOT NULL,      -- OneMonth, OneYear, TwoYear, ThreeYear, Permanent
         [Status] nvarchar(max) NOT NULL,
         [ActivatedAt] datetime2 NOT NULL,
         [ExpiresAt] datetime2 NULL,
