@@ -8,6 +8,15 @@
 
 ## Execution Updates
 
+### 2026-05-11 — Phase 2 Stage 2.1
+- Added API per-instance identity bootstrap in startup using `ScaleOut:InstanceId` with machine/process fallback for horizontal node uniqueness.
+- Added optional node telemetry header emission (`X-EduSphere-Instance`) controlled by `ScaleOut:ExposeInstanceHeader`.
+- Added node probe endpoint `GET /health/instance` for load balancer verification across scaled API instances.
+- Added operational script `Scripts/Phase2-Stage2.1-MultiInstance-Api.ps1` to launch/stop multiple local API nodes for baseline scale testing.
+- Validation:
+  - `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed `130/130`.
+  - `dotnet build src/Tabsan.EduSphere.API/Tabsan.EduSphere.API.csproj -v minimal` encountered expected file-lock warnings/errors due running API process (PID 35564).
+
 ### 2026-05-11 — Phase 1 Stage 1.4
 - Added short-TTL dashboard composition caching in `DashboardCompositionService.GetWidgets(...)` with role + institution policy cache keys.
 - Added short-TTL sidebar read caching in `SidebarMenuService` for top-level and role-visible menus, plus version bump invalidation on sidebar mutations.

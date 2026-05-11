@@ -35,6 +35,7 @@ using Tabsan.EduSphere.Infrastructure.Exporters;
 using Tabsan.EduSphere.Infrastructure.Integrations;
 using Tabsan.EduSphere.API.Services;
 using Microsoft.AspNetCore.HttpOverrides;
+using System.Diagnostics;
 using Serilog;
 using Serilog.Events;
 
@@ -49,6 +50,15 @@ builder.Configuration
 
 Console.WriteLine($"[Startup] Environment: {env.EnvironmentName} | App: {env.ApplicationName}");
 Console.WriteLine("[Startup] Configuration sources: appsettings.json, appsettings.{Environment}.json, environment variables");
+
+// Final-Touches Phase 34 Stage 2.1 — per-instance identity baseline for horizontal API scale verification.
+var configuredInstanceId = builder.Configuration["ScaleOut:InstanceId"];
+var runtimeInstanceId = string.IsNullOrWhiteSpace(configuredInstanceId)
+    ? $"{Environment.MachineName.ToLowerInvariant()}-p{Environment.ProcessId}"
+    : configuredInstanceId.Trim();
+var exposeInstanceHeader = builder.Configuration.GetValue("ScaleOut:ExposeInstanceHeader", true);
+var processStartUtc = DateTimeOffset.UtcNow;
+Console.WriteLine($"[Startup] ScaleOut InstanceId: {runtimeInstanceId} | ExposeInstanceHeader: {exposeInstanceHeader}");
 
 var configuredConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 if (string.IsNullOrWhiteSpace(configuredConnectionString))
@@ -495,6 +505,15 @@ app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(apiWebRoot)
 });
+if (exposeInstanceHeader)
+{
+    // Final-Touches Phase 34 Stage 2.1 — emit node identity so balancer distribution can be observed.
+    app.Use(async (context, next) =>
+    {
+        context.Response.Headers["X-EduSphere-Instance"] = runtimeInstanceId;
+        await next();
+    });
+}
 app.UseSecurityHeaders();
 app.UseRateLimiter();
 if (corsOrigins.Length > 0)
@@ -509,5 +528,14 @@ app.UseAuthorization();
 app.UseMiddleware<Tabsan.EduSphere.API.Middleware.InstitutionContextMiddleware>();
 app.MapControllers();
 app.MapHealthChecks("/health");
+app.MapGet("/health/instance", () => Results.Ok(new
+{
+    status = "ok",
+    instanceId = runtimeInstanceId,
+    processId = Environment.ProcessId,
+    machine = Environment.MachineName,
+    uptimeSeconds = (long)(DateTimeOffset.UtcNow - processStartUtc).TotalSeconds,
+    version = typeof(Program).Assembly.GetName().Version?.ToString() ?? "unknown"
+})).AllowAnonymous();
 
 app.Run();

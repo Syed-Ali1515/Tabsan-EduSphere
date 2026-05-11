@@ -29,3 +29,9 @@ sqlcmd -S "localhost" -E -d "TabsanEduSphere" -i "Scripts\05-PostDeployment-Chec
 - `01-Schema-Current.sql` is generated from the current migration chain and can be safely rerun.
 - Demo users in `03-FullDummyData.sql` use `REPLACE_WITH_VALID_HASH` placeholder for password hashes. Replace before using interactive login.
 - Scripts are designed to be idempotent where practical (MERGE / NOT EXISTS guards).
+
+## Operational Scale Scripts
+
+| File | Purpose |
+|---|---|
+| `Phase2-Stage2.1-MultiInstance-Api.ps1` | Starts/stops multiple local API instances for horizontal-scale baseline checks (`/health/instance`, `X-EduSphere-Instance`). |

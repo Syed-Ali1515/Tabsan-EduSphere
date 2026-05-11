@@ -386,6 +386,12 @@
 - **Safe Cache Invalidation**: Version-based invalidation on write/mutation flows to reduce stale data risk while preserving read performance.
 - **Load-Test Validation Workflow**: Stage-by-stage validation with unit/integration gates and k6 progressive scale checks.
 
+### Horizontal API Scaling (Phase 2)
+- **Multi-Instance Node Identity**: Each API node can expose a unique instance id via configuration for scale-out deployments.
+- **Instance Distribution Traceability**: Optional response header (`X-EduSphere-Instance`) allows request distribution validation behind load balancers.
+- **Per-Node Health Visibility**: Dedicated instance health endpoint (`/health/instance`) reports node identity and uptime.
+- **Scale-Out Operations Script**: Local multi-instance API launcher script supports fast Stage 2.1 baseline verification.
+
 ---
 
 ## Architecture & Technical Details

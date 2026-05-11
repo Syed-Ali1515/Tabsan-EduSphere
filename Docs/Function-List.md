@@ -5,6 +5,17 @@
 
 ## Final-Touches Phase 34 - High-Load Optimization (2026-05-11)
 
+### Stage 2.1 - Multi-Instance API Deployment Baseline
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `Program` scale-out instance identity bootstrap (`ScaleOut:InstanceId`) | Assigns deterministic runtime node identity (configured value or machine+process fallback) for horizontally scaled API observability. | `src/Tabsan.EduSphere.API/Program.cs` |
+| `Program` instance telemetry response header (`X-EduSphere-Instance`) | Emits node identity per response to verify load balancer traffic distribution across API nodes. | `src/Tabsan.EduSphere.API/Program.cs` |
+| `GET /health/instance` | Exposes per-node health payload (instance id, process id, machine, uptime, version) for load balancer and scale validation probes. | `src/Tabsan.EduSphere.API/Program.cs` |
+| `ScaleOut:InstanceId` configuration key | Provides deploy-time instance identity override for node-aware horizontal scaling rollout. | `src/Tabsan.EduSphere.API/appsettings.json`, `src/Tabsan.EduSphere.API/appsettings.Production.json` |
+| `ScaleOut:ExposeInstanceHeader` configuration key | Controls whether instance identity response header is emitted from API nodes. | `src/Tabsan.EduSphere.API/appsettings.json`, `src/Tabsan.EduSphere.API/appsettings.Production.json` |
+| `Phase2-Stage2.1-MultiInstance-Api.ps1` | Starts/stops multiple local API instances on sequential ports for Stage 2.1 horizontal-scale baseline checks. | `Scripts/Phase2-Stage2.1-MultiInstance-Api.ps1` |
+
 ### Stage 1.4 - Data Access Caching (Hot Read Paths)
 
 | Function Name | Purpose | Location |

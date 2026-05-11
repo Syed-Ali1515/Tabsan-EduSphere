@@ -121,6 +121,24 @@ This plan converts the high-load optimization guide into phased execution stages
 - Treat each stage as done only when validated by repeatable load test results.
 
 ## Progress Log
+### 2026-05-11 - Phase 2 Stage 2.1 Completed
+- Status: Completed.
+
+#### Implementation Summary
+- Added per-instance identity baseline in API startup (`ScaleOut:InstanceId`) with automatic runtime fallback (`{machine}-p{processId}`) for horizontally scaled node visibility.
+- Added optional instance telemetry response header (`X-EduSphere-Instance`) controlled by `ScaleOut:ExposeInstanceHeader` for load balancer distribution verification.
+- Added explicit node health endpoint `GET /health/instance` returning instance id, process id, machine, uptime, and version.
+- Added Stage 2.1 operational script `Scripts/Phase2-Stage2.1-MultiInstance-Api.ps1` for local multi-instance start/stop verification.
+- Extended API scale-out configuration in appsettings (default and production) with `InstanceId` and `ExposeInstanceHeader` keys.
+
+#### Validation Summary
+- Validation command: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal`.
+- Result: passed (130/130), failed 0.
+- API build command outcome: `dotnet build src/Tabsan.EduSphere.API/Tabsan.EduSphere.API.csproj -v minimal` reported file-lock copy failures due a running API process (PID 35564), but no Stage 2.1 compile regression was observed in unit-test compilation path.
+
+#### Next Stage
+- Phase 2 Stage 2.2: load balancer policy baseline (least-connections and health-probe routing behavior).
+
 ### 2026-05-11 - Phase 1 Stage 1.4 Completed
 - Status: Completed.
 

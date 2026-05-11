@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.61 (Phase 1 Stage 1.4 hot-path caching complete)  
+**Version:** 1.62 (Phase 2 Stage 2.1 multi-instance API baseline complete)  
 **Status:** Approved  
 **Prepared By:** Product Team  
 **Last Updated:** 11 May 2026  
@@ -9,6 +9,14 @@
 ---
 
 ## 0. Implementation Update Log
+
+### 2026-05-11 — Phase 2 Stage 2.1
+- **Multi-instance baseline:** introduced API instance identity bootstrap (`ScaleOut:InstanceId`) with runtime fallback to machine/process identity.
+- **Balancer observability:** added optional `X-EduSphere-Instance` response header for request distribution tracing.
+- **Node probe endpoint:** added `GET /health/instance` payload for per-node verification (instance, process, host, uptime, version).
+- **Operational script:** added `Scripts/Phase2-Stage2.1-MultiInstance-Api.ps1` for local multi-instance start/stop checks.
+- **Schema impact:** no database migration required.
+- **Validation:** `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed (**130/130**).
 
 ### 2026-05-11 — Phase 1 Stage 1.4
 - **Dashboard composition caching:** added short-TTL role/policy keyed memory cache in dashboard composition service.
