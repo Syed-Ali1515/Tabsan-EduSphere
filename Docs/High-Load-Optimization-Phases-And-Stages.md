@@ -68,18 +68,26 @@ This plan converts the high-load optimization guide into phased execution stages
 - Enable compression (gzip/brotli).
 - Enable HTTP keep-alive and HTTP/2.
 
+### Stage 3.3 Completed
+- Status: Completed
+- Added Kestrel keep-alive, request-header timeout, server-header suppression, and HTTP/2 ping tuning in API and Web hosts.
+- Kept response compression enabled with Brotli/Gzip fast-path settings.
+- Validation passed with `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` (130/130) and syntax checks on the touched startup files reported no errors.
+
 #### Phase 3 Summary
 **Implementation Summary**
 - Added `GET /api/v1/dashboard/context` to aggregate dashboard modules, vocabulary, and widgets into one response.
 - Updated the portal ModuleComposition screen to consume the aggregated endpoint instead of three separate API calls.
 - Added Web client support for the aggregated dashboard context payload.
 - Removed sync-over-async `ContinueWith` bridges from the hot timetable, settings, quiz, and building/room repository methods.
+- Tuned API/Web Kestrel transport defaults for keep-alive and HTTP/2-friendly connection handling.
 
 **Validation Summary**
 - Validation command: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal`.
 - Result: passed (130/130), failed 0.
 - Syntax checks on the changed API controller, portal controller, and Web API client files reported no errors.
 - Syntax checks on the repository files reported no errors.
+- Syntax checks on the updated API/Web startup files reported no errors.
 
 ## Phase 4: Caching Strategy
 ### Stage 4.1: API Cache Policy

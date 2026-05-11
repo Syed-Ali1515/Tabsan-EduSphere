@@ -5,6 +5,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -57,6 +58,17 @@ else if (!builder.Environment.IsDevelopment() && !builder.Environment.IsEnvironm
 {
     throw new InvalidOperationException("ScaleOut:SharedDataProtectionKeyRingPath is required outside Development/Testing to keep web auth cookies valid across instances.");
 }
+
+// Final-Touches Phase 34 Stage 3.3 — transport tuning for keep-alive and HTTP/2-friendly connection handling.
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.AddServerHeader = false;
+    options.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(2);
+    options.Limits.RequestHeadersTimeout = TimeSpan.FromSeconds(20);
+    options.Limits.Http2.KeepAlivePingDelay = TimeSpan.FromSeconds(30);
+    options.Limits.Http2.KeepAlivePingTimeout = TimeSpan.FromSeconds(10);
+});
+
 builder.Services.AddControllersWithViews()
     .AddJsonOptions(options =>
     {

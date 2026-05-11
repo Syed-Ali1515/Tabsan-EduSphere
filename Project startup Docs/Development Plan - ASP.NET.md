@@ -8,6 +8,11 @@
 
 ## Execution Updates
 
+### 2026-05-11 — Phase 3 Stage 3.3
+- Added Kestrel transport tuning in API and Web startup for keep-alive timeout, request-header timeout, server-header suppression, and HTTP/2 ping tuning.
+- Preserved Brotli/Gzip response compression with Fastest settings in both hosts.
+- Validation: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed `130/130`; syntax checks on the updated startup files reported no errors.
+
 ### 2026-05-11 — Phase 3 Stage 3.2
 - Replaced `ContinueWith` wrappers with direct async `await` returns in hot repository methods for timetable, settings, quiz, and building/room reads.
 - Kept the data-access layer fully async on the high-traffic query paths that still fed portal screens and scheduling/reporting flows.

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.IdentityModel.Tokens;
 using Tabsan.EduSphere.Domain.Interfaces;
 using Tabsan.EduSphere.Application.Auth;
@@ -90,6 +91,16 @@ builder.Services.Configure<BrotliCompressionProviderOptions>(options =>
 builder.Services.Configure<GzipCompressionProviderOptions>(options =>
 {
     options.Level = System.IO.Compression.CompressionLevel.Fastest;
+});
+
+// Final-Touches Phase 34 Stage 3.3 — transport tuning for keep-alive and HTTP/2-friendly connection handling.
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.AddServerHeader = false;
+    options.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(2);
+    options.Limits.RequestHeadersTimeout = TimeSpan.FromSeconds(20);
+    options.Limits.Http2.KeepAlivePingDelay = TimeSpan.FromSeconds(30);
+    options.Limits.Http2.KeepAlivePingTimeout = TimeSpan.FromSeconds(10);
 });
 
 // ── Serilog (structured logging — console + rolling file) ───────────────────────

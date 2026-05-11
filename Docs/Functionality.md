@@ -403,6 +403,11 @@
 - **Repository Async Cleanup**: Hot timetable, settings, quiz, and building/room repository reads now use direct awaited EF calls instead of task continuation bridging.
 - **Non-Blocking Data Access**: Remaining high-traffic reads stay fully asynchronous so request threads are not tied up unnecessarily.
 
+### Transport Optimization (Phase 3)
+- **Compression**: Brotli and Gzip response compression remains enabled for HTTPS responses.
+- **Connection Tuning**: API and Web hosts use Kestrel keep-alive and request-header timeout tuning for cleaner transport behavior.
+- **Header Reduction**: Server headers are suppressed to reduce wire chatter on high-volume responses.
+
 ---
 
 ## Architecture & Technical Details

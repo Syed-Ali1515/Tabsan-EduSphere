@@ -5,6 +5,15 @@
 
 ## Final-Touches Phase 34 - High-Load Optimization (2026-05-11)
 
+### Stage 3.3 - Transport Optimization
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `Program` Kestrel transport tuning (API) | Sets keep-alive timeout, request-header timeout, server-header suppression, and HTTP/2 ping tuning for the API host. | `src/Tabsan.EduSphere.API/Program.cs` |
+| `Program` Kestrel transport tuning (Web) | Sets keep-alive timeout, request-header timeout, server-header suppression, and HTTP/2 ping tuning for the Web host. | `src/Tabsan.EduSphere.Web/Program.cs` |
+| `AddResponseCompression` configuration (API) | Keeps Brotli/Gzip compression enabled with Fastest level for HTTPS responses. | `src/Tabsan.EduSphere.API/Program.cs` |
+| `AddResponseCompression` configuration (Web) | Keeps Brotli/Gzip compression enabled with Fastest level for HTTPS responses. | `src/Tabsan.EduSphere.Web/Program.cs` |
+
 ### Stage 3.2 - Async and Non-Blocking IO
 
 | Function Name | Purpose | Location |

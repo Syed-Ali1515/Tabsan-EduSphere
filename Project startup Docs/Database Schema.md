@@ -28,6 +28,12 @@
 - Changes were limited to model validation attributes and unit tests.
 - No database schema change and no EF migration were required.
 
+## 2026-05-11 Update — Phase 3 Stage 3.3
+
+- Stage 3.3 delivered transport optimization in API/Web startup only.
+- Changes were limited to Kestrel transport configuration and compression settings.
+- No database schema change and no EF migration were required.
+
 ## 2026-05-10 Update — Phase 32 Stage 32.2
 
 - Stage 32.2 delivered report export action/endpoint regression guardrail integration tests only.
