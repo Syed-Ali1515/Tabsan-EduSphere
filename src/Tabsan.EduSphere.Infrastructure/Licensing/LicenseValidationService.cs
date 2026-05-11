@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using Tabsan.EduSphere.Application.Interfaces;
 using Tabsan.EduSphere.Domain.Interfaces;
 using Tabsan.EduSphere.Domain.Licensing;
 
@@ -30,6 +31,7 @@ namespace Tabsan.EduSphere.Infrastructure.Licensing;
 public class LicenseValidationService
 {
     private readonly ILicenseRepository _licenseRepo;
+    private readonly IInstitutionPolicyService _institutionPolicy;
     private readonly ILogger<LicenseValidationService> _logger;
 
     private static readonly byte[] _magic = "TABLIC\x01"u8.ToArray();
@@ -42,10 +44,12 @@ public class LicenseValidationService
 
     public LicenseValidationService(
         ILicenseRepository licenseRepo,
+        IInstitutionPolicyService institutionPolicy,
         ILogger<LicenseValidationService> logger)
     {
-        _licenseRepo = licenseRepo;
-        _logger      = logger;
+        _licenseRepo      = licenseRepo;
+        _institutionPolicy = institutionPolicy;
+        _logger           = logger;
     }
 
     /// <summary>
@@ -178,6 +182,11 @@ public class LicenseValidationService
                 new ConsumedVerificationKey(payload.VerificationKeyHash), ct);
             await _licenseRepo.SaveChangesAsync(ct);
 
+            await _institutionPolicy.SavePolicyAsync(new SaveInstitutionPolicyCommand(
+                payload.IncludeSchool,
+                payload.IncludeCollege,
+                payload.IncludeUniversity), ct);
+
             _logger.LogInformation(
                 "License activated. Type={Type}, ExpiresAt={Expiry}, MaxUsers={MaxUsers}, Domain={Domain}",
                 licenseType, payload.ExpiresAt?.ToString("O") ?? "never", payload.MaxUsers, activatedDomain ?? "any");
@@ -270,6 +279,9 @@ public class LicenseValidationService
         public DateTime IssuedAt { get; set; }
         public DateTime? ExpiresAt { get; set; }
         public string VerificationKeyHash { get; set; } = default!;
+        public bool IncludeSchool { get; set; }
+        public bool IncludeCollege { get; set; }
+        public bool IncludeUniversity { get; set; } = true;
 
         // ── P2-S1-01 / P2-S2-01: Concurrent user limit ──────────────────────
         /// <summary>

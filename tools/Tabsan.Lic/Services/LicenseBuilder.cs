@@ -28,6 +28,9 @@ public class LicenseBuilder
             IssuedAt            = key.IssuedAt,
             ExpiresAt           = key.ExpiresAt,
             VerificationKeyHash = key.VerificationKeyHash,
+            IncludeSchool       = key.IncludeSchool,
+            IncludeCollege      = key.IncludeCollege,
+            IncludeUniversity    = key.IncludeUniversity,
             // P3-S1-01: Embed Phase 2 constraint fields in the payload
             MaxUsers            = key.MaxUsers,
             AllowedDomain       = key.AllowedDomain
@@ -48,6 +51,9 @@ public class LicenseBuilder
         public DateTime IssuedAt { get; init; }
         public DateTime? ExpiresAt { get; init; }
         public string VerificationKeyHash { get; init; } = default!;
+        public bool IncludeSchool { get; init; }
+        public bool IncludeCollege { get; init; }
+        public bool IncludeUniversity { get; init; } = true;
         // P3-S1-01: Phase 2 constraint fields
         public int MaxUsers { get; init; }
         public string? AllowedDomain { get; init; }

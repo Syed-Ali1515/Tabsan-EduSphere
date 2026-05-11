@@ -59,12 +59,12 @@ dotnet run
 
 - **Location**: `%APPDATA%/Tabsan/tabsan_lic.db` (SQLite)
 - **Auto-created** on first run
-- Contains: issued keys, hashes, expiry types, generation timestamps, labels
+- Contains: issued keys, hashes, expiry types, institution scope, generation timestamps, labels
 
 ## Features
 
-1. **Generate Keys** — Single or bulk generation with 1/2/3 year or Permanent expiry
-2. **Build `.tablic` Files** — AES-256 encrypt + RSA-2048 sign
+1. **Generate Keys** — Single or bulk generation with 1 month, 1/2/3 year, or Permanent expiry
+2. **Build `.tablic` Files** — Choose School, College, University, max users, domain lock, then AES-256 encrypt + RSA-2048 sign
 3. **List Keys** — View all issued keys with metadata
 4. **Export CSV** — Audit trail of generated keys for vendor records
 

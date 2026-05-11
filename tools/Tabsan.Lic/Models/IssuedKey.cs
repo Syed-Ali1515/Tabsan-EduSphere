@@ -34,6 +34,15 @@ public class IssuedKey
     /// </summary>
     public DateTime? ExpiresAt { get; set; }
 
+    /// <summary>True when the generated license is allowed for School institutions.</summary>
+    public bool IncludeSchool { get; set; }
+
+    /// <summary>True when the generated license is allowed for College institutions.</summary>
+    public bool IncludeCollege { get; set; }
+
+    /// <summary>True when the generated license is allowed for University institutions.</summary>
+    public bool IncludeUniversity { get; set; } = true;
+
     /// <summary>True once a .tablic file has been generated for this key record.</summary>
     public bool IsLicenseGenerated { get; set; }
 

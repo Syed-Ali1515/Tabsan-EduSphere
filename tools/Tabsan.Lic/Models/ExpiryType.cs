@@ -6,15 +6,18 @@ namespace Tabsan.Lic.Models;
 /// </summary>
 public enum ExpiryType
 {
+    /// <summary>License expires one month from the issue date.</summary>
+    OneMonth = 1,
+
     /// <summary>License expires one year from the issue date.</summary>
-    OneYear = 1,
+    OneYear = 2,
 
     /// <summary>License expires two years from the issue date.</summary>
-    TwoYears = 2,
+    TwoYears = 3,
 
     /// <summary>License expires three years from the issue date.</summary>
-    ThreeYears = 3,
+    ThreeYears = 4,
 
     /// <summary>License never expires.</summary>
-    Permanent = 4
+    Permanent = 5
 }

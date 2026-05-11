@@ -42,6 +42,24 @@ using (var scope = sp.CreateScope())
         cmd.CommandText = "ALTER TABLE issued_keys ADD COLUMN MaxUsers INTEGER NOT NULL DEFAULT 0;";
         await cmd.ExecuteNonQueryAsync();
     }
+    if (!existingColumns.Contains("IncludeSchool"))
+    {
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "ALTER TABLE issued_keys ADD COLUMN IncludeSchool INTEGER NOT NULL DEFAULT 0;";
+        await cmd.ExecuteNonQueryAsync();
+    }
+    if (!existingColumns.Contains("IncludeCollege"))
+    {
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "ALTER TABLE issued_keys ADD COLUMN IncludeCollege INTEGER NOT NULL DEFAULT 0;";
+        await cmd.ExecuteNonQueryAsync();
+    }
+    if (!existingColumns.Contains("IncludeUniversity"))
+    {
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "ALTER TABLE issued_keys ADD COLUMN IncludeUniversity INTEGER NOT NULL DEFAULT 1;";
+        await cmd.ExecuteNonQueryAsync();
+    }
     if (!existingColumns.Contains("AllowedDomain"))
     {
         using var cmd = conn.CreateCommand();
@@ -130,7 +148,7 @@ static async Task HandleGenerateSingle(KeyService keySvc)
     Console.ResetColor();
     Console.WriteLine();
     Console.WriteLine($"  Hash (stored in DB): {record.VerificationKeyHash}");
-    Console.WriteLine($"  Expiry: {record.ExpiresAt?.ToString("yyyy-MM-dd") ?? "Permanent"}");
+    Console.WriteLine($"  Expiry: {FormatExpiry(record.ExpiryType, record.ExpiresAt)}");
 
     Pause();
 }
@@ -157,10 +175,10 @@ static async Task HandleGenerateBulk(KeyService keySvc)
     Console.ForegroundColor = ConsoleColor.Green;
     Console.WriteLine($"\n  ✓ {results.Count} keys generated.\n");
     Console.ResetColor();
-    Console.WriteLine("  Id  | KeyId (short)       | Token");
-    Console.WriteLine("  ----|---------------------|-----------------------------------");
+    Console.WriteLine("  Id  | KeyId (short)       | Expiry      | Token");
+    Console.WriteLine("  ----|---------------------|-------------|-----------------------------------");
     foreach (var (rec, tok) in results)
-        Console.WriteLine($"  {rec.Id,-4}| {rec.KeyId.ToString()[..8],-21}| {tok}");
+        Console.WriteLine($"  {rec.Id,-4}| {rec.KeyId.ToString()[..8],-21}| {FormatExpiry(rec.ExpiryType, rec.ExpiresAt),-11}| {tok}");
 
     Pause();
 }
@@ -201,14 +219,20 @@ static async Task HandleBuildTablic(KeyService keySvc, LicenseBuilder builder)
     var domainInput = Console.ReadLine()?.Trim();
     key.AllowedDomain = string.IsNullOrWhiteSpace(domainInput) ? null : domainInput.ToLowerInvariant();
 
-    await keySvc.UpdateConstraintsAsync(key);
-
     Console.WriteLine();
     Console.ForegroundColor = ConsoleColor.Cyan;
     Console.WriteLine($"  MaxUsers    : {(maxUsers == 0 ? "Unlimited" : maxUsers.ToString())}");
     Console.WriteLine($"  AllowedDomain: {key.AllowedDomain ?? "(none — unrestricted)"}");
+    var scope = PromptInstitutionScope();
+    if (scope is null) { Pause(); return; }
+    key.IncludeSchool = scope.Value.IncludeSchool;
+    key.IncludeCollege = scope.Value.IncludeCollege;
+    key.IncludeUniversity = scope.Value.IncludeUniversity;
+    Console.WriteLine($"  Institution : {FormatInstitutionScope(key.IncludeSchool, key.IncludeCollege, key.IncludeUniversity)}");
     Console.ResetColor();
     Console.WriteLine();
+
+    await keySvc.UpdateConstraintsAsync(key);
 
     Console.Write("  Output path (e.g. C:\\Licenses\\license.tablic): ");
     var outPath = Console.ReadLine()?.Trim();
@@ -238,16 +262,17 @@ static async Task HandleListKeys(KeyService keySvc)
     var keys = await keySvc.ListAllAsync();
     if (keys.Count == 0) { Console.WriteLine("  No keys issued yet."); Pause(); return; }
 
-    // P3-S1-01: Show MaxUsers and AllowedDomain in list
-    Console.WriteLine($"  {"Id",-4} {"KeyId (short)",-10} {"Expiry",-12} {"MaxUsers",-10} {"LicGenerated",-14} {"AllowedDomain",-30} Label");
-    Console.WriteLine(new string('-', 110));
+    // P3-S1-01: Show institution scope, MaxUsers, and AllowedDomain in list
+    Console.WriteLine($"  {"Id",-4} {"KeyId (short)",-10} {"Expiry",-12} {"Scope",-30} {"MaxUsers",-10} {"LicGenerated",-14} {"AllowedDomain",-30} Label");
+    Console.WriteLine(new string('-', 142));
     foreach (var k in keys)
     {
-        var expiry  = k.ExpiresAt?.ToString("yyyy-MM-dd") ?? "Permanent";
+        var expiry  = FormatExpiry(k.ExpiryType, k.ExpiresAt);
+        var scope   = FormatInstitutionScope(k.IncludeSchool, k.IncludeCollege, k.IncludeUniversity);
         var licMark = k.IsLicenseGenerated ? "Yes" : "No";
         var maxU    = k.MaxUsers == 0 ? "Unlimited" : k.MaxUsers.ToString();
         var domain  = k.AllowedDomain ?? "(any)";
-        Console.WriteLine($"  {k.Id,-4} {k.KeyId.ToString()[..8],-10} {expiry,-12} {maxU,-10} {licMark,-14} {domain,-30} {k.Label}");
+        Console.WriteLine($"  {k.Id,-4} {k.KeyId.ToString()[..8],-10} {expiry,-12} {scope,-30} {maxU,-10} {licMark,-14} {domain,-30} {k.Label}");
     }
 
     Pause();
@@ -274,19 +299,69 @@ static async Task HandleExportCsv(KeyService keySvc)
 static ExpiryType? PromptExpiry()
 {
     Console.WriteLine("  Expiry type:");
-    Console.WriteLine("    [1] 1 year");
-    Console.WriteLine("    [2] 2 years");
-    Console.WriteLine("    [3] 3 years");
-    Console.WriteLine("    [4] Permanent");
+    Console.WriteLine("    [1] 1 month");
+    Console.WriteLine("    [2] 1 year");
+    Console.WriteLine("    [3] 2 years");
+    Console.WriteLine("    [4] 3 years");
+    Console.WriteLine("    [5] Permanent");
     Console.Write("  Choice: ");
     return Console.ReadLine()?.Trim() switch
     {
-        "1" => ExpiryType.OneYear,
-        "2" => ExpiryType.TwoYears,
-        "3" => ExpiryType.ThreeYears,
-        "4" => ExpiryType.Permanent,
+        "1" => ExpiryType.OneMonth,
+        "2" => ExpiryType.OneYear,
+        "3" => ExpiryType.TwoYears,
+        "4" => ExpiryType.ThreeYears,
+        "5" => ExpiryType.Permanent,
         _   => null
     };
+}
+
+static (bool IncludeSchool, bool IncludeCollege, bool IncludeUniversity)? PromptInstitutionScope()
+{
+    Console.WriteLine("  Institution scope (enter y/n for each type; at least one must be enabled):");
+    var includeSchool = PromptYesNo("    Include School? (y/n): ");
+    var includeCollege = PromptYesNo("    Include College? (y/n): ");
+    var includeUniversity = PromptYesNo("    Include University? (y/n): ");
+
+    if (!includeSchool && !includeCollege && !includeUniversity)
+    {
+        WriteError("At least one institution type must be enabled.");
+        return null;
+    }
+
+    return (includeSchool, includeCollege, includeUniversity);
+}
+
+static bool PromptYesNo(string prompt)
+{
+    while (true)
+    {
+        Console.Write(prompt);
+        var raw = Console.ReadLine()?.Trim().ToLowerInvariant();
+        if (raw is "y" or "yes") return true;
+        if (raw is "n" or "no") return false;
+        WriteError("Enter y or n.");
+    }
+}
+
+static string FormatExpiry(ExpiryType expiryType, DateTime? expiresAt)
+    => expiryType switch
+    {
+        ExpiryType.OneMonth   => expiresAt?.ToString("yyyy-MM-dd") is { } date ? $"1 month ({date})" : "1 month",
+        ExpiryType.OneYear    => expiresAt?.ToString("yyyy-MM-dd") is { } date ? $"1 year ({date})" : "1 year",
+        ExpiryType.TwoYears   => expiresAt?.ToString("yyyy-MM-dd") is { } date ? $"2 years ({date})" : "2 years",
+        ExpiryType.ThreeYears => expiresAt?.ToString("yyyy-MM-dd") is { } date ? $"3 years ({date})" : "3 years",
+        ExpiryType.Permanent  => "Permanent",
+        _                     => expiresAt?.ToString("yyyy-MM-dd") ?? expiryType.ToString()
+    };
+
+static string FormatInstitutionScope(bool includeSchool, bool includeCollege, bool includeUniversity)
+{
+    var enabled = new List<string>(3);
+    if (includeSchool) enabled.Add("School");
+    if (includeCollege) enabled.Add("College");
+    if (includeUniversity) enabled.Add("University");
+    return enabled.Count == 0 ? "None" : string.Join(", ", enabled);
 }
 
 static void WriteError(string msg)
