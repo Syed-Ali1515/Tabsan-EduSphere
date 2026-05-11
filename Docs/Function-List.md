@@ -5,6 +5,15 @@
 
 ## Final-Touches Phase 34 - High-Load Optimization (2026-05-11)
 
+### Stage 3.1 - Endpoint Aggregation
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `DashboardCompositionController.GetContext(...)` | Aggregates visible modules, academic vocabulary, and widgets into one dashboard-context response for the portal ModuleComposition screen. | `src/Tabsan.EduSphere.API/Controllers/DashboardCompositionController.cs` |
+| `IEduApiClient.GetDashboardCompositionContextAsync(...)` | Fetches the aggregated dashboard-context payload in a single API request for the web portal. | `src/Tabsan.EduSphere.Web/Services/EduApiClient.cs` |
+| `EduApiClient.GetDashboardCompositionContextAsync(...)` | Deserializes the aggregated dashboard-context endpoint response into a single Web client model. | `src/Tabsan.EduSphere.Web/Services/EduApiClient.cs` |
+| `DashboardCompositionContextApiModel` | Holds the aggregated module/vocabulary/widget payload returned by the dashboard context endpoint. | `src/Tabsan.EduSphere.Web/Services/EduApiClient.cs` |
+
 ### Stage 2.3 - Stateless Runtime Hardening
 
 | Function Name | Purpose | Location |

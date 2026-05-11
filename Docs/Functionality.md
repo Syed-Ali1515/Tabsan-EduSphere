@@ -395,6 +395,10 @@
 - **Load-Balancer Distribution Validation**: Automated request sampling script summarizes per-instance load share to verify balancing behavior.
 - **Stateless Runtime Enforcement**: Production requires shared distributed cache and shared data-protection keys so API/Web nodes behave identically across scale-out instances.
 
+### Endpoint Aggregation (Phase 3)
+- **Dashboard Context Aggregation**: The ModuleComposition screen now receives visible modules, vocabulary, and dashboard widgets in one API response.
+- **Reduced Portal Round-Trips**: One aggregated request replaces the prior three-call composition flow for the dashboard composer.
+
 ---
 
 ## Architecture & Technical Details

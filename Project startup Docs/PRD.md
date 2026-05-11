@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.64 (Phase 2 Stage 2.3 stateless runtime hardening complete)  
+**Version:** 1.65 (Phase 3 Stage 3.1 endpoint aggregation complete)  
 **Status:** Approved  
 **Prepared By:** Product Team  
 **Last Updated:** 11 May 2026  
@@ -9,6 +9,13 @@
 ---
 
 ## 0. Implementation Update Log
+
+### 2026-05-11 — Phase 3 Stage 3.1
+- **Endpoint aggregation:** added `GET /api/v1/dashboard/context` to return visible modules, vocabulary, and widgets in one API round-trip.
+- **Portal integration:** `PortalController.ModuleComposition` now uses the aggregated dashboard-context endpoint instead of three separate API calls.
+- **Client model update:** web API client now deserializes dashboard context into a single response model for the ModuleComposition screen.
+- **Schema impact:** no database migration required.
+- **Validation:** `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed (**130/130**); syntax checks on touched files reported no errors.
 
 ### 2026-05-11 — Phase 2 Stage 2.3
 - **API stateless guard:** production now requires `ScaleOut:RedisConnectionString` so distributed cache state remains shared across API instances.

@@ -180,24 +180,26 @@ public class PortalController : Controller
         if (!model.IsConnected) return View(model);
         try
         {
-            var modulesTask = _api.GetVisibleModulesAsync(ct);
-            var vocabTask   = _api.GetVocabularyAsync(ct);
-            var widgetsTask = _api.GetDashboardWidgetsAsync(ct);
-            await Task.WhenAll(modulesTask, vocabTask, widgetsTask);
+            var context = await _api.GetDashboardCompositionContextAsync(ct);
+            if (context is null)
+            {
+                model.Message = "Dashboard composition is unavailable right now.";
+                return View(model);
+            }
 
-            model.Modules = modulesTask.Result.Select(m => new ModuleVisibilityItem
+            model.Modules = context.Modules.Select(m => new ModuleVisibilityItem
             {
                 Key = m.Key, Name = m.Name,
                 IsActive = m.IsActive, IsAccessible = m.IsAccessible
             }).ToList();
 
-            model.Widgets = widgetsTask.Result.Select(w => new WidgetItem
+            model.Widgets = context.Widgets.Select(w => new WidgetItem
             {
                 Key = w.Key, Title = w.Title,
                 Icon = w.Icon, Order = w.Order
             }).ToList();
 
-            var vocab = vocabTask.Result;
+            var vocab = context.Vocabulary;
             if (vocab is not null)
             {
                 model.PeriodLabel       = vocab.PeriodLabel;

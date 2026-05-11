@@ -15,11 +15,17 @@ After **every completed stage** (not just at phase-end), update **all** required
 4. Project startup Docs/PRD.md
 5. Project startup Docs/Database Schema.md
 6. Project startup Docs/Development Plan - ASP.NET.md
+7. Docs/Functionality.md
 
 After every documentation update, complete mandatory Git sync in this exact order:
 1. Commit all current changes
 2. Pull latest remote changes (rebase preferred)
 3. Push committed changes to remote
+
+For every completed stage entry in `Docs/High-Load-Optimization-Phases-And-Stages.md`, include:
+- `Status: Completed`
+- `Implementation Summary`
+- `Validation Summary`
 
 Also update this file with:
 - completed work

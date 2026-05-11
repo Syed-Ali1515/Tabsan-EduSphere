@@ -367,6 +367,7 @@ public interface IEduApiClient
     Task SaveInstitutionPolicyAsync(InstitutionPolicyApiModel model, CancellationToken ct);
 
     // Phase 24 — Dynamic Module & UI Composition
+    Task<DashboardCompositionContextApiModel?> GetDashboardCompositionContextAsync(CancellationToken ct);
     Task<List<ModuleVisibilityApiModel>> GetVisibleModulesAsync(CancellationToken ct);
     Task<AcademicVocabularyApiModel?> GetVocabularyAsync(CancellationToken ct);
     Task<List<WidgetDescriptorApiModel>> GetDashboardWidgetsAsync(CancellationToken ct);
@@ -1628,6 +1629,9 @@ public class EduApiClient : IEduApiClient
         => await PutAsync<InstitutionPolicyApiModel, object?>("api/v1/institution-policy", model, ct);
 
     // Phase 24 — Dynamic Module & UI Composition
+    public async Task<DashboardCompositionContextApiModel?> GetDashboardCompositionContextAsync(CancellationToken ct)
+        => await GetAsync<DashboardCompositionContextApiModel>("api/v1/dashboard/context", ct);
+
     public async Task<List<ModuleVisibilityApiModel>> GetVisibleModulesAsync(CancellationToken ct)
         => await GetAsync<List<ModuleVisibilityApiModel>>("api/v1/module-registry/visible", ct)
            ?? new();
@@ -4069,6 +4073,13 @@ public sealed class WidgetDescriptorApiModel
     public string Title { get; set; } = "";
     public string Icon  { get; set; } = "";
     public int    Order { get; set; }
+}
+
+public sealed class DashboardCompositionContextApiModel
+{
+    public List<ModuleVisibilityApiModel> Modules { get; set; } = new();
+    public AcademicVocabularyApiModel? Vocabulary { get; set; }
+    public List<WidgetDescriptorApiModel> Widgets { get; set; } = new();
 }
 
 // ── Phase 27 API models ───────────────────────────────────────────────────────

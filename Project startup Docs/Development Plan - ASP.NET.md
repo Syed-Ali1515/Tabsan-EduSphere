@@ -8,6 +8,12 @@
 
 ## Execution Updates
 
+### 2026-05-11 — Phase 3 Stage 3.1
+- Added aggregated dashboard-context endpoint in API (`GET /api/v1/dashboard/context`) to reduce ModuleComposition screen round-trips.
+- Updated portal ModuleComposition flow to consume the single dashboard-context payload instead of three API calls.
+- Added Web client support for the aggregated dashboard-context response model.
+- Validation: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed `130/130`; syntax checks on touched files reported no errors.
+
 ### 2026-05-11 — Phase 2 Stage 2.3
 - Hardened API startup to require Redis-backed distributed cache outside Development/Testing (`ScaleOut:RedisConnectionString`) so cache state stays stateless across nodes.
 - Hardened Web startup to require shared data-protection key ring outside Development/Testing (`ScaleOut:SharedDataProtectionKeyRingPath`) so auth cookies stay decryptable across nodes.

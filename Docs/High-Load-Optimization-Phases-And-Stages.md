@@ -121,6 +121,23 @@ This plan converts the high-load optimization guide into phased execution stages
 - Treat each stage as done only when validated by repeatable load test results.
 
 ## Progress Log
+### 2026-05-11 - Phase 3 Stage 3.1 Completed
+- Status: Completed.
+
+#### Implementation Summary
+- Added aggregated dashboard context endpoint at `GET /api/v1/dashboard/context` to return visible modules, academic vocabulary, and widgets in one response.
+- Updated the portal ModuleComposition screen to consume the single aggregated endpoint instead of three separate API calls.
+- Added Web client model/method support for the dashboard context payload while keeping existing lower-level calls available for future use.
+- Preserved the existing widget/composition logic and only changed the transport boundary to reduce round-trips.
+
+#### Validation Summary
+- Validation command: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal`.
+- Result: passed (130/130), failed 0.
+- Syntax check: no errors reported in the changed API controller, web controller, or Web API client files.
+
+#### Next Stage
+- Phase 3 Stage 3.2: async and non-blocking IO improvements on remaining high-traffic endpoints.
+
 ### 2026-05-11 - Phase 2 Stage 2.3 Completed
 - Status: Completed.
 
