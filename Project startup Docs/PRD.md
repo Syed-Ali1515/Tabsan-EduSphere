@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.60 (Phase 1 Stage 1.3 query-path optimization complete)  
+**Version:** 1.61 (Phase 1 Stage 1.4 hot-path caching complete)  
 **Status:** Approved  
 **Prepared By:** Product Team  
 **Last Updated:** 11 May 2026  
@@ -9,6 +9,13 @@
 ---
 
 ## 0. Implementation Update Log
+
+### 2026-05-11 — Phase 1 Stage 1.4
+- **Dashboard composition caching:** added short-TTL role/policy keyed memory cache in dashboard composition service.
+- **Sidebar visibility caching:** added short-TTL cache for top-level and role-visible sidebar menu reads with mutation-driven invalidation.
+- **Notification read caching:** added short-TTL cache for inbox and badge reads with mutation-driven cache-version invalidation.
+- **Schema impact:** no database migration required.
+- **Validation:** `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed (**130/130**).
 
 ### 2026-05-11 — Phase 1 Stage 1.3
 - **Notification inbox optimization:** added no-tracking read path for paged inbox retrieval to reduce EF tracking overhead.

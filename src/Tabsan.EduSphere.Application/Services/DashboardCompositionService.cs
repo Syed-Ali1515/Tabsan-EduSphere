@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Caching.Memory;
 using Tabsan.EduSphere.Application.Interfaces;
 using Tabsan.EduSphere.Domain.Enums;
 
@@ -9,6 +10,12 @@ namespace Tabsan.EduSphere.Application.Services;
 /// </summary>
 public sealed class DashboardCompositionService : IDashboardCompositionService
 {
+    private readonly IMemoryCache _cache;
+    private static readonly TimeSpan CompositionCacheTtl = TimeSpan.FromSeconds(15);
+
+    public DashboardCompositionService(IMemoryCache cache)
+        => _cache = cache;
+
     // ── full widget catalogue (key, title, icon, order) ──────────────────────
     private static readonly WidgetDescriptor[] _all =
     [
@@ -29,6 +36,10 @@ public sealed class DashboardCompositionService : IDashboardCompositionService
         string role,
         InstitutionPolicySnapshot policy)
     {
+        var cacheKey = $"dashboard:composition:{role.ToLowerInvariant()}:{policy.IncludeSchool}:{policy.IncludeCollege}:{policy.IncludeUniversity}";
+        if (_cache.TryGetValue(cacheKey, out IReadOnlyList<WidgetDescriptor>? cached) && cached is not null)
+            return cached;
+
         bool isSuperAdmin = Is(role, "SuperAdmin");
         bool isAdmin      = Is(role, "Admin");
         bool isFaculty    = Is(role, "Faculty");
@@ -57,7 +68,9 @@ public sealed class DashboardCompositionService : IDashboardCompositionService
             if (include) result.Add(w);
         }
 
-        return result.AsReadOnly();
+        var output = result.AsReadOnly();
+        _cache.Set(cacheKey, output, CompositionCacheTtl);
+        return output;
     }
 
     private static bool Is(string role, string target)

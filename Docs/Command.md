@@ -53,12 +53,18 @@ cmd /c git -C "<repo-root>" push origin main
 
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
-- Active Phase: **Phase 1 — High-Load Optimization — Stage 1.3 COMPLETE ✅**
-- Active Stage: **Stage 1.3 complete (hot-path query optimization)**
-- Status: **Inbox and sidebar read paths optimized with no-tracking/split-query patterns; unread badge count query simplified; documentation sync completed.**
+- Active Phase: **Phase 1 — High-Load Optimization — Stage 1.4 COMPLETE ✅**
+- Active Stage: **Stage 1.4 complete (short-TTL hot-path caching)**
+- Status: **Dashboard/sidebar/notification hot reads now use short-TTL cache with safe invalidation; documentation sync completed.**
 - Last Updated: 2026-05-11
-- Next: **Execute Phase 1 Stage 1.4 short-TTL caching for dashboard/sidebar/notifications hot reads.**
-- Docs Updated: ✅ Phase 1 Stage 1.3 trackers updated (2026-05-11)
+- Next: **Execute Phase 2 Stage 2.1 multi-instance API deployment baseline.**
+- Docs Updated: ✅ Phase 1 Stage 1.4 trackers updated (2026-05-11)
+
+### 2026-05-11 - Phase 1 Stage 1.4 Completion
+- Added short-TTL cache to dashboard composition by role + institution policy for repeated home-screen widget assembly reads.
+- Added short-TTL cache to sidebar top-level and role-visible menu reads with mutation-safe version invalidation on role/status updates.
+- Added short-TTL cache to notifications inbox/badge reads with mutation-triggered version invalidation on send/deactivate/mark-read flows.
+- Validation: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed (**130/130**).
 
 ### 2026-05-11 - Phase 1 Stage 1.3 Completion
 - Notification inbox path updated to no-tracking paged reads for lower EF tracking overhead.

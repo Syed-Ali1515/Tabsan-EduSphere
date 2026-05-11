@@ -5,6 +5,18 @@
 
 ## Final-Touches Phase 34 - High-Load Optimization (2026-05-11)
 
+### Stage 1.4 - Data Access Caching (Hot Read Paths)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `DashboardCompositionService.GetWidgets(...)` | Adds short-TTL in-memory cache for dashboard widget composition keyed by role and institution policy state to reduce repeated composition cost. | `src/Tabsan.EduSphere.Application/Services/DashboardCompositionService.cs` |
+| `SidebarMenuService.GetTopLevelMenusAsync(...)` | Adds short-TTL in-memory cache for top-level sidebar menu reads with versioned invalidation support. | `src/Tabsan.EduSphere.Application/Services/SettingsServices.cs` |
+| `SidebarMenuService.GetVisibleForRoleAsync(...)` | Adds short-TTL in-memory cache for role-scoped visible sidebar reads with versioned invalidation support. | `src/Tabsan.EduSphere.Application/Services/SettingsServices.cs` |
+| `SidebarMenuService.InvalidateSidebarCache()` | Bumps sidebar cache version after role/status mutations to force fresh reads on next request. | `src/Tabsan.EduSphere.Application/Services/SettingsServices.cs` |
+| `NotificationService.GetInboxAsync(...)` | Adds short-TTL in-memory cache for paged inbox reads with cache-version keying for mutation-safe freshness. | `src/Tabsan.EduSphere.Application/Notifications/NotificationService.cs` |
+| `NotificationService.GetBadgeAsync(...)` | Adds short-TTL in-memory cache for unread badge counts with cache-version keying. | `src/Tabsan.EduSphere.Application/Notifications/NotificationService.cs` |
+| `NotificationService.BumpCacheVersion()` | Invalidates notification read-cache windows by incrementing cache version after notification mutations. | `src/Tabsan.EduSphere.Application/Notifications/NotificationService.cs` |
+
 ### Stage 1.2 - Connection Pooling and Timeout Tuning
 
 | Function Name | Purpose | Location |

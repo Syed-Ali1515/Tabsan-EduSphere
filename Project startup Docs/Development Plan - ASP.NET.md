@@ -8,6 +8,12 @@
 
 ## Execution Updates
 
+### 2026-05-11 — Phase 1 Stage 1.4
+- Added short-TTL dashboard composition caching in `DashboardCompositionService.GetWidgets(...)` with role + institution policy cache keys.
+- Added short-TTL sidebar read caching in `SidebarMenuService` for top-level and role-visible menus, plus version bump invalidation on sidebar mutations.
+- Added short-TTL notification read caching in `NotificationService` for inbox and unread badge responses, plus version bump invalidation on send/deactivate/mark-read mutations.
+- Validation: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed `130/130`.
+
 ### 2026-05-11 — Phase 1 Stage 1.3
 - Optimized notification inbox read path by introducing repository-level no-tracking option and using it in `NotificationService.GetInboxAsync`.
 - Optimized unread badge count query by removing unnecessary Include loading in `NotificationRepository.GetUnreadCountAsync`.

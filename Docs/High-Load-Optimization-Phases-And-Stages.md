@@ -121,6 +121,23 @@ This plan converts the high-load optimization guide into phased execution stages
 - Treat each stage as done only when validated by repeatable load test results.
 
 ## Progress Log
+### 2026-05-11 - Phase 1 Stage 1.4 Completed
+- Status: Completed.
+
+#### Implementation Summary
+- Added short-TTL in-memory caching to `DashboardCompositionService.GetWidgets(...)` with role + institution-policy keyed entries (15s TTL).
+- Added short-TTL in-memory caching to `SidebarMenuService.GetTopLevelMenusAsync(...)` and `SidebarMenuService.GetVisibleForRoleAsync(...)` (20s TTL) with versioned invalidation on sidebar mutation methods.
+- Added short-TTL in-memory caching to `NotificationService.GetInboxAsync(...)` (10s TTL) and `NotificationService.GetBadgeAsync(...)` (8s TTL) with version bump invalidation on send/deactivate/mark-read mutations.
+- Kept cache scope limited to hot read paths to avoid stale-write coupling and preserve write correctness.
+
+#### Validation Summary
+- Validation command: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal`.
+- Result: passed (130/130), failed 0.
+- Build status: succeeded; only existing nullability warnings remained in `SettingsServices.cs` (no new Stage 1.4 regressions).
+
+#### Next Stage
+- Phase 2 Stage 2.1: multi-instance API deployment baseline and horizontal scale validation.
+
 ### 2026-05-11 - Phase 1 Stage 1.3 Completed
 - Optimized notification inbox query path to use no-tracking reads for paged inbox retrieval.
 - Optimized unread badge count query to avoid unnecessary Include loading.

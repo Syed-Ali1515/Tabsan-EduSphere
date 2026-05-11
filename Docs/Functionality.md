@@ -19,6 +19,7 @@
 9. [Reporting & Analytics](#reporting--analytics)
 10. [Advanced Features](#advanced-features)
 11. [Integration & Support](#integration--support)
+12. [Performance & Scalability](#performance--scalability)
 
 ---
 
@@ -373,6 +374,17 @@
 - **Data Archiving**: Archive old data
 - **Data Privacy**: GDPR compliance and data protection
 - **Data Security**: Encryption and access control
+
+---
+
+## Performance & Scalability
+
+### High-Load Optimization (Phase 1)
+- **Connection Pool Hardening**: Tuned SQL connection pools and timeouts across environment profiles for higher concurrency stability.
+- **Hot Query Optimization**: No-tracking and split-query optimizations on inbox/sidebar read-heavy paths.
+- **Short-TTL Data Caching**: Added short-lifetime cache windows for dashboard composition, sidebar visibility, and notification inbox/badge reads.
+- **Safe Cache Invalidation**: Version-based invalidation on write/mutation flows to reduce stale data risk while preserving read performance.
+- **Load-Test Validation Workflow**: Stage-by-stage validation with unit/integration gates and k6 progressive scale checks.
 
 ---
 

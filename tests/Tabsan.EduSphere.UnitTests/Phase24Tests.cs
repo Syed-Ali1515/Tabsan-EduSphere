@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Microsoft.Extensions.Caching.Memory;
 using Tabsan.EduSphere.Application.Interfaces;
 using Tabsan.EduSphere.Application.Modules;
 using Tabsan.EduSphere.Application.Services;
@@ -58,7 +59,8 @@ public class LabelServiceTests
 
 public class DashboardCompositionTests
 {
-    private static readonly IDashboardCompositionService _svc = new DashboardCompositionService();
+    private static readonly IDashboardCompositionService _svc =
+        new DashboardCompositionService(new MemoryCache(new MemoryCacheOptions()));
 
     private static InstitutionPolicySnapshot UnivPolicy
         => new(false, false, true);

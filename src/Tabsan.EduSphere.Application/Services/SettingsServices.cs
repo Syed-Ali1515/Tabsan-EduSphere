@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Caching.Memory;
 using Tabsan.EduSphere.Application.Dtos;
 using Tabsan.EduSphere.Application.Interfaces;
 using Tabsan.EduSphere.Domain.Interfaces;
@@ -214,13 +215,26 @@ public class ThemeService : IThemeService
 public class SidebarMenuService : ISidebarMenuService
 {
     private readonly ISettingsRepository _repo;
+    private readonly IMemoryCache _cache;
+    private static readonly TimeSpan SidebarCacheTtl = TimeSpan.FromSeconds(20);
+    private static int _sidebarCacheVersion;
 
-    public SidebarMenuService(ISettingsRepository repo) => _repo = repo;
+    public SidebarMenuService(ISettingsRepository repo, IMemoryCache cache)
+    {
+        _repo = repo;
+        _cache = cache;
+    }
 
     public async Task<IList<SidebarMenuItemDto>> GetTopLevelMenusAsync(CancellationToken ct = default)
     {
+        var cacheKey = $"sidebar:top:{CurrentSidebarCacheVersion()}";
+        if (_cache.TryGetValue(cacheKey, out IList<SidebarMenuItemDto>? cached) && cached is not null)
+            return cached;
+
         var items = await _repo.GetTopLevelMenusAsync(ct);
-        return items.Select(Map).ToList();
+        var response = items.Select(Map).ToList();
+        _cache.Set(cacheKey, response, SidebarCacheTtl);
+        return response;
     }
 
     public async Task<IList<SidebarMenuItemDto>> GetSubMenusAsync(Guid parentId, CancellationToken ct = default)
@@ -238,8 +252,15 @@ public class SidebarMenuService : ISidebarMenuService
 
     public async Task<IList<SidebarMenuItemDto>> GetVisibleForRoleAsync(string roleName, CancellationToken ct = default)
     {
+        var normalizedRole = roleName.Trim().ToLowerInvariant();
+        var cacheKey = $"sidebar:visible:{CurrentSidebarCacheVersion()}:{normalizedRole}";
+        if (_cache.TryGetValue(cacheKey, out IList<SidebarMenuItemDto>? cached) && cached is not null)
+            return cached;
+
         var items = await _repo.GetVisibleMenusForRoleAsync(roleName, ct);
-        return items.Select(Map).ToList();
+        var response = items.Select(Map).ToList();
+        _cache.Set(cacheKey, response, SidebarCacheTtl);
+        return response;
     }
 
     public async Task SetRolesAsync(Guid id, SetSidebarMenuRolesCommand cmd, CancellationToken ct = default)
@@ -275,6 +296,7 @@ public class SidebarMenuService : ISidebarMenuService
 
         _repo.UpdateMenu(item);
         await _repo.SaveChangesAsync(ct);
+        InvalidateSidebarCache();
     }
 
     public async Task SetStatusAsync(Guid id, SetSidebarMenuStatusCommand cmd, CancellationToken ct = default)
@@ -289,7 +311,11 @@ public class SidebarMenuService : ISidebarMenuService
 
         _repo.UpdateMenu(item);
         await _repo.SaveChangesAsync(ct);
+        InvalidateSidebarCache();
     }
+
+    private static void InvalidateSidebarCache() => Interlocked.Increment(ref _sidebarCacheVersion);
+    private static int CurrentSidebarCacheVersion() => Volatile.Read(ref _sidebarCacheVersion);
 
     // -- Mapping helpers --------------------------------------------------
 
