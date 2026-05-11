@@ -35,12 +35,11 @@ public sealed class QuizRepository : IQuizRepository
               .FirstOrDefaultAsync(q => q.Id == id, ct);
 
     /// <summary>Returns all active quizzes for a course offering.</summary>
-    public Task<IReadOnlyList<Quiz>> GetByOfferingAsync(Guid courseOfferingId, CancellationToken ct = default)
-        => _db.Quizzes
+    public async Task<IReadOnlyList<Quiz>> GetByOfferingAsync(Guid courseOfferingId, CancellationToken ct = default)
+        => await _db.Quizzes
               .Where(q => q.CourseOfferingId == courseOfferingId)
               .OrderBy(q => q.AvailableFrom)
-              .ToListAsync(ct)
-              .ContinueWith<IReadOnlyList<Quiz>>(t => t.Result, ct);
+              .ToListAsync(ct);
 
     /// <summary>Queues a quiz for insertion.</summary>
     public async Task AddAsync(Quiz quiz, CancellationToken ct = default)
@@ -83,20 +82,18 @@ public sealed class QuizRepository : IQuizRepository
               .FirstOrDefaultAsync(a => a.Id == attemptId, ct);
 
     /// <summary>Returns all attempts a student has made on a specific quiz.</summary>
-    public Task<IReadOnlyList<QuizAttempt>> GetAttemptsAsync(Guid quizId, Guid studentProfileId, CancellationToken ct = default)
-        => _db.QuizAttempts
+    public async Task<IReadOnlyList<QuizAttempt>> GetAttemptsAsync(Guid quizId, Guid studentProfileId, CancellationToken ct = default)
+        => await _db.QuizAttempts
               .Where(a => a.QuizId == quizId && a.StudentProfileId == studentProfileId)
               .OrderByDescending(a => a.StartedAt)
-              .ToListAsync(ct)
-              .ContinueWith<IReadOnlyList<QuizAttempt>>(t => t.Result, ct);
+              .ToListAsync(ct);
 
     /// <summary>Returns all attempts across all quizzes for a student.</summary>
-    public Task<IReadOnlyList<QuizAttempt>> GetAllAttemptsForStudentAsync(Guid studentProfileId, CancellationToken ct = default)
-        => _db.QuizAttempts
+    public async Task<IReadOnlyList<QuizAttempt>> GetAllAttemptsForStudentAsync(Guid studentProfileId, CancellationToken ct = default)
+        => await _db.QuizAttempts
               .Where(a => a.StudentProfileId == studentProfileId)
               .OrderByDescending(a => a.StartedAt)
-              .ToListAsync(ct)
-              .ContinueWith<IReadOnlyList<QuizAttempt>>(t => t.Result, ct);
+              .ToListAsync(ct);
 
     /// <summary>Returns the number of attempts the student has made on the quiz.</summary>
     public Task<int> GetAttemptCountAsync(Guid quizId, Guid studentProfileId, CancellationToken ct = default)

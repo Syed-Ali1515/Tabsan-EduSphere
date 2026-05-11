@@ -16,26 +16,24 @@ public class TimetableRepository : ITimetableRepository
 
     public TimetableRepository(ApplicationDbContext db) => _db = db;
 
-    public Task<IList<Timetable>> GetByDepartmentAsync(Guid departmentId, CancellationToken ct = default)
-        => _db.Timetables
+    public async Task<IList<Timetable>> GetByDepartmentAsync(Guid departmentId, CancellationToken ct = default)
+        => await _db.Timetables
               .Where(t => t.DepartmentId == departmentId)
               .Include(t => t.Department)
               .Include(t => t.AcademicProgram)
               .Include(t => t.Semester)
               .OrderByDescending(t => t.CreatedAt)
-              .ToListAsync(ct)
-              .ContinueWith<IList<Timetable>>(r => r.Result, ct);
+              .ToListAsync(ct);
 
-    public Task<IList<Timetable>> GetPublishedByDepartmentAsync(Guid departmentId, CancellationToken ct = default)
-        => _db.Timetables
+    public async Task<IList<Timetable>> GetPublishedByDepartmentAsync(Guid departmentId, CancellationToken ct = default)
+        => await _db.Timetables
               .Where(t => t.DepartmentId == departmentId && t.IsPublished)
               .Include(t => t.Entries)
               .Include(t => t.Department)
               .Include(t => t.AcademicProgram)
               .Include(t => t.Semester)
               .OrderByDescending(t => t.PublishedAt)
-              .ToListAsync(ct)
-              .ContinueWith<IList<Timetable>>(r => r.Result, ct);
+              .ToListAsync(ct);
 
     public Task<Timetable?> GetByIdWithEntriesAsync(Guid timetableId, CancellationToken ct = default)
         => _db.Timetables
@@ -70,8 +68,8 @@ public class TimetableRepository : ITimetableRepository
     public Task<int> SaveChangesAsync(CancellationToken ct = default)
         => _db.SaveChangesAsync(ct);
 
-    public Task<IList<TimetableEntry>> GetTeacherEntriesAsync(Guid facultyUserId, CancellationToken ct = default)
-        => _db.TimetableEntries
+    public async Task<IList<TimetableEntry>> GetTeacherEntriesAsync(Guid facultyUserId, CancellationToken ct = default)
+        => await _db.TimetableEntries
               .Include(e => e.Timetable)
                   .ThenInclude(t => t.AcademicProgram)
               .Include(e => e.Timetable)
@@ -82,21 +80,19 @@ public class TimetableRepository : ITimetableRepository
               .Where(e => e.FacultyUserId == facultyUserId && e.Timetable.IsPublished)
               .OrderBy(e => e.DayOfWeek)
               .ThenBy(e => e.StartTime)
-              .ToListAsync(ct)
-              .ContinueWith<IList<TimetableEntry>>(r => r.Result, ct);
+              .ToListAsync(ct);
 
     // Final-Touches Phase 15 Stage 15.2 — GetEntriesByCourseOfferingAsync: timetable clash detection
     /// <summary>
     /// Returns published timetable entries whose CourseId matches <paramref name="courseId"/>
     /// within the specified semester. Used to detect schedule conflicts before enrollment.
     /// </summary>
-    public Task<IList<TimetableEntry>> GetEntriesByCourseOfferingAsync(Guid courseId, Guid semesterId, CancellationToken ct = default)
-        => _db.TimetableEntries
+    public async Task<IList<TimetableEntry>> GetEntriesByCourseOfferingAsync(Guid courseId, Guid semesterId, CancellationToken ct = default)
+        => await _db.TimetableEntries
               .Where(e => e.CourseId == courseId
                        && e.Timetable.SemesterId == semesterId
                        && e.Timetable.IsPublished)
               .OrderBy(e => e.DayOfWeek)
               .ThenBy(e => e.StartTime)
-              .ToListAsync(ct)
-              .ContinueWith<IList<TimetableEntry>>(r => r.Result, ct);
+              .ToListAsync(ct);
 }

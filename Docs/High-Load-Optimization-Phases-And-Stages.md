@@ -59,6 +59,11 @@ This plan converts the high-load optimization guide into phased execution stages
 ### Stage 3.2: Async and Non-Blocking IO
 - Ensure high-traffic endpoints use async/non-blocking patterns.
 
+### Stage 3.2 Completed
+- Replaced `ContinueWith` wrappers with direct async `await` returns in high-traffic repository methods.
+- Kept repository read paths fully asynchronous across timetable, settings, quiz, and building/room queries.
+- Validation passed with `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` (130/130).
+
 ### Stage 3.3: Transport Optimization
 - Enable compression (gzip/brotli).
 - Enable HTTP keep-alive and HTTP/2.
@@ -68,11 +73,13 @@ This plan converts the high-load optimization guide into phased execution stages
 - Added `GET /api/v1/dashboard/context` to aggregate dashboard modules, vocabulary, and widgets into one response.
 - Updated the portal ModuleComposition screen to consume the aggregated endpoint instead of three separate API calls.
 - Added Web client support for the aggregated dashboard context payload.
+- Removed sync-over-async `ContinueWith` bridges from the hot timetable, settings, quiz, and building/room repository methods.
 
 **Validation Summary**
 - Validation command: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal`.
 - Result: passed (130/130), failed 0.
 - Syntax checks on the changed API controller, portal controller, and Web API client files reported no errors.
+- Syntax checks on the repository files reported no errors.
 
 ## Phase 4: Caching Strategy
 ### Stage 4.1: API Cache Policy

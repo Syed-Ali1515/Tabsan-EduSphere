@@ -17,12 +17,11 @@ public class BuildingRoomRepository : IBuildingRoomRepository
 
     // ── Buildings ────────────────────────────────────────────────────────────
 
-    public Task<IList<Building>> GetAllBuildingsAsync(bool activeOnly = true, CancellationToken ct = default)
-        => _db.Buildings
+    public async Task<IList<Building>> GetAllBuildingsAsync(bool activeOnly = true, CancellationToken ct = default)
+        => await _db.Buildings
               .Where(b => !activeOnly || b.IsActive)
               .OrderBy(b => b.Name)
-              .ToListAsync(ct)
-              .ContinueWith<IList<Building>>(r => r.Result, ct);
+              .ToListAsync(ct);
 
     public Task<Building?> GetBuildingByIdAsync(Guid id, CancellationToken ct = default)
         => _db.Buildings
@@ -36,22 +35,20 @@ public class BuildingRoomRepository : IBuildingRoomRepository
 
     // ── Rooms ────────────────────────────────────────────────────────────────
 
-    public Task<IList<Room>> GetAllRoomsAsync(bool activeOnly = true, CancellationToken ct = default)
-        => _db.Rooms
+    public async Task<IList<Room>> GetAllRoomsAsync(bool activeOnly = true, CancellationToken ct = default)
+        => await _db.Rooms
               .Include(r => r.Building)
               .Where(r => !activeOnly || r.IsActive)
               .OrderBy(r => r.Building.Name)
               .ThenBy(r => r.Number)
-              .ToListAsync(ct)
-              .ContinueWith<IList<Room>>(r => r.Result, ct);
+              .ToListAsync(ct);
 
-    public Task<IList<Room>> GetRoomsByBuildingAsync(Guid buildingId, bool activeOnly = true, CancellationToken ct = default)
-        => _db.Rooms
+    public async Task<IList<Room>> GetRoomsByBuildingAsync(Guid buildingId, bool activeOnly = true, CancellationToken ct = default)
+        => await _db.Rooms
               .Include(r => r.Building)
               .Where(r => r.BuildingId == buildingId && (!activeOnly || r.IsActive))
               .OrderBy(r => r.Number)
-              .ToListAsync(ct)
-              .ContinueWith<IList<Room>>(r => r.Result, ct);
+              .ToListAsync(ct);
 
     public Task<Room?> GetRoomByIdAsync(Guid id, CancellationToken ct = default)
         => _db.Rooms

@@ -5,6 +5,24 @@
 
 ## Final-Touches Phase 34 - High-Load Optimization (2026-05-11)
 
+### Stage 3.2 - Async and Non-Blocking IO
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `TimetableRepository.GetByDepartmentAsync(...)` | Returns timetable lists with direct async EF execution instead of `ContinueWith` bridging. | `src/Tabsan.EduSphere.Infrastructure/Repositories/TimetableRepository.cs` |
+| `TimetableRepository.GetPublishedByDepartmentAsync(...)` | Returns published timetable lists with direct async EF execution instead of `ContinueWith` bridging. | `src/Tabsan.EduSphere.Infrastructure/Repositories/TimetableRepository.cs` |
+| `TimetableRepository.GetTeacherEntriesAsync(...)` | Returns teacher timetable entries with direct async EF execution instead of `ContinueWith` bridging. | `src/Tabsan.EduSphere.Infrastructure/Repositories/TimetableRepository.cs` |
+| `TimetableRepository.GetEntriesByCourseOfferingAsync(...)` | Returns course-offering timetable entries with direct async EF execution instead of `ContinueWith` bridging. | `src/Tabsan.EduSphere.Infrastructure/Repositories/TimetableRepository.cs` |
+| `SettingsRepository.GetAllReportsAsync(...)` | Returns report definitions with direct async EF execution instead of `ContinueWith` bridging. | `src/Tabsan.EduSphere.Infrastructure/Repositories/SettingsRepository.cs` |
+| `SettingsRepository.GetModuleRolesAsync(...)` | Returns module-role assignments with direct async EF execution instead of `ContinueWith` bridging. | `src/Tabsan.EduSphere.Infrastructure/Repositories/SettingsRepository.cs` |
+| `SettingsRepository.GetAllModuleRolesAsync(...)` | Returns all module-role assignments with direct async EF execution instead of `ContinueWith` bridging. | `src/Tabsan.EduSphere.Infrastructure/Repositories/SettingsRepository.cs` |
+| `QuizRepository.GetByOfferingAsync(...)` | Returns quiz lists with direct async EF execution instead of `ContinueWith` bridging. | `src/Tabsan.EduSphere.Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `QuizRepository.GetAttemptsAsync(...)` | Returns quiz attempts with direct async EF execution instead of `ContinueWith` bridging. | `src/Tabsan.EduSphere.Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `QuizRepository.GetAllAttemptsForStudentAsync(...)` | Returns student quiz attempts with direct async EF execution instead of `ContinueWith` bridging. | `src/Tabsan.EduSphere.Infrastructure/Repositories/QuizFypRepositories.cs` |
+| `BuildingRoomRepository.GetAllBuildingsAsync(...)` | Returns building lists with direct async EF execution instead of `ContinueWith` bridging. | `src/Tabsan.EduSphere.Infrastructure/Repositories/BuildingRoomRepository.cs` |
+| `BuildingRoomRepository.GetAllRoomsAsync(...)` | Returns room lists with direct async EF execution instead of `ContinueWith` bridging. | `src/Tabsan.EduSphere.Infrastructure/Repositories/BuildingRoomRepository.cs` |
+| `BuildingRoomRepository.GetRoomsByBuildingAsync(...)` | Returns building-scoped room lists with direct async EF execution instead of `ContinueWith` bridging. | `src/Tabsan.EduSphere.Infrastructure/Repositories/BuildingRoomRepository.cs` |
+
 ### Stage 3.1 - Endpoint Aggregation
 
 | Function Name | Purpose | Location |

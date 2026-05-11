@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.65 (Phase 3 Stage 3.1 endpoint aggregation complete)  
+**Version:** 1.66 (Phase 3 Stage 3.2 async and non-blocking IO complete)  
 **Status:** Approved  
 **Prepared By:** Product Team  
 **Last Updated:** 11 May 2026  
@@ -9,6 +9,12 @@
 ---
 
 ## 0. Implementation Update Log
+
+### 2026-05-11 — Phase 3 Stage 3.2
+- **Async cleanup:** removed `ContinueWith` wrappers from timetable, settings, quiz, and building/room repository queries.
+- **Hot path benefit:** repository reads now return direct awaited async EF results instead of sync-over-async task bridging.
+- **Schema impact:** no database migration required.
+- **Validation:** `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed (**130/130**); syntax checks on touched repository files reported no errors.
 
 ### 2026-05-11 — Phase 3 Stage 3.1
 - **Endpoint aggregation:** added `GET /api/v1/dashboard/context` to return visible modules, vocabulary, and widgets in one API round-trip.

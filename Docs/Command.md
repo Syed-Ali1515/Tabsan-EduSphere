@@ -59,51 +59,18 @@ cmd /c git -C "<repo-root>" push origin main
 
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
-- Active Phase: **Phase 2 — API Horizontal Scaling — Stage 2.3 COMPLETE ✅**
-- Active Stage: **Stage 2.3 complete (stateless runtime hardening)**
-- Status: **Production now requires shared cache and shared data-protection keys so API/Web remain stateless across instances.**
+- Active Phase: **Phase 3 — API Performance Improvements — Stage 3.2 COMPLETE ✅**
+- Active Stage: **Stage 3.2 complete (async and non-blocking IO cleanup)**
+- Status: **Hot repository read paths now use direct async awaits instead of ContinueWith bridges.**
 - Last Updated: 2026-05-11
-- Next: **Execute Phase 3 Stage 3.1 endpoint aggregation.**
-- Docs Updated: ✅ Phase 2 Stage 2.3 trackers updated (2026-05-11)
+- Next: **Execute Phase 3 Stage 3.3 transport optimization.**
+- Docs Updated: ✅ Phase 3 Stage 3.2 trackers updated (2026-05-11)
 
-### 2026-05-11 - Phase 2 Stage 2.3 Completion
-- API startup now rejects production without `ScaleOut:RedisConnectionString`, preventing node-local distributed cache fallback in stateless deployments.
-- Web startup now rejects production without `ScaleOut:SharedDataProtectionKeyRingPath`, ensuring auth cookies can be decrypted across instances.
-- Local developer and testing environments still allow in-memory/discrete paths for easy iteration.
+### 2026-05-11 - Phase 3 Stage 3.2 Completion
+- Removed `ContinueWith` bridges from the hot timetable, settings, quiz, and building/room repository methods.
+- Kept the hot request paths fully asynchronous by returning `await ToListAsync(...)` directly.
 - Validation: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed (**130/130**).
 
-### 2026-05-11 - Phase 2 Stage 2.2 Completion
-- Added Nginx least-connections baseline template: `Scripts/Phase2-Stage2.2-nginx-leastconn.conf.template`.
-- Added load balancer start/stop orchestration script: `Scripts/Phase2-Stage2.2-LoadBalancer.ps1`.
-- Added request distribution validator script: `Scripts/Phase2-Stage2.2-Validate-LB.ps1`.
-- Updated scripts index to include Stage 2.2 operational assets.
-- Validation: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed (**130/130**).
-
-### 2026-05-11 - Phase 2 Stage 2.1 Completion
-- Added API scale-out instance identity baseline (`ScaleOut:InstanceId`) with runtime fallback for node uniqueness.
-- Added optional `X-EduSphere-Instance` response header for request distribution tracing behind load balancers.
-- Added `GET /health/instance` endpoint exposing node id, process id, machine, uptime, and version.
-- Added local multi-instance launcher script: `Scripts/Phase2-Stage2.1-MultiInstance-Api.ps1` (start/stop support).
-- Validation: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed (**130/130**).
-
-### 2026-05-11 - Phase 1 Stage 1.4 Completion
-- Added short-TTL cache to dashboard composition by role + institution policy for repeated home-screen widget assembly reads.
-- Added short-TTL cache to sidebar top-level and role-visible menu reads with mutation-safe version invalidation on role/status updates.
-- Added short-TTL cache to notifications inbox/badge reads with mutation-triggered version invalidation on send/deactivate/mark-read flows.
-- Validation: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed (**130/130**).
-
-### 2026-05-11 - Phase 1 Stage 1.3 Completion
-- Notification inbox path updated to no-tracking paged reads for lower EF tracking overhead.
-- Notification unread-count path updated to direct count filter without Include materialization.
-- Sidebar top-level/submenu/visible read paths updated to no-tracking and split-query execution on include-heavy graphs.
-- Validation target: rerun 12k/16k load gates and compare p95 latency + error-rate against Stage 1.2 baseline.
-
-### 2026-05-11 - Phase 1 Stage 1.2 Completion
-- Tuned API SQL connection strings in `appsettings.json`, `appsettings.Development.json`, and `appsettings.Production.json`.
-- Added explicit pool and timeout controls:
-  - Development and default: `Min Pool Size=20;Max Pool Size=500;Connect Timeout=30`
-  - Production profile guidance: `Min Pool Size=50;Max Pool Size=800;Connect Timeout=30`
-- Validation target: use existing 12k/16k run gates and compare error/latency behavior before Stage 1.3 query tuning.
 
 ### 2026-05-10 - Phase 33 Stage 33.3 Completion
 - Added DataAnnotations to `LoginRequest`, `RefreshRequest`, `ChangePasswordRequest`, `ForceChangePasswordRequest`, `CreateAdminUserRequest`, and `UpdateAdminUserRequest`.

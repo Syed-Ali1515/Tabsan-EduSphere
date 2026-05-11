@@ -8,6 +8,11 @@
 
 ## Execution Updates
 
+### 2026-05-11 — Phase 3 Stage 3.2
+- Replaced `ContinueWith` wrappers with direct async `await` returns in hot repository methods for timetable, settings, quiz, and building/room reads.
+- Kept the data-access layer fully async on the high-traffic query paths that still fed portal screens and scheduling/reporting flows.
+- Validation: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed `130/130`; syntax checks on touched repository files reported no errors.
+
 ### 2026-05-11 — Phase 3 Stage 3.1
 - Added aggregated dashboard-context endpoint in API (`GET /api/v1/dashboard/context`) to reduce ModuleComposition screen round-trips.
 - Updated portal ModuleComposition flow to consume the single dashboard-context payload instead of three API calls.

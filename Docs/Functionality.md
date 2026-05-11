@@ -399,6 +399,10 @@
 - **Dashboard Context Aggregation**: The ModuleComposition screen now receives visible modules, vocabulary, and dashboard widgets in one API response.
 - **Reduced Portal Round-Trips**: One aggregated request replaces the prior three-call composition flow for the dashboard composer.
 
+### Async and Non-Blocking IO (Phase 3)
+- **Repository Async Cleanup**: Hot timetable, settings, quiz, and building/room repository reads now use direct awaited EF calls instead of task continuation bridging.
+- **Non-Blocking Data Access**: Remaining high-traffic reads stay fully asynchronous so request threads are not tied up unnecessarily.
+
 ---
 
 ## Architecture & Technical Details

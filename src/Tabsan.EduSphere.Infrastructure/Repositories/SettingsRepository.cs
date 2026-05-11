@@ -17,12 +17,11 @@ public class SettingsRepository : ISettingsRepository
 
     // ── Report Definitions ────────────────────────────────────────────────
 
-    public Task<IList<ReportDefinition>> GetAllReportsAsync(CancellationToken ct = default)
-        => _db.ReportDefinitions
+    public async Task<IList<ReportDefinition>> GetAllReportsAsync(CancellationToken ct = default)
+        => await _db.ReportDefinitions
               .Include(r => r.RoleAssignments)
               .OrderBy(r => r.Name)
-              .ToListAsync(ct)
-              .ContinueWith<IList<ReportDefinition>>(r => r.Result, ct);
+              .ToListAsync(ct);
 
     public Task<ReportDefinition?> GetReportByKeyAsync(string key, CancellationToken ct = default)
         => _db.ReportDefinitions
@@ -54,17 +53,15 @@ public class SettingsRepository : ISettingsRepository
 
     // ── Module Role Assignments ───────────────────────────────────────────
 
-    public Task<IList<ModuleRoleAssignment>> GetModuleRolesAsync(Guid moduleId, CancellationToken ct = default)
-        => _db.ModuleRoleAssignments
+    public async Task<IList<ModuleRoleAssignment>> GetModuleRolesAsync(Guid moduleId, CancellationToken ct = default)
+        => await _db.ModuleRoleAssignments
               .Where(a => a.ModuleId == moduleId)
-              .ToListAsync(ct)
-              .ContinueWith<IList<ModuleRoleAssignment>>(r => r.Result, ct);
+              .ToListAsync(ct);
 
-    public Task<IList<ModuleRoleAssignment>> GetAllModuleRolesAsync(CancellationToken ct = default)
-        => _db.ModuleRoleAssignments
+    public async Task<IList<ModuleRoleAssignment>> GetAllModuleRolesAsync(CancellationToken ct = default)
+        => await _db.ModuleRoleAssignments
               .Include(a => a.Module)
-              .ToListAsync(ct)
-              .ContinueWith<IList<ModuleRoleAssignment>>(r => r.Result, ct);
+              .ToListAsync(ct);
 
     public async Task AddModuleRoleAsync(ModuleRoleAssignment assignment, CancellationToken ct = default)
         => await _db.ModuleRoleAssignments.AddAsync(assignment, ct);
