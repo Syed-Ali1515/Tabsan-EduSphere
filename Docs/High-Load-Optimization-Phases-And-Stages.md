@@ -121,6 +121,23 @@ This plan converts the high-load optimization guide into phased execution stages
 - Treat each stage as done only when validated by repeatable load test results.
 
 ## Progress Log
+### 2026-05-11 - Phase 2 Stage 2.2 Completed
+- Status: Completed.
+
+#### Implementation Summary
+- Added Nginx least-connections upstream baseline template in `Scripts/Phase2-Stage2.2-nginx-leastconn.conf.template` with forward-header propagation and balancer self-health endpoint (`/lb-health`).
+- Added Stage 2.2 load balancer orchestration script `Scripts/Phase2-Stage2.2-LoadBalancer.ps1` to start/stop a local Nginx balancer container targeting multiple API instances.
+- Added Stage 2.2 distribution validation script `Scripts/Phase2-Stage2.2-Validate-LB.ps1` to sample load-balanced requests and summarize per-instance request split using `X-EduSphere-Instance`.
+- Updated operational script index in `Scripts/README.md` with Stage 2.2 assets.
+
+#### Validation Summary
+- Validation command: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal`.
+- Result: passed (130/130), failed 0.
+- Stage 2.2 runtime verification method: start API instances via Stage 2.1 script, start least-connections LB via Stage 2.2 script, then run Stage 2.2 validation sampler and confirm multi-node distribution.
+
+#### Next Stage
+- Phase 2 Stage 2.3: stateless runtime hardening and shared session/caching boundaries.
+
 ### 2026-05-11 - Phase 2 Stage 2.1 Completed
 - Status: Completed.
 

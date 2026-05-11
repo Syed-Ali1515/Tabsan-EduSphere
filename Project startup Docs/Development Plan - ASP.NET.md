@@ -8,6 +8,13 @@
 
 ## Execution Updates
 
+### 2026-05-11 — Phase 2 Stage 2.2
+- Added Nginx least-connections baseline template for API horizontal routing (`Scripts/Phase2-Stage2.2-nginx-leastconn.conf.template`).
+- Added Stage 2.2 load balancer control script to start/stop local balancer container with generated upstream members (`Scripts/Phase2-Stage2.2-LoadBalancer.ps1`).
+- Added Stage 2.2 distribution validator script to sample request spread per instance (`Scripts/Phase2-Stage2.2-Validate-LB.ps1`).
+- Updated scripts catalog with Stage 2.2 entries (`Scripts/README.md`).
+- Validation: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed `130/130`.
+
 ### 2026-05-11 — Phase 2 Stage 2.1
 - Added API per-instance identity bootstrap in startup using `ScaleOut:InstanceId` with machine/process fallback for horizontal node uniqueness.
 - Added optional node telemetry header emission (`X-EduSphere-Instance`) controlled by `ScaleOut:ExposeInstanceHeader`.

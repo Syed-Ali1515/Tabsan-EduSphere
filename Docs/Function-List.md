@@ -5,6 +5,14 @@
 
 ## Final-Touches Phase 34 - High-Load Optimization (2026-05-11)
 
+### Stage 2.2 - Load Balancer Policy Baseline (Least Connections)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `Phase2-Stage2.2-nginx-leastconn.conf.template` | Defines least-connections upstream routing baseline for API node fan-out with forwarded-header propagation. | `Scripts/Phase2-Stage2.2-nginx-leastconn.conf.template` |
+| `Phase2-Stage2.2-LoadBalancer.ps1` | Starts/stops local Nginx load balancer container with generated least-connections upstream node list. | `Scripts/Phase2-Stage2.2-LoadBalancer.ps1` |
+| `Phase2-Stage2.2-Validate-LB.ps1` | Samples load-balanced requests and reports per-node traffic distribution using instance telemetry header/body. | `Scripts/Phase2-Stage2.2-Validate-LB.ps1` |
+
 ### Stage 2.1 - Multi-Instance API Deployment Baseline
 
 | Function Name | Purpose | Location |

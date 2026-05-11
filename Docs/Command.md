@@ -53,12 +53,19 @@ cmd /c git -C "<repo-root>" push origin main
 
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
-- Active Phase: **Phase 2 — API Horizontal Scaling — Stage 2.1 COMPLETE ✅**
-- Active Stage: **Stage 2.1 complete (multi-instance API deployment baseline)**
-- Status: **Instance identity, node-health, and operational multi-instance launch script are in place for horizontal scale verification.**
+- Active Phase: **Phase 2 — API Horizontal Scaling — Stage 2.2 COMPLETE ✅**
+- Active Stage: **Stage 2.2 complete (least-connections load balancer policy baseline)**
+- Status: **Least-connections load balancer template, runbook scripts, and distribution validator are in place.**
 - Last Updated: 2026-05-11
-- Next: **Execute Phase 2 Stage 2.2 load balancer policy baseline.**
-- Docs Updated: ✅ Phase 2 Stage 2.1 trackers updated (2026-05-11)
+- Next: **Execute Phase 2 Stage 2.3 stateless runtime hardening.**
+- Docs Updated: ✅ Phase 2 Stage 2.2 trackers updated (2026-05-11)
+
+### 2026-05-11 - Phase 2 Stage 2.2 Completion
+- Added Nginx least-connections baseline template: `Scripts/Phase2-Stage2.2-nginx-leastconn.conf.template`.
+- Added load balancer start/stop orchestration script: `Scripts/Phase2-Stage2.2-LoadBalancer.ps1`.
+- Added request distribution validator script: `Scripts/Phase2-Stage2.2-Validate-LB.ps1`.
+- Updated scripts index to include Stage 2.2 operational assets.
+- Validation: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed (**130/130**).
 
 ### 2026-05-11 - Phase 2 Stage 2.1 Completion
 - Added API scale-out instance identity baseline (`ScaleOut:InstanceId`) with runtime fallback for node uniqueness.

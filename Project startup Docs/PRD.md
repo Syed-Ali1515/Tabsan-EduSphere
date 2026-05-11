@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.62 (Phase 2 Stage 2.1 multi-instance API baseline complete)  
+**Version:** 1.63 (Phase 2 Stage 2.2 load balancer policy baseline complete)  
 **Status:** Approved  
 **Prepared By:** Product Team  
 **Last Updated:** 11 May 2026  
@@ -9,6 +9,13 @@
 ---
 
 ## 0. Implementation Update Log
+
+### 2026-05-11 — Phase 2 Stage 2.2
+- **Load balancer policy baseline:** added Nginx least-connections upstream template for multi-node API routing.
+- **Operational orchestration:** added script to start/stop local load balancer container with generated upstream members.
+- **Distribution verification:** added request sampler script to validate per-instance traffic distribution through LB policy.
+- **Schema impact:** no database migration required.
+- **Validation:** `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed (**130/130**).
 
 ### 2026-05-11 — Phase 2 Stage 2.1
 - **Multi-instance baseline:** introduced API instance identity bootstrap (`ScaleOut:InstanceId`) with runtime fallback to machine/process identity.

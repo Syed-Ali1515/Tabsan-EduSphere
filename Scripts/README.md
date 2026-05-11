@@ -35,3 +35,6 @@ sqlcmd -S "localhost" -E -d "TabsanEduSphere" -i "Scripts\05-PostDeployment-Chec
 | File | Purpose |
 |---|---|
 | `Phase2-Stage2.1-MultiInstance-Api.ps1` | Starts/stops multiple local API instances for horizontal-scale baseline checks (`/health/instance`, `X-EduSphere-Instance`). |
+| `Phase2-Stage2.2-nginx-leastconn.conf.template` | Nginx least-connections upstream template for Stage 2.2 load balancer policy baseline. |
+| `Phase2-Stage2.2-LoadBalancer.ps1` | Starts/stops a local Nginx load balancer container using least-connections upstream policy over API instances. |
+| `Phase2-Stage2.2-Validate-LB.ps1` | Sends repeated requests via the load balancer and summarizes per-instance distribution using `X-EduSphere-Instance`. |
