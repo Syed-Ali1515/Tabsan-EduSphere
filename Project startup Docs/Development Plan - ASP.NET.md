@@ -8,6 +8,14 @@
 
 ## Execution Updates
 
+### 2026-05-11 — Phase 1 Stage 1.3
+- Optimized notification inbox read path by introducing repository-level no-tracking option and using it in `NotificationService.GetInboxAsync`.
+- Optimized unread badge count query by removing unnecessary Include loading in `NotificationRepository.GetUnreadCountAsync`.
+- Optimized sidebar read paths in `SettingsRepository`:
+  - no-tracking for top-level/sub-menu/visible-menu queries,
+  - split-query pattern on include-heavy sidebar graph reads.
+- Validation plan: re-run 12k and 16k load caps and compare p95 latency + error-rate against Stage 1.2 baseline.
+
 ### 2026-05-11 — Phase 1 Stage 1.2
 - Tuned SQL connection pooling settings for API runtime profiles:
   - `appsettings.json` and `appsettings.Development.json` now include `Min Pool Size=20;Max Pool Size=500;Connect Timeout=30`.

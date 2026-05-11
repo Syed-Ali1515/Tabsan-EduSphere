@@ -32,11 +32,14 @@ public class NotificationRepository : INotificationRepository
     /// Only returns records whose parent notification is still active.
     /// </summary>
     public async Task<IReadOnlyList<NotificationRecipient>> GetForUserAsync(
-        Guid userId, bool unreadOnly = false, int skip = 0, int take = 20, CancellationToken ct = default)
+        Guid userId, bool unreadOnly = false, int skip = 0, int take = 20, bool asNoTracking = false, CancellationToken ct = default)
     {
-        var query = _db.NotificationRecipients
+        IQueryable<NotificationRecipient> query = _db.NotificationRecipients
             .Include(r => r.Notification)
             .Where(r => r.RecipientUserId == userId && r.Notification.IsActive);
+
+        if (asNoTracking)
+            query = query.AsNoTracking();
 
         if (unreadOnly)
             query = query.Where(r => !r.IsRead);
@@ -51,7 +54,6 @@ public class NotificationRepository : INotificationRepository
     /// <summary>Returns the count of unread, active notifications for a user.</summary>
     public Task<int> GetUnreadCountAsync(Guid userId, CancellationToken ct = default)
         => _db.NotificationRecipients
-              .Include(r => r.Notification)
               .CountAsync(r => r.RecipientUserId == userId && !r.IsRead && r.Notification.IsActive, ct);
 
     /// <summary>Returns the delivery record for a specific user+notification pair, or null.</summary>

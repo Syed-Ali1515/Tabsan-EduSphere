@@ -13,6 +13,18 @@
 | `ConnectionStrings:DefaultConnection` (pool tuning - development profile) | Applies explicit development pool sizing and connection timeout to reduce local exhaustion during higher VU runs. | `src/Tabsan.EduSphere.API/appsettings.Development.json` |
 | `ConnectionStrings:DefaultConnection` (pool tuning - production profile guidance) | Defines production-target pool sizing guidance in profile placeholder connection string for deployment hardening. | `src/Tabsan.EduSphere.API/appsettings.Production.json` |
 
+### Stage 1.3 - Hot-Path Query Optimization
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `NotificationService.GetInboxAsync(...)` | Uses no-tracking inbox reads through repository path to reduce EF tracking overhead on paged inbox requests. | `src/Tabsan.EduSphere.Application/Notifications/NotificationService.cs` |
+| `INotificationRepository.GetForUserAsync(..., asNoTracking, ...)` | Adds opt-in no-tracking control for read-heavy inbox retrieval while preserving tracked reads for mark-all-read operations. | `src/Tabsan.EduSphere.Domain/Interfaces/INotificationRepository.cs` |
+| `NotificationRepository.GetForUserAsync(..., asNoTracking, ...)` | Applies optional AsNoTracking to notification recipient + parent notification read path. | `src/Tabsan.EduSphere.Infrastructure/Repositories/NotificationAttendanceRepositories.cs` |
+| `NotificationRepository.GetUnreadCountAsync(...)` | Removes unnecessary Include from unread count query to avoid extra query shaping overhead. | `src/Tabsan.EduSphere.Infrastructure/Repositories/NotificationAttendanceRepositories.cs` |
+| `SettingsRepository.GetTopLevelMenusAsync(...)` | Uses AsNoTracking + AsSplitQuery for include-heavy top-level sidebar graph retrieval. | `src/Tabsan.EduSphere.Infrastructure/Repositories/SettingsRepository.cs` |
+| `SettingsRepository.GetSubMenusAsync(...)` | Uses AsNoTracking for read-only submenu retrieval. | `src/Tabsan.EduSphere.Infrastructure/Repositories/SettingsRepository.cs` |
+| `SettingsRepository.GetVisibleMenusForRoleAsync(...)` | Uses AsNoTracking + AsSplitQuery for include-heavy role-scoped sidebar visibility reads. | `src/Tabsan.EduSphere.Infrastructure/Repositories/SettingsRepository.cs` |
+
 ## Final-Touches Phase 33 - Hosting Configuration and Security Hardening (2026-05-10)
 
 ### Hosting Configuration Foundation (Stage 33.1)

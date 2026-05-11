@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.59 (Phase 1 Stage 1.2 load-optimization tuning complete)  
+**Version:** 1.60 (Phase 1 Stage 1.3 query-path optimization complete)  
 **Status:** Approved  
 **Prepared By:** Product Team  
 **Last Updated:** 11 May 2026  
@@ -9,6 +9,13 @@
 ---
 
 ## 0. Implementation Update Log
+
+### 2026-05-11 — Phase 1 Stage 1.3
+- **Notification inbox optimization:** added no-tracking read path for paged inbox retrieval to reduce EF tracking overhead.
+- **Notification badge optimization:** removed unnecessary Include from unread-count query.
+- **Sidebar query optimization:** top-level and visible-menu include-heavy reads now use no-tracking and split-query patterns.
+- **Schema impact:** no database migration required.
+- **Validation plan:** execute 12k/16k load-cap reruns and compare p95 latency + error-rate against Stage 1.2 baseline.
 
 ### 2026-05-11 — Phase 1 Stage 1.2
 - **Connection-pool hardening:** updated API SQL connection strings to include explicit pool sizing and timeout controls.

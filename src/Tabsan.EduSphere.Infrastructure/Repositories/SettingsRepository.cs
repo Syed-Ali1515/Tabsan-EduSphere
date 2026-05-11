@@ -82,44 +82,48 @@ public class SettingsRepository : ISettingsRepository
 
     // ── Sidebar Menu Items ────────────────────────────────────────────────
 
-    public Task<IList<SidebarMenuItem>> GetTopLevelMenusAsync(CancellationToken ct = default)
-        => _db.SidebarMenuItems
-              .Include(m => m.RoleAccesses)
-              .Include(m => m.SubMenus).ThenInclude(s => s.RoleAccesses)
-              .Where(m => m.ParentId == null)
-              .OrderBy(m => m.DisplayOrder)
-              .ToListAsync(ct)
-              .ContinueWith<IList<SidebarMenuItem>>(r => r.Result, ct);
+    public async Task<IList<SidebarMenuItem>> GetTopLevelMenusAsync(CancellationToken ct = default)
+        => await _db.SidebarMenuItems
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Include(m => m.RoleAccesses)
+            .Include(m => m.SubMenus).ThenInclude(s => s.RoleAccesses)
+            .Where(m => m.ParentId == null)
+            .OrderBy(m => m.DisplayOrder)
+            .ToListAsync(ct);
 
-    public Task<IList<SidebarMenuItem>> GetSubMenusAsync(Guid parentId, CancellationToken ct = default)
-        => _db.SidebarMenuItems
-              .Include(m => m.RoleAccesses)
-              .Where(m => m.ParentId == parentId)
-              .OrderBy(m => m.DisplayOrder)
-              .ToListAsync(ct)
-              .ContinueWith<IList<SidebarMenuItem>>(r => r.Result, ct);
+    public async Task<IList<SidebarMenuItem>> GetSubMenusAsync(Guid parentId, CancellationToken ct = default)
+        => await _db.SidebarMenuItems
+            .AsNoTracking()
+            .Include(m => m.RoleAccesses)
+            .Where(m => m.ParentId == parentId)
+            .OrderBy(m => m.DisplayOrder)
+            .ToListAsync(ct);
 
     public Task<SidebarMenuItem?> GetMenuByIdAsync(Guid id, CancellationToken ct = default)
         => _db.SidebarMenuItems
-              .Include(m => m.RoleAccesses)
-              .Include(m => m.SubMenus).ThenInclude(s => s.RoleAccesses)
-              .FirstOrDefaultAsync(m => m.Id == id, ct);
+            .AsSplitQuery()
+            .Include(m => m.RoleAccesses)
+            .Include(m => m.SubMenus).ThenInclude(s => s.RoleAccesses)
+            .FirstOrDefaultAsync(m => m.Id == id, ct);
 
     public Task<SidebarMenuItem?> GetMenuByKeyAsync(string key, CancellationToken ct = default)
         => _db.SidebarMenuItems
-              .Include(m => m.RoleAccesses)
-              .Include(m => m.SubMenus).ThenInclude(s => s.RoleAccesses)
-              .FirstOrDefaultAsync(m => m.Key == key.ToLowerInvariant(), ct);
+            .AsSplitQuery()
+            .Include(m => m.RoleAccesses)
+            .Include(m => m.SubMenus).ThenInclude(s => s.RoleAccesses)
+            .FirstOrDefaultAsync(m => m.Key == key.ToLowerInvariant(), ct);
 
-    public Task<IList<SidebarMenuItem>> GetVisibleMenusForRoleAsync(string roleName, CancellationToken ct = default)
-        => _db.SidebarMenuItems
-              .Include(m => m.RoleAccesses)
-              .Include(m => m.SubMenus).ThenInclude(s => s.RoleAccesses)
-              .Where(m => m.IsActive
-                       && m.RoleAccesses.Any(r => r.RoleName == roleName && r.IsAllowed))
-              .OrderBy(m => m.DisplayOrder)
-              .ToListAsync(ct)
-              .ContinueWith<IList<SidebarMenuItem>>(r => r.Result, ct);
+    public async Task<IList<SidebarMenuItem>> GetVisibleMenusForRoleAsync(string roleName, CancellationToken ct = default)
+        => await _db.SidebarMenuItems
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Include(m => m.RoleAccesses)
+            .Include(m => m.SubMenus).ThenInclude(s => s.RoleAccesses)
+            .Where(m => m.IsActive
+                     && m.RoleAccesses.Any(r => r.RoleName == roleName && r.IsAllowed))
+            .OrderBy(m => m.DisplayOrder)
+            .ToListAsync(ct);
 
     public async Task AddMenuAsync(SidebarMenuItem item, CancellationToken ct = default)
         => await _db.SidebarMenuItems.AddAsync(item, ct);

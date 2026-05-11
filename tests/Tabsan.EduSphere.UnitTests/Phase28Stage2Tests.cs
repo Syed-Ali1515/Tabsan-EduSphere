@@ -77,7 +77,7 @@ file sealed class StubNotificationRepository : INotificationRepository
     {
     }
 
-    public Task<IReadOnlyList<NotificationRecipient>> GetForUserAsync(Guid userId, bool unreadOnly = false, int skip = 0, int take = 20, CancellationToken ct = default)
+    public Task<IReadOnlyList<NotificationRecipient>> GetForUserAsync(Guid userId, bool unreadOnly = false, int skip = 0, int take = 20, bool asNoTracking = false, CancellationToken ct = default)
         => Task.FromResult<IReadOnlyList<NotificationRecipient>>(Array.Empty<NotificationRecipient>());
 
     public Task<int> GetUnreadCountAsync(Guid userId, CancellationToken ct = default) => Task.FromResult(0);

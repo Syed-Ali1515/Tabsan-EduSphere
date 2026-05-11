@@ -25,7 +25,7 @@ public interface INotificationRepository
     /// Includes both read and unread unless <paramref name="unreadOnly"/> is true.
     /// </summary>
     Task<IReadOnlyList<NotificationRecipient>> GetForUserAsync(
-        Guid userId, bool unreadOnly = false, int skip = 0, int take = 20, CancellationToken ct = default);
+        Guid userId, bool unreadOnly = false, int skip = 0, int take = 20, bool asNoTracking = false, CancellationToken ct = default);
 
     /// <summary>Returns the count of unread notifications for a user.</summary>
     Task<int> GetUnreadCountAsync(Guid userId, CancellationToken ct = default);

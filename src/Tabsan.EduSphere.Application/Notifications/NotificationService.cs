@@ -76,7 +76,7 @@ public class NotificationService : INotificationService
     public async Task<IReadOnlyList<NotificationResponse>> GetInboxAsync(
         Guid userId, bool unreadOnly = false, int page = 0, int pageSize = 20, CancellationToken ct = default)
     {
-        var records = await _repo.GetForUserAsync(userId, unreadOnly, page * pageSize, pageSize, ct);
+        var records = await _repo.GetForUserAsync(userId, unreadOnly, page * pageSize, pageSize, asNoTracking: true, ct);
         return records.Select(ToResponse).ToList();
     }
 
@@ -109,7 +109,7 @@ public class NotificationService : INotificationService
     /// </summary>
     public async Task MarkAllReadAsync(Guid userId, CancellationToken ct = default)
     {
-        var unread = await _repo.GetForUserAsync(userId, unreadOnly: true, skip: 0, take: 500, ct);
+        var unread = await _repo.GetForUserAsync(userId, unreadOnly: true, skip: 0, take: 500, asNoTracking: false, ct);
         foreach (var r in unread)
         {
             r.MarkRead();
