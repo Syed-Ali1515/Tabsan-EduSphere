@@ -10,6 +10,8 @@ namespace Tabsan.EduSphere.Infrastructure.Integrations;
 public sealed class ResilientOutboundIntegrationGateway : IOutboundIntegrationGateway
 {
     private const string DeadLetterCacheKey = "integration-gateway:dead-letters";
+    private const string CircuitOpenKeyPrefix = "integration-gateway:circuit-open";
+    private const string FailureStreakKeyPrefix = "integration-gateway:circuit-failures";
     private static readonly SemaphoreSlim DeadLetterLock = new(1, 1);
 
     private readonly IDistributedCache _cache;
@@ -59,6 +61,9 @@ public sealed class ResilientOutboundIntegrationGateway : IOutboundIntegrationGa
         if (!_options.CurrentValue.Enabled)
             return await action(ct);
 
+        // Final-Touches Phase 34 Stage 6.2 — fast-fail while channel circuit is open.
+        await EnsureCircuitClosedAsync(channel, ct);
+
         Exception? lastError = null;
         var maxAttempts = Math.Max(1, policy.MaxRetries + 1);
 
@@ -70,7 +75,11 @@ public sealed class ResilientOutboundIntegrationGateway : IOutboundIntegrationGa
             {
                 using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
                 timeoutCts.CancelAfter(TimeSpan.FromSeconds(Math.Max(1, policy.TimeoutSeconds)));
-                return await action(timeoutCts.Token);
+                var result = await action(timeoutCts.Token);
+
+                // Final-Touches Phase 34 Stage 6.2 — successful call closes breaker and resets failure streak.
+                await ResetCircuitAsync(channel, ct);
+                return result;
             }
             catch (OperationCanceledException) when (!ct.IsCancellationRequested)
             {
@@ -95,6 +104,7 @@ public sealed class ResilientOutboundIntegrationGateway : IOutboundIntegrationGa
         if (lastError is null)
             lastError = new InvalidOperationException("Outbound integration operation failed without an exception.");
 
+        await RegisterCircuitFailureAsync(channel, policy, ct);
         await SaveDeadLetterAsync(channel, operation, maxAttempts, lastError, ct);
         throw lastError;
     }
@@ -141,9 +151,78 @@ public sealed class ResilientOutboundIntegrationGateway : IOutboundIntegrationGa
             MaxRetries = Math.Clamp(options.MaxRetries, 0, 10),
             TimeoutSeconds = Math.Clamp(options.TimeoutSeconds, 1, 300),
             BaseDelayMilliseconds = Math.Clamp(options.BaseDelayMilliseconds, 50, 30_000),
-            ExponentialBackoffEnabled = options.ExponentialBackoffEnabled
+            ExponentialBackoffEnabled = options.ExponentialBackoffEnabled,
+            CircuitBreakerFailureThreshold = Math.Clamp(options.CircuitBreakerFailureThreshold, 1, 100),
+            CircuitBreakerOpenSeconds = Math.Clamp(options.CircuitBreakerOpenSeconds, 5, 3_600)
         };
     }
+
+    private async Task EnsureCircuitClosedAsync(string channel, CancellationToken ct)
+    {
+        var openUntil = await GetCircuitOpenUntilAsync(channel, ct);
+        if (openUntil is null)
+            return;
+
+        if (openUntil.Value <= DateTime.UtcNow)
+        {
+            await _cache.RemoveAsync(BuildCircuitOpenKey(channel), ct);
+            return;
+        }
+
+        throw new InvalidOperationException($"Outbound integration circuit is open for channel '{channel}' until {openUntil.Value:O}.");
+    }
+
+    private async Task RegisterCircuitFailureAsync(string channel, IntegrationChannelOptions policy, CancellationToken ct)
+    {
+        var streak = await IncrementFailureStreakAsync(channel, ct);
+        if (streak < policy.CircuitBreakerFailureThreshold)
+            return;
+
+        var openUntil = DateTime.UtcNow.AddSeconds(policy.CircuitBreakerOpenSeconds);
+        await _cache.SetStringAsync(
+            BuildCircuitOpenKey(channel),
+            openUntil.ToString("O"),
+            new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(policy.CircuitBreakerOpenSeconds)
+            },
+            ct);
+    }
+
+    private async Task<int> IncrementFailureStreakAsync(string channel, CancellationToken ct)
+    {
+        var key = BuildFailureStreakKey(channel);
+        var raw = await _cache.GetStringAsync(key, ct);
+        var current = int.TryParse(raw, out var parsed) ? parsed : 0;
+        var next = current + 1;
+
+        await _cache.SetStringAsync(
+            key,
+            next.ToString(),
+            new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30)
+            },
+            ct);
+
+        return next;
+    }
+
+    private async Task<DateTime?> GetCircuitOpenUntilAsync(string channel, CancellationToken ct)
+    {
+        var value = await _cache.GetStringAsync(BuildCircuitOpenKey(channel), ct);
+        return DateTime.TryParse(value, out var parsed) ? parsed : null;
+    }
+
+    private async Task ResetCircuitAsync(string channel, CancellationToken ct)
+    {
+        await _cache.RemoveAsync(BuildFailureStreakKey(channel), ct);
+        await _cache.RemoveAsync(BuildCircuitOpenKey(channel), ct);
+    }
+
+    private static string BuildFailureStreakKey(string channel) => $"{FailureStreakKeyPrefix}:{channel.ToLowerInvariant()}";
+
+    private static string BuildCircuitOpenKey(string channel) => $"{CircuitOpenKeyPrefix}:{channel.ToLowerInvariant()}";
 
     private async Task SaveDeadLetterAsync(string channel, string operation, int attempts, Exception ex, CancellationToken ct)
     {

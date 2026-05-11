@@ -169,12 +169,38 @@ This plan converts the high-load optimization guide into phased execution stages
 ### Stage 6.1: External Call Caching
 - Cache external API call results where safe.
 
+### Stage 6.1 Completed
+- Status: Completed
+- Implementation Summary: Added short-TTL distributed caching for safe external library loan lookups keyed by student + integration configuration fingerprint to reduce repeated dependency round-trips.
+- Validation Summary: syntax checks on updated `LibraryService` and API integration settings reported no errors.
+
 ### Stage 6.2: Resilience Patterns
 - Add request timeouts.
 - Add circuit breakers.
 
+### Stage 6.2 Completed
+- Status: Completed
+- Implementation Summary: Extended the outbound integration gateway with channel-level circuit-breaker failure streak and open-window controls, while keeping timeout and retry/backoff policies active.
+- Validation Summary: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed (130/130), failed 0.
+
 ### Stage 6.3: Blocking Risk Reduction
 - Remove or isolate blocking dependency calls from request path.
+
+### Stage 6.3 Completed
+- Status: Completed
+- Implementation Summary: Removed sync-over-async `.Result` consumption in gradebook request composition path and replaced it with awaited task results after parallel fetch completion.
+- Validation Summary: syntax checks on updated `GradebookService` reported no errors; unit tests remained green.
+
+#### Phase 6 Summary
+**Implementation Summary**
+- Reduced external dependency pressure with short-window shared caching on library loan lookups.
+- Added circuit-breaker controls to integration gateway channels so failing dependencies can fast-fail instead of consuming full retry budgets continuously.
+- Removed blocking read patterns from a hot request path in gradebook aggregation.
+
+**Validation Summary**
+- Validation command: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal`.
+- Result: passed (130/130), failed 0.
+- Syntax checks on changed integration, service, and appsettings files reported no errors.
 
 ## Phase 7: Background Processing
 ### Stage 7.1: Queue Offloading

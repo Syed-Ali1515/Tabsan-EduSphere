@@ -59,12 +59,18 @@ cmd /c git -C "<repo-root>" push origin main
 
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
-- Active Phase: **Phase 5 — k6 Load Testing Improvements — COMPLETE ✅**
-- Active Stage: **Stage 5.1, 5.2, and 5.3 complete (realistic load model, distributed generators, output discipline)**
-- Status: **Scale scripts now use ramping-arrival-rate with think-time, support generator sharding, and default to summary-first output discipline.**
+- Active Phase: **Phase 6 — Dependency Optimization — COMPLETE ✅**
+- Active Stage: **Stage 6.1, 6.2, and 6.3 complete (external call caching, resilience patterns, blocking risk reduction)**
+- Status: **External dependency reads now use short-TTL cache, integration gateway includes circuit-breaker controls, and gradebook request path no longer uses sync-over-async result reads.**
 - Last Updated: 2026-05-11
-- Next: **Execute Phase 6 Stage 6.1 external call caching.**
-- Docs Updated: ✅ Phase 5 complete trackers updated (2026-05-11)
+- Next: **Execute Phase 7 Stage 7.1 queue offloading.**
+- Docs Updated: ✅ Phase 6 complete trackers updated (2026-05-11)
+
+### 2026-05-11 - Phase 6 Completion
+- Stage 6.1: Added short-TTL distributed caching for external library loan lookups with cache keys scoped to student + integration config fingerprint.
+- Stage 6.2: Added circuit-breaker failure threshold/open-window support to outbound integration gateway channels.
+- Stage 6.3: Replaced blocking `.Result` usage in gradebook request assembly with awaited async results.
+- Validation: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed (**130/130**).
 
 ### 2026-05-11 - Phase 5 Completion
 - Stage 5.1: Converted 50k/100k/1m/5m scripts to `ramping-arrival-rate` and added randomized think-time windows.

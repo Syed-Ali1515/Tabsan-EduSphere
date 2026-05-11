@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.69 (Phase 5 load testing improvements complete)  
+**Version:** 1.70 (Phase 6 dependency optimization complete)  
 **Status:** Approved  
 **Prepared By:** Product Team  
 **Last Updated:** 11 May 2026  
@@ -9,6 +9,13 @@
 ---
 
 ## 0. Implementation Update Log
+
+### 2026-05-11 — Phase 6 Complete
+- **Stage 6.1 external-call caching:** added short-TTL distributed cache for library loan external API reads keyed by student + configuration fingerprint.
+- **Stage 6.2 resilience patterns:** added circuit-breaker threshold/open-window controls on outbound integration channels in addition to timeout/retry policies.
+- **Stage 6.3 blocking risk reduction:** removed sync-over-async `.Result` usage in gradebook grid request assembly path.
+- **Schema impact:** no database migration required.
+- **Validation:** `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed (**130/130**); syntax checks on touched files reported no errors.
 
 ### 2026-05-11 — Phase 5 Complete
 - **Stage 5.1 realistic load model:** converted high-scale scripts to `ramping-arrival-rate` and added randomized think-time windows.

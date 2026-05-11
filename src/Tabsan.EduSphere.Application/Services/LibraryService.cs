@@ -1,4 +1,8 @@
 // Final-Touches Phase 22 Stage 22.1 — LibraryService: library system integration
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+using Microsoft.Extensions.Caching.Distributed;
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using Tabsan.EduSphere.Application.DTOs.External;
@@ -17,19 +21,26 @@ public class LibraryService : ILibraryService
     private const string KeyCatalogueUrl = "library_catalogue_url";
     private const string KeyApiToken     = "library_api_token";
     private const string KeyLoanApiUrl   = "library_api_loan_url";
+    private const string LibraryLoanCacheKeyPrefix = "library:loan-lookup";
+
+    // Final-Touches Phase 34 Stage 6.1 — short external-call cache window for repeated safe read lookups.
+    private static readonly TimeSpan LibraryLoanCacheTtl = TimeSpan.FromSeconds(30);
 
     private readonly ISettingsRepository _settings;
     private readonly HttpClient          _http;
     private readonly IOutboundIntegrationGateway _gateway;
+    private readonly IDistributedCache _distributedCache;
 
     public LibraryService(
         ISettingsRepository settings,
         HttpClient http,
-        IOutboundIntegrationGateway gateway)
+        IOutboundIntegrationGateway gateway,
+        IDistributedCache distributedCache)
     {
         _settings = settings;
         _http     = http;
         _gateway  = gateway;
+        _distributedCache = distributedCache;
     }
 
     // ── Configuration ─────────────────────────────────────────────────────────
@@ -57,12 +68,24 @@ public class LibraryService : ILibraryService
 
     public async Task<LibraryLoansResponse> GetLoansAsync(string studentIdentifier, CancellationToken ct = default)
     {
-        var all = await _settings.GetAllPortalSettingsAsync();
+        var all = await _settings.GetAllPortalSettingsAsync(ct);
         all.TryGetValue(KeyLoanApiUrl, out var loanApiUrl);
         all.TryGetValue(KeyApiToken,   out var apiToken);
 
         if (string.IsNullOrWhiteSpace(loanApiUrl))
             return new LibraryLoansResponse(false, null, Array.Empty<LibraryLoanItem>());
+
+        // Final-Touches Phase 34 Stage 6.1 — cache safe external loan read responses per student + integration config hash.
+        var cacheKey = BuildLoanLookupCacheKey(studentIdentifier, loanApiUrl, apiToken);
+        var cachedJson = await _distributedCache.GetStringAsync(cacheKey, ct);
+        if (!string.IsNullOrWhiteSpace(cachedJson))
+        {
+            var cachedResponse = JsonSerializer.Deserialize<LibraryLoansResponse>(cachedJson);
+            if (cachedResponse is not null)
+            {
+                return cachedResponse;
+            }
+        }
 
         try
         {
@@ -91,7 +114,17 @@ public class LibraryService : ILibraryService
                 r.Status  ?? "Unknown",
                 r.DueDate.HasValue && r.DueDate.Value < DateTime.UtcNow)).ToList();
 
-            return new LibraryLoansResponse(true, null, loans);
+            var response = new LibraryLoansResponse(true, null, loans);
+            await _distributedCache.SetStringAsync(
+                cacheKey,
+                JsonSerializer.Serialize(response),
+                new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = LibraryLoanCacheTtl
+                },
+                ct);
+
+            return response;
         }
         catch (Exception ex)
         {
@@ -107,5 +140,14 @@ public class LibraryService : ILibraryService
         [JsonPropertyName("author")] public string?   Author  { get; set; }
         [JsonPropertyName("dueDate")]public DateTime? DueDate { get; set; }
         [JsonPropertyName("status")] public string?   Status  { get; set; }
+    }
+
+    private static string BuildLoanLookupCacheKey(string studentIdentifier, string loanApiUrl, string? apiToken)
+    {
+        var normalizedStudent = (studentIdentifier ?? string.Empty).Trim().ToUpperInvariant();
+        var normalizedUrl = loanApiUrl.Trim();
+        var tokenHashSource = apiToken ?? string.Empty;
+        var configFingerprint = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes($"{normalizedUrl}|{tokenHashSource}")));
+        return $"{LibraryLoanCacheKeyPrefix}:{configFingerprint}:{normalizedStudent}";
     }
 }

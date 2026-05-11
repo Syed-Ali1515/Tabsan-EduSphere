@@ -35,9 +35,10 @@ public class GradebookService : IGradebookService
 
         await Task.WhenAll(studentsTask, componentsTask, resultsTask);
 
-        var students   = studentsTask.Result;
-        var components = componentsTask.Result.OrderBy(c => c.DisplayOrder).ToList();
-        var results    = resultsTask.Result;
+        // Final-Touches Phase 34 Stage 6.3 — avoid sync-over-async reads on hot request path.
+        var students   = await studentsTask;
+        var components = (await componentsTask).OrderBy(c => c.DisplayOrder).ToList();
+        var results    = await resultsTask;
 
         // Index results by (studentProfileId, resultType) for O(1) lookup
         var resultIndex = results.ToDictionary(

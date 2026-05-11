@@ -7,11 +7,11 @@ public sealed class IntegrationGatewayOptions
     public int MaxDeadLetters { get; set; } = 200;
     public Dictionary<string, IntegrationChannelOptions> Channels { get; set; } = new(StringComparer.OrdinalIgnoreCase)
     {
-        ["payment"] = new IntegrationChannelOptions { MaxRetries = 2, TimeoutSeconds = 20, BaseDelayMilliseconds = 300, ExponentialBackoffEnabled = true },
-        ["email"] = new IntegrationChannelOptions { MaxRetries = 2, TimeoutSeconds = 20, BaseDelayMilliseconds = 250, ExponentialBackoffEnabled = true },
-        ["sms"] = new IntegrationChannelOptions { MaxRetries = 2, TimeoutSeconds = 15, BaseDelayMilliseconds = 200, ExponentialBackoffEnabled = true },
-        ["push"] = new IntegrationChannelOptions { MaxRetries = 1, TimeoutSeconds = 10, BaseDelayMilliseconds = 150, ExponentialBackoffEnabled = true },
-        ["lms-external-api"] = new IntegrationChannelOptions { MaxRetries = 2, TimeoutSeconds = 15, BaseDelayMilliseconds = 200, ExponentialBackoffEnabled = true }
+        ["payment"] = new IntegrationChannelOptions { MaxRetries = 2, TimeoutSeconds = 20, BaseDelayMilliseconds = 300, ExponentialBackoffEnabled = true, CircuitBreakerFailureThreshold = 5, CircuitBreakerOpenSeconds = 30 },
+        ["email"] = new IntegrationChannelOptions { MaxRetries = 2, TimeoutSeconds = 20, BaseDelayMilliseconds = 250, ExponentialBackoffEnabled = true, CircuitBreakerFailureThreshold = 5, CircuitBreakerOpenSeconds = 30 },
+        ["sms"] = new IntegrationChannelOptions { MaxRetries = 2, TimeoutSeconds = 15, BaseDelayMilliseconds = 200, ExponentialBackoffEnabled = true, CircuitBreakerFailureThreshold = 5, CircuitBreakerOpenSeconds = 30 },
+        ["push"] = new IntegrationChannelOptions { MaxRetries = 1, TimeoutSeconds = 10, BaseDelayMilliseconds = 150, ExponentialBackoffEnabled = true, CircuitBreakerFailureThreshold = 5, CircuitBreakerOpenSeconds = 30 },
+        ["lms-external-api"] = new IntegrationChannelOptions { MaxRetries = 2, TimeoutSeconds = 15, BaseDelayMilliseconds = 200, ExponentialBackoffEnabled = true, CircuitBreakerFailureThreshold = 4, CircuitBreakerOpenSeconds = 45 }
     };
 }
 
@@ -21,4 +21,6 @@ public sealed class IntegrationChannelOptions
     public int TimeoutSeconds { get; set; } = 15;
     public int BaseDelayMilliseconds { get; set; } = 200;
     public bool ExponentialBackoffEnabled { get; set; } = true;
+    public int CircuitBreakerFailureThreshold { get; set; } = 5;
+    public int CircuitBreakerOpenSeconds { get; set; } = 30;
 }

@@ -419,6 +419,11 @@
 - **Distributed Generator Sharding**: Scale runs support generator-aware load splitting (`GENERATOR_TOTAL`, `GENERATOR_INDEX`) for multi-machine execution.
 - **Output Discipline**: Summary-first output is now the default for routine runs, while heavy raw JSON output remains explicit diagnostics-only mode.
 
+### Dependency Optimization (Phase 6)
+- **External Call Caching**: Safe external library loan reads now use short-TTL distributed cache to reduce repeated outbound calls.
+- **Resilience Hardening**: Outbound integration channels now include configurable circuit-breaker controls alongside retry and timeout behavior.
+- **Blocking Risk Reduction**: Gradebook request composition removed sync-over-async result reads to keep request processing fully asynchronous.
+
 ---
 
 ## Architecture & Technical Details

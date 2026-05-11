@@ -5,6 +5,17 @@
 
 ## Final-Touches Phase 34 - High-Load Optimization (2026-05-11)
 
+### Stage 6 - Dependency Optimization
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `LibraryService.GetLoansAsync(...)` | Adds short-TTL distributed cache for safe external loan lookup reads to reduce repeated dependency calls. | `src/Tabsan.EduSphere.Application/Services/LibraryService.cs` |
+| `LibraryService.BuildLoanLookupCacheKey(...)` | Keys external-call cache entries by student identifier and integration configuration fingerprint to avoid stale cross-config reuse. | `src/Tabsan.EduSphere.Application/Services/LibraryService.cs` |
+| `ResilientOutboundIntegrationGateway` circuit state helpers (`EnsureCircuitClosedAsync`, `RegisterCircuitFailureAsync`, `ResetCircuitAsync`) | Adds channel-level circuit-breaker behavior over existing timeout/retry resilience policy. | `src/Tabsan.EduSphere.Infrastructure/Integrations/ResilientOutboundIntegrationGateway.cs` |
+| `IntegrationChannelOptions.CircuitBreakerFailureThreshold` | Configures how many consecutive failures open a channel circuit breaker. | `src/Tabsan.EduSphere.Infrastructure/Integrations/IntegrationGatewayOptions.cs`, `src/Tabsan.EduSphere.API/appsettings.json`, `src/Tabsan.EduSphere.API/appsettings.Development.json`, `src/Tabsan.EduSphere.API/appsettings.Production.json` |
+| `IntegrationChannelOptions.CircuitBreakerOpenSeconds` | Configures how long the integration circuit stays open before allowing retry attempts. | `src/Tabsan.EduSphere.Infrastructure/Integrations/IntegrationGatewayOptions.cs`, `src/Tabsan.EduSphere.API/appsettings.json`, `src/Tabsan.EduSphere.API/appsettings.Development.json`, `src/Tabsan.EduSphere.API/appsettings.Production.json` |
+| `GradebookService.GetGradebookAsync(...)` | Removes sync-over-async `.Result` consumption from the gradebook request path by awaiting completed tasks. | `src/Tabsan.EduSphere.Application/Assignments/GradebookService.cs` |
+
 ### Stage 5 - k6 Load Testing Improvements
 
 | Function Name | Purpose | Location |
