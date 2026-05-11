@@ -426,6 +426,7 @@ UnitTest1.cs
  opentelemetry/1.9.0/lib/net8.0/OpenTelemetry.dll
  pipelines.sockets.unofficial/2.2.8/lib/net5.0/Pipelines.Sockets.Unofficial.dll
  questpdf/2024.12.0/lib/net8.0/QuestPDF.dll
+ rabbitmq.client/6.8.1/lib/netstandard2.0/RabbitMQ.Client.dll
  serilog.aspnetcore/8.0.2/lib/net8.0/Serilog.AspNetCore.dll
  serilog.extensions.hosting/8.0.0/lib/net8.0/Serilog.Extensions.Hosting.dll
  serilog.extensions.logging/8.0.0/lib/net8.0/Serilog.Extensions.Logging.dll
@@ -469,7 +470,7 @@ UnitTest1.cs
  Microsoft.Interop.SourceGeneration.dll
  System.Text.Json.SourceGeneration.dll
  System.Text.RegularExpressions.Generator.dll
-<DOTNET>/sdk/10.0.202/Sdks/Microsoft.NET.Sdk/analyzers/
+<DOTNET>/sdk/10.0.203/Sdks/Microsoft.NET.Sdk/analyzers/
  Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll
  Microsoft.CodeAnalysis.NetAnalyzers.dll
 <NUGET>/
@@ -479,5 +480,5 @@ UnitTest1.cs
   xunit.analyzers.fixes.dll
 
 [analyzerConfigFiles]
-<DOTNET>/sdk/10.0.202/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_8_default.globalconfig
+<DOTNET>/sdk/10.0.203/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_8_default.globalconfig
 obj/Debug/net8.0/Tabsan.EduSphere.ContractTests.GeneratedMSBuildEditorConfig.editorconfig

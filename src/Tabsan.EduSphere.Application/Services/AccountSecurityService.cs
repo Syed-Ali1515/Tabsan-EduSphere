@@ -18,19 +18,22 @@ public class AccountSecurityService : IAccountSecurityService
     private readonly IPasswordHistoryRepository _passwordHistory;
     private readonly IEmailSender _emailSender;
     private readonly IEmailTemplateRenderer _templateRenderer;
+    private readonly IAccountSecurityEmailQueue? _emailQueue;
 
     public AccountSecurityService(
         IUserRepository userRepo,
         IPasswordHasher passwordHasher,
         IPasswordHistoryRepository passwordHistory,
         IEmailSender emailSender,
-        IEmailTemplateRenderer templateRenderer)
+        IEmailTemplateRenderer templateRenderer,
+        IAccountSecurityEmailQueue? emailQueue = null)
     {
         _userRepo          = userRepo;
         _passwordHasher    = passwordHasher;
         _passwordHistory   = passwordHistory;
         _emailSender       = emailSender;
         _templateRenderer  = templateRenderer;
+        _emailQueue        = emailQueue;
     }
 
     public async Task<AccountLockoutStatusDto?> GetLockoutStatusAsync(Guid userId, CancellationToken ct = default)
@@ -69,7 +72,24 @@ public class AccountSecurityService : IAccountSecurityService
             {
                 ["USERNAME"] = target.Username
             });
-            try { await _emailSender.SendAsync(target.Email, "Your account has been unlocked", body, ct); }
+            try
+            {
+                // Final-Touches Phase 34 Stage 7.1 — offload transactional email from request path when queue is available.
+                if (_emailQueue is not null)
+                {
+                    await _emailQueue.EnqueueAsync(new AccountSecurityEmailWorkItem(
+                        target.Email,
+                        "Your account has been unlocked",
+                        body,
+                        "account-unlocked",
+                        DateTime.UtcNow),
+                        ct);
+                }
+                else
+                {
+                    await _emailSender.SendAsync(target.Email, "Your account has been unlocked", body, ct);
+                }
+            }
             catch { /* non-fatal — unlock succeeded regardless */ }
         }
     }
@@ -110,7 +130,24 @@ public class AccountSecurityService : IAccountSecurityService
             {
                 ["USERNAME"] = target.Username
             });
-            try { await _emailSender.SendAsync(target.Email, "Your password has been reset", body, ct); }
+            try
+            {
+                // Final-Touches Phase 34 Stage 7.1 — offload transactional email from request path when queue is available.
+                if (_emailQueue is not null)
+                {
+                    await _emailQueue.EnqueueAsync(new AccountSecurityEmailWorkItem(
+                        target.Email,
+                        "Your password has been reset",
+                        body,
+                        "password-reset",
+                        DateTime.UtcNow),
+                        ct);
+                }
+                else
+                {
+                    await _emailSender.SendAsync(target.Email, "Your password has been reset", body, ct);
+                }
+            }
             catch { /* non-fatal — reset succeeded regardless */ }
         }
     }

@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.70 (Phase 6 dependency optimization complete)  
+**Version:** 1.71 (Phase 7 background processing complete)  
 **Status:** Approved  
 **Prepared By:** Product Team  
 **Last Updated:** 11 May 2026  
@@ -9,6 +9,12 @@
 ---
 
 ## 0. Implementation Update Log
+
+### 2026-05-11 — Phase 7 Complete
+- **Stage 7.1 queue offloading:** account-security unlock/reset transactional email sends now enqueue background work items instead of always sending in request path.
+- **Stage 7.2 queue platform integration:** added queue-platform runtime selection with in-memory channel mode and RabbitMQ producer/consumer mode for account-security email workloads.
+- **Schema impact:** no database migration required.
+- **Validation:** `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed (**130/130**); syntax checks on touched files reported no errors.
 
 ### 2026-05-11 — Phase 6 Complete
 - **Stage 6.1 external-call caching:** added short-TTL distributed cache for library loan external API reads keyed by student + configuration fingerprint.

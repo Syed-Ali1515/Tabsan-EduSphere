@@ -424,6 +424,11 @@
 - **Resilience Hardening**: Outbound integration channels now include configurable circuit-breaker controls alongside retry and timeout behavior.
 - **Blocking Risk Reduction**: Gradebook request composition removed sync-over-async result reads to keep request processing fully asynchronous.
 
+### Background Processing (Phase 7)
+- **Queue Offloading Expansion**: Account-security unlock/reset email sends now enqueue background work items to keep request latency predictable.
+- **Queue Platform Selection**: Queue processing supports startup-configurable in-memory channel mode and RabbitMQ mode based on deployment model.
+- **Worker-Based Delivery**: Dedicated workers process queued account-security email work items outside request handlers.
+
 ---
 
 ## Architecture & Technical Details

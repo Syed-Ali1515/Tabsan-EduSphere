@@ -59,12 +59,17 @@ cmd /c git -C "<repo-root>" push origin main
 
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
-- Active Phase: **Phase 6 — Dependency Optimization — COMPLETE ✅**
-- Active Stage: **Stage 6.1, 6.2, and 6.3 complete (external call caching, resilience patterns, blocking risk reduction)**
-- Status: **External dependency reads now use short-TTL cache, integration gateway includes circuit-breaker controls, and gradebook request path no longer uses sync-over-async result reads.**
+- Active Phase: **Phase 7 — Background Processing — COMPLETE ✅**
+- Active Stage: **Stage 7.1 and 7.2 complete (queue offloading and queue platform integration)**
+- Status: **Account-security transactional email work is now queue-offloaded and queue platform selection supports in-memory and RabbitMQ deployment models.**
 - Last Updated: 2026-05-11
-- Next: **Execute Phase 7 Stage 7.1 queue offloading.**
-- Docs Updated: ✅ Phase 6 complete trackers updated (2026-05-11)
+- Next: **Execute Phase 8 Stage 8.1 auto-scaling policies.**
+- Docs Updated: ✅ Phase 7 complete trackers updated (2026-05-11)
+
+### 2026-05-11 - Phase 7 Completion
+- Stage 7.1: Added account-security email queue offloading so unlock/reset request paths enqueue email work items.
+- Stage 7.2: Added queue platform integration for account-security queue processing with `QueuePlatform:Provider` selecting in-memory or RabbitMQ mode.
+- Validation: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed (**130/130**).
 
 ### 2026-05-11 - Phase 6 Completion
 - Stage 6.1: Added short-TTL distributed caching for external library loan lookups with cache keys scoped to student + integration config fingerprint.

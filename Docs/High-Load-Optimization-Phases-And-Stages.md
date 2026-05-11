@@ -206,8 +206,28 @@ This plan converts the high-load optimization guide into phased execution stages
 ### Stage 7.1: Queue Offloading
 - Move heavy non-request tasks (notifications, analytics, bulk processing) to background jobs.
 
+### Stage 7.1 Completed
+- Status: Completed
+- Implementation Summary: Added queue-based offloading for account-security transactional emails so unlock/reset flows enqueue work items instead of sending SMTP directly on request thread.
+- Validation Summary: syntax checks on new queue/worker and account-security service updates reported no errors.
+
 ### Stage 7.2: Queue Platform Integration
 - Use a queueing platform (for example: RabbitMQ, Kafka, or SQS) based on deployment model.
+
+### Stage 7.2 Completed
+- Status: Completed
+- Implementation Summary: Added deployment-model queue platform selection with `QueuePlatform:Provider` and wired both in-memory channel mode and RabbitMQ producer/consumer mode for account-security email work items.
+- Validation Summary: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed (130/130), failed 0.
+
+#### Phase 7 Summary
+**Implementation Summary**
+- Kept existing background offloading paths (notification fanout, report export, result publish) and expanded offload coverage to account-security email operations.
+- Introduced queue platform abstraction and configuration-driven runtime selection between in-memory and RabbitMQ for the new account-security queue path.
+
+**Validation Summary**
+- Validation command: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal`.
+- Result: passed (130/130), failed 0.
+- Syntax checks on changed queue, worker, startup, and settings files reported no errors.
 
 ## Phase 8: Infrastructure Tuning
 ### Stage 8.1: Auto-Scaling

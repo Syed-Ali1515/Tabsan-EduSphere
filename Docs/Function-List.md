@@ -5,6 +5,19 @@
 
 ## Final-Touches Phase 34 - High-Load Optimization (2026-05-11)
 
+### Stage 7 - Background Processing
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `IAccountSecurityEmailQueue` + `AccountSecurityEmailWorkItem` | Defines the queue contract and payload for offloading account-security transactional emails from request paths. | `src/Tabsan.EduSphere.Application/Interfaces/IAccountSecurityEmailQueue.cs` |
+| `AccountSecurityService` queued email path (`UnlockAccountAsync`, `ResetPasswordAsync`) | Enqueues unlock/reset transactional emails when queue is available, keeping direct-send fallback for safety. | `src/Tabsan.EduSphere.Application/Services/AccountSecurityService.cs` |
+| `InMemoryAccountSecurityEmailQueue` | Provides channel-based in-process queue implementation for account-security email work items. | `src/Tabsan.EduSphere.API/Services/InMemoryAccountSecurityEmailQueue.cs` |
+| `InMemoryAccountSecurityEmailWorker` | Processes queued account-security email work items in background using existing email sender integration. | `src/Tabsan.EduSphere.API/Services/InMemoryAccountSecurityEmailWorker.cs` |
+| `QueuePlatformOptions` | Adds deployment-model queue-platform configuration (`Provider`, `RabbitMq`) for background processing selection. | `src/Tabsan.EduSphere.API/Services/QueuePlatformOptions.cs` |
+| `RabbitMqAccountSecurityEmailQueue` | Publishes account-security email work items to RabbitMQ when queue platform is configured for brokered mode. | `src/Tabsan.EduSphere.API/Services/RabbitMqAccountSecurityEmailQueue.cs` |
+| `RabbitMqAccountSecurityEmailWorker` | Consumes account-security email work items from RabbitMQ and executes background email sends. | `src/Tabsan.EduSphere.API/Services/RabbitMqAccountSecurityEmailWorker.cs` |
+| `Program` queue platform registration block (`QueuePlatform:Provider`) | Selects in-memory vs RabbitMQ queue platform at startup and registers matching queue + worker pipeline. | `src/Tabsan.EduSphere.API/Program.cs` |
+
 ### Stage 6 - Dependency Optimization
 
 | Function Name | Purpose | Location |

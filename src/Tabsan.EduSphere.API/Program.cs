@@ -245,6 +245,22 @@ builder.Services.AddHostedService<ResultPublishJobWorker>();
 builder.Services.AddSingleton<ReportExportJobQueue>();
 builder.Services.AddSingleton<ReportExportJobStore>();
 builder.Services.AddHostedService<ReportExportJobWorker>();
+
+// Final-Touches Phase 34 Stage 7.2 — queue platform selection (InMemory vs RabbitMq) for account-security offload workers.
+builder.Services.Configure<QueuePlatformOptions>(builder.Configuration.GetSection("QueuePlatform"));
+var queuePlatformProvider = builder.Configuration["QueuePlatform:Provider"]?.Trim() ?? "InMemory";
+var useRabbitQueuePlatform = string.Equals(queuePlatformProvider, "RabbitMq", StringComparison.OrdinalIgnoreCase);
+if (useRabbitQueuePlatform)
+{
+    builder.Services.AddSingleton<IAccountSecurityEmailQueue, RabbitMqAccountSecurityEmailQueue>();
+    builder.Services.AddHostedService<RabbitMqAccountSecurityEmailWorker>();
+}
+else
+{
+    builder.Services.AddSingleton<InMemoryAccountSecurityEmailQueue>();
+    builder.Services.AddSingleton<IAccountSecurityEmailQueue>(sp => sp.GetRequiredService<InMemoryAccountSecurityEmailQueue>());
+    builder.Services.AddHostedService<InMemoryAccountSecurityEmailWorker>();
+}
 // ── Phase 5: Quizzes and FYP ──────────────────────────────────────────
 builder.Services.AddScoped<IQuizRepository, QuizRepository>();
 builder.Services.AddScoped<IFypRepository, FypRepository>();

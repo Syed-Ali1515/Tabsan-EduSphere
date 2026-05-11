@@ -8,6 +8,11 @@
 
 ## Execution Updates
 
+### 2026-05-11 — Phase 7 Complete
+- Stage 7.1: Added queue offloading for account-security unlock/reset transactional emails so request handlers enqueue background work.
+- Stage 7.2: Added queue platform integration with startup-configurable `QueuePlatform:Provider` supporting in-memory and RabbitMQ account-security queue processing.
+- Validation: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed `130/130`; syntax checks on touched files reported no errors.
+
 ### 2026-05-11 — Phase 6 Complete
 - Stage 6.1: Added short-TTL distributed caching in `LibraryService` for safe external loan API lookups.
 - Stage 6.2: Added channel-level circuit-breaker controls in `ResilientOutboundIntegrationGateway` with configurable threshold/open durations.
