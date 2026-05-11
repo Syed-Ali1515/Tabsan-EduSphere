@@ -1,9 +1,9 @@
-# SAT
+# Site Acceptance Testing (SAT)
 
 ## Purpose
 Site acceptance testing verifies the deployed application behaves correctly in its target environment after deployment.
 
-## EduSphere SAT
+## EduSphere SAT Steps
 
 1. Deploy the API and web application to the target host.
 2. Confirm the application starts cleanly and health checks are green.
@@ -13,8 +13,10 @@ Site acceptance testing verifies the deployed application behaves correctly in i
 6. Verify the institution policy stored in the application matches the license scope.
 7. Confirm login and role-based navigation continue to work.
 8. Confirm student lifecycle actions still function after deployment.
+9. Test import/export (CSV, PDF, Excel) features for users and timetables.
+10. Run Scripts/04-Maintenance-Indexes-And-Views.sql and confirm indexes/views are up to date.
 
-## Tabsan.Lic SAT
+## Tabsan.Lic SAT Steps
 
 1. Deploy the standalone Tabsan.Lic tool to the operator workstation.
 2. Confirm the database file is created in `%APPDATA%/Tabsan/tabsan_lic.db`.
@@ -27,3 +29,4 @@ Site acceptance testing verifies the deployed application behaves correctly in i
 - Deployed services respond successfully.
 - License activation succeeds only in the intended environment.
 - Institution scope and user limits remain enforced after deployment.
+- Import/export and index maintenance features are validated.
