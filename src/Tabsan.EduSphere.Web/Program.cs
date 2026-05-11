@@ -18,6 +18,39 @@ builder.Configuration
 
 Console.WriteLine($"[Web] Environment: {env.EnvironmentName} | App: {env.ApplicationName}");
 
+// Final-Touches Phase 8 Stage 8.1 — auto-scaling policy metadata and startup guardrails.
+var autoScalingEnabled = builder.Configuration.GetValue("InfrastructureTuning:AutoScaling:Enabled", true);
+var autoScalingMinReplicas = Math.Max(1, builder.Configuration.GetValue("InfrastructureTuning:AutoScaling:MinReplicas", 2));
+var autoScalingMaxReplicas = Math.Max(autoScalingMinReplicas, builder.Configuration.GetValue("InfrastructureTuning:AutoScaling:MaxReplicas", 10));
+if (autoScalingEnabled && autoScalingMinReplicas > autoScalingMaxReplicas)
+{
+    throw new InvalidOperationException("InfrastructureTuning:AutoScaling min replicas cannot exceed max replicas.");
+}
+Console.WriteLine($"[Web] Infrastructure auto-scaling policy: Enabled={autoScalingEnabled}, MinReplicas={autoScalingMinReplicas}, MaxReplicas={autoScalingMaxReplicas}");
+
+// Final-Touches Phase 8 Stage 8.2 — host limits tuning for high-concurrency request handling.
+var hostMinWorkerThreads = Math.Max(Environment.ProcessorCount * 8, builder.Configuration.GetValue("InfrastructureTuning:HostLimits:ThreadPoolMinWorkerThreads", Environment.ProcessorCount * 12));
+var hostMinCompletionPortThreads = Math.Max(Environment.ProcessorCount * 8, builder.Configuration.GetValue("InfrastructureTuning:HostLimits:ThreadPoolMinCompletionPortThreads", Environment.ProcessorCount * 12));
+var hostMaxConcurrentConnections = builder.Configuration.GetValue<long?>("InfrastructureTuning:HostLimits:MaxConcurrentConnections");
+var hostMaxConcurrentUpgradedConnections = builder.Configuration.GetValue<long?>("InfrastructureTuning:HostLimits:MaxConcurrentUpgradedConnections");
+ThreadPool.GetMinThreads(out var currentMinWorkerThreads, out var currentMinCompletionPortThreads);
+if (hostMinWorkerThreads > currentMinWorkerThreads || hostMinCompletionPortThreads > currentMinCompletionPortThreads)
+{
+    var targetMinWorkerThreads = Math.Max(currentMinWorkerThreads, hostMinWorkerThreads);
+    var targetMinCompletionPortThreads = Math.Max(currentMinCompletionPortThreads, hostMinCompletionPortThreads);
+    ThreadPool.SetMinThreads(targetMinWorkerThreads, targetMinCompletionPortThreads);
+    Console.WriteLine($"[Web] ThreadPool min threads tuned: Worker={targetMinWorkerThreads}, IO={targetMinCompletionPortThreads}");
+}
+
+// Final-Touches Phase 8 Stage 8.3 — network stack tuning for high connection volume and outbound saturation control.
+var networkKeepAliveTimeoutSeconds = Math.Max(30, builder.Configuration.GetValue("InfrastructureTuning:NetworkStack:KeepAliveTimeoutSeconds", 120));
+var networkRequestHeadersTimeoutSeconds = Math.Max(5, builder.Configuration.GetValue("InfrastructureTuning:NetworkStack:RequestHeadersTimeoutSeconds", 20));
+var networkHttp2KeepAlivePingDelaySeconds = Math.Max(5, builder.Configuration.GetValue("InfrastructureTuning:NetworkStack:Http2KeepAlivePingDelaySeconds", 30));
+var networkHttp2KeepAlivePingTimeoutSeconds = Math.Max(5, builder.Configuration.GetValue("InfrastructureTuning:NetworkStack:Http2KeepAlivePingTimeoutSeconds", 10));
+var networkHttp2MaxStreamsPerConnection = Math.Max(100, builder.Configuration.GetValue("InfrastructureTuning:NetworkStack:Http2MaxStreamsPerConnection", 200));
+var networkOutboundMaxConnectionsPerServer = Math.Max(25, builder.Configuration.GetValue("InfrastructureTuning:NetworkStack:OutboundMaxConnectionsPerServer", 256));
+var networkOutboundConnectTimeoutSeconds = Math.Max(2, builder.Configuration.GetValue("InfrastructureTuning:NetworkStack:OutboundConnectTimeoutSeconds", 10));
+
 var eduApiBaseUrl = builder.Configuration["EduApi:BaseUrl"];
 if (string.IsNullOrWhiteSpace(eduApiBaseUrl))
 {
@@ -48,6 +81,18 @@ builder.Services.Configure<GzipCompressionProviderOptions>(options =>
 {
     options.Level = System.IO.Compression.CompressionLevel.Fastest;
 });
+// Final-Touches Phase 8 Stage 8.3 — stabilize outbound HTTP under high parallel fan-out.
+builder.Services.ConfigureHttpClientDefaults(httpClientBuilder =>
+{
+    httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() => new System.Net.Http.SocketsHttpHandler
+    {
+        MaxConnectionsPerServer = networkOutboundMaxConnectionsPerServer,
+        EnableMultipleHttp2Connections = true,
+        PooledConnectionIdleTimeout = TimeSpan.FromMinutes(2),
+        PooledConnectionLifetime = TimeSpan.FromMinutes(10),
+        ConnectTimeout = TimeSpan.FromSeconds(networkOutboundConnectTimeoutSeconds)
+    });
+});
 // Final-Touches Phase 34 Stage 2.3 — require shared data-protection keys in production so auth cookies work across web nodes.
 var dataProtection = builder.Services.AddDataProtection()
     .SetApplicationName("Tabsan.EduSphere.Web");
@@ -66,10 +111,20 @@ else if (!builder.Environment.IsDevelopment() && !builder.Environment.IsEnvironm
 builder.WebHost.ConfigureKestrel(options =>
 {
     options.AddServerHeader = false;
-    options.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(2);
-    options.Limits.RequestHeadersTimeout = TimeSpan.FromSeconds(20);
-    options.Limits.Http2.KeepAlivePingDelay = TimeSpan.FromSeconds(30);
-    options.Limits.Http2.KeepAlivePingTimeout = TimeSpan.FromSeconds(10);
+    options.Limits.KeepAliveTimeout = TimeSpan.FromSeconds(networkKeepAliveTimeoutSeconds);
+    options.Limits.RequestHeadersTimeout = TimeSpan.FromSeconds(networkRequestHeadersTimeoutSeconds);
+    options.Limits.Http2.KeepAlivePingDelay = TimeSpan.FromSeconds(networkHttp2KeepAlivePingDelaySeconds);
+    options.Limits.Http2.KeepAlivePingTimeout = TimeSpan.FromSeconds(networkHttp2KeepAlivePingTimeoutSeconds);
+    options.Limits.Http2.MaxStreamsPerConnection = networkHttp2MaxStreamsPerConnection;
+    if (hostMaxConcurrentConnections is > 0)
+    {
+        options.Limits.MaxConcurrentConnections = hostMaxConcurrentConnections;
+    }
+
+    if (hostMaxConcurrentUpgradedConnections is > 0)
+    {
+        options.Limits.MaxConcurrentUpgradedConnections = hostMaxConcurrentUpgradedConnections;
+    }
 });
 
 builder.Services.AddControllersWithViews()

@@ -233,11 +233,36 @@ This plan converts the high-load optimization guide into phased execution stages
 ### Stage 8.1: Auto-Scaling
 - Enable application and infrastructure auto-scaling policies.
 
+### Stage 8.1 Completed
+- Status: Completed
+- Implementation Summary: Added startup-level auto-scaling policy configuration (`InfrastructureTuning:AutoScaling`) in API, Web, and BackgroundJobs with validated min/max replica bounds and deployment-visible policy diagnostics.
+- Validation Summary: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed (130/130), failed 0.
+
 ### Stage 8.2: Host Limits
 - Increase file descriptor/process limits as needed.
 
+### Stage 8.2 Completed
+- Status: Completed
+- Implementation Summary: Added host-limit tuning controls (`InfrastructureTuning:HostLimits`) and applied thread-pool minimum thread tuning plus configurable Kestrel max concurrent connection limits for API and Web hosts.
+- Validation Summary: syntax checks on updated startup files reported no errors; unit test validation passed (130/130).
+
 ### Stage 8.3: Network Stack Tuning
 - Tune TCP/network parameters for high connection volume.
+
+### Stage 8.3 Completed
+- Status: Completed
+- Implementation Summary: Added network-stack tuning controls (`InfrastructureTuning:NetworkStack`) for Kestrel keep-alive/header timeout/HTTP2 stream limits and configured outbound `SocketsHttpHandler` pooling and connection limits for API, Web, and BackgroundJobs.
+- Validation Summary: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed (130/130), failed 0.
+
+#### Phase 8 Summary
+**Implementation Summary**
+- Standardized infrastructure tuning across API, Web, and BackgroundJobs through a single config contract (`InfrastructureTuning`) with environment-specific baselines.
+- Added startup guardrails and observability for auto-scaling policy metadata, host concurrency boundaries, and network throughput controls.
+
+**Validation Summary**
+- Validation command: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal`.
+- Result: passed (130/130), failed 0.
+- Diagnostics checks on updated startup/config files reported no syntax errors.
 
 ## Phase 9: Monitoring and Observability
 ### Stage 9.1: Metrics Stack

@@ -59,12 +59,18 @@ cmd /c git -C "<repo-root>" push origin main
 
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
-- Active Phase: **Phase 7 — Background Processing — COMPLETE ✅**
-- Active Stage: **Stage 7.1 and 7.2 complete (queue offloading and queue platform integration)**
-- Status: **Account-security transactional email work is now queue-offloaded and queue platform selection supports in-memory and RabbitMQ deployment models.**
+- Active Phase: **Phase 8 — Infrastructure Tuning — COMPLETE ✅**
+- Active Stage: **Stage 8.1, 8.2, and 8.3 complete (auto-scaling policy, host limits, network stack tuning)**
+- Status: **Infrastructure tuning is now standardized across API, Web, and BackgroundJobs with config-driven scaling metadata, host concurrency limits, and network throughput controls.**
 - Last Updated: 2026-05-11
-- Next: **Execute Phase 8 Stage 8.1 auto-scaling policies.**
-- Docs Updated: ✅ Phase 7 complete trackers updated (2026-05-11)
+- Next: **Execute Phase 9 Stage 9.1 metrics stack.**
+- Docs Updated: ✅ Phase 8 complete trackers updated (2026-05-11)
+
+### 2026-05-11 - Phase 8 Completion
+- Stage 8.1: Added `InfrastructureTuning:AutoScaling` policy controls and startup validation in API, Web, and BackgroundJobs.
+- Stage 8.2: Added host-limit controls (`InfrastructureTuning:HostLimits`) with thread-pool minimum tuning and Kestrel concurrent-connection controls.
+- Stage 8.3: Added network-stack controls (`InfrastructureTuning:NetworkStack`) and outbound HTTP handler tuning for high-connection workloads.
+- Validation: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed (**130/130**).
 
 ### 2026-05-11 - Phase 7 Completion
 - Stage 7.1: Added account-security email queue offloading so unlock/reset request paths enqueue email work items.

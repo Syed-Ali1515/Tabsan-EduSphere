@@ -58,6 +58,12 @@
 - Changes were limited to background worker/queue runtime and configuration paths.
 - No database schema change and no EF migration were required.
 
+## 2026-05-11 Update — Phase 8 Complete
+
+- Phase 8 delivered auto-scaling policy baselines, host-limit tuning, and network stack tuning across API/Web/BackgroundJobs.
+- Changes were limited to startup/runtime configuration and host/network behavior controls.
+- No database schema change and no EF migration were required.
+
 ## 2026-05-10 Update — Phase 32 Stage 32.2
 
 - Stage 32.2 delivered report export action/endpoint regression guardrail integration tests only.

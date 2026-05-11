@@ -5,6 +5,16 @@
 
 ## Final-Touches Phase 34 - High-Load Optimization (2026-05-11)
 
+### Stage 8 - Infrastructure Tuning
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `Program` auto-scaling policy bootstrap (`InfrastructureTuning:AutoScaling`) | Adds startup-validated auto-scaling policy metadata (`Enabled`, replica bounds, target utilization/cooldown controls) for API, Web, and BackgroundJobs runtime profiles. | `src/Tabsan.EduSphere.API/Program.cs`, `src/Tabsan.EduSphere.Web/Program.cs`, `src/Tabsan.EduSphere.BackgroundJobs/Program.cs` |
+| `Program` host-limit tuning bootstrap (`InfrastructureTuning:HostLimits`) | Applies config-driven thread-pool minimums and Kestrel concurrent-connection limits for high-concurrency host behavior. | `src/Tabsan.EduSphere.API/Program.cs`, `src/Tabsan.EduSphere.Web/Program.cs`, `src/Tabsan.EduSphere.BackgroundJobs/Program.cs` |
+| `Program` network-stack tuning bootstrap (`InfrastructureTuning:NetworkStack`) | Applies Kestrel keep-alive/header/HTTP2 stream tuning and outbound `SocketsHttpHandler` connection pooling limits for high-volume traffic patterns. | `src/Tabsan.EduSphere.API/Program.cs`, `src/Tabsan.EduSphere.Web/Program.cs`, `src/Tabsan.EduSphere.BackgroundJobs/Program.cs` |
+| `GET /health/scaling` | Exposes active auto-scaling and infrastructure tuning baseline from API for deployment/runtime validation. | `src/Tabsan.EduSphere.API/Program.cs` |
+| `InfrastructureTuning` configuration sections | Adds environment-scoped startup tuning keys for API, Web, and BackgroundJobs host/runtime/network scaling controls. | `src/Tabsan.EduSphere.API/appsettings.json`, `src/Tabsan.EduSphere.API/appsettings.Development.json`, `src/Tabsan.EduSphere.API/appsettings.Production.json`, `src/Tabsan.EduSphere.Web/appsettings.json`, `src/Tabsan.EduSphere.Web/appsettings.Development.json`, `src/Tabsan.EduSphere.Web/appsettings.Production.json`, `src/Tabsan.EduSphere.BackgroundJobs/appsettings.json`, `src/Tabsan.EduSphere.BackgroundJobs/appsettings.Development.json`, `src/Tabsan.EduSphere.BackgroundJobs/appsettings.Production.json` |
+
 ### Stage 7 - Background Processing
 
 | Function Name | Purpose | Location |

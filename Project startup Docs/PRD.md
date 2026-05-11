@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 ## University Portal (License-Based, Department-Oriented System)
 
-**Version:** 1.71 (Phase 7 background processing complete)  
+**Version:** 1.72 (Phase 8 infrastructure tuning complete)  
 **Status:** Approved  
 **Prepared By:** Product Team  
 **Last Updated:** 11 May 2026  
@@ -9,6 +9,13 @@
 ---
 
 ## 0. Implementation Update Log
+
+### 2026-05-11 — Phase 8 Complete
+- **Stage 8.1 auto-scaling policies:** added environment-configurable `InfrastructureTuning:AutoScaling` policy controls and startup validation for replica bounds across API, Web, and BackgroundJobs.
+- **Stage 8.2 host limits:** added `InfrastructureTuning:HostLimits` controls for thread-pool minimums and Kestrel concurrent-connection ceilings.
+- **Stage 8.3 network stack tuning:** added `InfrastructureTuning:NetworkStack` controls for Kestrel HTTP/2 stream tuning and outbound HTTP connection pooling/limits.
+- **Schema impact:** no database migration required.
+- **Validation:** `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed (**130/130**).
 
 ### 2026-05-11 — Phase 7 Complete
 - **Stage 7.1 queue offloading:** account-security unlock/reset transactional email sends now enqueue background work items instead of always sending in request path.

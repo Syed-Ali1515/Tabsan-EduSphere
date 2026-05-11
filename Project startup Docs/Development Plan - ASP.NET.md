@@ -8,6 +8,12 @@
 
 ## Execution Updates
 
+### 2026-05-11 — Phase 8 Complete
+- Stage 8.1: Added `InfrastructureTuning:AutoScaling` controls and startup validation for replica bounds in API, Web, and BackgroundJobs.
+- Stage 8.2: Added `InfrastructureTuning:HostLimits` controls with thread-pool minimum tuning and API/Web Kestrel concurrent connection settings.
+- Stage 8.3: Added `InfrastructureTuning:NetworkStack` controls with HTTP/2 stream tuning and outbound HTTP handler connection limits.
+- Validation: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed `130/130`.
+
 ### 2026-05-11 — Phase 7 Complete
 - Stage 7.1: Added queue offloading for account-security unlock/reset transactional emails so request handlers enqueue background work.
 - Stage 7.2: Added queue platform integration with startup-configurable `QueuePlatform:Provider` supporting in-memory and RabbitMQ account-security queue processing.

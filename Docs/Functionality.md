@@ -429,6 +429,12 @@
 - **Queue Platform Selection**: Queue processing supports startup-configurable in-memory channel mode and RabbitMQ mode based on deployment model.
 - **Worker-Based Delivery**: Dedicated workers process queued account-security email work items outside request handlers.
 
+### Infrastructure Tuning (Phase 8)
+- **Auto-Scaling Policy Baseline**: API, Web, and BackgroundJobs now expose startup-validated `InfrastructureTuning:AutoScaling` policy controls for deployment-safe replica scaling bounds.
+- **Host Concurrency Controls**: `InfrastructureTuning:HostLimits` now drives thread-pool minimums and API/Web Kestrel concurrent-connection limits.
+- **Network Throughput Tuning**: `InfrastructureTuning:NetworkStack` now controls HTTP/2 stream/keep-alive limits and outbound connection pooling limits for high-volume traffic.
+- **Scaling Diagnostics**: API now exposes `/health/scaling` to verify effective infrastructure tuning baseline at runtime.
+
 ---
 
 ## Architecture & Technical Details

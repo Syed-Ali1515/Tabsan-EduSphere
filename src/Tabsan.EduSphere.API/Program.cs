@@ -61,6 +61,43 @@ var exposeInstanceHeader = builder.Configuration.GetValue("ScaleOut:ExposeInstan
 var processStartUtc = DateTimeOffset.UtcNow;
 Console.WriteLine($"[Startup] ScaleOut InstanceId: {runtimeInstanceId} | ExposeInstanceHeader: {exposeInstanceHeader}");
 
+// Final-Touches Phase 8 Stage 8.1 — auto-scaling policy metadata and startup guardrails.
+var autoScalingEnabled = builder.Configuration.GetValue("InfrastructureTuning:AutoScaling:Enabled", true);
+var autoScalingMinReplicas = Math.Max(1, builder.Configuration.GetValue("InfrastructureTuning:AutoScaling:MinReplicas", 2));
+var autoScalingMaxReplicas = Math.Max(autoScalingMinReplicas, builder.Configuration.GetValue("InfrastructureTuning:AutoScaling:MaxReplicas", 12));
+var autoScalingTargetCpuPercent = Math.Clamp(builder.Configuration.GetValue("InfrastructureTuning:AutoScaling:TargetCpuUtilizationPercent", 70), 30, 95);
+var autoScalingTargetMemoryPercent = Math.Clamp(builder.Configuration.GetValue("InfrastructureTuning:AutoScaling:TargetMemoryUtilizationPercent", 75), 30, 95);
+var autoScalingScaleOutCooldownSeconds = Math.Max(15, builder.Configuration.GetValue("InfrastructureTuning:AutoScaling:ScaleOutCooldownSeconds", 60));
+var autoScalingScaleInCooldownSeconds = Math.Max(30, builder.Configuration.GetValue("InfrastructureTuning:AutoScaling:ScaleInCooldownSeconds", 180));
+if (autoScalingEnabled && autoScalingMinReplicas > autoScalingMaxReplicas)
+{
+    throw new InvalidOperationException("InfrastructureTuning:AutoScaling min replicas cannot exceed max replicas.");
+}
+Console.WriteLine($"[Startup] Infrastructure auto-scaling policy: Enabled={autoScalingEnabled}, MinReplicas={autoScalingMinReplicas}, MaxReplicas={autoScalingMaxReplicas}, CpuTarget={autoScalingTargetCpuPercent}%, MemoryTarget={autoScalingTargetMemoryPercent}%");
+
+// Final-Touches Phase 8 Stage 8.2 — host limits tuning for high-concurrency request handling.
+var hostMinWorkerThreads = Math.Max(Environment.ProcessorCount * 8, builder.Configuration.GetValue("InfrastructureTuning:HostLimits:ThreadPoolMinWorkerThreads", Environment.ProcessorCount * 16));
+var hostMinCompletionPortThreads = Math.Max(Environment.ProcessorCount * 8, builder.Configuration.GetValue("InfrastructureTuning:HostLimits:ThreadPoolMinCompletionPortThreads", Environment.ProcessorCount * 16));
+var hostMaxConcurrentConnections = builder.Configuration.GetValue<long?>("InfrastructureTuning:HostLimits:MaxConcurrentConnections");
+var hostMaxConcurrentUpgradedConnections = builder.Configuration.GetValue<long?>("InfrastructureTuning:HostLimits:MaxConcurrentUpgradedConnections");
+ThreadPool.GetMinThreads(out var currentMinWorkerThreads, out var currentMinCompletionPortThreads);
+if (hostMinWorkerThreads > currentMinWorkerThreads || hostMinCompletionPortThreads > currentMinCompletionPortThreads)
+{
+    var targetMinWorkerThreads = Math.Max(currentMinWorkerThreads, hostMinWorkerThreads);
+    var targetMinCompletionPortThreads = Math.Max(currentMinCompletionPortThreads, hostMinCompletionPortThreads);
+    ThreadPool.SetMinThreads(targetMinWorkerThreads, targetMinCompletionPortThreads);
+    Console.WriteLine($"[Startup] ThreadPool min threads tuned: Worker={targetMinWorkerThreads}, IO={targetMinCompletionPortThreads}");
+}
+
+// Final-Touches Phase 8 Stage 8.3 — network stack tuning for high connection volume and outbound saturation control.
+var networkKeepAliveTimeoutSeconds = Math.Max(30, builder.Configuration.GetValue("InfrastructureTuning:NetworkStack:KeepAliveTimeoutSeconds", 120));
+var networkRequestHeadersTimeoutSeconds = Math.Max(5, builder.Configuration.GetValue("InfrastructureTuning:NetworkStack:RequestHeadersTimeoutSeconds", 20));
+var networkHttp2KeepAlivePingDelaySeconds = Math.Max(5, builder.Configuration.GetValue("InfrastructureTuning:NetworkStack:Http2KeepAlivePingDelaySeconds", 30));
+var networkHttp2KeepAlivePingTimeoutSeconds = Math.Max(5, builder.Configuration.GetValue("InfrastructureTuning:NetworkStack:Http2KeepAlivePingTimeoutSeconds", 10));
+var networkHttp2MaxStreamsPerConnection = Math.Max(100, builder.Configuration.GetValue("InfrastructureTuning:NetworkStack:Http2MaxStreamsPerConnection", 200));
+var networkOutboundMaxConnectionsPerServer = Math.Max(50, builder.Configuration.GetValue("InfrastructureTuning:NetworkStack:OutboundMaxConnectionsPerServer", 512));
+var networkOutboundConnectTimeoutSeconds = Math.Max(2, builder.Configuration.GetValue("InfrastructureTuning:NetworkStack:OutboundConnectTimeoutSeconds", 10));
+
 var configuredConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 if (string.IsNullOrWhiteSpace(configuredConnectionString))
 {
@@ -97,10 +134,33 @@ builder.Services.Configure<GzipCompressionProviderOptions>(options =>
 builder.WebHost.ConfigureKestrel(options =>
 {
     options.AddServerHeader = false;
-    options.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(2);
-    options.Limits.RequestHeadersTimeout = TimeSpan.FromSeconds(20);
-    options.Limits.Http2.KeepAlivePingDelay = TimeSpan.FromSeconds(30);
-    options.Limits.Http2.KeepAlivePingTimeout = TimeSpan.FromSeconds(10);
+    options.Limits.KeepAliveTimeout = TimeSpan.FromSeconds(networkKeepAliveTimeoutSeconds);
+    options.Limits.RequestHeadersTimeout = TimeSpan.FromSeconds(networkRequestHeadersTimeoutSeconds);
+    options.Limits.Http2.KeepAlivePingDelay = TimeSpan.FromSeconds(networkHttp2KeepAlivePingDelaySeconds);
+    options.Limits.Http2.KeepAlivePingTimeout = TimeSpan.FromSeconds(networkHttp2KeepAlivePingTimeoutSeconds);
+    options.Limits.Http2.MaxStreamsPerConnection = networkHttp2MaxStreamsPerConnection;
+    if (hostMaxConcurrentConnections is > 0)
+    {
+        options.Limits.MaxConcurrentConnections = hostMaxConcurrentConnections;
+    }
+
+    if (hostMaxConcurrentUpgradedConnections is > 0)
+    {
+        options.Limits.MaxConcurrentUpgradedConnections = hostMaxConcurrentUpgradedConnections;
+    }
+});
+
+// Final-Touches Phase 8 Stage 8.3 — stabilize outbound HTTP under high parallel fan-out.
+builder.Services.ConfigureHttpClientDefaults(httpClientBuilder =>
+{
+    httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() => new System.Net.Http.SocketsHttpHandler
+    {
+        MaxConnectionsPerServer = networkOutboundMaxConnectionsPerServer,
+        EnableMultipleHttp2Connections = true,
+        PooledConnectionIdleTimeout = TimeSpan.FromMinutes(2),
+        PooledConnectionLifetime = TimeSpan.FromMinutes(10),
+        ConnectTimeout = TimeSpan.FromSeconds(networkOutboundConnectTimeoutSeconds)
+    });
 });
 
 // ── Serilog (structured logging — console + rolling file) ───────────────────────
@@ -570,6 +630,22 @@ app.MapGet("/health/instance", () => Results.Ok(new
     machine = Environment.MachineName,
     uptimeSeconds = (long)(DateTimeOffset.UtcNow - processStartUtc).TotalSeconds,
     version = typeof(Program).Assembly.GetName().Version?.ToString() ?? "unknown"
+})).AllowAnonymous();
+app.MapGet("/health/scaling", () => Results.Ok(new
+{
+    autoScalingEnabled,
+    minReplicas = autoScalingMinReplicas,
+    maxReplicas = autoScalingMaxReplicas,
+    targetCpuUtilizationPercent = autoScalingTargetCpuPercent,
+    targetMemoryUtilizationPercent = autoScalingTargetMemoryPercent,
+    scaleOutCooldownSeconds = autoScalingScaleOutCooldownSeconds,
+    scaleInCooldownSeconds = autoScalingScaleInCooldownSeconds,
+    threadPoolMinWorkerThreads = hostMinWorkerThreads,
+    threadPoolMinCompletionPortThreads = hostMinCompletionPortThreads,
+    maxConcurrentConnections = hostMaxConcurrentConnections,
+    maxConcurrentUpgradedConnections = hostMaxConcurrentUpgradedConnections,
+    http2MaxStreamsPerConnection = networkHttp2MaxStreamsPerConnection,
+    outboundMaxConnectionsPerServer = networkOutboundMaxConnectionsPerServer
 })).AllowAnonymous();
 
 app.Run();
