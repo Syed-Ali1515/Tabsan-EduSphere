@@ -138,6 +138,7 @@ Services/
  MediaStorageServiceCollectionExtensions.cs
  NotificationFanoutQueue.cs
  NotificationFanoutWorker.cs
+ ObservabilityMetrics.cs
  QueuePlatformOptions.cs
  RabbitMqAccountSecurityEmailQueue.cs
  RabbitMqAccountSecurityEmailWorker.cs
@@ -498,6 +499,9 @@ Services/
  opentelemetry.api/1.9.0/lib/net8.0/OpenTelemetry.Api.dll
  opentelemetry.exporter.console/1.9.0/lib/net8.0/OpenTelemetry.Exporter.Console.dll
  opentelemetry.extensions.hosting/1.9.0/lib/net8.0/OpenTelemetry.Extensions.Hosting.dll
+ opentelemetry.instrumentation.aspnetcore/1.9.0/lib/net8.0/OpenTelemetry.Instrumentation.AspNetCore.dll
+ opentelemetry.instrumentation.http/1.9.0/lib/net8.0/OpenTelemetry.Instrumentation.Http.dll
+ opentelemetry.instrumentation.runtime/1.9.0/lib/net6.0/OpenTelemetry.Instrumentation.Runtime.dll
  opentelemetry/1.9.0/lib/net8.0/OpenTelemetry.dll
  pipelines.sockets.unofficial/2.2.8/lib/net5.0/Pipelines.Sockets.Unofficial.dll
  questpdf/2024.12.0/lib/net8.0/QuestPDF.dll

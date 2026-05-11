@@ -435,6 +435,12 @@
 - **Network Throughput Tuning**: `InfrastructureTuning:NetworkStack` now controls HTTP/2 stream/keep-alive limits and outbound connection pooling limits for high-volume traffic.
 - **Scaling Diagnostics**: API now exposes `/health/scaling` to verify effective infrastructure tuning baseline at runtime.
 
+### Monitoring and Observability (Phase 9)
+- **Prometheus Metrics Stack**: API now publishes OpenTelemetry metrics with Prometheus scraping support at `/metrics`.
+- **Latency SLO Snapshots**: Rolling request timing snapshots expose p50, p95, and p99 latency summaries at `/health/observability`.
+- **Runtime Health Coverage**: API health checks now cover database connectivity, CPU pressure, memory pressure, network resolution, and rolling error-rate thresholds.
+- **Continuous Monitoring Surface**: The observability stack is designed to feed dashboards, alerts, and SLO checks without requiring schema changes.
+
 ---
 
 ## Architecture & Technical Details

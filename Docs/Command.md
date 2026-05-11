@@ -59,12 +59,18 @@ cmd /c git -C "<repo-root>" push origin main
 
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
-- Active Phase: **Phase 8 — Infrastructure Tuning — COMPLETE ✅**
-- Active Stage: **Stage 8.1, 8.2, and 8.3 complete (auto-scaling policy, host limits, network stack tuning)**
-- Status: **Infrastructure tuning is now standardized across API, Web, and BackgroundJobs with config-driven scaling metadata, host concurrency limits, and network throughput controls.**
+- Active Phase: **Phase 9 — Monitoring and Observability — COMPLETE ✅**
+- Active Stage: **Stage 9.1, 9.2, and 9.3 complete (metrics stack, latency SLOs, full-stack health monitoring)**
+- Status: **Observability is now available through Prometheus metrics scraping, latency SLO snapshots, and full-stack health checks in the API host.**
 - Last Updated: 2026-05-11
-- Next: **Execute Phase 9 Stage 9.1 metrics stack.**
-- Docs Updated: ✅ Phase 8 complete trackers updated (2026-05-11)
+- Next: **Execute Phase 10 Stage 10.1 incremental scale gates.**
+- Docs Updated: ✅ Phase 9 complete trackers updated (2026-05-11)
+
+### 2026-05-11 - Phase 9 Completion
+- Stage 9.1: Added OpenTelemetry metrics publishing with Prometheus scraping endpoint support and runtime instrumentation.
+- Stage 9.2: Added rolling request-latency capture with `/health/observability` output for p50, p95, and p99 tracking.
+- Stage 9.3: Added health checks for database, CPU, memory, network, and error-rate monitoring.
+- Validation: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed (**130/130**).
 
 ### 2026-05-11 - Phase 8 Completion
 - Stage 8.1: Added `InfrastructureTuning:AutoScaling` policy controls and startup validation in API, Web, and BackgroundJobs.

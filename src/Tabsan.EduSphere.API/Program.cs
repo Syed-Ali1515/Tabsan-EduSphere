@@ -39,6 +39,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using System.Diagnostics;
 using Serilog;
 using Serilog.Events;
+using OpenTelemetry.Metrics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -60,6 +61,9 @@ var runtimeInstanceId = string.IsNullOrWhiteSpace(configuredInstanceId)
 var exposeInstanceHeader = builder.Configuration.GetValue("ScaleOut:ExposeInstanceHeader", true);
 var processStartUtc = DateTimeOffset.UtcNow;
 Console.WriteLine($"[Startup] ScaleOut InstanceId: {runtimeInstanceId} | ExposeInstanceHeader: {exposeInstanceHeader}");
+
+// Final-Touches Phase 9 Stage 9.1 — shared observability state for Prometheus metrics and latency SLO snapshots.
+builder.Services.AddSingleton(new ObservabilityMetrics(processStartUtc));
 
 // Final-Touches Phase 8 Stage 8.1 — auto-scaling policy metadata and startup guardrails.
 var autoScalingEnabled = builder.Configuration.GetValue("InfrastructureTuning:AutoScaling:Enabled", true);
@@ -129,6 +133,18 @@ builder.Services.Configure<GzipCompressionProviderOptions>(options =>
 {
     options.Level = System.IO.Compression.CompressionLevel.Fastest;
 });
+
+// Final-Touches Phase 9 Stage 9.1 — publish OpenTelemetry metrics with Prometheus scraping support.
+builder.Services.AddOpenTelemetry()
+    .WithMetrics(metrics =>
+    {
+        metrics.AddAspNetCoreInstrumentation();
+        metrics.AddHttpClientInstrumentation();
+        metrics.AddRuntimeInstrumentation();
+        metrics.AddProcessInstrumentation();
+        metrics.AddMeter(ObservabilityMetrics.MeterName);
+        metrics.AddPrometheusExporter();
+    });
 
 // Final-Touches Phase 34 Stage 3.3 — transport tuning for keep-alive and HTTP/2-friendly connection handling.
 builder.WebHost.ConfigureKestrel(options =>
@@ -526,6 +542,14 @@ builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(
 builder.Services.AddHostedService<LicenseCheckWorker>();
 builder.Services.AddHostedService<AttendanceAlertJob>();
 
+// Final-Touches Phase 9 Stage 9.3 — full-stack health checks for database, memory, CPU, network, and error rate.
+builder.Services.AddHealthChecks()
+    .AddCheck<DatabaseConnectivityHealthCheck>("database", tags: ["ready", "db"])
+    .AddCheck<MemoryPressureHealthCheck>("memory", tags: ["live", "resource"])
+    .AddCheck<CpuPressureHealthCheck>("cpu", tags: ["live", "resource"])
+    .AddCheck<NetworkStackHealthCheck>("network", tags: ["live", "network"])
+    .AddCheck<ErrorRateHealthCheck>("error-rate", tags: ["live", "slo"]);
+
 // ── Email ─────────────────────────────────────────────────────────────────────────
 builder.Services.AddScoped<IEmailSender, Tabsan.EduSphere.Infrastructure.Email.MailKitEmailSender>();
 builder.Services.AddSingleton<IEmailTemplateRenderer, Tabsan.EduSphere.Infrastructure.Email.EmailTemplateRenderer>();
@@ -588,6 +612,22 @@ if (app.Environment.IsDevelopment() || app.Configuration.GetValue<bool>("AppSett
 
 app.UseHttpsRedirection();
 app.UseResponseCompression();
+// Final-Touches Phase 9 Stage 9.2 — capture rolling request timings for p50/p95/p99 SLO summaries.
+app.Use(async (context, next) =>
+{
+    var observabilityMetrics = context.RequestServices.GetRequiredService<ObservabilityMetrics>();
+    var startTimestamp = Stopwatch.GetTimestamp();
+
+    try
+    {
+        await next();
+    }
+    finally
+    {
+        var duration = Stopwatch.GetElapsedTime(startTimestamp);
+        observabilityMetrics.RecordRequest(duration, context.Response.StatusCode);
+    }
+});
 // Serve uploaded branding assets (e.g., /portal-uploads/logo.png) from API wwwroot.
 var apiWebRoot = app.Environment.WebRootPath;
 if (string.IsNullOrWhiteSpace(apiWebRoot))
@@ -622,6 +662,7 @@ app.UseAuthorization();
 app.UseMiddleware<Tabsan.EduSphere.API.Middleware.InstitutionContextMiddleware>();
 app.MapControllers();
 app.MapHealthChecks("/health");
+app.MapPrometheusScrapingEndpoint("/metrics").AllowAnonymous();
 app.MapGet("/health/instance", () => Results.Ok(new
 {
     status = "ok",
@@ -631,6 +672,7 @@ app.MapGet("/health/instance", () => Results.Ok(new
     uptimeSeconds = (long)(DateTimeOffset.UtcNow - processStartUtc).TotalSeconds,
     version = typeof(Program).Assembly.GetName().Version?.ToString() ?? "unknown"
 })).AllowAnonymous();
+app.MapGet("/health/observability", (ObservabilityMetrics observabilityMetrics) => Results.Ok(observabilityMetrics.GetSnapshot())).AllowAnonymous();
 app.MapGet("/health/scaling", () => Results.Ok(new
 {
     autoScalingEnabled,

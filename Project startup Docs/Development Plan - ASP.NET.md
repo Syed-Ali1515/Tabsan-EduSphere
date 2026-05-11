@@ -8,6 +8,12 @@
 
 ## Execution Updates
 
+### 2026-05-11 — Phase 9 Complete
+- Stage 9.1: Added OpenTelemetry metrics publishing with Prometheus scraping support in the API host.
+- Stage 9.2: Added rolling request-latency capture with `/health/observability` snapshots for p50/p95/p99 tracking.
+- Stage 9.3: Added database, CPU, memory, network, and error-rate health checks for continuous runtime monitoring.
+- Validation: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed `130/130`.
+
 ### 2026-05-11 — Phase 8 Complete
 - Stage 8.1: Added `InfrastructureTuning:AutoScaling` controls and startup validation for replica bounds in API, Web, and BackgroundJobs.
 - Stage 8.2: Added `InfrastructureTuning:HostLimits` controls with thread-pool minimum tuning and API/Web Kestrel concurrent connection settings.

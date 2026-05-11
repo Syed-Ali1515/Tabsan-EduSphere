@@ -5,6 +5,22 @@
 
 ## Final-Touches Phase 34 - High-Load Optimization (2026-05-11)
 
+### Stage 9 - Monitoring and Observability
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `ObservabilityMetrics` | Stores rolling request durations, error counts, and process/runtime snapshots for latency SLO and observability endpoints. | `src/Tabsan.EduSphere.API/Services/ObservabilityMetrics.cs` |
+| `DatabaseConnectivityHealthCheck` | Verifies the API can connect to the database for continuous runtime monitoring. | `src/Tabsan.EduSphere.API/Services/ObservabilityMetrics.cs` |
+| `MemoryPressureHealthCheck` | Monitors memory pressure against configurable thresholds for continuous host health monitoring. | `src/Tabsan.EduSphere.API/Services/ObservabilityMetrics.cs` |
+| `CpuPressureHealthCheck` | Monitors average process CPU usage against configurable thresholds for continuous host health monitoring. | `src/Tabsan.EduSphere.API/Services/ObservabilityMetrics.cs` |
+| `NetworkStackHealthCheck` | Verifies network/DNS resolution for the configured probe endpoint to keep network monitoring active. | `src/Tabsan.EduSphere.API/Services/ObservabilityMetrics.cs` |
+| `ErrorRateHealthCheck` | Compares rolling request error rate against configured SLO thresholds. | `src/Tabsan.EduSphere.API/Services/ObservabilityMetrics.cs` |
+| `AddOpenTelemetry` metrics block | Publishes ASP.NET Core, HttpClient, runtime, and process metrics and exposes Prometheus scraping support. | `src/Tabsan.EduSphere.API/Program.cs` |
+| `ObservabilityMetrics` middleware block | Captures per-request timings and status codes for rolling p50/p95/p99 latency snapshots. | `src/Tabsan.EduSphere.API/Program.cs` |
+| `GET /metrics` | Prometheus scrape endpoint for Grafana/Prometheus collection. | `src/Tabsan.EduSphere.API/Program.cs` |
+| `GET /health/observability` | Returns rolling latency and runtime observability snapshot data. | `src/Tabsan.EduSphere.API/Program.cs` |
+| `AddHealthChecks` observability registrations | Registers database, memory, CPU, network, and error-rate checks for continuous runtime health monitoring. | `src/Tabsan.EduSphere.API/Program.cs` |
+
 ### Stage 8 - Infrastructure Tuning
 
 | Function Name | Purpose | Location |
