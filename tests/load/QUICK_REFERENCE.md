@@ -110,6 +110,21 @@ k6 run --out json=results.json login-load-test.js
 - [ ] Load balancer configured
 - [ ] Monitoring/logging enabled
 
+## 🧭 Phase 10 Progressive Gates
+
+```powershell
+# Standard gate sequence (10k -> 20k -> 50k -> 80k -> 100k)
+.\run-phase10-progressive.ps1 progressive http://localhost:5181
+
+# Extended gate sequence (adds 250k -> 500k -> 1m)
+.\run-phase10-progressive.ps1 extended http://localhost:5181
+
+# Re-test the same gate after a targeted fix
+.\run-phase10-progressive.ps1 progressive http://localhost:5181 -RetestCount 3
+```
+
+The wrapper reports the first likely bottleneck class for each gate so you can apply a targeted fix before rerunning the same gate.
+
 ---
 
 ## 📚 Test Scenarios at a Glance

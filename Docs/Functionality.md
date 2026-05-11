@@ -441,6 +441,12 @@
 - **Runtime Health Coverage**: API health checks now cover database connectivity, CPU pressure, memory pressure, network resolution, and rolling error-rate thresholds.
 - **Continuous Monitoring Surface**: The observability stack is designed to feed dashboards, alerts, and SLO checks without requiring schema changes.
 
+### Progressive Load Strategy (Phase 10)
+- **Incremental Scale Gates**: Phase 10 now runs stepwise gate plans across 10k, 20k, 50k, 80k, 100k, and higher tiers using a reusable orchestrator.
+- **Bottleneck Isolation**: Each gate emits a bottleneck class so operators can identify whether the first limiter is API, database/dependency, infra, rate-limiting, or contract/authz related.
+- **Fix-and-Retest Cycle**: The gate runner supports repeated retest attempts so a targeted fix can be revalidated against the same stage before promotion.
+- **Reusable Scenario**: A single parameterized k6 scenario now supports the progressive and extended gate plans without duplicating test logic.
+
 ---
 
 ## Architecture & Technical Details

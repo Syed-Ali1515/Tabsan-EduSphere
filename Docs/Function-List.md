@@ -5,6 +5,16 @@
 
 ## Final-Touches Phase 34 - High-Load Optimization (2026-05-11)
 
+### Stage 10 - Progressive Load Test Strategy
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `k6-phase10-progressive.js` | Parameterized progressive-load scenario for stepwise scale gates, latency/error thresholds, and summary output. | `tests/load/k6-phase10-progressive.js` |
+| `run-phase10-progressive.ps1::Get-Phase10GatePlan` | Defines the progressive and extended gate sequences used for Phase 10 stepwise validation. | `tests/load/run-phase10-progressive.ps1` |
+| `run-phase10-progressive.ps1::Invoke-Phase10Gate` | Executes a single Phase 10 gate run, captures summaries, and emits machine-readable results for analysis. | `tests/load/run-phase10-progressive.ps1` |
+| `run-phase10-progressive.ps1::Get-BottleneckClass` | Classifies the first likely bottleneck from gate metrics (api, database/dependency, infra, rate-limit, or contract/authz). | `tests/load/run-phase10-progressive.ps1` |
+| `run-phase10-progressive.ps1` main loop | Runs the configured gate plan in sequence and supports repeated retest attempts for fix-and-retest validation. | `tests/load/run-phase10-progressive.ps1` |
+
 ### Stage 9 - Monitoring and Observability
 
 | Function Name | Purpose | Location |

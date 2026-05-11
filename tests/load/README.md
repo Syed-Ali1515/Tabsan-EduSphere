@@ -17,8 +17,10 @@ Phase 5 update:
 |------|---------|
 | `k6-auth-current.js` | Auth-focused load test for `/api/v1/auth/login` + `/api/v1/auth/security-profile` |
 | `k6-core-current.js` | Core authenticated flow test for dashboard, sidebar, and notifications |
+| `k6-phase10-progressive.js` | Progressive gate scenario for incremental scale validation and bottleneck signal capture |
 | `run-load-test.ps1` | PowerShell runner (recommended) |
 | `run-load-test.bat` | Windows batch wrapper |
+| `run-phase10-progressive.ps1` | Progressive gate orchestrator with bottleneck classification and retest loop |
 | `README.md` | This file |
 
 ---
@@ -79,6 +81,21 @@ k6 run --out json=results.json -e BASE_URL=http://localhost:5181 k6-auth-current
 # 1m profile diagnostics run with raw output enabled (focused troubleshooting)
 .\run-1m.bat http://localhost:5181 raw 16000 1 1 900
 ```
+
+### 5. Progressive Load Gates (Phase 10)
+
+```powershell
+# Default progressive plan: 10k -> 20k -> 50k -> 80k -> 100k
+.\run-phase10-progressive.ps1 progressive http://localhost:5181
+
+# Extended plan: adds 250k -> 500k -> 1m gates
+.\run-phase10-progressive.ps1 extended http://localhost:5181
+
+# Distributed run with 4 generators and one local re-test on failure
+.\run-phase10-progressive.ps1 extended http://localhost:5181 -Distributed -GeneratorTotal 4 -GeneratorIndex 1 -RetestCount 2
+```
+
+Phase 10 uses the parameterized `k6-phase10-progressive.js` scenario to run each gate, capture `api_duration`/`api_errors`, and emit a bottleneck classification (`api`, `database/dependency`, `infra`, `infra/rate-limit`, or `contract/authz`) from the PowerShell wrapper.
 
 ---
 
