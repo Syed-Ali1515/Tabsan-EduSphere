@@ -17,17 +17,24 @@ if not "%~1"=="" set "BASE_URL=%~1"
 set "RAW_MODE=%~2"
 set "LOCAL_VU_CAP=16000"
 if not "%~3"=="" set "LOCAL_VU_CAP=%~3"
+set "GENERATOR_TOTAL=1"
+if not "%~4"=="" set "GENERATOR_TOTAL=%~4"
+set "GENERATOR_INDEX=1"
+if not "%~5"=="" set "GENERATOR_INDEX=%~5"
+set "TARGET_RPS=900"
+if not "%~6"=="" set "TARGET_RPS=%~6"
 
 set "K6_EXE=C:\Program Files\k6\k6.exe"
 if exist "%K6_EXE%" goto run
 set "K6_EXE=k6"
 
 :run
-echo Running 1M test against %BASE_URL%
+REM Final-Touches Phase 34 Stage 5.2/5.3 — distributed shard controls + quiet summary-first output discipline.
+echo Running 1M test against %BASE_URL% (generator %GENERATOR_INDEX%/%GENERATOR_TOTAL%, target RPS %TARGET_RPS%)
 if /I "%RAW_MODE%"=="raw" (
-	"%K6_EXE%" run --summary-export "%SUMMARY_JSON%" --out "json=%RAW_JSON%" -e BASE_URL=%BASE_URL% -e LOCAL_VU_CAP=%LOCAL_VU_CAP% -e SUMMARY_TXT_PATH="%SUMMARY_TXT%" "%SCRIPT_DIR%k6-scale-1m.js"
+	"%K6_EXE%" run --quiet --summary-export "%SUMMARY_JSON%" --out "json=%RAW_JSON%" -e BASE_URL=%BASE_URL% -e LOCAL_VU_CAP=%LOCAL_VU_CAP% -e GENERATOR_TOTAL=%GENERATOR_TOTAL% -e GENERATOR_INDEX=%GENERATOR_INDEX% -e TARGET_RPS=%TARGET_RPS% -e SUMMARY_TXT_PATH="%SUMMARY_TXT%" "%SCRIPT_DIR%k6-scale-1m.js"
 ) else (
-	"%K6_EXE%" run --summary-export "%SUMMARY_JSON%" -e BASE_URL=%BASE_URL% -e LOCAL_VU_CAP=%LOCAL_VU_CAP% -e SUMMARY_TXT_PATH="%SUMMARY_TXT%" "%SCRIPT_DIR%k6-scale-1m.js"
+	"%K6_EXE%" run --quiet --summary-export "%SUMMARY_JSON%" -e BASE_URL=%BASE_URL% -e LOCAL_VU_CAP=%LOCAL_VU_CAP% -e GENERATOR_TOTAL=%GENERATOR_TOTAL% -e GENERATOR_INDEX=%GENERATOR_INDEX% -e TARGET_RPS=%TARGET_RPS% -e SUMMARY_TXT_PATH="%SUMMARY_TXT%" "%SCRIPT_DIR%k6-scale-1m.js"
 )
 
 exit /b %errorlevel%

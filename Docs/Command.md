@@ -59,12 +59,18 @@ cmd /c git -C "<repo-root>" push origin main
 
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
-- Active Phase: **Phase 4 — Caching Strategy — COMPLETE ✅**
-- Active Stage: **Stage 4.1, 4.2, and 4.3 complete (API cache policy, edge/static caching, cache scope control)**
-- Status: **Analytics hot-path reads now use short-TTL distributed cache; static web assets now emit cache headers; cache scope is restricted to expensive/shared-safe operations.**
+- Active Phase: **Phase 5 — k6 Load Testing Improvements — COMPLETE ✅**
+- Active Stage: **Stage 5.1, 5.2, and 5.3 complete (realistic load model, distributed generators, output discipline)**
+- Status: **Scale scripts now use ramping-arrival-rate with think-time, support generator sharding, and default to summary-first output discipline.**
 - Last Updated: 2026-05-11
-- Next: **Execute Phase 5 Stage 5.1 realistic k6 load model.**
-- Docs Updated: ✅ Phase 4 complete trackers updated (2026-05-11)
+- Next: **Execute Phase 6 Stage 6.1 external call caching.**
+- Docs Updated: ✅ Phase 5 complete trackers updated (2026-05-11)
+
+### 2026-05-11 - Phase 5 Completion
+- Stage 5.1: Converted 50k/100k/1m/5m scripts to `ramping-arrival-rate` and added randomized think-time windows.
+- Stage 5.2: Added distributed generator sharding support (`GENERATOR_TOTAL`, `GENERATOR_INDEX`) in scale scripts and runners.
+- Stage 5.3: Enforced summary-first output (`--quiet`, summary export) and gated raw JSON outputs in PowerShell runner behind `-AllowRawOutput`.
+- Validation: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed (**130/130**).
 
 ### 2026-05-11 - Phase 4 Completion
 - Stage 4.1: Added short-TTL distributed cache for expensive analytics report endpoints (`performance`, `attendance`, `assignments`, `quizzes`).

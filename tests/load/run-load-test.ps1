@@ -17,7 +17,12 @@ param(
     [string]$TestUsername,
     [string]$TestPassword,
     [string]$TestUsersJson,
-    [switch]$OutputJson
+    [switch]$OutputJson,
+    [switch]$AllowRawOutput,
+    [switch]$Distributed,
+    [int]$GeneratorTotal = 1,
+    [int]$GeneratorIndex = 1,
+    [switch]$NoQuiet
 )
 
 $ProjectRoot = 'c:\Users\alin\Desktop\Prj\Tabsan-EduSphere'
@@ -64,9 +69,18 @@ $runId = Get-Date -Format 'yyyyMMdd-HHmmss'
 $summaryJsonPath = Join-Path $resultsDir ("summary-$Suite-$Profile-$runId.json")
 $summaryTxtPath = Join-Path $resultsDir ("summary-$Suite-$Profile-$runId.txt")
 
+if (-not $NoQuiet) {
+    # Final-Touches Phase 34 Stage 5.3 — keep day-to-day output concise and summary-first.
+    $k6Args += '--quiet'
+}
+
 $k6Args += @('--summary-export', $summaryJsonPath)
 
 if ($OutputJson) {
+    if (-not $AllowRawOutput) {
+        throw 'Raw JSON output is disabled by default. Use -AllowRawOutput with -OutputJson for diagnostics runs.'
+    }
+
     $jsonPath = Join-Path $resultsDir ("raw-$Suite-$Profile-$runId.json")
     $k6Args += @('--out', "json=$jsonPath")
 }
@@ -100,6 +114,20 @@ if ($TestUsersJson) {
     $k6Args += @('-e', "TEST_USERS_JSON=$TestUsersJson")
 }
 
+if ($Distributed) {
+    # Final-Touches Phase 34 Stage 5.2 — pass shard metadata so multiple generators can split load safely.
+    if ($GeneratorTotal -lt 2) {
+        throw 'When -Distributed is enabled, -GeneratorTotal must be >= 2.'
+    }
+
+    if ($GeneratorIndex -lt 1 -or $GeneratorIndex -gt $GeneratorTotal) {
+        throw '-GeneratorIndex must be between 1 and GeneratorTotal when -Distributed is enabled.'
+    }
+
+    $k6Args += @('-e', "GENERATOR_TOTAL=$GeneratorTotal")
+    $k6Args += @('-e', "GENERATOR_INDEX=$GeneratorIndex")
+}
+
 $k6Args += $scriptPath
 
 Write-Host "Suite       : $Suite"
@@ -109,6 +137,9 @@ Write-Host "Base URL    : $targetUrl"
 Write-Host "Script      : $scriptName"
 Write-Host "Summary JSON: $summaryJsonPath"
 Write-Host "Summary TXT : $summaryTxtPath"
+if ($Distributed) {
+    Write-Host "Distributed : enabled ($GeneratorIndex/$GeneratorTotal)"
+}
 if ($OutputJson) {
     Write-Host "Raw Output  : $jsonPath"
 }

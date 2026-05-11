@@ -4,6 +4,11 @@ Current load scripts are aligned to live API routes under `api/v1/*` and local d
 
 **Current Focus**: auth and core authenticated flows (auth, dashboard, sidebar, notification inbox)
 
+Phase 5 update:
+- scale profiles (`k6-scale-50k.js`, `k6-scale-100k.js`, `k6-scale-1m.js`, `k6-scale-5m.js`) now use `ramping-arrival-rate` + randomized think-time.
+- distributed sharding is supported through `GENERATOR_TOTAL` and `GENERATOR_INDEX`.
+- summary-first output is the default; raw JSON output is diagnostics-only.
+
 ---
 
 ## 📁 Files in This Directory
@@ -60,6 +65,19 @@ k6 run -e BASE_URL=http://localhost:5181 -e TEST_USERNAME=admin -e TEST_PASSWORD
 
 # JSON output
 k6 run --out json=results.json -e BASE_URL=http://localhost:5181 k6-auth-current.js
+```
+
+### 4. Scale Profile Execution (Phase 5)
+
+```powershell
+# 50k profile (single generator, summary-first)
+.\run-50k.bat http://localhost:5181
+
+# 100k profile, shard 1 of 4 generators, custom target RPS
+.\run-100k.bat http://localhost:5181 summary 16000 4 1 320
+
+# 1m profile diagnostics run with raw output enabled (focused troubleshooting)
+.\run-1m.bat http://localhost:5181 raw 16000 1 1 900
 ```
 
 ---
@@ -128,6 +146,17 @@ k6 login cloud
 # Or direct:
 k6 cloud run login-load-test.js
 ```
+
+### Distributed Generator Notes (Phase 5.2)
+
+- `GENERATOR_TOTAL`: total number of generator machines.
+- `GENERATOR_INDEX`: 1-based index of this generator.
+- each generator runs its shard of `TARGET_RPS`; aggregate effective throughput is the sum of all generators.
+
+### Output Discipline Notes (Phase 5.3)
+
+- Batch scale runners default to `--quiet` + summary exports.
+- `run-load-test.ps1` only emits raw JSON when both `-OutputJson` and `-AllowRawOutput` are provided.
 
 ---
 

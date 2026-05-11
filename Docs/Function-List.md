@@ -5,6 +5,18 @@
 
 ## Final-Touches Phase 34 - High-Load Optimization (2026-05-11)
 
+### Stage 5 - k6 Load Testing Improvements
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `k6-scale-50k.js` scenario (`ramping-arrival-rate`) | Uses request-rate ramping with randomized think-time to model realistic 50k profile traffic. | `tests/load/k6-scale-50k.js` |
+| `k6-scale-100k.js` scenario (`ramping-arrival-rate`) | Uses request-rate ramping with randomized think-time to model realistic 100k profile traffic. | `tests/load/k6-scale-100k.js` |
+| `k6-scale-1m.js` scenario (`ramping-arrival-rate`) | Uses request-rate ramping with randomized think-time to model realistic 1m profile traffic. | `tests/load/k6-scale-1m.js` |
+| `k6-scale-5m.js` scenario (`ramping-arrival-rate`) | Uses request-rate ramping with randomized think-time to model realistic 5m profile traffic. | `tests/load/k6-scale-5m.js` |
+| `GENERATOR_TOTAL` / `GENERATOR_INDEX` shard controls | Splits target request-rate and VU ceilings across multiple generator machines for distributed runs. | `tests/load/k6-scale-50k.js`, `tests/load/k6-scale-100k.js`, `tests/load/k6-scale-1m.js`, `tests/load/k6-scale-5m.js` |
+| `run-50k.bat` / `run-100k.bat` / `run-1m.bat` / `run-5m.bat` | Passes shard controls and target RPS while running in quiet summary-first mode. | `tests/load/run-50k.bat`, `tests/load/run-100k.bat`, `tests/load/run-1m.bat`, `tests/load/run-5m.bat` |
+| `run-load-test.ps1` distributed/raw-output controls | Adds `-Distributed`, `-GeneratorTotal`, `-GeneratorIndex`, `-AllowRawOutput`, and quiet-by-default behavior for output discipline. | `tests/load/run-load-test.ps1` |
+
 ### Stage 4 - Caching Strategy
 
 | Function Name | Purpose | Location |

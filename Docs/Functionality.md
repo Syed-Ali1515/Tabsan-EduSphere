@@ -413,6 +413,12 @@
 - **Edge and Static Caching**: Web static assets now emit configurable `Cache-Control` headers suitable for CDN/edge caching.
 - **Cache Scope Control**: Shared cache keys are scoped by report type and department, and dynamic/authenticated MVC responses remain outside static cache policy.
 
+### Load Testing Improvements (Phase 5)
+- **Realistic Throughput Model**: High-scale k6 profiles now use request-rate ramps (`ramping-arrival-rate`) instead of only virtual-user ramps.
+- **User Think-Time Simulation**: Randomized think-time windows now approximate user pacing across dashboard/sidebar/notification flows.
+- **Distributed Generator Sharding**: Scale runs support generator-aware load splitting (`GENERATOR_TOTAL`, `GENERATOR_INDEX`) for multi-machine execution.
+- **Output Discipline**: Summary-first output is now the default for routine runs, while heavy raw JSON output remains explicit diagnostics-only mode.
+
 ---
 
 ## Architecture & Technical Details

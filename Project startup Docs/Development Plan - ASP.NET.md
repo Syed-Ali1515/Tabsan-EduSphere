@@ -8,6 +8,12 @@
 
 ## Execution Updates
 
+### 2026-05-11 — Phase 5 Complete
+- Stage 5.1: Reworked the 50k/100k/1m/5m k6 scripts to `ramping-arrival-rate` workloads with randomized think-time.
+- Stage 5.2: Added distributed generator shard controls (`GENERATOR_TOTAL`, `GENERATOR_INDEX`) and runner support for multi-machine execution.
+- Stage 5.3: Standardized summary-first output (`--quiet`, summary-export + compact summaries) and kept heavy raw output as explicit diagnostics-only mode.
+- Validation: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed `130/130`; syntax checks on touched load scripts reported no errors.
+
 ### 2026-05-11 — Phase 4 Complete
 - Stage 4.1: Added short-TTL distributed cache in `AnalyticsService` for expensive report reads (`performance`, `attendance`, `assignments`, `quizzes`).
 - Stage 4.2: Added configurable static-asset cache headers in Web startup via `UseStaticFiles(...OnPrepareResponse...)` and `StaticAssetCaching` appsettings keys.

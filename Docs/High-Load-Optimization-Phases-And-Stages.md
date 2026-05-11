@@ -132,12 +132,38 @@ This plan converts the high-load optimization guide into phased execution stages
 - Use ramping-arrival-rate where suitable.
 - Add randomized sleep/think time for realistic traffic behavior.
 
+### Stage 5.1 Completed
+- Status: Completed
+- Implementation Summary: Reworked the 50k/100k/1m/5m k6 scale scripts to throughput-driven `ramping-arrival-rate` scenarios with per-profile target RPS settings and randomized think-time windows.
+- Validation Summary: syntax checks on all updated k6 scale scripts reported no errors.
+
 ### Stage 5.2: Distributed Generators
 - Split load across multiple generator machines for high target concurrency.
+
+### Stage 5.2 Completed
+- Status: Completed
+- Implementation Summary: Added generator sharding controls (`GENERATOR_TOTAL`, `GENERATOR_INDEX`) in all scale scripts and updated batch/PowerShell runners to pass shard metadata for multi-generator load splitting.
+- Validation Summary: syntax checks on updated runner scripts reported no errors.
 
 ### Stage 5.3: Output Discipline
 - Keep summary outputs enabled for every run.
 - Enable heavy raw outputs only for focused diagnostics.
+
+### Stage 5.3 Completed
+- Status: Completed
+- Implementation Summary: Enforced summary-first output via `--quiet` on scale runs, retained summary exports and compact `handleSummary` output, and gated heavy raw JSON output in PowerShell runner behind explicit `-AllowRawOutput`.
+- Validation Summary: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed (130/130), failed 0.
+
+#### Phase 5 Summary
+**Implementation Summary**
+- Converted scale workloads from concurrency-driven ramps to request-rate-driven ramps.
+- Added distributed generator sharding so high target loads can be split safely across multiple machines.
+- Standardized summary-only output defaults while keeping opt-in raw diagnostics.
+
+**Validation Summary**
+- Validation command: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal`.
+- Result: passed (130/130), failed 0.
+- Syntax checks on changed k6 scripts and runner wrappers reported no errors.
 
 ## Phase 6: Dependency Optimization
 ### Stage 6.1: External Call Caching
