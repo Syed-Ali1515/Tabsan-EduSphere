@@ -94,12 +94,38 @@ This plan converts the high-load optimization guide into phased execution stages
 - Cache expensive API operations in Redis.
 - Start with short TTL windows (for example: 5-30 seconds).
 
+### Stage 4.1 Completed
+- Status: Completed
+- Implementation Summary: Added short-TTL distributed cache reads/writes for expensive analytics reports (`performance`, `attendance`, `assignments`, `quizzes`) using Redis-backed `IDistributedCache` in production.
+- Validation Summary: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed (130/130), failed 0.
+
 ### Stage 4.2: Edge and Static Caching
 - Use CDN caching for static/public content.
+
+### Stage 4.2 Completed
+- Status: Completed
+- Implementation Summary: Added configurable static asset cache headers in Web host startup (`Cache-Control: public,max-age=...`) and introduced `StaticAssetCaching` settings for default/development/production profiles.
+- Validation Summary: syntax checks on touched Web startup and appsettings files reported no errors; unit test run stayed green.
 
 ### Stage 4.3: Cache Scope Control
 - Cache only expensive/hot-path operations.
 - Avoid over-caching volatile or per-user sensitive data.
+
+### Stage 4.3 Completed
+- Status: Completed
+- Implementation Summary: Limited new shared cache policy to expensive analytics read endpoints with scoped keys by report type + department and applied edge cache headers only to static file responses (not authenticated dynamic endpoints).
+- Validation Summary: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed (130/130), failed 0; syntax checks on touched files reported no errors.
+
+#### Phase 4 Summary
+**Implementation Summary**
+- Implemented short-TTL Redis-backed cache policy for the most expensive analytics API read paths.
+- Added edge/static cache header policy for Web static assets with environment-configurable max-age.
+- Enforced cache scope boundaries so only hot-path shared reads and static assets are cached.
+
+**Validation Summary**
+- Validation command: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal`.
+- Result: passed (130/130), failed 0.
+- Syntax checks on changed analytics/web startup/config files reported no errors.
 
 ## Phase 5: k6 Load Testing Improvements
 ### Stage 5.1: Realistic Load Model

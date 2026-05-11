@@ -34,6 +34,12 @@
 - Changes were limited to Kestrel transport configuration and compression settings.
 - No database schema change and no EF migration were required.
 
+## 2026-05-11 Update — Phase 4 Complete
+
+- Phase 4 delivered API cache policy, static/edge caching behavior, and cache scope controls.
+- Changes were limited to runtime caching and host configuration paths.
+- No database schema change and no EF migration were required.
+
 ## 2026-05-10 Update — Phase 32 Stage 32.2
 
 - Stage 32.2 delivered report export action/endpoint regression guardrail integration tests only.

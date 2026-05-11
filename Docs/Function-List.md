@@ -5,6 +5,18 @@
 
 ## Final-Touches Phase 34 - High-Load Optimization (2026-05-11)
 
+### Stage 4 - Caching Strategy
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `AnalyticsService.GetPerformanceReportAsync(...)` | Adds short-TTL distributed cache policy for expensive department/all performance analytics reads. | `src/Tabsan.EduSphere.Infrastructure/Analytics/AnalyticsService.cs` |
+| `AnalyticsService.GetAttendanceReportAsync(...)` | Adds short-TTL distributed cache policy for expensive attendance analytics reads. | `src/Tabsan.EduSphere.Infrastructure/Analytics/AnalyticsService.cs` |
+| `AnalyticsService.GetAssignmentStatsAsync(...)` | Adds short-TTL distributed cache policy for expensive assignment analytics reads. | `src/Tabsan.EduSphere.Infrastructure/Analytics/AnalyticsService.cs` |
+| `AnalyticsService.GetQuizStatsAsync(...)` | Adds short-TTL distributed cache policy for expensive quiz analytics reads. | `src/Tabsan.EduSphere.Infrastructure/Analytics/AnalyticsService.cs` |
+| `AnalyticsService.BuildAnalyticsCacheKey(...)` | Enforces cache scope boundaries by keying shared analytics cache entries to report type and department scope. | `src/Tabsan.EduSphere.Infrastructure/Analytics/AnalyticsService.cs` |
+| `Program` static asset cache header policy (`UseStaticFiles` with `OnPrepareResponse`) | Adds edge/CDN-friendly cache headers for static web assets only, preserving non-cached dynamic/authenticated responses. | `src/Tabsan.EduSphere.Web/Program.cs` |
+| `StaticAssetCaching` configuration keys (`Enabled`, `MaxAgeSeconds`) | Provides environment-controlled static asset caching policy for web host edge behavior. | `src/Tabsan.EduSphere.Web/appsettings.json`, `src/Tabsan.EduSphere.Web/appsettings.Development.json`, `src/Tabsan.EduSphere.Web/appsettings.Production.json` |
+
 ### Stage 3.3 - Transport Optimization
 
 | Function Name | Purpose | Location |

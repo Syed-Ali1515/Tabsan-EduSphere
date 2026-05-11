@@ -25,6 +25,9 @@ if (string.IsNullOrWhiteSpace(eduApiBaseUrl))
 }
 var useForwardedHeaders = builder.Configuration.GetValue<bool>("ReverseProxy:Enabled");
 var configuredKnownProxies = builder.Configuration.GetSection("ReverseProxy:KnownProxies").Get<string[]>() ?? [];
+// Final-Touches Phase 34 Stage 4.2 — edge/static caching controls for CDN-friendly web assets.
+var staticAssetCachingEnabled = builder.Configuration.GetValue("StaticAssetCaching:Enabled", true);
+var staticAssetMaxAgeSeconds = Math.Max(0, builder.Configuration.GetValue("StaticAssetCaching:MaxAgeSeconds", 86400));
 if (useForwardedHeaders && !builder.Environment.IsDevelopment() && configuredKnownProxies.Length == 0)
 {
     throw new InvalidOperationException("ReverseProxy is enabled but no known proxy IPs are configured in ReverseProxy:KnownProxies.");
@@ -115,7 +118,19 @@ if (useForwardedHeaders)
 
 app.UseHttpsRedirection();
 app.UseResponseCompression();
-app.UseStaticFiles();
+// Final-Touches Phase 34 Stage 4.2 — apply cache headers only to static files, not authenticated/dynamic MVC responses.
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = context =>
+    {
+        if (!staticAssetCachingEnabled)
+        {
+            return;
+        }
+
+        context.Context.Response.Headers["Cache-Control"] = $"public,max-age={staticAssetMaxAgeSeconds}";
+    }
+});
 
 app.UseRouting();
 

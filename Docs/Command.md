@@ -59,12 +59,18 @@ cmd /c git -C "<repo-root>" push origin main
 
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
-- Active Phase: **Phase 3 — API Performance Improvements — Stage 3.3 COMPLETE ✅**
-- Active Stage: **Stage 3.3 complete (transport optimization)**
-- Status: **API/Web transport settings now include keep-alive and HTTP/2-friendly Kestrel tuning with compression already enabled.**
+- Active Phase: **Phase 4 — Caching Strategy — COMPLETE ✅**
+- Active Stage: **Stage 4.1, 4.2, and 4.3 complete (API cache policy, edge/static caching, cache scope control)**
+- Status: **Analytics hot-path reads now use short-TTL distributed cache; static web assets now emit cache headers; cache scope is restricted to expensive/shared-safe operations.**
 - Last Updated: 2026-05-11
-- Next: **Execute Phase 4 Stage 4.1 API cache policy.**
-- Docs Updated: ✅ Phase 3 Stage 3.3 trackers updated (2026-05-11)
+- Next: **Execute Phase 5 Stage 5.1 realistic k6 load model.**
+- Docs Updated: ✅ Phase 4 complete trackers updated (2026-05-11)
+
+### 2026-05-11 - Phase 4 Completion
+- Stage 4.1: Added short-TTL distributed cache for expensive analytics report endpoints (`performance`, `attendance`, `assignments`, `quizzes`).
+- Stage 4.2: Added configurable static-asset cache headers in Web startup and appsettings profiles for edge/CDN-friendly caching.
+- Stage 4.3: Restricted cache scope to expensive shared-safe operations and static assets only.
+- Validation: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed (**130/130**).
 
 ### 2026-05-11 - Phase 3 Stage 3.3 Completion
 - Added Kestrel transport tuning in API and Web hosts: keep-alive timeout, request-header timeout, server-header suppression, and HTTP/2 ping tuning.

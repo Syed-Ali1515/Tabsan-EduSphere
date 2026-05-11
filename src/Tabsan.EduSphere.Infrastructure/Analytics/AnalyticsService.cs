@@ -1,8 +1,10 @@
 using ClosedXML.Excel;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
+using System.Text.Json;
 using Tabsan.EduSphere.Application.DTOs.Analytics;
 using Tabsan.EduSphere.Application.Interfaces;
 using Tabsan.EduSphere.Domain.Attendance;
@@ -18,11 +20,16 @@ namespace Tabsan.EduSphere.Infrastructure.Analytics;
 public sealed class AnalyticsService : IAnalyticsService
 {
     private readonly ApplicationDbContext _db;
+    private readonly IDistributedCache _distributedCache;
+
+    // Final-Touches Phase 34 Stage 4.1 — short-TTL distributed cache policy for expensive analytics read endpoints.
+    private static readonly TimeSpan AnalyticsCacheTtl = TimeSpan.FromSeconds(30);
 
     /// <summary>Initialises the service with the application DbContext.</summary>
-    public AnalyticsService(ApplicationDbContext db)
+    public AnalyticsService(ApplicationDbContext db, IDistributedCache distributedCache)
     {
         _db = db;
+        _distributedCache = distributedCache;
         QuestPDF.Settings.License = LicenseType.Community;
     }
 
@@ -31,6 +38,18 @@ public sealed class AnalyticsService : IAnalyticsService
     public async Task<DepartmentPerformanceReport?> GetPerformanceReportAsync(
         Guid? departmentId, CancellationToken ct = default)
     {
+        // Final-Touches Phase 34 Stage 4.1 — cache expensive analytics report reads in shared distributed cache.
+        var cacheKey = BuildAnalyticsCacheKey("performance", departmentId);
+        var cached = await _distributedCache.GetStringAsync(cacheKey, ct);
+        if (!string.IsNullOrWhiteSpace(cached))
+        {
+            var cachedReport = JsonSerializer.Deserialize<DepartmentPerformanceReport>(cached);
+            if (cachedReport is not null)
+            {
+                return cachedReport;
+            }
+        }
+
         var deptName = await ResolveDeptNameAsync(departmentId, ct);
         var query =
             from sp in _db.StudentProfiles
@@ -58,9 +77,20 @@ public sealed class AnalyticsService : IAnalyticsService
                 deptName, first.CurrentSemesterNumber, Math.Round(avg, 2), subs, subs));
         }
         students = students.OrderByDescending(s => s.AverageMarks).ToList();
-        return new DepartmentPerformanceReport(departmentId ?? Guid.Empty, deptName,
+        var report = new DepartmentPerformanceReport(departmentId ?? Guid.Empty, deptName,
             students.Any() ? Math.Round(students.Average(s => s.AverageMarks), 2) : 0,
             students.Count, students);
+
+        await _distributedCache.SetStringAsync(
+            cacheKey,
+            JsonSerializer.Serialize(report),
+            new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = AnalyticsCacheTtl
+            },
+            ct);
+
+        return report;
     }
 
     // Attendance report
@@ -68,6 +98,18 @@ public sealed class AnalyticsService : IAnalyticsService
     public async Task<DepartmentAttendanceReport?> GetAttendanceReportAsync(
         Guid? departmentId, CancellationToken ct = default)
     {
+        // Final-Touches Phase 34 Stage 4.1 — cache expensive analytics report reads in shared distributed cache.
+        var cacheKey = BuildAnalyticsCacheKey("attendance", departmentId);
+        var cached = await _distributedCache.GetStringAsync(cacheKey, ct);
+        if (!string.IsNullOrWhiteSpace(cached))
+        {
+            var cachedReport = JsonSerializer.Deserialize<DepartmentAttendanceReport>(cached);
+            if (cachedReport is not null)
+            {
+                return cachedReport;
+            }
+        }
+
         var deptName = await ResolveDeptNameAsync(departmentId, ct);
         var rows = await (
             from ar in _db.AttendanceRecords
@@ -93,7 +135,18 @@ public sealed class AnalyticsService : IAnalyticsService
             .OrderBy(r => r.AttendancePercentage).ToList();
 
         var overall = attendanceRows.Any() ? Math.Round(attendanceRows.Average(r => r.AttendancePercentage), 1) : 0;
-        return new DepartmentAttendanceReport(departmentId ?? Guid.Empty, deptName, overall, attendanceRows);
+        var report = new DepartmentAttendanceReport(departmentId ?? Guid.Empty, deptName, overall, attendanceRows);
+
+        await _distributedCache.SetStringAsync(
+            cacheKey,
+            JsonSerializer.Serialize(report),
+            new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = AnalyticsCacheTtl
+            },
+            ct);
+
+        return report;
     }
 
     // Assignment stats
@@ -101,6 +154,18 @@ public sealed class AnalyticsService : IAnalyticsService
     public async Task<AssignmentStatsReport?> GetAssignmentStatsAsync(
         Guid? departmentId, CancellationToken ct = default)
     {
+        // Final-Touches Phase 34 Stage 4.1 — cache expensive analytics report reads in shared distributed cache.
+        var cacheKey = BuildAnalyticsCacheKey("assignments", departmentId);
+        var cached = await _distributedCache.GetStringAsync(cacheKey, ct);
+        if (!string.IsNullOrWhiteSpace(cached))
+        {
+            var cachedReport = JsonSerializer.Deserialize<AssignmentStatsReport>(cached);
+            if (cachedReport is not null)
+            {
+                return cachedReport;
+            }
+        }
+
         var deptName = await ResolveDeptNameAsync(departmentId, ct);
         var assignments = await (
             from a  in _db.Assignments
@@ -122,7 +187,18 @@ public sealed class AnalyticsService : IAnalyticsService
             var enrolled = await _db.Enrollments.CountAsync(e => e.CourseOfferingId == a.OfferingId, ct);
             stats.Add(new AssignmentStatsRow(a.Id, a.Title, a.CourseName, enrolled, subs.Count, graded, Math.Round(avg, 2)));
         }
-        return new AssignmentStatsReport(departmentId ?? Guid.Empty, deptName, stats);
+        var report = new AssignmentStatsReport(departmentId ?? Guid.Empty, deptName, stats);
+
+        await _distributedCache.SetStringAsync(
+            cacheKey,
+            JsonSerializer.Serialize(report),
+            new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = AnalyticsCacheTtl
+            },
+            ct);
+
+        return report;
     }
 
     // Quiz stats
@@ -130,6 +206,18 @@ public sealed class AnalyticsService : IAnalyticsService
     public async Task<QuizStatsReport?> GetQuizStatsAsync(
         Guid? departmentId, CancellationToken ct = default)
     {
+        // Final-Touches Phase 34 Stage 4.1 — cache expensive analytics report reads in shared distributed cache.
+        var cacheKey = BuildAnalyticsCacheKey("quizzes", departmentId);
+        var cached = await _distributedCache.GetStringAsync(cacheKey, ct);
+        if (!string.IsNullOrWhiteSpace(cached))
+        {
+            var cachedReport = JsonSerializer.Deserialize<QuizStatsReport>(cached);
+            if (cachedReport is not null)
+            {
+                return cachedReport;
+            }
+        }
+
         var deptName = await ResolveDeptNameAsync(departmentId, ct);
         var quizzes = await (
             from q  in _db.Quizzes.IgnoreQueryFilters()
@@ -152,7 +240,18 @@ public sealed class AnalyticsService : IAnalyticsService
             stats.Add(new QuizStatsRow(q.Id, q.Title, q.CourseName, attempts.Count, submitted.Count,
                 Math.Round(avg, 2), Math.Round(high, 2), Math.Round(low, 2)));
         }
-        return new QuizStatsReport(departmentId ?? Guid.Empty, deptName, stats);
+        var report = new QuizStatsReport(departmentId ?? Guid.Empty, deptName, stats);
+
+        await _distributedCache.SetStringAsync(
+            cacheKey,
+            JsonSerializer.Serialize(report),
+            new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = AnalyticsCacheTtl
+            },
+            ct);
+
+        return report;
     }
 
     // PDF exports
@@ -267,6 +366,12 @@ public sealed class AnalyticsService : IAnalyticsService
         if (departmentId is null) return "All Departments";
         var dept = await _db.Departments.FindAsync([departmentId], ct);
         return dept?.Name ?? "Unknown Department";
+    }
+
+    private static string BuildAnalyticsCacheKey(string reportType, Guid? departmentId)
+    {
+        var departmentSegment = departmentId?.ToString("N") ?? "all";
+        return $"analytics:{reportType}:{departmentSegment}";
     }
 
     private static void AddPdfHeader(TableDescriptor table, params string[] headers)

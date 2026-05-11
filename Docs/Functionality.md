@@ -408,6 +408,11 @@
 - **Connection Tuning**: API and Web hosts use Kestrel keep-alive and request-header timeout tuning for cleaner transport behavior.
 - **Header Reduction**: Server headers are suppressed to reduce wire chatter on high-volume responses.
 
+### Caching Strategy (Phase 4)
+- **API Distributed Cache Policy**: High-cost analytics report reads now use short-TTL distributed cache entries so repeated dashboard/report requests avoid repeated heavy DB aggregation.
+- **Edge and Static Caching**: Web static assets now emit configurable `Cache-Control` headers suitable for CDN/edge caching.
+- **Cache Scope Control**: Shared cache keys are scoped by report type and department, and dynamic/authenticated MVC responses remain outside static cache policy.
+
 ---
 
 ## Architecture & Technical Details
