@@ -5,6 +5,14 @@
 
 ## Final-Touches Phase 34 - High-Load Optimization (2026-05-11)
 
+### Stage 2.3 - Stateless Runtime Hardening
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `Program` distributed cache startup guard (`ScaleOut:RedisConnectionString`) | Requires Redis-backed distributed cache outside Development/Testing so API cache state stays shared across instances. | `src/Tabsan.EduSphere.API/Program.cs` |
+| `Program` shared data-protection startup guard (`ScaleOut:SharedDataProtectionKeyRingPath`) | Requires a shared key ring outside Development/Testing so web auth cookies remain valid across instances. | `src/Tabsan.EduSphere.Web/Program.cs` |
+| `Program` local cache fallback allowance (Development/Testing only) | Preserves node-local cache/dev convenience only in non-production environments. | `src/Tabsan.EduSphere.API/Program.cs`, `src/Tabsan.EduSphere.Web/Program.cs` |
+
 ### Stage 2.2 - Load Balancer Policy Baseline (Least Connections)
 
 | Function Name | Purpose | Location |

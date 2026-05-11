@@ -53,12 +53,18 @@ cmd /c git -C "<repo-root>" push origin main
 
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
-- Active Phase: **Phase 2 — API Horizontal Scaling — Stage 2.2 COMPLETE ✅**
-- Active Stage: **Stage 2.2 complete (least-connections load balancer policy baseline)**
-- Status: **Least-connections load balancer template, runbook scripts, and distribution validator are in place.**
+- Active Phase: **Phase 2 — API Horizontal Scaling — Stage 2.3 COMPLETE ✅**
+- Active Stage: **Stage 2.3 complete (stateless runtime hardening)**
+- Status: **Production now requires shared cache and shared data-protection keys so API/Web remain stateless across instances.**
 - Last Updated: 2026-05-11
-- Next: **Execute Phase 2 Stage 2.3 stateless runtime hardening.**
-- Docs Updated: ✅ Phase 2 Stage 2.2 trackers updated (2026-05-11)
+- Next: **Execute Phase 3 Stage 3.1 endpoint aggregation.**
+- Docs Updated: ✅ Phase 2 Stage 2.3 trackers updated (2026-05-11)
+
+### 2026-05-11 - Phase 2 Stage 2.3 Completion
+- API startup now rejects production without `ScaleOut:RedisConnectionString`, preventing node-local distributed cache fallback in stateless deployments.
+- Web startup now rejects production without `ScaleOut:SharedDataProtectionKeyRingPath`, ensuring auth cookies can be decrypted across instances.
+- Local developer and testing environments still allow in-memory/discrete paths for easy iteration.
+- Validation: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed (**130/130**).
 
 ### 2026-05-11 - Phase 2 Stage 2.2 Completion
 - Added Nginx least-connections baseline template: `Scripts/Phase2-Stage2.2-nginx-leastconn.conf.template`.

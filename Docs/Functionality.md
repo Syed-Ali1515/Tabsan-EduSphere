@@ -393,6 +393,7 @@
 - **Scale-Out Operations Script**: Local multi-instance API launcher script supports fast Stage 2.1 baseline verification.
 - **Least-Connections Load Balancing**: Stage 2.2 baseline includes Nginx least-connections policy template for active-connection-aware API request routing.
 - **Load-Balancer Distribution Validation**: Automated request sampling script summarizes per-instance load share to verify balancing behavior.
+- **Stateless Runtime Enforcement**: Production requires shared distributed cache and shared data-protection keys so API/Web nodes behave identically across scale-out instances.
 
 ---
 

@@ -44,6 +44,7 @@ builder.Services.Configure<GzipCompressionProviderOptions>(options =>
 {
     options.Level = System.IO.Compression.CompressionLevel.Fastest;
 });
+// Final-Touches Phase 34 Stage 2.3 — require shared data-protection keys in production so auth cookies work across web nodes.
 var dataProtection = builder.Services.AddDataProtection()
     .SetApplicationName("Tabsan.EduSphere.Web");
 var sharedKeyRingPath = builder.Configuration["ScaleOut:SharedDataProtectionKeyRingPath"];
@@ -51,6 +52,10 @@ if (!string.IsNullOrWhiteSpace(sharedKeyRingPath))
 {
     Directory.CreateDirectory(sharedKeyRingPath);
     dataProtection.PersistKeysToFileSystem(new DirectoryInfo(sharedKeyRingPath));
+}
+else if (!builder.Environment.IsDevelopment() && !builder.Environment.IsEnvironment("Testing"))
+{
+    throw new InvalidOperationException("ScaleOut:SharedDataProtectionKeyRingPath is required outside Development/Testing to keep web auth cookies valid across instances.");
 }
 builder.Services.AddControllersWithViews()
     .AddJsonOptions(options =>

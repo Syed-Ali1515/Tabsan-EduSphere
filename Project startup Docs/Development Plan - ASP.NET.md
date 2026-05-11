@@ -8,6 +8,12 @@
 
 ## Execution Updates
 
+### 2026-05-11 — Phase 2 Stage 2.3
+- Hardened API startup to require Redis-backed distributed cache outside Development/Testing (`ScaleOut:RedisConnectionString`) so cache state stays stateless across nodes.
+- Hardened Web startup to require shared data-protection key ring outside Development/Testing (`ScaleOut:SharedDataProtectionKeyRingPath`) so auth cookies stay decryptable across nodes.
+- Preserved Development/Testing fallback behavior for local iteration.
+- Validation: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal` passed `130/130`.
+
 ### 2026-05-11 — Phase 2 Stage 2.2
 - Added Nginx least-connections baseline template for API horizontal routing (`Scripts/Phase2-Stage2.2-nginx-leastconn.conf.template`).
 - Added Stage 2.2 load balancer control script to start/stop local balancer container with generated upstream members (`Scripts/Phase2-Stage2.2-LoadBalancer.ps1`).

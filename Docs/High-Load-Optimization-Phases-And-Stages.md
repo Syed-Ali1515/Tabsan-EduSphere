@@ -121,6 +121,22 @@ This plan converts the high-load optimization guide into phased execution stages
 - Treat each stage as done only when validated by repeatable load test results.
 
 ## Progress Log
+### 2026-05-11 - Phase 2 Stage 2.3 Completed
+- Status: Completed.
+
+#### Implementation Summary
+- Hardened API startup to require `ScaleOut:RedisConnectionString` outside Development/Testing, preventing silent fallback to node-local distributed memory cache in production.
+- Hardened Web startup to require `ScaleOut:SharedDataProtectionKeyRingPath` outside Development/Testing, ensuring cookie encryption keys are shared across web instances.
+- Kept local developer/test environments permissive so local workflow remains simple while production statelessness is enforced.
+
+#### Validation Summary
+- Validation command: `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj -v minimal`.
+- Result: passed (130/130), failed 0.
+- Runtime check: startup guards now fail fast if stateless prerequisites are missing in non-development environments.
+
+#### Next Stage
+- Phase 3 Stage 3.1: endpoint aggregation for common multi-call screens.
+
 ### 2026-05-11 - Phase 2 Stage 2.2 Completed
 - Status: Completed.
 

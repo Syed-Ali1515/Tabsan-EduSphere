@@ -173,6 +173,7 @@ builder.Services.AddMemoryCache();
 var redisConnectionString = builder.Configuration["ScaleOut:RedisConnectionString"];
 if (!string.IsNullOrWhiteSpace(redisConnectionString))
 {
+    // Final-Touches Phase 34 Stage 2.3 — force shared distributed cache in production so cached state stays node-agnostic.
     builder.Services.AddStackExchangeRedisCache(options =>
     {
         options.Configuration = redisConnectionString;
@@ -181,6 +182,12 @@ if (!string.IsNullOrWhiteSpace(redisConnectionString))
 }
 else
 {
+    if (!builder.Environment.IsDevelopment() && !builder.Environment.IsEnvironment("Testing"))
+    {
+        throw new InvalidOperationException("ScaleOut:RedisConnectionString is required outside Development/Testing to keep distributed cache state stateless across API instances.");
+    }
+
+    // Final-Touches Phase 34 Stage 2.3 — allow local in-memory cache only for developer/test runs.
     builder.Services.AddDistributedMemoryCache();
 }
 builder.Services.AddScoped<IModuleEntitlementResolver, ModuleEntitlementResolver>();
