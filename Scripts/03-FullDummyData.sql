@@ -72,25 +72,26 @@ DECLARE @Users TABLE (
     Username NVARCHAR(100),
     Email NVARCHAR(256),
     RoleId INT,
-    DepartmentId UNIQUEIDENTIFIER NULL
+    DepartmentId UNIQUEIDENTIFIER NULL,
+    InstitutionType INT NULL
 );
 
 INSERT INTO @Users VALUES
-('66666666-6666-6666-6666-666666666601', N'superadmin', N'superadmin@demo.local', @RoleSuperAdmin, NULL),
-('66666666-6666-6666-6666-666666666611', N'admin.it', N'admin.it@demo.local', @RoleAdmin, '11111111-1111-1111-1111-111111111111'),
-('66666666-6666-6666-6666-666666666612', N'admin.bus', N'admin.bus@demo.local', @RoleAdmin, '11111111-1111-1111-1111-111111111112'),
-('66666666-6666-6666-6666-666666666613', N'admin.lang', N'admin.lang@demo.local', @RoleAdmin, '11111111-1111-1111-1111-111111111113'),
-('66666666-6666-6666-6666-666666666621', N'faculty.it.1', N'faculty.it.1@demo.local', @RoleFaculty, '11111111-1111-1111-1111-111111111111'),
-('66666666-6666-6666-6666-666666666622', N'faculty.it.2', N'faculty.it.2@demo.local', @RoleFaculty, '11111111-1111-1111-1111-111111111111'),
-('66666666-6666-6666-6666-666666666623', N'faculty.bus.1', N'faculty.bus.1@demo.local', @RoleFaculty, '11111111-1111-1111-1111-111111111112'),
-('66666666-6666-6666-6666-666666666624', N'faculty.lang.1', N'faculty.lang.1@demo.local', @RoleFaculty, '11111111-1111-1111-1111-111111111113'),
-('66666666-6666-6666-6666-666666666631', N'student.it.1', N'student.it.1@demo.local', @RoleStudent, '11111111-1111-1111-1111-111111111111'),
-('66666666-6666-6666-6666-666666666632', N'student.it.2', N'student.it.2@demo.local', @RoleStudent, '11111111-1111-1111-1111-111111111111'),
-('66666666-6666-6666-6666-666666666633', N'student.bus.1', N'student.bus.1@demo.local', @RoleStudent, '11111111-1111-1111-1111-111111111112'),
-('66666666-6666-6666-6666-666666666634', N'student.lang.1', N'student.lang.1@demo.local', @RoleStudent, '11111111-1111-1111-1111-111111111113');
+('66666666-6666-6666-6666-666666666601', N'superadmin', N'superadmin@demo.local', @RoleSuperAdmin, NULL, NULL),
+('66666666-6666-6666-6666-666666666611', N'admin.it', N'admin.it@demo.local', @RoleAdmin, '11111111-1111-1111-1111-111111111111', NULL),
+('66666666-6666-6666-6666-666666666612', N'admin.bus', N'admin.bus@demo.local', @RoleAdmin, '11111111-1111-1111-1111-111111111112', NULL),
+('66666666-6666-6666-6666-666666666613', N'admin.lang', N'admin.lang@demo.local', @RoleAdmin, '11111111-1111-1111-1111-111111111113', NULL),
+('66666666-6666-6666-6666-666666666621', N'faculty.it.1', N'faculty.it.1@demo.local', @RoleFaculty, '11111111-1111-1111-1111-111111111111', NULL),
+('66666666-6666-6666-6666-666666666622', N'faculty.it.2', N'faculty.it.2@demo.local', @RoleFaculty, '11111111-1111-1111-1111-111111111111', NULL),
+('66666666-6666-6666-6666-666666666623', N'faculty.bus.1', N'faculty.bus.1@demo.local', @RoleFaculty, '11111111-1111-1111-1111-111111111112', NULL),
+('66666666-6666-6666-6666-666666666624', N'faculty.lang.1', N'faculty.lang.1@demo.local', @RoleFaculty, '11111111-1111-1111-1111-111111111113', NULL),
+('66666666-6666-6666-6666-666666666631', N'student.it.1', N'student.it.1@demo.local', @RoleStudent, '11111111-1111-1111-1111-111111111111', NULL),
+('66666666-6666-6666-6666-666666666632', N'student.it.2', N'student.it.2@demo.local', @RoleStudent, '11111111-1111-1111-1111-111111111111', NULL),
+('66666666-6666-6666-6666-666666666633', N'student.bus.1', N'student.bus.1@demo.local', @RoleStudent, '11111111-1111-1111-1111-111111111112', NULL),
+('66666666-6666-6666-6666-666666666634', N'student.lang.1', N'student.lang.1@demo.local', @RoleStudent, '11111111-1111-1111-1111-111111111113', NULL);
 
-INSERT INTO [users] ([Id], [Username], [Email], [PasswordHash], [RoleId], [DepartmentId], [IsActive], [LastLoginAt], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt])
-SELECT u.Id, u.Username, u.Email, @PwdHash, u.RoleId, u.DepartmentId, 1, NULL, @Now, NULL, 0, NULL
+INSERT INTO [users] ([Id], [Username], [Email], [PasswordHash], [RoleId], [DepartmentId], [InstitutionType], [IsActive], [LastLoginAt], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt])
+SELECT u.Id, u.Username, u.Email, @PwdHash, u.RoleId, u.DepartmentId, u.InstitutionType, 1, NULL, @Now, NULL, 0, NULL
 FROM @Users u
 WHERE NOT EXISTS (SELECT 1 FROM [users] x WHERE x.[Id] = u.Id);
 

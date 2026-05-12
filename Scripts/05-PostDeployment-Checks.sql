@@ -35,6 +35,14 @@ FROM notifications;
 SELECT 'PortalSettingsCount' AS [CheckName], COUNT(1) AS [Value]
 FROM portal_settings;
 
+SELECT
+	'UsersInstitutionTypeColumnExists' AS [CheckName],
+	CASE WHEN COL_LENGTH('users', 'InstitutionType') IS NULL THEN 0 ELSE 1 END AS [Value];
+
+SELECT 'UsersInstitutionTypeAssignedCount' AS [CheckName], COUNT(1) AS [Value]
+FROM users
+WHERE InstitutionType IS NOT NULL;
+
 SELECT TOP 20 [MigrationId], [ProductVersion]
 FROM __EFMigrationsHistory
 ORDER BY [MigrationId] DESC;
