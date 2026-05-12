@@ -135,6 +135,19 @@ public class LicenseValidationService
                 return false;
             }
 
+            // Optional verification-key fingerprint binding (Medyx-style hardening):
+            // if the field exists in payload, it must match the app's embedded public key fingerprint.
+            if (!string.IsNullOrWhiteSpace(payload.VerificationKey))
+            {
+                var expectedVerificationKey = ComputeVerificationKeyFromPublicKey();
+                if (!string.Equals(payload.VerificationKey, expectedVerificationKey, StringComparison.Ordinal))
+                {
+                    _logger.LogWarning("License VerificationKey mismatch. Expected={Expected}, Received={Received}",
+                        expectedVerificationKey, payload.VerificationKey);
+                    return false;
+                }
+            }
+
             // ── P2-S3-03: License-embedded domain restriction ──────────────────
             // If the license issuer locked the license to a specific domain, enforce it.
             if (!string.IsNullOrWhiteSpace(payload.AllowedDomain) &&
@@ -265,6 +278,23 @@ public class LicenseValidationService
     private static string ComputeFileHash(byte[] bytes)
         => Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
 
+    private static string ComputeVerificationKeyFromPublicKey()
+    {
+        using var rsa = RSA.Create();
+        rsa.ImportFromPem(EmbeddedKeys.RsaPublicKeyPem);
+        var p = rsa.ExportParameters(false);
+
+        var modulusHex = Convert.ToHexString(p.Modulus ?? []);
+        var exponentHex = Convert.ToHexString(p.Exponent ?? []);
+        var material = $"{modulusHex}:{exponentHex}";
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(material));
+
+        return Convert.ToBase64String(hash)
+            .Replace('+', '-')
+            .Replace('/', '_')
+            .TrimEnd('=');
+    }
+
     // ── Internal DTO ──────────────────────────────────────────────────────────
 
     private static readonly JsonSerializerOptions _jsonOptions = new()
@@ -279,6 +309,9 @@ public class LicenseValidationService
         public DateTime IssuedAt { get; set; }
         public DateTime? ExpiresAt { get; set; }
         public string VerificationKeyHash { get; set; } = default!;
+        public Guid LicenseId { get; set; }
+        public string? Nonce { get; set; }
+        public string? VerificationKey { get; set; }
         public bool IncludeSchool { get; set; }
         public bool IncludeCollege { get; set; }
         public bool IncludeUniversity { get; set; } = true;

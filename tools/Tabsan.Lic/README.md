@@ -42,7 +42,7 @@ Output: `tools/Tabsan.Lic/bin/Release/net8.0/win-x64/publish/tabsan-lic.exe`
 
 ## Running Tabsan-Lic
 
-Interactive menu:
+Single-step wizard:
 
 ```bash
 ./tabsan-lic.exe
@@ -55,6 +55,19 @@ cd tools/Tabsan.Lic
 dotnet run
 ```
 
+Wizard prompts include:
+
+1. Expiry type (1 month, 1/2/3 years, permanent)
+2. Customer/tenant label (optional)
+3. Max users (0 = unlimited)
+4. Allowed domain (optional)
+5. Institution scope flags:
+	- Include School? (y/n)
+	- Include College? (y/n)
+	- Include University? (y/n)
+
+The tool then creates a signed `.tablic` automatically.
+
 ## Database
 
 - **Location**: `%APPDATA%/Tabsan/tabsan_lic.db` (SQLite)
@@ -63,10 +76,22 @@ dotnet run
 
 ## Features
 
-1. **Generate Keys** — Single or bulk generation with 1 month, 1/2/3 year, or Permanent expiry
-2. **Build `.tablic` Files** — Choose School, College, University, max users, domain lock, then AES-256 encrypt + RSA-2048 sign
-3. **List Keys** — View all issued keys with metadata
-4. **Export CSV** — Audit trail of generated keys for vendor records
+1. **Single Guided License Generation** — No menu branching for key-only operations
+2. **Institution Scope Selection** — School/College/University Y/N prompts
+3. **Auto Output Folder** — Saves generated files to `license/` under the app runtime directory
+4. **Tamper-Resistant `.tablic`** — AES-256-CBC encryption + RSA signature validation
+5. **Verification Key Binding** — Payload includes verification fingerprint derived from signing key
+
+## Generated License File Location
+
+On each run, generated licenses are saved automatically to:
+
+- `tools/Tabsan.Lic/bin/Debug/net8.0/license/` (when run from source in Debug)
+- `license/` folder beside the published executable (when run from publish output)
+
+Filename format:
+
+- `tabsan-license-{KeyId}.tablic`
 
 ## Architecture
 
@@ -74,13 +99,13 @@ dotnet run
 |-----------|---------|
 | `Crypto/LicCrypto.cs` | AES-256-CBC + RSA-2048 PKCS#1 encryption/signing |
 | `Services/KeyService.cs` | Key generation, storage, listing |
-| `Services/LicenseBuilder.cs` | `.tablic` file builder |
+| `Services/LicenseBuilder.cs` | `.tablic` builder + verification fingerprint embedding |
 | `Data/LicDb.cs` | SQLite EF Core context |
 
 ## Deployment Checklist
 
 - [ ] Build `tools/Tabsan.Lic/Tabsan.Lic.sln` independently
-- [ ] Test key generation and `.tablic` file creation
+- [ ] Test wizard-based `.tablic` generation and upload into EduSphere
 - [ ] Publish as standalone executable
 - [ ] Distribute to vendor/Super Admin only
 - [ ] Verify EduSphere build does NOT include Tabsan-Lic binaries
@@ -93,3 +118,48 @@ dotnet run
 - EduSphere imports only the RSA public key + AES key (embedded in `Infrastructure/Licensing/EmbeddedKeys.cs`)
 - Tabsan-Lic keeps the RSA private key (never shared)
 - One-way flow: Tabsan-Lic → `.tablic` file → EduSphere
+
+## Troubleshooting
+
+### License generated but upload fails in EduSphere
+
+Possible causes:
+
+1. **File was modified after generation**
+	- `.tablic` files are RSA-signed. Any edit (even one byte) breaks signature validation.
+	- Regenerate and upload the new file without modifying it.
+
+2. **Key mismatch between tool and app**
+	- Tabsan-Lic signs using the private key in `tools/Tabsan.Lic/Crypto/EmbeddedKeys.cs`.
+	- EduSphere verifies with the public key in `src/Tabsan.EduSphere.Infrastructure/Licensing/EmbeddedKeys.cs`.
+	- These key pairs must match.
+
+3. **Domain restriction mismatch**
+	- If `AllowedDomain` was set during generation, upload/activation must occur on that same domain.
+	- Leave domain blank for unrestricted licenses.
+
+4. **Verification key fingerprint mismatch**
+	- Payload now includes a verification fingerprint bound to the signing key.
+	- If runtime key material differs from generator key material, activation is rejected.
+
+5. **Replay/one-time key consumption**
+	- A consumed verification-key hash cannot be reactivated.
+	- Generate a new license file for a new activation.
+
+### License file not found after generation
+
+- Default output folder is runtime-relative: `license/` beside the running executable.
+- Source run path is usually: `tools/Tabsan.Lic/bin/Debug/net8.0/license/`.
+
+### App says license expired unexpectedly
+
+- Recheck selected expiry option in generator.
+- Generate and upload a fresh file with correct expiry.
+- Confirm server UTC time is accurate on the target environment.
+
+### Signature/key validation checklist
+
+1. Generate a new `.tablic`.
+2. Upload immediately without editing or transferring through text converters.
+3. Confirm license app and EduSphere use matching embedded key pair files.
+4. If domain-locked, activate from the exact same host/domain.

@@ -69,229 +69,99 @@ using (var scope = sp.CreateScope())
     await conn.CloseAsync();
 }
 
-// ── Main Menu ─────────────────────────────────────────────────────────────────
-bool running = true;
-while (running)
+Console.Clear();
+Console.ForegroundColor = ConsoleColor.Cyan;
+Console.WriteLine("╔══════════════════════════════════════════════════════╗");
+Console.WriteLine("║      Tabsan EduSphere Vendor Licensing Tool         ║");
+Console.WriteLine("╚══════════════════════════════════════════════════════╝");
+Console.ResetColor();
+Console.WriteLine();
+Console.WriteLine("Private signing keys must remain only on vendor-controlled systems.");
+Console.WriteLine("This wizard creates a signed .tablic license file for EduSphere import.");
+Console.WriteLine();
+
+using (var runScope = sp.CreateScope())
 {
-    Console.Clear();
-    Console.ForegroundColor = ConsoleColor.Cyan;
-    Console.WriteLine("╔══════════════════════════════════════════╗");
-    Console.WriteLine("║         Tabsan-Lic  v1.0  License Tool  ║");
-    Console.WriteLine("╚══════════════════════════════════════════╝");
-    Console.ResetColor();
-    Console.WriteLine();
-    Console.WriteLine("  [1] Generate single VerificationKey");
-    Console.WriteLine("  [2] Generate bulk VerificationKeys");
-    Console.WriteLine("  [3] Generate .tablic file for a key");
-    Console.WriteLine("  [4] List all issued keys");
-    Console.WriteLine("  [5] Export key list to CSV");
-    Console.WriteLine("  [0] Exit");
-    Console.WriteLine();
-    Console.Write("  Choice: ");
-
-    var choice = Console.ReadLine()?.Trim();
-    Console.WriteLine();
-
-    using var menuScope = sp.CreateScope();
-    var keySvc     = menuScope.ServiceProvider.GetRequiredService<KeyService>();
-    var licBuilder = menuScope.ServiceProvider.GetRequiredService<LicenseBuilder>();
-
-    switch (choice)
-    {
-        case "1":
-            await HandleGenerateSingle(keySvc);
-            break;
-        case "2":
-            await HandleGenerateBulk(keySvc);
-            break;
-        case "3":
-            await HandleBuildTablic(keySvc, licBuilder);
-            break;
-        case "4":
-            await HandleListKeys(keySvc);
-            break;
-        case "5":
-            await HandleExportCsv(keySvc);
-            break;
-        case "0":
-            running = false;
-            break;
-        default:
-            WriteError("Unknown option. Press Enter to continue.");
-            Console.ReadLine();
-            break;
-    }
+    var keySvc = runScope.ServiceProvider.GetRequiredService<KeyService>();
+    var licBuilder = runScope.ServiceProvider.GetRequiredService<LicenseBuilder>();
+    await HandleGenerateLicenseFile(keySvc, licBuilder);
 }
 
-Console.WriteLine("Goodbye.");
+Console.WriteLine();
+Console.WriteLine("Done.");
 
 // ── Handlers ─────────────────────────────────────────────────────────────────
 
-static async Task HandleGenerateSingle(KeyService keySvc)
+static async Task HandleGenerateLicenseFile(KeyService keySvc, LicenseBuilder builder)
 {
+    Console.WriteLine("Create signed license (.tablic)");
+    Console.WriteLine();
+
     var expiry = PromptExpiry();
-    if (expiry is null) return;
-
-    Console.Write("  Label (optional): ");
-    var label = Console.ReadLine()?.Trim();
-    if (string.IsNullOrWhiteSpace(label)) label = null;
-
-    var (record, token) = await keySvc.GenerateAsync(expiry.Value, label);
-
-    Console.ForegroundColor = ConsoleColor.Green;
-    Console.WriteLine();
-    Console.WriteLine($"  ✓ Key generated. Id={record.Id}  KeyId={record.KeyId}");
-    Console.WriteLine($"  VerificationKey (show once — record securely):");
-    Console.WriteLine();
-    Console.ForegroundColor = ConsoleColor.Yellow;
-    Console.WriteLine($"    {token}");
-    Console.ResetColor();
-    Console.WriteLine();
-    Console.WriteLine($"  Hash (stored in DB): {record.VerificationKeyHash}");
-    Console.WriteLine($"  Expiry: {FormatExpiry(record.ExpiryType, record.ExpiresAt)}");
-
-    Pause();
-}
-
-static async Task HandleGenerateBulk(KeyService keySvc)
-{
-    var expiry = PromptExpiry();
-    if (expiry is null) return;
-
-    Console.Write("  Number of keys to generate: ");
-    if (!int.TryParse(Console.ReadLine(), out var count) || count < 1 || count > 1000)
+    if (expiry is null)
     {
-        WriteError("Invalid count (1–1000).");
-        Pause();
+        WriteError("Invalid expiry selection.");
         return;
     }
 
-    Console.Write("  Label prefix (optional): ");
-    var prefix = Console.ReadLine()?.Trim();
-    if (string.IsNullOrWhiteSpace(prefix)) prefix = null;
+    Console.Write("  Customer/Tenant label (optional): ");
+    var label = Console.ReadLine()?.Trim();
+    if (string.IsNullOrWhiteSpace(label))
+        label = null;
 
-    var results = await keySvc.GenerateBulkAsync(count, expiry.Value, prefix);
-
-    Console.ForegroundColor = ConsoleColor.Green;
-    Console.WriteLine($"\n  ✓ {results.Count} keys generated.\n");
-    Console.ResetColor();
-    Console.WriteLine("  Id  | KeyId (short)       | Expiry      | Token");
-    Console.WriteLine("  ----|---------------------|-------------|-----------------------------------");
-    foreach (var (rec, tok) in results)
-        Console.WriteLine($"  {rec.Id,-4}| {rec.KeyId.ToString()[..8],-21}| {FormatExpiry(rec.ExpiryType, rec.ExpiresAt),-11}| {tok}");
-
-    Pause();
-}
-
-static async Task HandleBuildTablic(KeyService keySvc, LicenseBuilder builder)
-{
-    Console.Write("  Enter key Id to generate .tablic for: ");
-    if (!int.TryParse(Console.ReadLine(), out var id))
-    {
-        WriteError("Invalid Id."); Pause(); return;
-    }
-
-    var key = await keySvc.GetByIdAsync(id);
-    if (key is null) { WriteError("Key not found."); Pause(); return; }
-
-    if (key.IsLicenseGenerated)
-    {
-        Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine($"  Warning: a .tablic was already generated for this key on {key.LicenseGeneratedAt:O}.");
-        Console.WriteLine("  Generating a second file is allowed but the VerificationKey can only be used ONCE in EduSphere.");
-        Console.ResetColor();
-        Console.Write("  Continue? (y/n): ");
-        if (Console.ReadLine()?.Trim().ToLower() != "y") return;
-    }
-
-    // P3-S1-01: Prompt for Phase 2 constraint fields
-    Console.WriteLine();
-    Console.WriteLine("  ── License Constraints (Phase 2) ──────────────────────────────────");
     Console.Write("  Max concurrent users (0 = unlimited): ");
     var maxUsersInput = Console.ReadLine()?.Trim();
     if (!int.TryParse(maxUsersInput, out var maxUsers) || maxUsers < 0)
     {
-        WriteError("Invalid MaxUsers. Must be a non-negative integer (0 = unlimited)."); Pause(); return;
+        WriteError("Invalid MaxUsers. Must be a non-negative integer (0 = unlimited).");
+        return;
     }
-    key.MaxUsers = maxUsers;
 
-    Console.Write("  Allowed domain (leave blank for no restriction, e.g. portal.university.edu): ");
+    Console.Write("  Allowed domain (optional, blank = unrestricted): ");
     var domainInput = Console.ReadLine()?.Trim();
-    key.AllowedDomain = string.IsNullOrWhiteSpace(domainInput) ? null : domainInput.ToLowerInvariant();
+    var allowedDomain = string.IsNullOrWhiteSpace(domainInput) ? null : domainInput.ToLowerInvariant();
 
-    Console.WriteLine();
-    Console.ForegroundColor = ConsoleColor.Cyan;
-    Console.WriteLine($"  MaxUsers    : {(maxUsers == 0 ? "Unlimited" : maxUsers.ToString())}");
-    Console.WriteLine($"  AllowedDomain: {key.AllowedDomain ?? "(none — unrestricted)"}");
     var scope = PromptInstitutionScope();
-    if (scope is null) { Pause(); return; }
-    key.IncludeSchool = scope.Value.IncludeSchool;
-    key.IncludeCollege = scope.Value.IncludeCollege;
-    key.IncludeUniversity = scope.Value.IncludeUniversity;
-    Console.WriteLine($"  Institution : {FormatInstitutionScope(key.IncludeSchool, key.IncludeCollege, key.IncludeUniversity)}");
-    Console.ResetColor();
-    Console.WriteLine();
+    if (scope is null)
+        return;
 
-    await keySvc.UpdateConstraintsAsync(key);
+    var (record, _) = await keySvc.GenerateAsync(expiry.Value, label);
+    record.MaxUsers = maxUsers;
+    record.AllowedDomain = allowedDomain;
+    record.IncludeSchool = scope.Value.IncludeSchool;
+    record.IncludeCollege = scope.Value.IncludeCollege;
+    record.IncludeUniversity = scope.Value.IncludeUniversity;
+    await keySvc.UpdateConstraintsAsync(record);
 
-    Console.Write("  Output path (e.g. C:\\Licenses\\license.tablic): ");
-    var outPath = Console.ReadLine()?.Trim();
-    if (string.IsNullOrWhiteSpace(outPath)) { WriteError("Invalid path."); Pause(); return; }
-
-    if (!outPath.EndsWith(".tablic", StringComparison.OrdinalIgnoreCase))
-        outPath += ".tablic";
+    var licenseFolder = Path.Combine(AppContext.BaseDirectory, "license");
+    var fileName = $"tabsan-license-{record.KeyId:N}.tablic";
+    var outPath = Path.Combine(licenseFolder, fileName);
 
     try
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(outPath)!);
-        await builder.BuildAsync(key, outPath);
+        Directory.CreateDirectory(licenseFolder);
+
+        await builder.BuildAsync(record, outPath);
+        var verificationKey = LicenseBuilder.ComputeVerificationKey();
+
         Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine($"\n  ✓ .tablic file written to: {outPath}");
+        Console.WriteLine();
+        Console.WriteLine("  ✓ License file generated successfully.");
         Console.ResetColor();
+        Console.WriteLine($"  File       : {outPath}");
+        Console.WriteLine($"  KeyId      : {record.KeyId}");
+        Console.WriteLine($"  VerificationKey : {verificationKey}");
+        Console.WriteLine($"  Expires    : {FormatExpiry(record.ExpiryType, record.ExpiresAt)}");
+        Console.WriteLine($"  Scope      : {FormatInstitutionScope(record.IncludeSchool, record.IncludeCollege, record.IncludeUniversity)}");
+        Console.WriteLine($"  MaxUsers   : {(record.MaxUsers == 0 ? "Unlimited" : record.MaxUsers.ToString())}");
+        Console.WriteLine($"  Domain     : {record.AllowedDomain ?? "Any"}");
+        Console.WriteLine();
+        Console.WriteLine("Import this .tablic file in EduSphere: Portal -> Settings -> License Update.");
     }
     catch (Exception ex)
     {
         WriteError($"Failed to build .tablic: {ex.Message}");
     }
-
-    Pause();
-}
-
-static async Task HandleListKeys(KeyService keySvc)
-{
-    var keys = await keySvc.ListAllAsync();
-    if (keys.Count == 0) { Console.WriteLine("  No keys issued yet."); Pause(); return; }
-
-    // P3-S1-01: Show institution scope, MaxUsers, and AllowedDomain in list
-    Console.WriteLine($"  {"Id",-4} {"KeyId (short)",-10} {"Expiry",-12} {"Scope",-30} {"MaxUsers",-10} {"LicGenerated",-14} {"AllowedDomain",-30} Label");
-    Console.WriteLine(new string('-', 142));
-    foreach (var k in keys)
-    {
-        var expiry  = FormatExpiry(k.ExpiryType, k.ExpiresAt);
-        var scope   = FormatInstitutionScope(k.IncludeSchool, k.IncludeCollege, k.IncludeUniversity);
-        var licMark = k.IsLicenseGenerated ? "Yes" : "No";
-        var maxU    = k.MaxUsers == 0 ? "Unlimited" : k.MaxUsers.ToString();
-        var domain  = k.AllowedDomain ?? "(any)";
-        Console.WriteLine($"  {k.Id,-4} {k.KeyId.ToString()[..8],-10} {expiry,-12} {scope,-30} {maxU,-10} {licMark,-14} {domain,-30} {k.Label}");
-    }
-
-    Pause();
-}
-
-static async Task HandleExportCsv(KeyService keySvc)
-{
-    var desktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-    var path    = Path.Combine(desktop, $"tabsan-keys-{DateTime.UtcNow:yyyyMMddHHmm}.csv");
-
-    // P3-S1-01: CSV now includes MaxUsers and AllowedDomain columns
-    var csv = await keySvc.ExportCsvAsync();
-    await File.WriteAllTextAsync(path, csv, System.Text.Encoding.UTF8);
-
-    Console.ForegroundColor = ConsoleColor.Green;
-    Console.WriteLine($"\n  ✓ CSV exported to: {path}");
-    Console.ResetColor();
-
-    Pause();
 }
 
 // ── Utilities ─────────────────────────────────────────────────────────────────
@@ -371,9 +241,3 @@ static void WriteError(string msg)
     Console.ResetColor();
 }
 
-static void Pause()
-{
-    Console.WriteLine();
-    Console.Write("  Press Enter to return to menu…");
-    Console.ReadLine();
-}

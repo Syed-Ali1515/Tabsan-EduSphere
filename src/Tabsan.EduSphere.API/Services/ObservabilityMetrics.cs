@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Tabsan.EduSphere.Infrastructure.Persistence;
+using System.Net;
 
 namespace Tabsan.EduSphere.API.Services;
 
@@ -21,6 +22,8 @@ public sealed class ObservabilityMetrics
     }
 
     public DateTimeOffset ProcessStartUtc { get; }
+
+    public static string MeterName => "Tabsan.EduSphere.API";
 
     public void RecordRequest(TimeSpan duration, int statusCode)
     {

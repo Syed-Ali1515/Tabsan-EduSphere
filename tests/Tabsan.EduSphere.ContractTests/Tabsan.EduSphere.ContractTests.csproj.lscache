@@ -156,10 +156,7 @@ UnitTest1.cs
  Microsoft.AspNetCore.WebUtilities.dll
  Microsoft.Extensions.Caching.Abstractions.dll
  Microsoft.Extensions.Caching.Memory.dll
- Microsoft.Extensions.Configuration.Abstractions.dll
- Microsoft.Extensions.Configuration.Binder.dll
  Microsoft.Extensions.Configuration.CommandLine.dll
- Microsoft.Extensions.Configuration.dll
  Microsoft.Extensions.Configuration.EnvironmentVariables.dll
  Microsoft.Extensions.Configuration.FileExtensions.dll
  Microsoft.Extensions.Configuration.Ini.dll
@@ -167,10 +164,6 @@ UnitTest1.cs
  Microsoft.Extensions.Configuration.KeyPerFile.dll
  Microsoft.Extensions.Configuration.UserSecrets.dll
  Microsoft.Extensions.Configuration.Xml.dll
- Microsoft.Extensions.DependencyInjection.Abstractions.dll
- Microsoft.Extensions.DependencyInjection.dll
- Microsoft.Extensions.Diagnostics.Abstractions.dll
- Microsoft.Extensions.Diagnostics.dll
  Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions.dll
  Microsoft.Extensions.Diagnostics.HealthChecks.dll
  Microsoft.Extensions.Features.dll
@@ -181,24 +174,18 @@ UnitTest1.cs
  Microsoft.Extensions.FileSystemGlobbing.dll
  Microsoft.Extensions.Hosting.Abstractions.dll
  Microsoft.Extensions.Hosting.dll
- Microsoft.Extensions.Http.dll
  Microsoft.Extensions.Identity.Core.dll
  Microsoft.Extensions.Identity.Stores.dll
  Microsoft.Extensions.Localization.Abstractions.dll
  Microsoft.Extensions.Localization.dll
- Microsoft.Extensions.Logging.Abstractions.dll
  Microsoft.Extensions.Logging.Configuration.dll
  Microsoft.Extensions.Logging.Console.dll
  Microsoft.Extensions.Logging.Debug.dll
- Microsoft.Extensions.Logging.dll
  Microsoft.Extensions.Logging.EventLog.dll
  Microsoft.Extensions.Logging.EventSource.dll
  Microsoft.Extensions.Logging.TraceSource.dll
  Microsoft.Extensions.ObjectPool.dll
- Microsoft.Extensions.Options.ConfigurationExtensions.dll
  Microsoft.Extensions.Options.DataAnnotations.dll
- Microsoft.Extensions.Options.dll
- Microsoft.Extensions.Primitives.dll
  Microsoft.Extensions.WebEncoders.dll
  Microsoft.JSInterop.dll
  Microsoft.Net.Http.Headers.dll
@@ -235,7 +222,6 @@ UnitTest1.cs
  System.Data.dll
  System.Diagnostics.Contracts.dll
  System.Diagnostics.Debug.dll
- System.Diagnostics.DiagnosticSource.dll
  System.Diagnostics.FileVersionInfo.dll
  System.Diagnostics.Process.dll
  System.Diagnostics.StackTrace.dll
@@ -395,7 +381,20 @@ UnitTest1.cs
  microsoft.entityframeworkcore.sqlserver/8.0.8/lib/net8.0/Microsoft.EntityFrameworkCore.SqlServer.dll
  microsoft.entityframeworkcore/8.0.8/lib/net8.0/Microsoft.EntityFrameworkCore.dll
  microsoft.extensions.caching.stackexchangeredis/8.0.8/lib/net8.0/Microsoft.Extensions.Caching.StackExchangeRedis.dll
+ microsoft.extensions.configuration.abstractions/10.0.7/lib/net8.0/Microsoft.Extensions.Configuration.Abstractions.dll
+ microsoft.extensions.configuration.binder/10.0.7/lib/net8.0/Microsoft.Extensions.Configuration.Binder.dll
+ microsoft.extensions.configuration/10.0.7/lib/net8.0/Microsoft.Extensions.Configuration.dll
+ microsoft.extensions.dependencyinjection.abstractions/10.0.7/lib/net8.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll
+ microsoft.extensions.dependencyinjection/10.0.7/lib/net8.0/Microsoft.Extensions.DependencyInjection.dll
  microsoft.extensions.dependencymodel/8.0.1/lib/net8.0/Microsoft.Extensions.DependencyModel.dll
+ microsoft.extensions.diagnostics.abstractions/10.0.7/lib/net8.0/Microsoft.Extensions.Diagnostics.Abstractions.dll
+ microsoft.extensions.diagnostics/10.0.7/lib/net8.0/Microsoft.Extensions.Diagnostics.dll
+ microsoft.extensions.http/10.0.7/lib/net8.0/Microsoft.Extensions.Http.dll
+ microsoft.extensions.logging.abstractions/10.0.7/lib/net8.0/Microsoft.Extensions.Logging.Abstractions.dll
+ microsoft.extensions.logging/10.0.7/lib/net8.0/Microsoft.Extensions.Logging.dll
+ microsoft.extensions.options.configurationextensions/10.0.7/lib/net8.0/Microsoft.Extensions.Options.ConfigurationExtensions.dll
+ microsoft.extensions.options/10.0.7/lib/net8.0/Microsoft.Extensions.Options.dll
+ microsoft.extensions.primitives/10.0.7/lib/net8.0/Microsoft.Extensions.Primitives.dll
  microsoft.identity.client.extensions.msal/4.56.0/lib/netstandard2.0/Microsoft.Identity.Client.Extensions.Msal.dll
  microsoft.identity.client/4.56.0/lib/net6.0/Microsoft.Identity.Client.dll
  microsoft.identitymodel.abstractions/7.1.2/lib/net8.0/Microsoft.IdentityModel.Abstractions.dll
@@ -419,14 +418,16 @@ UnitTest1.cs
  mimekit/4.16.0/lib/net8.0/MimeKit.dll
  newtonsoft.json/13.0.1/lib/netstandard2.0/Newtonsoft.Json.dll
  nuget.frameworks/6.5.0/lib/netstandard2.0/NuGet.Frameworks.dll
- opentelemetry.api.providerbuilderextensions/1.9.0/lib/net8.0/OpenTelemetry.Api.ProviderBuilderExtensions.dll
- opentelemetry.api/1.9.0/lib/net8.0/OpenTelemetry.Api.dll
+ opentelemetry.api.providerbuilderextensions/1.15.3/lib/net8.0/OpenTelemetry.Api.ProviderBuilderExtensions.dll
+ opentelemetry.api/1.15.3/lib/net8.0/OpenTelemetry.Api.dll
  opentelemetry.exporter.console/1.9.0/lib/net8.0/OpenTelemetry.Exporter.Console.dll
+ opentelemetry.exporter.prometheus.aspnetcore/1.15.3-beta.1/lib/net8.0/OpenTelemetry.Exporter.Prometheus.AspNetCore.dll
  opentelemetry.extensions.hosting/1.9.0/lib/net8.0/OpenTelemetry.Extensions.Hosting.dll
  opentelemetry.instrumentation.aspnetcore/1.9.0/lib/net8.0/OpenTelemetry.Instrumentation.AspNetCore.dll
  opentelemetry.instrumentation.http/1.9.0/lib/net8.0/OpenTelemetry.Instrumentation.Http.dll
+ opentelemetry.instrumentation.process/1.15.1-beta.1/lib/net8.0/OpenTelemetry.Instrumentation.Process.dll
  opentelemetry.instrumentation.runtime/1.9.0/lib/net6.0/OpenTelemetry.Instrumentation.Runtime.dll
- opentelemetry/1.9.0/lib/net8.0/OpenTelemetry.dll
+ opentelemetry/1.15.3/lib/net8.0/OpenTelemetry.dll
  pipelines.sockets.unofficial/2.2.8/lib/net5.0/Pipelines.Sockets.Unofficial.dll
  questpdf/2024.12.0/lib/net8.0/QuestPDF.dll
  rabbitmq.client/6.8.1/lib/netstandard2.0/RabbitMQ.Client.dll
@@ -444,6 +445,7 @@ UnitTest1.cs
  swashbuckle.aspnetcore.swagger/6.6.2/lib/net8.0/Swashbuckle.AspNetCore.Swagger.dll
  swashbuckle.aspnetcore.swaggergen/6.6.2/lib/net8.0/Swashbuckle.AspNetCore.SwaggerGen.dll
  swashbuckle.aspnetcore.swaggerui/6.6.2/lib/net8.0/Swashbuckle.AspNetCore.SwaggerUI.dll
+ system.diagnostics.diagnosticsource/10.0.7/lib/net8.0/System.Diagnostics.DiagnosticSource.dll
  system.drawing.common/6.0.0/lib/net6.0/System.Drawing.Common.dll
  system.identitymodel.tokens.jwt/7.1.2/lib/net8.0/System.IdentityModel.Tokens.Jwt.dll
  system.io.packaging/6.0.0/lib/net6.0/System.IO.Packaging.dll
@@ -463,9 +465,6 @@ UnitTest1.cs
  Microsoft.AspNetCore.App.Analyzers.dll
  Microsoft.AspNetCore.App.CodeFixes.dll
  Microsoft.AspNetCore.Components.Analyzers.dll
-<DOTNET>/packs/Microsoft.AspNetCore.App.Ref/8.0.26/analyzers/dotnet/roslyn4.4/cs/
- Microsoft.Extensions.Logging.Generators.dll
- Microsoft.Extensions.Options.SourceGeneration.dll
 <DOTNET>/packs/Microsoft.NETCore.App.Ref/8.0.26/analyzers/dotnet/cs/
  Microsoft.Interop.ComInterfaceGenerator.dll
  Microsoft.Interop.JavaScript.JSImportGenerator.dll
@@ -478,6 +477,8 @@ UnitTest1.cs
  Microsoft.CodeAnalysis.NetAnalyzers.dll
 <NUGET>/
  microsoft.entityframeworkcore.analyzers/8.0.8/analyzers/dotnet/cs/Microsoft.EntityFrameworkCore.Analyzers.dll
+ microsoft.extensions.logging.abstractions/10.0.7/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Logging.Generators.dll
+ microsoft.extensions.options/10.0.7/analyzers/dotnet/roslyn4.4/cs/Microsoft.Extensions.Options.SourceGeneration.dll
  xunit.analyzers/1.4.0/analyzers/dotnet/cs/
   xunit.analyzers.dll
   xunit.analyzers.fixes.dll
