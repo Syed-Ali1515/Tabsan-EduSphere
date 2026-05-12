@@ -5,6 +5,16 @@
 **Aligned With PRD:** v1.33  
 **Purpose:** Define database schemas for the University Portal Application and the License Creation Tool  
 
+## 2026-05-12 Update — Institution License Validation Phase 6 (Execution Snapshot)
+
+- Completed role-scoped access-boundary validation using existing assignment and report-scope tables.
+- Evidence set: `Artifacts/Phase6/Access/20260512-150824/RunSummary.json`.
+- Validated scope enforcement against current schema relationships:
+	- Admin department assignments (`admin_department_assignments`) gate report exports.
+	- Faculty offering assignments (`course_offerings.faculty_user_id`) gate report exports.
+	- Student role remains restricted from operational report export endpoints.
+- No schema mutation and no EF migration required for Phase 6.
+
 ## 2026-05-12 Update — Institution License Validation Phase 5 (Execution Snapshot)
 
 - Implemented explicit per-user institution assignment persistence.

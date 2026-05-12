@@ -79,6 +79,17 @@ Before starting any work, the assistant must:
 - Current phase status: Phase 5 completed.
 - Next phase: Phase 6 (Data Access Boundaries by Assigned Institution).
 
+### Institution Validation Checkpoint (2026-05-12 - Phase 6)
+- Execution evidence captured in `Docs/Institution-License-Validation-Phases.md` and `Artifacts/Phase6/Access/20260512-150824`.
+- Validated role-scoped access boundaries on report export endpoints:
+  - Admin assigned department access succeeds; non-assigned department denied.
+  - Faculty assigned offering access succeeds; non-assigned offering denied.
+  - Student blocked from operational report export endpoints.
+- Confirmed allowed student read surfaces remain available:
+  - report catalog and dashboard context.
+- Current phase status: Phase 6 completed.
+- Next phase: Phase 7 (SuperAdmin Full Access and Permission Matrix).
+
 ## Non-Negotiable Rule Per Completed Stage / Phase
 After **every completed stage** (not just at phase-end), update **all** required tracking files:
 1. Docs/Function-List.md
@@ -131,11 +142,11 @@ cmd /c git -C "<repo-root>" push origin main
 
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
-- Active Phase: **Institution License Validation — Phase 6 (Ready to Start)**
-- Active Stage: **Phase 6: Data Access Boundaries by Assigned Institution**
-- Status: **Phases 1, 2, 3, 4, and 5 completed.**
+- Active Phase: **Institution License Validation — Phase 7 (Ready to Start)**
+- Active Stage: **Phase 7: SuperAdmin Full Access and Permission Matrix**
+- Status: **Phases 1, 2, 3, 4, 5, and 6 completed.**
 - Last Updated: 2026-05-12
-- Next: **Execute role-based institution data-boundary validation (positive/negative access checks) and capture Phase 6 evidence matrix.**
+- Next: **Execute SuperAdmin full-access matrix (CRUD, activation/deactivation, and cross-institution report visibility) and capture Phase 7 evidence set.**
 - Docs Updated: ✅ Validation tracker and planning docs synchronized (2026-05-12)
 
 ### 2026-05-11 - Phase 10 Completion

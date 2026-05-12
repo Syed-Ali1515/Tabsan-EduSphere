@@ -438,17 +438,44 @@ Blocked/Pending: 0
 - Admin visibility scoped to assigned institution(s)/departments.
 
 ### Implementation Summary
-- Document middleware/policy checks enforcing institution boundaries.
-- Document repository query filters used for institution scoping.
+- Executed Phase 6 boundary validation against role-scoped report routes and dashboard/catalog visibility.
+- Reused deterministic Phase 4 validation users for role coverage:
+	- Admin: `phase4.admin.20260512134426`
+	- Faculty: `phase4.faculty.20260512134426`
+	- Student: `phase4.student.20260512134426`
+- Captured final evidence set in `Artifacts/Phase6/Access/20260512-150824`:
+	- `RunSummary.json` (status matrix + user IDs + endpoint set)
+	- Per-check response bodies (`*.body.txt`)
+- Verified scope-guard behavior on report export endpoints:
+	- Admin department scoping through assigned department filter.
+	- Faculty offering scoping through assigned offering filter.
+	- Student restriction on operational report export endpoints.
 
 ### Validation Summary
-- Record positive and negative authorization checks by role.
-- Record API response samples proving data boundaries.
+- Admin boundary checks:
+	- Assigned department (`IT`) export succeeded: `200`.
+	- Non-assigned department (`BUS`) export denied: `403`.
+	- Missing scope filter rejected: `400`.
+- Faculty boundary checks:
+	- Assigned offering (`55555555-5555-5555-5555-555555555504`) export succeeded: `200`.
+	- Non-assigned offering (`55555555-5555-5555-5555-555555555505`) export denied: `403`.
+	- Missing offering filter rejected: `400`.
+- Student boundary checks:
+	- Operational attendance export denied: `403`.
+	- Allowed read surfaces remained available:
+		- `GET /api/v1/reports` -> `200`
+		- `GET /api/v1/dashboard/context` -> `200`
+- Evidence files preserve status/body outcomes for each check in the run directory.
 
 ### Status of Checks Done
-- [ ] Student scoping validated
-- [ ] Faculty scoping validated
-- [ ] Admin scoping validated
+- [x] Student scoping validated
+- [x] Faculty scoping validated
+- [x] Admin scoping validated
+
+Phase 6 Status: Completed
+Passed: 3
+Failed: 0
+Blocked/Pending: 0
 
 ---
 

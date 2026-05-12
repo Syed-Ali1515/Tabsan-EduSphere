@@ -84,6 +84,8 @@
 - **Phase 4 Evidence Highlights**: Role-scoped dashboard context, labels vocabulary, and capability matrix rows align with mode flags; report data/export endpoints succeed for valid SuperAdmin/Admin/Faculty scopes and remain blocked for Student operational access.
 - **Current Execution Snapshot (Phase 5)**: Manual admin creation and CSV import now support explicit per-user `institutionType` assignment with policy enforcement and persistence (`Artifacts/Phase5/Api/*_20260512-144212.json`).
 - **Phase 5 Evidence Highlights**: Disabled institution assignment is rejected during CSV import; enabled assignment is accepted; admin list/create responses now include institution assignment where present.
+- **Current Execution Snapshot (Phase 6)**: Institution data-access boundaries are validated for Admin, Faculty, and Student using scoped report export checks and role-allowed read surfaces (`Artifacts/Phase6/Access/20260512-150824/RunSummary.json`).
+- **Phase 6 Evidence Highlights**: Admin and Faculty get `200` only for assigned department/offering scope, non-assigned scope is denied (`403`), missing scope is rejected (`400`), and Student remains blocked from operational report exports while catalog/dashboard context remain accessible (`200`).
 
 ---
 

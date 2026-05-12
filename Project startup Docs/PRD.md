@@ -10,6 +10,18 @@
 
 ## 0. Implementation Update Log
 
+### 2026-05-12 — Institution License Validation Phase 6 (Execution Snapshot)
+- Completed role-based institution data-boundary validation for Admin, Faculty, and Student.
+- Captured evidence set in `Artifacts/Phase6/Access/20260512-150824` with per-check status and body files.
+- Scope outcomes:
+  - Admin assigned department export: `200`; non-assigned department: `403`; missing scope: `400`.
+  - Faculty assigned offering export: `200`; non-assigned offering: `403`; missing scope: `400`.
+  - Student operational report export remains blocked: `403`.
+- Allowed student read surfaces remained accessible:
+  - `GET /api/v1/reports` -> `200`
+  - `GET /api/v1/dashboard/context` -> `200`
+- Phase 6 status: complete.
+
 ### 2026-05-12 — Institution License Validation Phase 5 (Execution Snapshot)
 - Completed explicit institution assignment implementation for manual admin create and CSV import flows.
 - API contract updates:

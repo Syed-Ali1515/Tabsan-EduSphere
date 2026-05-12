@@ -8,6 +8,16 @@
 
 ## Execution Updates
 
+### 2026-05-12 - Institution License Validation Phase 6 (Execution Snapshot)
+- Completed role-boundary validation for institution-scoped report access.
+- Captured evidence in `Artifacts/Phase6/Access/20260512-150824`.
+- Verified report export scope enforcement behavior:
+  - Admin assigned department succeeds; non-assigned department denied; missing scope rejected.
+  - Faculty assigned offering succeeds; non-assigned offering denied; missing scope rejected.
+  - Student remains blocked from operational report exports.
+- Verified allowed student read surfaces continue to work (`/reports`, `/dashboard/context`).
+- Phase 6 completed.
+
 ### 2026-05-12 - Institution License Validation Phase 5 (Execution Snapshot)
 - Implemented explicit per-user institution assignment for manual admin creation and CSV import.
 - Added persistence and migration support:
