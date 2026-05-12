@@ -1,4 +1,10 @@
-﻿IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
+﻿SET ANSI_NULLS ON;
+GO
+
+SET QUOTED_IDENTIFIER ON;
+GO
+
+IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
 BEGIN
     CREATE TABLE [__EFMigrationsHistory] (
         [MigrationId] nvarchar(150) NOT NULL,
@@ -2364,8 +2370,11 @@ IF NOT EXISTS (
     WHERE [MigrationId] = N'20260430142338_Phase10StoredProcedures'
 )
 BEGIN
+    IF OBJECT_ID(N'dbo.sp_get_attendance_below_threshold', N'P') IS NULL
+        EXEC(N'CREATE PROCEDURE dbo.sp_get_attendance_below_threshold AS BEGIN SET NOCOUNT ON; END;');
 
-    CREATE OR ALTER PROCEDURE sp_get_attendance_below_threshold
+    EXEC(N'
+    ALTER PROCEDURE dbo.sp_get_attendance_below_threshold
         @ThresholdPercent DECIMAL(5,2) = 75.0,
         @CourseOfferingId UNIQUEIDENTIFIER = NULL
     AS
@@ -2376,10 +2385,10 @@ BEGIN
             ar.StudentProfileId,
             ar.CourseOfferingId,
             COUNT(*) AS TotalSessions,
-            SUM(CASE WHEN ar.Status = 'Present' THEN 1 ELSE 0 END) AS AttendedSessions,
+            SUM(CASE WHEN ar.Status = ''Present'' THEN 1 ELSE 0 END) AS AttendedSessions,
             CAST(
                 CASE WHEN COUNT(*) = 0 THEN 0.0
-                     ELSE (SUM(CASE WHEN ar.Status = 'Present' THEN 1.0 ELSE 0.0 END) / COUNT(*)) * 100.0
+                     ELSE (SUM(CASE WHEN ar.Status = ''Present'' THEN 1.0 ELSE 0.0 END) / COUNT(*)) * 100.0
                 END AS DECIMAL(5,2)
             ) AS AttendancePercentage
         FROM attendance_records ar
@@ -2387,9 +2396,9 @@ BEGIN
         GROUP BY ar.StudentProfileId, ar.CourseOfferingId
         HAVING
             CASE WHEN COUNT(*) = 0 THEN 0.0
-                 ELSE (SUM(CASE WHEN ar.Status = 'Present' THEN 1.0 ELSE 0.0 END) / COUNT(*)) * 100.0
+                 ELSE (SUM(CASE WHEN ar.Status = ''Present'' THEN 1.0 ELSE 0.0 END) / COUNT(*)) * 100.0
             END < @ThresholdPercent;
-    END;
+    END;');
 
 END;
 GO
@@ -2399,8 +2408,11 @@ IF NOT EXISTS (
     WHERE [MigrationId] = N'20260430142338_Phase10StoredProcedures'
 )
 BEGIN
+    IF OBJECT_ID(N'dbo.sp_recalculate_student_cgpa', N'P') IS NULL
+        EXEC(N'CREATE PROCEDURE dbo.sp_recalculate_student_cgpa AS BEGIN SET NOCOUNT ON; END;');
 
-    CREATE OR ALTER PROCEDURE sp_recalculate_student_cgpa
+    EXEC(N'
+    ALTER PROCEDURE dbo.sp_recalculate_student_cgpa
         @StudentProfileId UNIQUEIDENTIFIER
     AS
     BEGIN
@@ -2430,7 +2442,7 @@ BEGIN
         WHERE Id = @StudentProfileId;
 
         SELECT @NewCgpa AS NewCgpa;
-    END;
+    END;');
 
 END;
 GO
@@ -2456,20 +2468,23 @@ IF NOT EXISTS (
     WHERE [MigrationId] = N'20260430143000_Phase10SqlViews'
 )
 BEGIN
+    IF OBJECT_ID(N'dbo.vw_student_attendance_summary', N'V') IS NULL
+        EXEC(N'CREATE VIEW dbo.vw_student_attendance_summary AS SELECT 1 AS Placeholder;');
 
-    CREATE VIEW vw_student_attendance_summary AS
+    EXEC(N'
+    ALTER VIEW dbo.vw_student_attendance_summary AS
     SELECT
         ar.StudentProfileId,
         ar.CourseOfferingId,
         COUNT(*) AS TotalSessions,
-        SUM(CASE WHEN ar.Status = 'Present' THEN 1 ELSE 0 END) AS AttendedSessions,
+        SUM(CASE WHEN ar.Status = ''Present'' THEN 1 ELSE 0 END) AS AttendedSessions,
         CAST(
             CASE WHEN COUNT(*) = 0 THEN 0.0
-                 ELSE (SUM(CASE WHEN ar.Status = 'Present' THEN 1.0 ELSE 0.0 END) / COUNT(*)) * 100.0
+                 ELSE (SUM(CASE WHEN ar.Status = ''Present'' THEN 1.0 ELSE 0.0 END) / COUNT(*)) * 100.0
             END AS decimal(5,2)
         ) AS AttendancePercentage
     FROM attendance_records ar
-    GROUP BY ar.StudentProfileId, ar.CourseOfferingId;
+    GROUP BY ar.StudentProfileId, ar.CourseOfferingId;');
 
 END;
 GO
@@ -2479,8 +2494,11 @@ IF NOT EXISTS (
     WHERE [MigrationId] = N'20260430143000_Phase10SqlViews'
 )
 BEGIN
+    IF OBJECT_ID(N'dbo.vw_student_results_summary', N'V') IS NULL
+        EXEC(N'CREATE VIEW dbo.vw_student_results_summary AS SELECT 1 AS Placeholder;');
 
-    CREATE VIEW vw_student_results_summary AS
+    EXEC(N'
+    ALTER VIEW dbo.vw_student_results_summary AS
     SELECT
         r.StudentProfileId,
         r.CourseOfferingId,
@@ -2500,7 +2518,7 @@ BEGIN
     FROM results r
     INNER JOIN course_offerings co ON co.Id = r.CourseOfferingId
     INNER JOIN courses c ON c.Id = co.CourseId
-    WHERE r.IsPublished = 1;
+    WHERE r.IsPublished = 1;');
 
 END;
 GO
@@ -2510,8 +2528,11 @@ IF NOT EXISTS (
     WHERE [MigrationId] = N'20260430143000_Phase10SqlViews'
 )
 BEGIN
+    IF OBJECT_ID(N'dbo.vw_course_enrollment_summary', N'V') IS NULL
+        EXEC(N'CREATE VIEW dbo.vw_course_enrollment_summary AS SELECT 1 AS Placeholder;');
 
-    CREATE VIEW vw_course_enrollment_summary AS
+    EXEC(N'
+    ALTER VIEW dbo.vw_course_enrollment_summary AS
     SELECT
         co.Id AS CourseOfferingId,
         co.CourseId,
@@ -2523,9 +2544,9 @@ BEGIN
         co.MaxEnrollment - COUNT(e.Id) AS AvailableSeats
     FROM course_offerings co
     INNER JOIN courses c ON c.Id = co.CourseId
-    LEFT JOIN enrollments e ON e.CourseOfferingId = co.Id AND e.Status = 'Active'
+    LEFT JOIN enrollments e ON e.CourseOfferingId = co.Id AND e.Status = ''Active''
     WHERE co.IsOpen = 1
-    GROUP BY co.Id, co.CourseId, c.Code, c.Title, co.SemesterId, co.MaxEnrollment;
+    GROUP BY co.Id, co.CourseId, c.Code, c.Title, co.SemesterId, co.MaxEnrollment;');
 
 END;
 GO
