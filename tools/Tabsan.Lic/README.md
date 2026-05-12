@@ -86,8 +86,8 @@ The tool then creates a signed `.tablic` automatically.
 
 On each run, generated licenses are saved automatically to:
 
-- `tools/Tabsan.Lic/bin/Debug/net8.0/license/` (when run from source in Debug)
-- `license/` folder beside the published executable (when run from publish output)
+- `tools/Tabsan.Lic/License/` (canonical project-level output folder when running from this repository)
+- `License/` beside the executable when the tool cannot resolve the project folder path
 
 Filename format:
 
@@ -148,8 +148,8 @@ Possible causes:
 
 ### License file not found after generation
 
-- Default output folder is runtime-relative: `license/` beside the running executable.
-- Source run path is usually: `tools/Tabsan.Lic/bin/Debug/net8.0/license/`.
+- Default output folder is: `tools/Tabsan.Lic/License/`.
+- Fallback for non-repo runtime is `License/` beside the running executable.
 
 ### App says license expired unexpectedly
 

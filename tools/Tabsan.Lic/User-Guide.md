@@ -66,15 +66,15 @@ After input, the tool generates and signs a `.tablic` file automatically.
 
 ## Output Location
 
-The file is saved automatically into a folder named `license` under the runtime directory.
+The file is saved automatically into the project-level `License` folder.
 
-Typical source-run location:
+Canonical repository location:
 
-- `tools/Tabsan.Lic/bin/Debug/net8.0/license/`
+- `tools/Tabsan.Lic/License/`
 
-Typical published location:
+Fallback published location:
 
-- `license/` beside `tabsan-lic.exe`
+- `License/` beside `tabsan-lic.exe`
 
 Filename format:
 

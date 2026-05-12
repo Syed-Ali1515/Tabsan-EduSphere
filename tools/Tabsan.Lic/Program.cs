@@ -133,7 +133,7 @@ static async Task HandleGenerateLicenseFile(KeyService keySvc, LicenseBuilder bu
     record.IncludeUniversity = scope.Value.IncludeUniversity;
     await keySvc.UpdateConstraintsAsync(record);
 
-    var licenseFolder = Path.Combine(AppContext.BaseDirectory, "license");
+    var licenseFolder = ResolveLicenseFolder();
     var fileName = $"tabsan-license-{record.KeyId:N}.tablic";
     var outPath = Path.Combine(licenseFolder, fileName);
 
@@ -165,6 +165,22 @@ static async Task HandleGenerateLicenseFile(KeyService keySvc, LicenseBuilder bu
 }
 
 // ── Utilities ─────────────────────────────────────────────────────────────────
+
+static string ResolveLicenseFolder()
+{
+    var baseDir = new DirectoryInfo(AppContext.BaseDirectory);
+
+    // Running from source typically uses .../tools/Tabsan.Lic/bin/Debug/net8.0/
+    // We want output under .../tools/Tabsan.Lic/License.
+    for (DirectoryInfo? cursor = baseDir; cursor is not null; cursor = cursor.Parent)
+    {
+        if (cursor.Name.Equals("Tabsan.Lic", StringComparison.OrdinalIgnoreCase))
+            return Path.Combine(cursor.FullName, "License");
+    }
+
+    // Fallback for published/self-contained runs when the above cannot be resolved.
+    return Path.Combine(AppContext.BaseDirectory, "License");
+}
 
 static ExpiryType? PromptExpiry()
 {
