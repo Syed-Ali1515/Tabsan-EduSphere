@@ -250,6 +250,10 @@ Blocked/Pending: 0
 - Record per-role screenshots and report exports.
 - Record negative checks for out-of-scope institution data.
 
+### Execution Assets
+- Runbook: [Docs/Phase4-Validation-Runbook.md](Phase4-Validation-Runbook.md)
+- API evidence helper script: [Scripts/Phase4-Validate-Institution-Role.ps1](../Scripts/Phase4-Validate-Institution-Role.ps1)
+
 ### Phase 4 Execution Matrix (2026-05-12)
 
 Use this matrix to run and record evidence consistently before marking checks complete.
