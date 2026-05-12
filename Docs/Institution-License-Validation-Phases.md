@@ -264,6 +264,10 @@ Blocked/Pending: 0
 	- `Admin_ExportChecks_20260512-140653.json`
 	- `Faculty_ExportChecks_20260512-140653.json`
 	- `Student_ExportChecks_20260512-140653.json`
+- Captured scoped export evidence after applying required role scope setup:
+	- Assigned imported Admin user to IT department via `POST /api/v1/department/admin-assignment`.
+	- Assigned imported Faculty user to a real course offering via `PUT /api/v1/course/offerings/{id}/faculty`.
+	- Evidence file: `ScopedExportChecks_20260512-141750.json`.
 
 ### Validation Summary
 - Record per-role screenshots and report exports.
@@ -295,12 +299,18 @@ Blocked/Pending: 0
 		- `GET /api/v1/reports/result-summary/export/pdf` -> `application/pdf`
 		- `GET /api/v1/reports/attendance-summary/export/csv` -> `text/csv`
 		- `GET /api/v1/reports/attendance-summary/export/pdf` -> `application/pdf`
-	- Admin export endpoints returned `403 Forbidden` in current dataset (admin user has no effective department assignment in report scope).
-	- Faculty export endpoints returned `400 Bad Request` without `courseOfferingId` (expected by controller scope guard for faculty report generation).
+	- Initial unscoped checks confirmed guardrails:
+		- Admin export endpoints returned `403 Forbidden` before department assignment.
+		- Faculty export endpoints returned `400 Bad Request` when `courseOfferingId` was omitted.
+	- Scoped checks after role assignment succeeded (`200`) for both Admin and Faculty on:
+		- `GET /api/v1/reports/result-summary/export/csv`
+		- `GET /api/v1/reports/result-summary/export/pdf`
+		- `GET /api/v1/reports/attendance-summary/export/csv`
+		- `GET /api/v1/reports/attendance-summary/export/pdf`
 	- Student export endpoints returned `403 Forbidden` (role not authorized for operational report exports).
 - Remaining evidence pending:
 	- Role-wise UI screenshots (SuperAdmin/Admin/Faculty/Student) by mode.
-	- Mode-specific report export artifacts (with explicit scoped filters for Admin/Faculty where required).
+	- Mode-specific (School/College/University) report export artifacts with mode snapshots linked to each export.
 	- Final negative authorization checks by mode-specific UI route.
 
 ### Execution Assets
