@@ -253,6 +253,12 @@ Blocked/Pending: 0
 	- `GET /api/v1/labels`
 	- `GET /api/v1/portal-capabilities/matrix`
 - Evidence files created under `Artifacts/Phase4/Api` with timestamp `20260512-133716`.
+- Created deterministic Phase 4 validation users through the supported import flow (`POST /api/v1/user-import/csv`) using SuperAdmin authentication:
+	- `phase4.admin.20260512134426`
+	- `phase4.faculty.20260512134426`
+	- `phase4.student.20260512134426`
+- Import result: `totalRows=3`, `imported=3`, `duplicates=0`, `errors=0`.
+- Captured authenticated role evidence for Admin / Faculty / Student under `Artifacts/Phase4/Api` with timestamp set `20260512-134447` / `20260512-134448`.
 
 ### Validation Summary
 - Record per-role screenshots and report exports.
@@ -260,10 +266,28 @@ Blocked/Pending: 0
 - Baseline API check status:
 	- Unauthenticated calls correctly returned `401 Unauthorized` (expected for protected endpoints).
 	- Authenticated SuperAdmin calls succeeded and were archived as JSON evidence.
+- Imported-user login behavior validated for Phase 4 evidence users:
+	- Admin login succeeded; response showed `role=Admin` and `mustChangePassword=true`.
+	- Faculty login succeeded; response showed `role=Faculty` and `mustChangePassword=true`.
+	- Student login succeeded; response showed `role=Student` and `mustChangePassword=true`.
+- Positive role evidence captured:
+	- Admin / Faculty / Student successfully accessed `GET /api/v1/institution-policy`.
+	- Admin / Faculty / Student successfully accessed `GET /api/v1/labels`.
+	- Admin / Faculty / Student successfully accessed `GET /api/v1/portal-capabilities/matrix`.
+	- Admin successfully accessed `GET /api/v1/license/details`.
+	- Faculty and Student were denied on `GET /api/v1/license/details` with `403 Forbidden`.
+	- Student report catalog response was role-filtered to `student_transcript` only.
+	- Faculty report catalog returned faculty-allowed operational reports including attendance, GPA, results, and FYP status.
+- Negative role evidence captured:
+	- Admin denied on `GET /api/v1/admin-user` with `403 Forbidden`.
+	- Faculty denied on `GET /api/v1/admin-user` with `403 Forbidden`.
+	- Student denied on `GET /api/v1/admin-user` with `403 Forbidden`.
+	- Student denied on `GET /api/v1/reports/attendance-summary` with `403 Forbidden`.
+	- Admin call to `GET /api/v1/reports/attendance-summary` without scoped filters returned an error response in current dataset and should be re-run with valid report filters during report/export evidence capture.
 - Remaining evidence pending:
 	- Role-wise UI screenshots (SuperAdmin/Admin/Faculty/Student) by mode.
 	- Report export artifacts by mode.
-	- Negative authorization checks for non-SuperAdmin roles.
+	- Final negative authorization checks by mode-specific UI route.
 
 ### Execution Assets
 - Runbook: [Docs/Phase4-Validation-Runbook.md](Phase4-Validation-Runbook.md)
