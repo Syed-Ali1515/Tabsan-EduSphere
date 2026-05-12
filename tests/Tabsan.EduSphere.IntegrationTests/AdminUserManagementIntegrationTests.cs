@@ -55,7 +55,8 @@ public class AdminUserManagementIntegrationTests
         {
             username,
             email = $"{username}@tabsan.local",
-            password = "Pass@123"
+            password = "Pass@123",
+            institutionType = 0
         };
 
         var createResponse = await client.PostAsJsonAsync("api/v1/admin-user", createPayload);
@@ -63,6 +64,7 @@ public class AdminUserManagementIntegrationTests
 
         using var createDoc = JsonDocument.Parse(await createResponse.Content.ReadAsStringAsync());
         var adminUserId = createDoc.RootElement.GetProperty("id").GetGuid();
+        Assert.Equal(0, createDoc.RootElement.GetProperty("institutionType").GetInt32());
 
         var deptsResponse = await client.GetAsync("api/v1/department");
         Assert.Equal(HttpStatusCode.OK, deptsResponse.StatusCode);
@@ -113,5 +115,23 @@ public class AdminUserManagementIntegrationTests
         };
         var removeResponse = await client.SendAsync(removeRequest);
         Assert.Equal(HttpStatusCode.NoContent, removeResponse.StatusCode);
+    }
+
+    [Fact]
+    public async Task AdminUser_Create_WithDisabledInstitutionType_ReturnsBadRequest()
+    {
+        using var client = CreateClient("SuperAdmin", "00000000-0000-0000-0000-000000000011");
+
+        var username = $"admin_disabled_{Guid.NewGuid():N}";
+        var createPayload = new
+        {
+            username,
+            email = $"{username}@tabsan.local",
+            password = "Pass@123",
+            institutionType = 1
+        };
+
+        var createResponse = await client.PostAsJsonAsync("api/v1/admin-user", createPayload);
+        Assert.Equal(HttpStatusCode.BadRequest, createResponse.StatusCode);
     }
 }

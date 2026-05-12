@@ -1,4 +1,5 @@
 using Tabsan.EduSphere.Domain.Common;
+using Tabsan.EduSphere.Domain.Enums;
 
 namespace Tabsan.EduSphere.Domain.Identity;
 
@@ -31,6 +32,12 @@ public class User : AuditableEntity
     /// </summary>
     public Guid? DepartmentId { get; private set; }
 
+    /// <summary>
+    /// Optional per-user institution assignment used for institution-aware provisioning flows.
+    /// Null means the user follows the active global institution policy without an explicit user override.
+    /// </summary>
+    public InstitutionType? InstitutionType { get; private set; }
+
     /// <summary>Controls login access without deleting the account or its data.</summary>
     public bool IsActive { get; private set; } = true;
 
@@ -62,7 +69,7 @@ public class User : AuditableEntity
 
     /// <summary>Creates a new user. Password must already be hashed by the caller.</summary>
     public User(string username, string passwordHash, int roleId, string? email = null, Guid? departmentId = null,
-                bool mustChangePassword = false)
+                bool mustChangePassword = false, InstitutionType? institutionType = null)
     {
         Username = username;
         PasswordHash = passwordHash;
@@ -70,6 +77,7 @@ public class User : AuditableEntity
         Email = email;
         DepartmentId = departmentId;
         MustChangePassword = mustChangePassword;
+        InstitutionType = institutionType;
     }
 
     /// <summary>Records a successful login by updating the LastLoginAt timestamp.</summary>
@@ -148,6 +156,13 @@ public class User : AuditableEntity
     public void UpdateEmail(string? email)
     {
         Email = email;
+        Touch();
+    }
+
+    /// <summary>Assigns or clears an explicit institution type for this user.</summary>
+    public void SetInstitutionType(InstitutionType? institutionType)
+    {
+        InstitutionType = institutionType;
         Touch();
     }
 

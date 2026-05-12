@@ -74,5 +74,10 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.MustChangePassword)
                .IsRequired()
                .HasDefaultValue(false);
+
+        // Phase 5: optional per-user institution assignment for manual/CSV provisioning flows.
+        builder.Property(u => u.InstitutionType)
+               .HasConversion<int?>()
+               .IsRequired(false);
     }
 }

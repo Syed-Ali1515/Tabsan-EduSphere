@@ -5,6 +5,17 @@
 **Aligned With PRD:** v1.33  
 **Purpose:** Define database schemas for the University Portal Application and the License Creation Tool  
 
+## 2026-05-12 Update — Institution License Validation Phase 5 (Execution Snapshot)
+
+- Implemented explicit per-user institution assignment persistence.
+- Schema update applied through EF migration:
+	- `20260512043929_AddUserInstitutionTypeAssignment`
+	- Adds nullable `InstitutionType` (`int`) to `users` table.
+- Application contract impact:
+	- manual admin create/list endpoints now persist and return per-user institution assignment,
+	- CSV import supports optional `InstitutionType` column with policy validation.
+- Validation artifacts: `Artifacts/Phase5/Api/*_20260512-144212.json`.
+
 ## 2026-05-12 Update — Institution License Validation Plan
 
 - Added execution reference: `Docs/Institution-License-Validation-Phases.md`.

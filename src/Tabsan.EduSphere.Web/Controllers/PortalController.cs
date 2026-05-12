@@ -1216,7 +1216,7 @@ public class PortalController : Controller
     }
 
     [HttpPost, ValidateAntiForgeryToken]
-    public async Task<IActionResult> CreateAdminUser(string username, string? email, string password, Guid[] departmentIds, CancellationToken ct)
+    public async Task<IActionResult> CreateAdminUser(string username, string? email, string password, int? institutionType, Guid[] departmentIds, CancellationToken ct)
     {
         if (!_api.IsConnected())
             return RedirectToAction(nameof(AdminUsers));
@@ -1230,7 +1230,7 @@ public class PortalController : Controller
 
         try
         {
-            var createdId = await _api.CreateAdminUserAsync(username, email, password, ct);
+            var createdId = await _api.CreateAdminUserAsync(username, email, password, institutionType, ct);
             await SyncAdminDepartmentAssignmentsAsync(createdId, departmentIds, ct);
             TempData["PortalMessage"] = $"Admin user '{username}' created.";
             return RedirectToAction(nameof(AdminUsers), new { selectedAdminUserId = createdId });

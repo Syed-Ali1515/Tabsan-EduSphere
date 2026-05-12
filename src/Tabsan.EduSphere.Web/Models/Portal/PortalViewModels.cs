@@ -505,6 +505,7 @@ public class AdminUserLookupItem
     public string UserName { get; set; } = "";
     public string? Email { get; set; }
     public bool IsActive { get; set; }
+    public int? InstitutionType { get; set; }
 }
 
 public class DepartmentsPageModel

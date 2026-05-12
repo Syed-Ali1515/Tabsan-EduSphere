@@ -8,6 +8,17 @@
 
 ## Execution Updates
 
+### 2026-05-12 - Institution License Validation Phase 5 (Execution Snapshot)
+- Implemented explicit per-user institution assignment for manual admin creation and CSV import.
+- Added persistence and migration support:
+  - nullable `users.InstitutionType` column via EF migration `AddUserInstitutionTypeAssignment`.
+- Added policy-aware validation behavior:
+  - assignment to disabled institution type is rejected,
+  - assignment to enabled institution type is accepted and persisted.
+- Updated portal create-admin flow and import templates/documentation to include optional institution assignment.
+- Captured evidence in `Artifacts/Phase5/Api` (`20260512-144212` set).
+- Phase 5 completed.
+
 ### 2026-05-12 - Institution License Validation Phase 4 (Execution Snapshot)
 - Completed mode-role validation for School, College, and University across SuperAdmin, Admin, Faculty, and Student.
 - Captured execution evidence in `Artifacts/Phase4/ModeRole/20260512-142021` including:

@@ -68,6 +68,17 @@ Before starting any work, the assistant must:
 - Current phase status: Phase 4 completed.
 - Next phase: Phase 5 (User Creation and CSV Import with Institution Assignment).
 
+### Institution Validation Checkpoint (2026-05-12 - Phase 5)
+- Execution evidence captured in `Docs/Institution-License-Validation-Phases.md` and `Artifacts/Phase5/Api/` (`20260512-144212` set).
+- Implemented explicit per-user institution assignment in manual create/import flows.
+- Added policy enforcement for institution assignment:
+  - disabled institution assignment is rejected,
+  - enabled institution assignment is accepted and persisted.
+- Added migration `AddUserInstitutionTypeAssignment` for `users.InstitutionType`.
+- Updated API/Web contracts and integration tests for manual create + CSV import institution assignment handling.
+- Current phase status: Phase 5 completed.
+- Next phase: Phase 6 (Data Access Boundaries by Assigned Institution).
+
 ## Non-Negotiable Rule Per Completed Stage / Phase
 After **every completed stage** (not just at phase-end), update **all** required tracking files:
 1. Docs/Function-List.md
@@ -120,11 +131,11 @@ cmd /c git -C "<repo-root>" push origin main
 
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
-- Active Phase: **Institution License Validation — Phase 5 (In Progress)**
-- Active Stage: **Phase 5: User Creation and CSV Import with Institution Assignment**
-- Status: **Phases 1, 2, 3, and 4 completed; Phase 5 evidence capture started with API contract gap identified.**
+- Active Phase: **Institution License Validation — Phase 6 (Ready to Start)**
+- Active Stage: **Phase 6: Data Access Boundaries by Assigned Institution**
+- Status: **Phases 1, 2, 3, 4, and 5 completed.**
 - Last Updated: 2026-05-12
-- Next: **Implement explicit per-user institution assignment fields in manual create/import flows, then re-run Phase 5 completion checks.**
+- Next: **Execute role-based institution data-boundary validation (positive/negative access checks) and capture Phase 6 evidence matrix.**
 - Docs Updated: ✅ Validation tracker and planning docs synchronized (2026-05-12)
 
 ### 2026-05-11 - Phase 10 Completion

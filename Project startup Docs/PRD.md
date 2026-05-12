@@ -10,6 +10,19 @@
 
 ## 0. Implementation Update Log
 
+### 2026-05-12 — Institution License Validation Phase 5 (Execution Snapshot)
+- Completed explicit institution assignment implementation for manual admin create and CSV import flows.
+- API contract updates:
+  - `POST /api/v1/admin-user` accepts optional `institutionType` and returns persisted assignment.
+  - `GET /api/v1/admin-user` includes `institutionType` for assigned users.
+  - `POST /api/v1/user-import/csv` supports optional `InstitutionType` column with policy validation.
+- Validation evidence captured in `Artifacts/Phase5/Api` (`20260512-144212` set):
+  - manual create persisted assignment,
+  - CSV invalid-assignment rejection,
+  - CSV valid-assignment success,
+  - admin list assignment visibility.
+- Phase 5 status: complete.
+
 ### 2026-05-12 — Institution License Validation Phase 4 (Execution Snapshot)
 - Completed mode-role validation sweep for School, College, and University across SuperAdmin, Admin, Faculty, and Student.
 - Captured evidence in `Artifacts/Phase4/ModeRole/20260512-142021` for:

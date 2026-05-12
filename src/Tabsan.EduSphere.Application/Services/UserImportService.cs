@@ -1,5 +1,6 @@
 using Tabsan.EduSphere.Application.Dtos;
 using Tabsan.EduSphere.Application.Interfaces;
+using Tabsan.EduSphere.Domain.Enums;
 using Tabsan.EduSphere.Domain.Identity;
 using Tabsan.EduSphere.Domain.Interfaces;
 
@@ -8,7 +9,7 @@ namespace Tabsan.EduSphere.Application.Services;
 /// <summary>
 /// Parses a CSV stream and bulk-creates user accounts (P4-S1-01).
 /// Rules:
-///   - CSV header row required: Username,Email,FullName,Role (DepartmentId optional 5th column)
+///   - CSV header row required: Username,Email,Role (FullName/DepartmentId/InstitutionType optional)
 ///   - Initial password = Username (P4-S2-01)
 ///   - MustChangePassword is set to true so the user is forced to change on first login (P4-S2-02)
 ///   - Rows with duplicate usernames (in batch or existing in DB) are counted as duplicates
@@ -19,6 +20,7 @@ public class UserImportService : IUserImportService
 {
     private readonly IUserRepository _userRepo;
     private readonly IPasswordHasher _hasher;
+    private readonly IInstitutionPolicyService _institutionPolicyService;
 
     /// <summary>
     /// Allowed role names for CSV import. SuperAdmin cannot be created via CSV
@@ -27,10 +29,14 @@ public class UserImportService : IUserImportService
     private static readonly HashSet<string> AllowedRoles =
         new(StringComparer.OrdinalIgnoreCase) { "Admin", "Faculty", "Student" };
 
-    public UserImportService(IUserRepository userRepo, IPasswordHasher hasher)
+    public UserImportService(
+        IUserRepository userRepo,
+        IPasswordHasher hasher,
+        IInstitutionPolicyService institutionPolicyService)
     {
         _userRepo = userRepo;
         _hasher = hasher;
+        _institutionPolicyService = institutionPolicyService;
     }
 
     public async Task<UserImportResult> ImportFromCsvAsync(Stream csvStream, CancellationToken ct = default)
@@ -50,13 +56,20 @@ public class UserImportService : IUserImportService
         if (header is null)
             return new UserImportResult(0, 0, 0, 0, new List<string>());
 
-        // Validate that the header contains at least the 4 required columns
-        var headerParts = header.Split(',');
-        if (headerParts.Length < 4)
+        var headerParts = header.Split(',').Select(h => h.Trim()).ToArray();
+        var headerMap = BuildHeaderMap(headerParts);
+        if (!headerMap.TryGetValue("username", out var usernameIndex) ||
+            !headerMap.TryGetValue("email", out var emailIndex) ||
+            !headerMap.TryGetValue("role", out var roleIndex))
         {
-            errors.Add("Invalid CSV format: header must have at least 4 columns (Username,Email,FullName,Role).");
+            errors.Add("Invalid CSV format: header must include Username, Email, and Role columns.");
             return new UserImportResult(0, 0, 0, 1, errors);
         }
+
+        headerMap.TryGetValue("departmentid", out var departmentIdIndex);
+        headerMap.TryGetValue("institutiontype", out var institutionTypeIndex);
+
+        var policy = await _institutionPolicyService.GetPolicyAsync(ct);
 
         int lineNumber = 1;
         string? line;
@@ -72,16 +85,17 @@ public class UserImportService : IUserImportService
             }
 
             var parts = line.Split(',');
-            if (parts.Length < 4)
+            if (parts.Length < headerParts.Length)
             {
-                errors.Add($"Line {lineNumber}: Expected at least 4 columns. Got {parts.Length}.");
+                errors.Add($"Line {lineNumber}: Expected at least {headerParts.Length} columns. Got {parts.Length}.");
                 continue;
             }
 
-            var username     = parts[0].Trim();
-            var email        = parts[1].Trim();
-            var roleName     = parts[3].Trim();
-            var deptIdStr    = parts.Length >= 5 ? parts[4].Trim() : string.Empty;
+            var username = GetValue(parts, usernameIndex);
+            var email = GetValue(parts, emailIndex);
+            var roleName = GetValue(parts, roleIndex);
+            var deptIdStr = departmentIdIndex >= 0 ? GetValue(parts, departmentIdIndex) : string.Empty;
+            var institutionTypeStr = institutionTypeIndex >= 0 ? GetValue(parts, institutionTypeIndex) : string.Empty;
 
             // ── Validate username ─────────────────────────────────────────────
             if (string.IsNullOrWhiteSpace(username))
@@ -121,6 +135,24 @@ public class UserImportService : IUserImportService
                 departmentId = parsedDept;
             }
 
+            InstitutionType? institutionType = null;
+            if (!string.IsNullOrWhiteSpace(institutionTypeStr))
+            {
+                if (!Enum.TryParse<InstitutionType>(institutionTypeStr, ignoreCase: true, out var parsedInstitutionType))
+                {
+                    errors.Add($"Line {lineNumber}: InstitutionType '{institutionTypeStr}' is invalid. Use School, College, or University.");
+                    continue;
+                }
+
+                if (!policy.IsEnabled(parsedInstitutionType))
+                {
+                    errors.Add($"Line {lineNumber}: InstitutionType '{parsedInstitutionType}' is not enabled by the current license policy.");
+                    continue;
+                }
+
+                institutionType = parsedInstitutionType;
+            }
+
             // ── Check intra-batch duplicate ────────────────────────────────────
             if (batchUsernames.Contains(username))
             {
@@ -156,7 +188,8 @@ public class UserImportService : IUserImportService
                 roleId: roleId,
                 email: emailValue,
                 departmentId: departmentId,
-                mustChangePassword: true   // P4-S2-02: force change on first login
+                mustChangePassword: true,   // P4-S2-02: force change on first login
+                institutionType: institutionType
             );
 
             batchUsernames.Add(username);
@@ -176,5 +209,26 @@ public class UserImportService : IUserImportService
             Errors: errors.Count,
             ErrorDetails: errors
         );
+    }
+
+    private static Dictionary<string, int> BuildHeaderMap(string[] headerParts)
+    {
+        var map = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        for (var i = 0; i < headerParts.Length; i++)
+        {
+            var key = headerParts[i].Trim();
+            if (!string.IsNullOrWhiteSpace(key) && !map.ContainsKey(key))
+                map[key] = i;
+        }
+
+        return map;
+    }
+
+    private static string GetValue(string[] parts, int index)
+    {
+        if (index < 0 || index >= parts.Length)
+            return string.Empty;
+
+        return parts[index].Trim();
     }
 }

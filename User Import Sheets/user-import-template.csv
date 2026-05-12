@@ -1,2 +1,2 @@
-Username,Email,FullName,Role,DepartmentId
-john.doe,john.doe@example.com,John Doe,Student,
+Username,Email,FullName,Role,DepartmentId,InstitutionType
+john.doe,john.doe@example.com,John Doe,Student,,University

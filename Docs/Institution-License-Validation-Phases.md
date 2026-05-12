@@ -386,38 +386,43 @@ Blocked/Pending: 0
 - Post-import workflow behavior by assigned institution.
 
 ### Implementation Summary
-- Started Phase 5 API validation and captured artifacts in `Artifacts/Phase5/Api` (timestamp set `20260512-142706`).
-- Verified manual Admin create behavior via `POST /api/v1/admin-user`:
-	- Request payload with extra `institutionType` field was accepted.
-	- Response shape contains `id`, `username`, `email`, `isActive`, `role` only (no institution assignment field).
-	- Evidence: `ManualCreate_WithInstitutionField_20260512-142706.json` and `AdminList_20260512-142706.json`.
-- Verified CSV import header behavior via `POST /api/v1/user-import/csv`:
-	- Case A header `Username,Email,FullName,Role,InstitutionType` treated 5th column as `DepartmentId`; value `School` produced validation error (`not a valid GUID`).
-	- Case B header `Username,Email,FullName,Role,DepartmentId,InstitutionType` imported successfully; extra 6th column was ignored.
-	- Evidence: `CsvImport_CaseA_20260512-142706.json`, `CsvImport_CaseB_20260512-142706.json`.
-- Verified post-import runtime behavior for Case B user:
-	- User labels/policy resolved from global institution policy (current University mode), not from CSV `InstitutionType` value (`College`).
-	- Evidence: `CaseB_UserPolicy_20260512-142706.json`, `CaseB_UserLabels_20260512-142706.json`.
+- Implemented explicit per-user institution assignment in manual create and CSV import flows:
+	- Added nullable `InstitutionType` on `User` and EF mapping.
+	- Added migration `AddUserInstitutionTypeAssignment` to persist `users.InstitutionType`.
+	- Extended `CreateAdminUserRequest` and `POST /api/v1/admin-user` to accept and return `institutionType`.
+	- Added license-policy enforcement for explicit assignments (reject disabled institution modes).
+	- Extended CSV import parser to support header-based `InstitutionType` parsing with backward-compatible optional columns.
+- Updated Web portal manual create flow to send optional institution assignment.
+- Updated CSV template and import documentation to include optional `InstitutionType` column.
+- Captured fresh API evidence in `Artifacts/Phase5/Api` (timestamp set `20260512-144212`):
+	- `ManualCreate_WithInstitutionField_20260512-144212.json`
+	- `AdminList_20260512-144212.json`
+	- `CsvImport_InvalidInstitution_20260512-144212.json`
+	- `CsvImport_ValidInstitution_20260512-144212.json`
+- Added integration coverage in:
+	- `tests/Tabsan.EduSphere.IntegrationTests/AdminUserManagementIntegrationTests.cs`
+	- `tests/Tabsan.EduSphere.IntegrationTests/UserImportAndForceChangeIntegrationTests.cs`
 
 ### Validation Summary
-- Import success/failure evidence recorded:
-	- Case A: `errors=1` (`DepartmentId 'School' is not a valid GUID`).
-	- Case B: `imported=1`, `errors=0` with extra `InstitutionType` column ignored.
-- Manual user creation currently has no explicit institution-assignment contract in API request/response models.
-- Current blocker to full Phase 5 completion:
-	- Requirement expects assignable institution scope on manual create/import.
-	- Current implementation supports role + department mapping, but not explicit School/College/University per-user assignment fields.
-- Phase 5 is started with evidence-backed gap identification; implementation change is required to complete all Phase 5 checkpoints.
+- Manual create contract now persists and returns `institutionType`:
+	- Evidence: `ManualCreate_WithInstitutionField_20260512-144212.json` includes `institutionType: 0 (University)`.
+- CSV import institution mapping now enforces license policy:
+	- Invalid assignment evidence: `CsvImport_InvalidInstitution_20260512-144212.json` -> `errors=1` with `InstitutionType 'School' is not enabled...`.
+	- Valid assignment evidence: `CsvImport_ValidInstitution_20260512-144212.json` -> `imported=1`, `errors=0`.
+- Admin listing now exposes explicit assignment where present:
+	- Evidence: `AdminList_20260512-144212.json` includes imported/created users with `institutionType`.
+- Targeted integration tests passed after implementation:
+	- `AdminUserManagementIntegrationTests` and `UserImportAndForceChangeIntegrationTests`.
 
 ### Status of Checks Done
-- [ ] Manual user assignment validated
-- [x] CSV import assignment validated (current contract behavior documented)
-- [x] Post-import institution behavior validated (current mode-driven behavior documented)
+- [x] Manual user assignment validated
+- [x] CSV import assignment validated
+- [x] Post-import workflow validation completed for assignment contract and policy enforcement
 
-Phase 5 Status: In Progress
-Passed: 2
+Phase 5 Status: Completed
+Passed: 3
 Failed: 0
-Blocked/Pending: 1
+Blocked/Pending: 0
 
 ---
 

@@ -14,11 +14,16 @@ public class AdminUserController : ControllerBase
 {
     private readonly IUserRepository _users;
     private readonly IPasswordHasher _passwordHasher;
+    private readonly IInstitutionPolicyService _institutionPolicyService;
 
-    public AdminUserController(IUserRepository users, IPasswordHasher passwordHasher)
+    public AdminUserController(
+        IUserRepository users,
+        IPasswordHasher passwordHasher,
+        IInstitutionPolicyService institutionPolicyService)
     {
         _users = users;
         _passwordHasher = passwordHasher;
+        _institutionPolicyService = institutionPolicyService;
     }
 
     [HttpGet]
@@ -31,6 +36,7 @@ public class AdminUserController : ControllerBase
             u.Username,
             u.Email,
             u.IsActive,
+            u.InstitutionType,
             Role = u.Role.Name
         }));
     }
@@ -58,12 +64,26 @@ public class AdminUserController : ControllerBase
         if (adminRole is null)
             return BadRequest("Admin role was not found.");
 
+        if (request.InstitutionType is not null)
+        {
+            var policy = await _institutionPolicyService.GetPolicyAsync(ct);
+            if (!policy.IsEnabled(request.InstitutionType.Value))
+                return BadRequest($"Institution type '{request.InstitutionType}' is not enabled by the current license policy.");
+        }
+
         var hash = _passwordHasher.Hash(request.Password);
-        var user = new User(username, hash, adminRole.Id, email, departmentId: null, mustChangePassword: false);
+        var user = new User(
+            username,
+            hash,
+            adminRole.Id,
+            email,
+            departmentId: null,
+            mustChangePassword: false,
+            institutionType: request.InstitutionType);
         await _users.AddAsync(user, ct);
         await _users.SaveChangesAsync(ct);
 
-        return Ok(new { user.Id, user.Username, user.Email, user.IsActive, Role = "Admin" });
+        return Ok(new { user.Id, user.Username, user.Email, user.IsActive, user.InstitutionType, Role = "Admin" });
     }
 
     [HttpPut("{id:guid}")]

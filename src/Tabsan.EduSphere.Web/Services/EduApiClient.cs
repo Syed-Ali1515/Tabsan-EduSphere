@@ -125,7 +125,7 @@ public interface IEduApiClient
     Task DeactivateDepartmentAsync(Guid id, CancellationToken ct);
     Task<UserImportResultItem> ImportUsersCsvAsync(Stream fileStream, string fileName, CancellationToken ct);
     Task<List<AdminUserLookupItem>> GetAdminUsersAsync(CancellationToken ct);
-    Task<Guid> CreateAdminUserAsync(string username, string? email, string password, CancellationToken ct);
+    Task<Guid> CreateAdminUserAsync(string username, string? email, string password, int? institutionType, CancellationToken ct);
     Task UpdateAdminUserAsync(Guid userId, string? email, bool isActive, string? newPassword, CancellationToken ct);
     Task<List<Guid>> GetAdminDepartmentIdsAsync(Guid adminUserId, CancellationToken ct);
     Task AssignAdminToDepartmentAsync(Guid adminUserId, Guid departmentId, CancellationToken ct);
@@ -1311,6 +1311,7 @@ public class EduApiClient : IEduApiClient
         public string? Username { get; set; }
         public string? Email { get; set; }
         public bool IsActive { get; set; }
+        public int? InstitutionType { get; set; }
     }
 
     private sealed class AdminDepartmentAssignmentApiDto
@@ -1371,13 +1372,14 @@ public class EduApiClient : IEduApiClient
             Id = a.Id,
             UserName = a.Username ?? string.Empty,
             Email = a.Email,
-            IsActive = a.IsActive
+            IsActive = a.IsActive,
+            InstitutionType = a.InstitutionType
         }).ToList();
     }
 
-    public async Task<Guid> CreateAdminUserAsync(string username, string? email, string password, CancellationToken ct)
+    public async Task<Guid> CreateAdminUserAsync(string username, string? email, string password, int? institutionType, CancellationToken ct)
     {
-        var created = await PostAsync<object, AdminUserApiDto>("api/v1/admin-user", new { username, email, password }, ct)
+        var created = await PostAsync<object, AdminUserApiDto>("api/v1/admin-user", new { username, email, password, institutionType }, ct)
             ?? throw new InvalidOperationException("Admin create API returned no body.");
         return created.Id;
     }

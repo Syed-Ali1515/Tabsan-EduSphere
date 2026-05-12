@@ -42,8 +42,11 @@ else
                                 {
                                     var selected = Model.SelectedAdminUserId == admin.Id;
                                     var status = admin.IsActive ? "Active" : "Inactive";
+                                    var institutionLabel = admin.InstitutionType.HasValue
+                                        ? ((Tabsan.EduSphere.Domain.Enums.InstitutionType)admin.InstitutionType.Value).ToString()
+                                        : "Unassigned";
                                     <option value="@admin.Id" selected="@selected" data-search="@(admin.UserName.ToLowerInvariant()) @(admin.Email?.ToLowerInvariant())">
-                                        @admin.UserName (@(string.IsNullOrWhiteSpace(admin.Email) ? "No email" : admin.Email)) - @status
+                                        @admin.UserName (@(string.IsNullOrWhiteSpace(admin.Email) ? "No email" : admin.Email)) - @status - @institutionLabel
                                     </option>
                                 }
                             </select>
@@ -71,6 +74,15 @@ else
                     <div class="col-md-4">
                         <label class="form-label">Temporary Password</label>
                         <input type="password" name="password" class="form-control" required minlength="6" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Institution Type (optional)</label>
+                        <select name="institutionType" class="form-select">
+                            <option value="">Use Global Policy</option>
+                            <option value="1">School</option>
+                            <option value="2">College</option>
+                            <option value="0">University</option>
+                        </select>
                     </div>
                 </div>
 

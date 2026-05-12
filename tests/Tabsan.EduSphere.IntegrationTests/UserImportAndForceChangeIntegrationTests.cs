@@ -48,8 +48,8 @@ public class UserImportAndForceChangeIntegrationTests
         {
             var csv = string.Join('\n',
             [
-                "Username,Email,FullName,Role,DepartmentId",
-                $"{importedUsername},{importedEmail},Imported Admin,Admin,"
+                "Username,Email,FullName,Role,DepartmentId,InstitutionType",
+                $"{importedUsername},{importedEmail},Imported Admin,Admin,,University"
             ]);
 
             using var content = new MultipartFormDataContent();
@@ -112,6 +112,32 @@ public class UserImportAndForceChangeIntegrationTests
         using var reloginDoc = JsonDocument.Parse(reloginBody);
         var mustChangePasswordAfterReset = ReadBool(reloginDoc.RootElement, "mustChangePassword");
         Assert.False(mustChangePasswordAfterReset);
+    }
+
+    [Fact]
+    public async Task UserImportCsv_WithDisabledInstitutionType_ReturnsValidationError()
+    {
+        using var adminClient = CreateClient("Admin");
+
+        var username = $"import_disabled_{Guid.NewGuid():N}";
+        var csv = string.Join('\n',
+        [
+            "Username,Email,FullName,Role,DepartmentId,InstitutionType",
+            $"{username},{username}@tabsan.local,Import Disabled,Admin,,School"
+        ]);
+
+        using var content = new MultipartFormDataContent();
+        content.Add(new ByteArrayContent(Encoding.UTF8.GetBytes(csv)), "file", "import-users-disabled-institution.csv");
+
+        var response = await adminClient.PostAsync("api/v1/user-import/csv", content);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        using var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        Assert.Equal(0, ReadInt(body.RootElement, "imported"));
+        Assert.True(ReadInt(body.RootElement, "errors") >= 1);
+
+        var errorDetails = body.RootElement.GetProperty("errorDetails").EnumerateArray().Select(x => x.GetString() ?? string.Empty).ToList();
+        Assert.Contains(errorDetails, detail => detail.Contains("InstitutionType 'School' is not enabled", StringComparison.OrdinalIgnoreCase));
     }
 
     private static int ReadInt(JsonElement root, string propertyName)

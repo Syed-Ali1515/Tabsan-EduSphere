@@ -13,6 +13,7 @@ This folder contains CSV templates for bulk-importing user accounts via the admi
 | FullName     | No       | Display name (stored for reference; not enforced by the import).            |
 | Role         | Yes      | Must be one of: `Admin`, `Faculty`, `Student` (SuperAdmin not allowed).     |
 | DepartmentId | No       | GUID of the department. Required for Faculty accounts; optional for others. |
+| InstitutionType | No    | Explicit per-user institution assignment: `School`, `College`, or `University`. |
 
 ### Rules
 
@@ -20,6 +21,7 @@ This folder contains CSV templates for bulk-importing user accounts via the admi
 - All imported users are flagged as **MustChangePassword = true**. They will be prompted to set a new password on their first login.
 - Rows with duplicate usernames (across the file or already in the database) are skipped and counted as duplicates.
 - Rows with missing required fields or invalid values are skipped and reported as errors.
+- If `InstitutionType` is provided, it must be enabled in the active institution license policy.
 
 ### How to import
 

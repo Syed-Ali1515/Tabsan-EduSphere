@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Tabsan.EduSphere.Domain.Enums;
 
 namespace Tabsan.EduSphere.Application.DTOs.Auth;
 
@@ -15,7 +16,9 @@ public sealed record CreateAdminUserRequest(
 
 	[property: Required]
 	[property: StringLength(256, MinimumLength = 8)]
-	string Password);
+	string Password,
+
+	InstitutionType? InstitutionType);
 
 /// <summary>Request body for updating an Admin user account.</summary>
 public sealed record UpdateAdminUserRequest(
