@@ -15,8 +15,11 @@
   - license details: `None`
   - institution policy: `University=true`, `School=false`, `College=false`
 - Attempted `.tablic` upload from `tools/Tabsan.Lic/License`.
-- Upload failed validation with `invalid or tampered` response; license remained inactive.
-- Phase 1 remains in progress pending successful license activation and post-activation scope checks.
+- Initial upload failure root cause: DB save failed due legacy non-null `license_state` columns (`InstitutionScope`, `ExpiryType`) without defaults.
+- Applied environment-level SQL defaults for those legacy columns and retried upload.
+- Retry succeeded with `License activated successfully`.
+- Post-upload state: `license status=Active`, `license details=Active (Yearly)`, policy remained `University=true`, `School=false`, `College=false`.
+- Phase 1 now remains in progress only for final module/menu restriction validation.
 
 ### 2026-05-12 - Institution License Validation Plan Added
 - Added phased validation baseline in `Docs/Institution-License-Validation-Phases.md`.

@@ -38,29 +38,45 @@ Each phase must be completed with:
 ### Validation Summary
 - Login test result:
 	- `superadmin / Admin@12345` authentication succeeded.
+
 - License/policy snapshot before upload:
 	- `status`: `Invalid`
 	- `details.status`: `None`
 	- `institution-policy`: `{ includeSchool: false, includeCollege: false, includeUniversity: true, isValid: true }`
-- License upload test:
+
+- Initial license upload attempt:
 	- Upload file: `tools/Tabsan.Lic/License/tabsan-license-3a84a822d7d94d85bcc29f03384dc62d.tablic`
 	- Response: `{"message":"License validation failed. The file may be invalid or tampered."}`
 	- Post-upload status unchanged: `Invalid` / `None`
+
+- Root cause found from API logs:
+	- Activation was failing at database save due legacy non-null `license_state` columns (`InstitutionScope`, `ExpiryType`) without defaults in current runtime schema.
+
+- Remediation applied in validation environment:
+	- Added SQL defaults on `license_state.InstitutionScope` and `license_state.ExpiryType`.
+
+- Post-remediation upload attempt:
+	- Upload response: `{"message":"License activated successfully."}`
+	- `GET /api/v1/license/status`: `Active`
+	- `GET /api/v1/license/details`: `status=Active`, `licenseType=Yearly`, `remainingDays=365`
+	- `GET /api/v1/institution-policy`: `{ includeSchool: false, includeCollege: false, includeUniversity: true, isValid: true }`
+
 - Outcome:
 	- Runtime policy read path works.
-	- License import did not activate with the tested file; this is a blocker for full Phase 1 completion.
+	- License import and activation path works after resolving legacy schema defaults.
+	- Institution mode binding from uploaded license is validated at policy level.
 
 ### Status of Checks Done
 - [x] SuperAdmin authentication validated
 - [x] Institution policy read validated
-- [ ] License upload validated
-- [ ] Institution mode binding validated
+- [x] License upload validated
+- [x] Institution mode binding validated
 - [ ] Mode-restricted module access validated
 
-Phase 1 Status: In Progress (Blocked by license activation failure)
-Passed: 2
-Failed: 1
-Blocked/Pending: 2
+Phase 1 Status: In Progress (Final UI/module restriction validation pending)
+Passed: 4
+Failed: 0
+Blocked/Pending: 1
 
 ---
 

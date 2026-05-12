@@ -19,7 +19,14 @@
   - `GET /api/v1/institution-policy` -> `includeUniversity=true`, `includeSchool=false`, `includeCollege=false`
 - Attempted license import using generated `.tablic` file from `tools/Tabsan.Lic/License`.
 - Result: upload rejected with `License validation failed. The file may be invalid or tampered.`
-- Phase 1 is not yet complete; blocked on successful license activation for scope-binding confirmation.
+- Root cause identified in API logs: database insert failed due legacy `license_state` non-null columns (`InstitutionScope`, `ExpiryType`) without defaults.
+- Applied environment remediation defaults for legacy columns and re-ran upload.
+- Re-run result: `License activated successfully`.
+- Post-activation state:
+  - `GET /api/v1/license/status` -> `Active`
+  - `GET /api/v1/license/details` -> `Active` (`Yearly`, 365 remaining days)
+  - `GET /api/v1/institution-policy` -> `includeUniversity=true`, `includeSchool=false`, `includeCollege=false`
+- Phase 1 is now active and validated at API/policy level; final module/menu restriction validation remains open.
 
 ### 2026-05-12 — Institution License Validation Plan Added
 - Added execution plan: `Docs/Institution-License-Validation-Phases.md`.

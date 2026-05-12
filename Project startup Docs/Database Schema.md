@@ -21,11 +21,13 @@
 
 - Executed baseline runtime checks for license/policy endpoints with SuperAdmin authentication.
 - Observed current state:
-	- `license_status`: `Invalid`
-	- `license_details`: `None`
+	- `license_status`: `Invalid` (pre-upload)
+	- `license_details`: `None` (pre-upload)
 	- policy flags: `includeUniversity=true`, `includeSchool=false`, `includeCollege=false`
-- Attempted license import using generated `.tablic`; validation failed (invalid/tampered response).
-- No schema change and no EF migration were required for Phase 1 execution.
+- Initial upload failure was traced to legacy `license_state` non-null columns (`InstitutionScope`, `ExpiryType`) lacking defaults in the active database schema.
+- Applied SQL defaults for those legacy columns in the validation environment.
+- Re-ran upload successfully; post-upload state is `license_status=Active`.
+- No EF migration was introduced in this phase; remediation was environment-level compatibility for legacy schema constraints.
 
 ## 2026-05-10 Update — Phase 32 Stage 32.1
 

@@ -11,7 +11,7 @@
 | `Phase Completion Template` | Standardizes per-phase evidence capture for implementation, validation, and status checks. | `Docs/Institution-License-Validation-Phases.md` |
 | `Mandatory Docs Update After Each Phase` | Enforces synchronized updates across Function-List, Functionality, PRD, Database Schema, Development Plan, and Command docs. | `Docs/Institution-License-Validation-Phases.md` |
 | `Mandatory Git Workflow After Each Phase` | Defines commit, pull (rebase), push flow after each phase completion to keep repository state updated. | `Docs/Institution-License-Validation-Phases.md` |
-| `Phase 1 Execution Snapshot` | Records actual endpoint-level validation evidence (auth success, policy snapshot, license upload failure response) and phase status. | `Docs/Institution-License-Validation-Phases.md` |
+| `Phase 1 Execution Snapshot` | Records endpoint-level evidence for auth, license activation, and institution policy binding (including legacy schema-default remediation notes). | `Docs/Institution-License-Validation-Phases.md` |
 
 ## Final-Touches Phase 34 - High-Load Optimization (2026-05-11)
 
