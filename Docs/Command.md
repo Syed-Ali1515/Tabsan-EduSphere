@@ -120,11 +120,11 @@ cmd /c git -C "<repo-root>" push origin main
 
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
-- Active Phase: **Institution License Validation — Phase 5 (Ready to Start)**
+- Active Phase: **Institution License Validation — Phase 5 (In Progress)**
 - Active Stage: **Phase 5: User Creation and CSV Import with Institution Assignment**
-- Status: **Phases 1, 2, 3, and 4 completed.**
+- Status: **Phases 1, 2, 3, and 4 completed; Phase 5 evidence capture started with API contract gap identified.**
 - Last Updated: 2026-05-12
-- Next: **Execute Phase 5 validation for manual user assignment and CSV import institution mapping.**
+- Next: **Implement explicit per-user institution assignment fields in manual create/import flows, then re-run Phase 5 completion checks.**
 - Docs Updated: ✅ Validation tracker and planning docs synchronized (2026-05-12)
 
 ### 2026-05-11 - Phase 10 Completion
