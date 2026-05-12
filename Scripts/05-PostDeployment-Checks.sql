@@ -1,5 +1,22 @@
 SET NOCOUNT ON;
 
+IF DB_ID(N'Tabsan-EduSphere') IS NULL
+BEGIN
+	RAISERROR('Database [Tabsan-EduSphere] does not exist. Run 01-Schema-Current.sql first.', 16, 1);
+	RETURN;
+END;
+GO
+
+USE [Tabsan-EduSphere];
+GO
+
+IF DB_NAME() <> N'Tabsan-EduSphere'
+BEGIN
+	RAISERROR('Failed to switch context to [Tabsan-EduSphere]. Aborting check script.', 16, 1);
+	RETURN;
+END;
+GO
+
 PRINT 'Running post-deployment checks...';
 
 SELECT 'SchemaVersionCount' AS [CheckName], COUNT(1) AS [Value]
@@ -31,6 +48,30 @@ FROM student_profiles;
 
 SELECT 'NotificationCount' AS [CheckName], COUNT(1) AS [Value]
 FROM notifications;
+
+IF OBJECT_ID(N'[Tabsan-EduSphere]') IS NOT NULL
+BEGIN
+	SELECT 'TabsanEduSphereMetaCount' AS [CheckName], COUNT(1) AS [Value]
+	FROM [Tabsan-EduSphere];
+END;
+
+SELECT 'ResultCount' AS [CheckName], COUNT(1) AS [Value]
+FROM results;
+
+SELECT 'QuizCount' AS [CheckName], COUNT(1) AS [Value]
+FROM quizzes;
+
+SELECT 'QuizQuestionCount' AS [CheckName], COUNT(1) AS [Value]
+FROM quiz_questions;
+
+SELECT 'QuizAttemptCount' AS [CheckName], COUNT(1) AS [Value]
+FROM quiz_attempts;
+
+SELECT 'SupportTicketCount' AS [CheckName], COUNT(1) AS [Value]
+FROM support_tickets;
+
+SELECT 'DiscussionThreadCount' AS [CheckName], COUNT(1) AS [Value]
+FROM discussion_threads;
 
 SELECT 'PortalSettingsCount' AS [CheckName], COUNT(1) AS [Value]
 FROM portal_settings;

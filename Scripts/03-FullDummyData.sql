@@ -4,6 +4,23 @@ GO
 SET QUOTED_IDENTIFIER ON;
 GO
 
+IF DB_ID(N'Tabsan-EduSphere') IS NULL
+BEGIN
+    RAISERROR('Database [Tabsan-EduSphere] does not exist. Run 01-Schema-Current.sql first.', 16, 1);
+    RETURN;
+END;
+GO
+
+USE [Tabsan-EduSphere];
+GO
+
+IF DB_NAME() <> N'Tabsan-EduSphere'
+BEGIN
+    RAISERROR('Failed to switch context to [Tabsan-EduSphere]. Aborting dummy data script.', 16, 1);
+    RETURN;
+END;
+GO
+
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
 
@@ -28,7 +45,21 @@ DECLARE @RoleStudent INT = (SELECT TOP 1 [Id] FROM [roles] WHERE [Name] = N'Stud
 
 IF @RoleSuperAdmin IS NULL OR @RoleAdmin IS NULL OR @RoleFaculty IS NULL OR @RoleStudent IS NULL
 BEGIN
-    THROW 51000, 'Roles not found. Run 02-Seed-Core.sql first.', 1;
+    RAISERROR('Roles not found. Run 02-Seed-Core.sql first.', 16, 1);
+    ROLLBACK TRANSACTION;
+    RETURN;
+END;
+
+/* 0) Demo metadata table (custom object requested for demos) */
+IF OBJECT_ID(N'[Tabsan-EduSphere]') IS NOT NULL
+BEGIN
+    INSERT INTO [Tabsan-EduSphere] ([Id], [DemoKey], [DemoValue], [CreatedAt], [UpdatedAt])
+    SELECT '10101010-1010-1010-1010-101010101010', N'DemoDatasetVersion', N'FullDummyData-v2', @Now, NULL
+    WHERE NOT EXISTS (SELECT 1 FROM [Tabsan-EduSphere] x WHERE x.[DemoKey] = N'DemoDatasetVersion');
+
+    INSERT INTO [Tabsan-EduSphere] ([Id], [DemoKey], [DemoValue], [CreatedAt], [UpdatedAt])
+    SELECT '10101010-1010-1010-1010-101010101011', N'DemoSeededAtUtc', CONVERT(NVARCHAR(40), @Now, 127), @Now, NULL
+    WHERE NOT EXISTS (SELECT 1 FROM [Tabsan-EduSphere] x WHERE x.[DemoKey] = N'DemoSeededAtUtc');
 END
 
 /* 1) Departments */
@@ -209,7 +240,148 @@ SELECT a.Id, a.StudentProfileId, a.CourseOfferingId, a.[Date], a.[Status], a.Mar
 FROM @Attendance a
 WHERE NOT EXISTS (SELECT 1 FROM [attendance_records] x WHERE x.[Id] = a.Id);
 
-/* 12) Notifications and recipients */
+/* 12) Results */
+IF OBJECT_ID(N'[results]') IS NOT NULL
+BEGIN
+    DECLARE @Results TABLE (
+        Id UNIQUEIDENTIFIER,
+        StudentProfileId UNIQUEIDENTIFIER,
+        CourseOfferingId UNIQUEIDENTIFIER,
+        ResultType NVARCHAR(450),
+        MarksObtained DECIMAL(8,2),
+        MaxMarks DECIMAL(8,2),
+        PublishedByUserId UNIQUEIDENTIFIER
+    );
+
+    INSERT INTO @Results VALUES
+    ('12121212-1212-1212-1212-121212121201', '77777777-7777-7777-7777-777777777731', '55555555-5555-5555-5555-555555555501', N'Final', 84.00, 100.00, '66666666-6666-6666-6666-666666666621'),
+    ('12121212-1212-1212-1212-121212121202', '77777777-7777-7777-7777-777777777732', '55555555-5555-5555-5555-555555555501', N'Final', 79.00, 100.00, '66666666-6666-6666-6666-666666666621'),
+    ('12121212-1212-1212-1212-121212121203', '77777777-7777-7777-7777-777777777733', '55555555-5555-5555-5555-555555555504', N'Final', 74.00, 100.00, '66666666-6666-6666-6666-666666666623'),
+    ('12121212-1212-1212-1212-121212121204', '77777777-7777-7777-7777-777777777734', '55555555-5555-5555-5555-555555555506', N'Final', 81.00, 100.00, '66666666-6666-6666-6666-666666666624');
+
+    INSERT INTO [results] ([Id], [StudentProfileId], [CourseOfferingId], [ResultType], [MarksObtained], [MaxMarks], [IsPublished], [PublishedAt], [PublishedByUserId], [CreatedAt], [UpdatedAt])
+    SELECT r.Id, r.StudentProfileId, r.CourseOfferingId, r.ResultType, r.MarksObtained, r.MaxMarks, 1, @Now, r.PublishedByUserId, @Now, NULL
+    FROM @Results r
+    WHERE NOT EXISTS (SELECT 1 FROM [results] x WHERE x.[Id] = r.Id);
+END
+
+/* 13) Quizzes + questions + attempts + answers */
+IF OBJECT_ID(N'[quizzes]') IS NOT NULL
+BEGIN
+    DECLARE @Quizzes TABLE (Id UNIQUEIDENTIFIER, CourseOfferingId UNIQUEIDENTIFIER, Title NVARCHAR(300), CreatedByUserId UNIQUEIDENTIFIER);
+    INSERT INTO @Quizzes VALUES
+    ('13131313-1313-1313-1313-131313131301', '55555555-5555-5555-5555-555555555501', N'PF Quiz 1', '66666666-6666-6666-6666-666666666621'),
+    ('13131313-1313-1313-1313-131313131302', '55555555-5555-5555-5555-555555555504', N'Management Quiz 1', '66666666-6666-6666-6666-666666666623');
+
+    INSERT INTO [quizzes] ([Id], [CourseOfferingId], [Title], [Instructions], [TimeLimitMinutes], [MaxAttempts], [AvailableFrom], [AvailableUntil], [IsPublished], [IsActive], [CreatedByUserId], [CreatedAt], [UpdatedAt])
+    SELECT q.Id, q.CourseOfferingId, q.Title, N'Demo quiz instructions', 20, 1, DATEADD(day, -2, @Now), DATEADD(day, 7, @Now), 1, 1, q.CreatedByUserId, @Now, NULL
+    FROM @Quizzes q
+    WHERE NOT EXISTS (SELECT 1 FROM [quizzes] x WHERE x.[Id] = q.Id);
+
+    DECLARE @QuizQuestions TABLE (Id UNIQUEIDENTIFIER, QuizId UNIQUEIDENTIFIER, [Text] NVARCHAR(2000), [Type] NVARCHAR(20), Marks DECIMAL(8,2), OrderIndex INT);
+    INSERT INTO @QuizQuestions VALUES
+    ('14141414-1414-1414-1414-141414141401', '13131313-1313-1313-1313-131313131301', N'Which keyword declares a class in C#?', N'MCQ', 5.00, 1),
+    ('14141414-1414-1414-1414-141414141402', '13131313-1313-1313-1313-131313131301', N'What is encapsulation?', N'Short', 5.00, 2),
+    ('14141414-1414-1414-1414-141414141403', '13131313-1313-1313-1313-131313131302', N'Management is both science and ____?', N'MCQ', 5.00, 1);
+
+    INSERT INTO [quiz_questions] ([Id], [QuizId], [Text], [Type], [Marks], [OrderIndex], [CreatedAt], [UpdatedAt])
+    SELECT qq.Id, qq.QuizId, qq.[Text], qq.[Type], qq.Marks, qq.OrderIndex, @Now, NULL
+    FROM @QuizQuestions qq
+    WHERE NOT EXISTS (SELECT 1 FROM [quiz_questions] x WHERE x.[Id] = qq.Id);
+
+    DECLARE @QuizOptions TABLE (Id UNIQUEIDENTIFIER, QuizQuestionId UNIQUEIDENTIFIER, [Text] NVARCHAR(1000), IsCorrect BIT, OrderIndex INT);
+    INSERT INTO @QuizOptions VALUES
+    ('15151515-1515-1515-1515-151515151501', '14141414-1414-1414-1414-141414141401', N'class', 1, 1),
+    ('15151515-1515-1515-1515-151515151502', '14141414-1414-1414-1414-141414141401', N'struct', 0, 2),
+    ('15151515-1515-1515-1515-151515151503', '14141414-1414-1414-1414-141414141403', N'Art', 1, 1),
+    ('15151515-1515-1515-1515-151515151504', '14141414-1414-1414-1414-141414141403', N'Luck', 0, 2);
+
+    INSERT INTO [quiz_options] ([Id], [QuizQuestionId], [Text], [IsCorrect], [OrderIndex], [CreatedAt], [UpdatedAt])
+    SELECT qo.Id, qo.QuizQuestionId, qo.[Text], qo.IsCorrect, qo.OrderIndex, @Now, NULL
+    FROM @QuizOptions qo
+    WHERE NOT EXISTS (SELECT 1 FROM [quiz_options] x WHERE x.[Id] = qo.Id);
+
+    DECLARE @QuizAttempts TABLE (Id UNIQUEIDENTIFIER, QuizId UNIQUEIDENTIFIER, StudentProfileId UNIQUEIDENTIFIER, TotalScore DECIMAL(10,2));
+    INSERT INTO @QuizAttempts VALUES
+    ('16161616-1616-1616-1616-161616161601', '13131313-1313-1313-1313-131313131301', '77777777-7777-7777-7777-777777777731', 8.00),
+    ('16161616-1616-1616-1616-161616161602', '13131313-1313-1313-1313-131313131302', '77777777-7777-7777-7777-777777777733', 4.00);
+
+    INSERT INTO [quiz_attempts] ([Id], [QuizId], [StudentProfileId], [StartedAt], [FinishedAt], [Status], [TotalScore], [CreatedAt], [UpdatedAt])
+    SELECT qa.Id, qa.QuizId, qa.StudentProfileId, DATEADD(minute, -20, @Now), @Now, N'Completed', qa.TotalScore, @Now, NULL
+    FROM @QuizAttempts qa
+    WHERE NOT EXISTS (SELECT 1 FROM [quiz_attempts] x WHERE x.[Id] = qa.Id);
+
+    DECLARE @QuizAnswers TABLE (Id UNIQUEIDENTIFIER, QuizAttemptId UNIQUEIDENTIFIER, QuizQuestionId UNIQUEIDENTIFIER, SelectedOptionId UNIQUEIDENTIFIER NULL, TextResponse NVARCHAR(4000) NULL, MarksAwarded DECIMAL(8,2));
+    INSERT INTO @QuizAnswers VALUES
+    ('17171717-1717-1717-1717-171717171701', '16161616-1616-1616-1616-161616161601', '14141414-1414-1414-1414-141414141401', '15151515-1515-1515-1515-151515151501', NULL, 5.00),
+    ('17171717-1717-1717-1717-171717171702', '16161616-1616-1616-1616-161616161601', '14141414-1414-1414-1414-141414141402', NULL, N'Encapsulation means wrapping data and behavior in one unit.', 3.00),
+    ('17171717-1717-1717-1717-171717171703', '16161616-1616-1616-1616-161616161602', '14141414-1414-1414-1414-141414141403', '15151515-1515-1515-1515-151515151504', NULL, 0.00);
+
+    INSERT INTO [quiz_answers] ([Id], [QuizAttemptId], [QuizQuestionId], [SelectedOptionId], [TextResponse], [MarksAwarded], [CreatedAt], [UpdatedAt])
+    SELECT qa.Id, qa.QuizAttemptId, qa.QuizQuestionId, qa.SelectedOptionId, qa.TextResponse, qa.MarksAwarded, @Now, NULL
+    FROM @QuizAnswers qa
+    WHERE NOT EXISTS (SELECT 1 FROM [quiz_answers] x WHERE x.[Id] = qa.Id);
+END
+
+/* 14) Helpdesk demo tickets */
+IF OBJECT_ID(N'[support_tickets]') IS NOT NULL
+BEGIN
+    DECLARE @SupportTickets TABLE (Id UNIQUEIDENTIFIER, SubmitterId UNIQUEIDENTIFIER, DepartmentId UNIQUEIDENTIFIER, Category INT, Subject NVARCHAR(300), Body NVARCHAR(4000), Status INT, AssignedToId UNIQUEIDENTIFIER NULL);
+    INSERT INTO @SupportTickets VALUES
+    ('18181818-1818-1818-1818-181818181801', '66666666-6666-6666-6666-666666666631', '11111111-1111-1111-1111-111111111111', 0, N'Cannot open assignment portal', N'Assignment page is not loading from student dashboard.', 0, '66666666-6666-6666-6666-666666666611'),
+    ('18181818-1818-1818-1818-181818181802', '66666666-6666-6666-6666-666666666633', '11111111-1111-1111-1111-111111111112', 1, N'Result discrepancy query', N'Requesting review of posted marks.', 1, '66666666-6666-6666-6666-666666666612');
+
+    INSERT INTO [support_tickets] ([Id], [SubmitterId], [DepartmentId], [Category], [Subject], [Body], [Status], [AssignedToId], [ResolvedAt], [ReopenWindowDays], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt])
+    SELECT t.Id, t.SubmitterId, t.DepartmentId, t.Category, t.Subject, t.Body, t.Status, t.AssignedToId,
+           CASE WHEN t.Status = 1 THEN @Now ELSE NULL END,
+           7, @Now, NULL, 0, NULL
+    FROM @SupportTickets t
+    WHERE NOT EXISTS (SELECT 1 FROM [support_tickets] x WHERE x.[Id] = t.Id);
+
+    IF OBJECT_ID(N'[support_ticket_messages]') IS NOT NULL
+    BEGIN
+        DECLARE @SupportMessages TABLE (Id UNIQUEIDENTIFIER, TicketId UNIQUEIDENTIFIER, AuthorId UNIQUEIDENTIFIER, Body NVARCHAR(4000), IsInternalNote BIT);
+        INSERT INTO @SupportMessages VALUES
+        ('19191919-1919-1919-1919-191919191901', '18181818-1818-1818-1818-181818181801', '66666666-6666-6666-6666-666666666631', N'Issue started after latest portal login.', 0),
+        ('19191919-1919-1919-1919-191919191902', '18181818-1818-1818-1818-181818181801', '66666666-6666-6666-6666-666666666611', N'Investigating logs and routing.', 1),
+        ('19191919-1919-1919-1919-191919191903', '18181818-1818-1818-1818-181818181802', '66666666-6666-6666-6666-666666666612', N'Please share screenshot for result discrepancy.', 0);
+
+        INSERT INTO [support_ticket_messages] ([Id], [TicketId], [AuthorId], [Body], [IsInternalNote], [CreatedAt], [UpdatedAt])
+        SELECT m.Id, m.TicketId, m.AuthorId, m.Body, m.IsInternalNote, @Now, NULL
+        FROM @SupportMessages m
+        WHERE NOT EXISTS (SELECT 1 FROM [support_ticket_messages] x WHERE x.[Id] = m.Id);
+    END
+END
+
+/* 15) LMS discussions */
+IF OBJECT_ID(N'[discussion_threads]') IS NOT NULL
+BEGIN
+    DECLARE @DiscussionThreads TABLE (Id UNIQUEIDENTIFIER, OfferingId UNIQUEIDENTIFIER, Title NVARCHAR(500), AuthorId UNIQUEIDENTIFIER, IsPinned BIT, IsClosed BIT);
+    INSERT INTO @DiscussionThreads VALUES
+    ('20202020-2020-2020-2020-202020202001', '55555555-5555-5555-5555-555555555501', N'Week 2 Lab Preparation', '66666666-6666-6666-6666-666666666621', 1, 0),
+    ('20202020-2020-2020-2020-202020202002', '55555555-5555-5555-5555-555555555504', N'Case Study References', '66666666-6666-6666-6666-666666666623', 0, 0);
+
+    INSERT INTO [discussion_threads] ([Id], [OfferingId], [Title], [AuthorId], [IsPinned], [IsClosed], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt])
+    SELECT t.Id, t.OfferingId, t.Title, t.AuthorId, t.IsPinned, t.IsClosed, @Now, NULL, 0, NULL
+    FROM @DiscussionThreads t
+    WHERE NOT EXISTS (SELECT 1 FROM [discussion_threads] x WHERE x.[Id] = t.Id);
+
+    IF OBJECT_ID(N'[discussion_replies]') IS NOT NULL
+    BEGIN
+        DECLARE @DiscussionReplies TABLE (Id UNIQUEIDENTIFIER, ThreadId UNIQUEIDENTIFIER, AuthorId UNIQUEIDENTIFIER, Body NVARCHAR(MAX));
+        INSERT INTO @DiscussionReplies VALUES
+        ('21212121-2121-2121-2121-212121212101', '20202020-2020-2020-2020-202020202001', '66666666-6666-6666-6666-666666666631', N'Should we revise loops before the lab?'),
+        ('21212121-2121-2121-2121-212121212102', '20202020-2020-2020-2020-202020202001', '66666666-6666-6666-6666-666666666621', N'Yes, focus on arrays and loops.'),
+        ('21212121-2121-2121-2121-212121212103', '20202020-2020-2020-2020-202020202002', '66666666-6666-6666-6666-666666666633', N'I found a useful Harvard case study on strategy.');
+
+        INSERT INTO [discussion_replies] ([Id], [ThreadId], [AuthorId], [Body], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt])
+        SELECT r.Id, r.ThreadId, r.AuthorId, r.Body, @Now, NULL, 0, NULL
+        FROM @DiscussionReplies r
+        WHERE NOT EXISTS (SELECT 1 FROM [discussion_replies] x WHERE x.[Id] = r.Id);
+    END
+END
+
+/* 16) Notifications and recipients */
 DECLARE @Notifications TABLE (Id UNIQUEIDENTIFIER, Title NVARCHAR(300), Body NVARCHAR(4000), [Type] NVARCHAR(50), SenderUserId UNIQUEIDENTIFIER);
 INSERT INTO @Notifications VALUES
 ('cccccccc-cccc-cccc-cccc-cccccccccc01', N'Welcome to Spring 2026', N'Classes are now active in the portal.', N'Academic', '66666666-6666-6666-6666-666666666611'),

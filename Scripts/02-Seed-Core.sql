@@ -1,6 +1,23 @@
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
 
+IF DB_ID(N'Tabsan-EduSphere') IS NULL
+BEGIN
+    RAISERROR('Database [Tabsan-EduSphere] does not exist. Run 01-Schema-Current.sql first.', 16, 1);
+    RETURN;
+END;
+GO
+
+USE [Tabsan-EduSphere];
+GO
+
+IF DB_NAME() <> N'Tabsan-EduSphere'
+BEGIN
+    RAISERROR('Failed to switch context to [Tabsan-EduSphere]. Aborting seed script.', 16, 1);
+    RETURN;
+END;
+GO
+
 BEGIN TRANSACTION;
 
 DECLARE @Now DATETIME2 = SYSUTCDATETIME();

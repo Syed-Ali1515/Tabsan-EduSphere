@@ -2,7 +2,7 @@
 -- CLEANUP: Remove EduSphere objects accidentally created in master
 -- Run this against the MASTER database ONLY.
 -- After running, execute 01-Schema-Current.sql from master to
--- create TabsanEduSphere properly.
+-- create [Tabsan-EduSphere] properly.
 -- ============================================================
 
 USE master;
@@ -112,6 +112,7 @@ VALUES
 	(N'timetable_entries'),
 	(N'timetables'),
 	(N'transcript_export_logs'),
+	(N'Tabsan-EduSphere'),
 	(N'user_sessions'),
 	(N'users');
 
@@ -188,6 +189,7 @@ DROP TABLE IF EXISTS [sidebar_menu_items];
 DROP TABLE IF EXISTS [module_status];
 DROP TABLE IF EXISTS [student_report_cards];
 DROP TABLE IF EXISTS [transcript_export_logs];
+DROP TABLE IF EXISTS [Tabsan-EduSphere];
 DROP TABLE IF EXISTS [graduation_application_approvals];
 DROP TABLE IF EXISTS [graduation_applications];
 DROP TABLE IF EXISTS [bulk_promotion_entries];
@@ -242,7 +244,7 @@ WHERE t.name IN (
 	N'report_role_assignments', N'result_component_rules', N'results', N'roles', N'rooms', N'rubric_criteria', N'rubric_levels', N'rubric_student_grades', N'rubrics',
 	N'school_streams', N'semesters', N'sidebar_menu_items', N'sidebar_menu_role_accesses', N'student_profiles', N'student_report_cards', N'student_stream_assignments',
 	N'study_plan_courses', N'study_plans', N'support_ticket_messages', N'support_tickets', N'teacher_modification_requests', N'timetable_entries', N'timetables',
-	N'transcript_export_logs', N'user_sessions', N'users'
+	N'transcript_export_logs', N'Tabsan-EduSphere', N'user_sessions', N'users'
 );
 
 IF @RemainingCount = 0
@@ -264,9 +266,9 @@ BEGIN
 		N'report_role_assignments', N'result_component_rules', N'results', N'roles', N'rooms', N'rubric_criteria', N'rubric_levels', N'rubric_student_grades', N'rubrics',
 		N'school_streams', N'semesters', N'sidebar_menu_items', N'sidebar_menu_role_accesses', N'student_profiles', N'student_report_cards', N'student_stream_assignments',
 		N'study_plan_courses', N'study_plans', N'support_ticket_messages', N'support_tickets', N'teacher_modification_requests', N'timetable_entries', N'timetables',
-		N'transcript_export_logs', N'user_sessions', N'users'
+		N'transcript_export_logs', N'Tabsan-EduSphere', N'user_sessions', N'users'
 	)
 	ORDER BY t.name;
 END
-PRINT 'Now run 01-Schema-Current.sql (connected to master) to create TabsanEduSphere properly.';
+PRINT 'Now run 01-Schema-Current.sql (connected to master) to create [Tabsan-EduSphere] properly.';
 GO

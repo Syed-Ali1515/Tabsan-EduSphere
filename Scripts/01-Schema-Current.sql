@@ -4,6 +4,22 @@ GO
 SET QUOTED_IDENTIFIER ON;
 GO
 
+IF DB_ID(N'Tabsan-EduSphere') IS NULL
+BEGIN
+    CREATE DATABASE [Tabsan-EduSphere];
+END;
+GO
+
+USE [Tabsan-EduSphere];
+GO
+
+IF DB_NAME() <> N'Tabsan-EduSphere'
+BEGIN
+    RAISERROR('Failed to switch context to [Tabsan-EduSphere]. Aborting schema script.', 16, 1);
+    RETURN;
+END;
+GO
+
 IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
 BEGIN
     CREATE TABLE [__EFMigrationsHistory] (
@@ -11,6 +27,21 @@ BEGIN
         [ProductVersion] nvarchar(32) NOT NULL,
         CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY ([MigrationId])
     );
+END;
+GO
+
+IF OBJECT_ID(N'[Tabsan-EduSphere]') IS NULL
+BEGIN
+    CREATE TABLE [Tabsan-EduSphere] (
+        [Id] uniqueidentifier NOT NULL,
+        [DemoKey] nvarchar(100) NOT NULL,
+        [DemoValue] nvarchar(4000) NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NULL,
+        CONSTRAINT [PK_Tabsan-EduSphere] PRIMARY KEY ([Id])
+    );
+
+    CREATE UNIQUE INDEX [IX_Tabsan-EduSphere_DemoKey] ON [Tabsan-EduSphere] ([DemoKey]);
 END;
 GO
 
