@@ -250,6 +250,35 @@ Blocked/Pending: 0
 - Record per-role screenshots and report exports.
 - Record negative checks for out-of-scope institution data.
 
+### Phase 4 Execution Matrix (2026-05-12)
+
+Use this matrix to run and record evidence consistently before marking checks complete.
+
+| Mode | Role | Area | Expected | Evidence to Capture |
+|---|---|---|---|---|
+| School | SuperAdmin | Menus/Reports | Full School menus + school report visibility | Screenshot + export file |
+| School | Admin | Menus/Tables | School-only admin operations in assigned scope | Screenshot + API sample |
+| School | Faculty | Charts/Tables | School class/subject tables only, no college/university items | Screenshot |
+| School | Student | Dashboard/Reports | School labels (Grade/Percentage), own data only | Screenshot |
+| College | SuperAdmin | Menus/Reports | Full College menus + college report visibility | Screenshot + export file |
+| College | Admin | Menus/Tables | College-only admin operations in assigned scope | Screenshot + API sample |
+| College | Faculty | Charts/Tables | Year/Percentage context, no school/university-only items | Screenshot |
+| College | Student | Dashboard/Reports | Year/Percentage labels, own data only | Screenshot |
+| University | SuperAdmin | Menus/Reports | Full University menus + university report visibility | Screenshot + export file |
+| University | Admin | Menus/Tables | University admin operations in assigned scope | Screenshot + API sample |
+| University | Faculty | Charts/Tables | Semester/GPA context, no school-only items | Screenshot |
+| University | Student | Dashboard/Reports | Semester/GPA labels, own data only | Screenshot |
+
+Negative checks required for every mode:
+- Attempt access to out-of-scope report/menu route and confirm denial or filtered output.
+- Capture at least one API response sample proving institution/role scoping.
+
+Suggested endpoint set for evidence:
+- `GET /api/v1/institution-policy`
+- `GET /api/v1/labels`
+- `GET /api/v1/portal-capabilities/matrix`
+- Relevant report endpoints used by each role
+
 ### Status of Checks Done
 - [ ] Charts validated by mode and role
 - [ ] Tables validated by mode and role
