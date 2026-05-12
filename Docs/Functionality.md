@@ -86,6 +86,8 @@
 - **Phase 5 Evidence Highlights**: Disabled institution assignment is rejected during CSV import; enabled assignment is accepted; admin list/create responses now include institution assignment where present.
 - **Current Execution Snapshot (Phase 6)**: Institution data-access boundaries are validated for Admin, Faculty, and Student using scoped report export checks and role-allowed read surfaces (`Artifacts/Phase6/Access/20260512-150824/RunSummary.json`).
 - **Phase 6 Evidence Highlights**: Admin and Faculty get `200` only for assigned department/offering scope, non-assigned scope is denied (`403`), missing scope is rejected (`400`), and Student remains blocked from operational report exports while catalog/dashboard context remain accessible (`200`).
+- **Current Execution Snapshot (Phase 7)**: SuperAdmin full-access matrix is validated for CRUD, activation/deactivation, and cross-institution privileged visibility across School/College/University mode switches (`Artifacts/Phase7/SuperAdmin/20260512-151302/RunSummary.json`).
+- **Phase 7 Evidence Highlights**: All SuperAdmin matrix checks succeeded (`35/35`), including department lifecycle actions, admin-user lifecycle actions, policy mode switching, and privileged dashboard/report/license access in every institution mode.
 
 ---
 
