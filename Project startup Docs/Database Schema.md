@@ -5,6 +5,28 @@
 **Aligned With PRD:** v1.33  
 **Purpose:** Define database schemas for the University Portal Application and the License Creation Tool  
 
+## 2026-05-12 Update — Institution License Validation Plan
+
+- Added execution reference: `Docs/Institution-License-Validation-Phases.md`.
+- This validation plan confirms schema-backed behavior for:
+	- license state and institution mode enforcement,
+	- institution-aware user assignment and CSV import mapping,
+	- institution-scoped access for Student/Faculty/Admin,
+	- mixed-scope (School/College/University) runtime behavior.
+- Expected schema touchpoints for validation evidence include: `license_state`, `users`, role mapping tables, institutional policy/configuration settings, and enrollment/academic progression tables.
+- Current update is documentation-only.
+- No database schema change and no EF migration were required for this update.
+
+## 2026-05-12 Update — Institution License Validation Phase 1 (Execution Snapshot)
+
+- Executed baseline runtime checks for license/policy endpoints with SuperAdmin authentication.
+- Observed current state:
+	- `license_status`: `Invalid`
+	- `license_details`: `None`
+	- policy flags: `includeUniversity=true`, `includeSchool=false`, `includeCollege=false`
+- Attempted license import using generated `.tablic`; validation failed (invalid/tampered response).
+- No schema change and no EF migration were required for Phase 1 execution.
+
 ## 2026-05-10 Update — Phase 32 Stage 32.1
 
 - Stage 32.1 delivered report-catalog and report-route regression guardrail integration tests only.

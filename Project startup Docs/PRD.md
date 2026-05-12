@@ -10,6 +10,30 @@
 
 ## 0. Implementation Update Log
 
+### 2026-05-12 — Institution License Validation Phase 1 (Execution Snapshot)
+- Executed Phase 1 checks against running API/Web environments.
+- Verified SuperAdmin authentication and protected endpoint access.
+- Captured baseline license/policy state:
+  - `GET /api/v1/license/status` -> `Invalid`
+  - `GET /api/v1/license/details` -> `None`
+  - `GET /api/v1/institution-policy` -> `includeUniversity=true`, `includeSchool=false`, `includeCollege=false`
+- Attempted license import using generated `.tablic` file from `tools/Tabsan.Lic/License`.
+- Result: upload rejected with `License validation failed. The file may be invalid or tampered.`
+- Phase 1 is not yet complete; blocked on successful license activation for scope-binding confirmation.
+
+### 2026-05-12 — Institution License Validation Plan Added
+- Added execution plan: `Docs/Institution-License-Validation-Phases.md`.
+- Plan includes 7 phases to validate:
+  - license-to-institution binding,
+  - student lifecycle for School/College/University,
+  - mixed-scope license behavior,
+  - charts/tables/menus/reports scoping,
+  - institution assignment in manual user creation and CSV import,
+  - institution-based access boundaries for Student/Faculty/Admin,
+  - full SuperAdmin permission and cross-institution visibility.
+- Each phase requires `Implementation Summary`, `Validation Summary`, and `Status of Checks Done`.
+- Phase completion requires docs sync plus repository sync (commit, pull, push).
+
 ### 2026-05-11 — Phase 10 Complete
 - **Stage 10.1 incremental scale gates:** added a parameterized progressive gate runner that can execute the 10k -> 20k -> 50k -> 80k -> 100k sequence and an extended higher-tier plan.
 - **Stage 10.2 bottleneck isolation:** added bottleneck classification heuristics so each gate run reports the first likely limiting class from the summary metrics.

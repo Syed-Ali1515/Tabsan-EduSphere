@@ -65,6 +65,17 @@
 - **Feature Flags**: Enable/disable features with emergency rollback
 - **Usage Tracking**: Monitor feature and module usage
 - **License Renewal**: Manage license expiration and renewal
+- **Institution Scope License Binding**: Enforce School, College, University, or mixed institution modes from imported license.
+- **Mixed-Mode Function Union**: When two or three institution scopes are licensed, expose full combined modules, configuration, and workflows.
+- **Institution-Aware Data Visibility**: Restrict charts, tables, menus, and reports by licensed institution scope plus user assignment.
+- **Institution-Aware User Provisioning**: SuperAdmin can assign institution scope on manual user creation and CSV import.
+- **Institution-Specific Lifecycle Routing**: Student lifecycle and grading paths resolve by assigned institution mode.
+
+### Institution Validation Phases
+- **Execution Plan**: `Docs/Institution-License-Validation-Phases.md` defines 7 phases covering license binding, lifecycle, mixed-mode behavior, UI/report correctness, user import assignment, access boundaries, and SuperAdmin permission coverage.
+- **Per-Phase Evidence**: Each phase must include `Implementation Summary`, `Validation Summary`, and `Status of Checks Done`.
+- **Phase-End Sync**: After each phase, update required documentation and run commit/pull/push workflow.
+- **Current Execution Snapshot (Phase 1)**: Authentication and policy-read checks succeeded; license upload remains blocked by file validation failure and requires remediation before completing Phase 1.
 
 ---
 

@@ -132,6 +132,14 @@ builder.Services.AddControllersWithViews()
     {
         options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
     });
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.Cookie.Name = ".Tabsan.EduSphere.Web.Session";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+});
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient("EduApi");
 builder.Services.AddScoped<IEduApiClient, EduApiClient>();
@@ -188,6 +196,7 @@ app.UseStaticFiles(new StaticFileOptions
 });
 
 app.UseRouting();
+app.UseSession();
 
 // Build a request principal from protected cookie identity so User.IsInRole works across stateless web nodes.
 app.Use(async (context, next) =>

@@ -8,6 +8,29 @@
 
 ## Execution Updates
 
+### 2026-05-12 - Institution License Validation Phase 1 (Execution Snapshot)
+- Ran Phase 1 endpoint validation using SuperAdmin credentials and HTTPS API host.
+- Baseline observed:
+  - license status: `Invalid`
+  - license details: `None`
+  - institution policy: `University=true`, `School=false`, `College=false`
+- Attempted `.tablic` upload from `tools/Tabsan.Lic/License`.
+- Upload failed validation with `invalid or tampered` response; license remained inactive.
+- Phase 1 remains in progress pending successful license activation and post-activation scope checks.
+
+### 2026-05-12 - Institution License Validation Plan Added
+- Added phased validation baseline in `Docs/Institution-License-Validation-Phases.md`.
+- Defined 7 validation phases covering:
+  - license-to-institution binding,
+  - student lifecycle routing by School/College/University,
+  - mixed-mode feature/configuration union,
+  - institution-scoped charts/tables/menus/reports,
+  - institution assignment in create/import user flows,
+  - role-based institution access boundaries,
+  - SuperAdmin full-permission verification.
+- Each phase now has mandatory deliverables: `Implementation Summary`, `Validation Summary`, and `Status of Checks Done`.
+- Each phase completion requires docs synchronization and git synchronization (commit, pull, push).
+
 ### 2026-05-11 — Phase 10 Complete
 - Stage 10.1: Added a parameterized progressive gate runner for 10k -> 20k -> 50k -> 80k -> 100k progression plus an extended high-tier plan.
 - Stage 10.2: Added bottleneck classification heuristics that report the first likely limiter from each gate summary.

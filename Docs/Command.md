@@ -7,6 +7,30 @@ Before starting any work, the assistant must:
 2. Read Project startup Docs/Final-Touches.md.
 3. Continue from the exact Current Execution Pointer below.
 
+## Institution License Validation Workflow (2026-05-12)
+- Plan file: `Docs/Institution-License-Validation-Phases.md`
+- For each completed validation phase, mandatory outputs are:
+  1. `Implementation Summary`
+  2. `Validation Summary`
+  3. `Status of Checks Done`
+- After every completed validation phase, update all required docs:
+  1. Docs/Function-List.md
+  2. Docs/Functionality.md
+  3. Project startup Docs/PRD.md
+  4. Project startup Docs/Database Schema.md
+  5. Project startup Docs/Development Plan - ASP.NET.md
+  6. Docs/Command.md
+- After every phase completion, run repository sync in order:
+  1. Commit
+  2. Pull (rebase)
+  3. Push
+
+### Institution Validation Checkpoint (2026-05-12 - Phase 1)
+- Execution evidence captured in `Docs/Institution-License-Validation-Phases.md`.
+- Authentication and policy-read checks passed.
+- License upload result returned: `License validation failed. The file may be invalid or tampered.`
+- Phase 1 remains in progress and blocked until a valid license file is accepted and post-activation scope checks pass.
+
 ## Non-Negotiable Rule Per Completed Stage / Phase
 After **every completed stage** (not just at phase-end), update **all** required tracking files:
 1. Docs/Function-List.md

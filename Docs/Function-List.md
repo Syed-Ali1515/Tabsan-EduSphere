@@ -3,6 +3,16 @@
 > **Maintenance rule**: Every function added to the codebase must be registered here with Name, Purpose, and Location.
 > Format: `Name | Purpose | Location`
 
+## Institution License Validation Plan (2026-05-12)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `Institution-License-Validation-Phases.md` | Defines 7 execution phases to validate license-driven institution behavior for School, College, University, and mixed-mode licenses, including required implementation summary, validation summary, and status per phase. | `Docs/Institution-License-Validation-Phases.md` |
+| `Phase Completion Template` | Standardizes per-phase evidence capture for implementation, validation, and status checks. | `Docs/Institution-License-Validation-Phases.md` |
+| `Mandatory Docs Update After Each Phase` | Enforces synchronized updates across Function-List, Functionality, PRD, Database Schema, Development Plan, and Command docs. | `Docs/Institution-License-Validation-Phases.md` |
+| `Mandatory Git Workflow After Each Phase` | Defines commit, pull (rebase), push flow after each phase completion to keep repository state updated. | `Docs/Institution-License-Validation-Phases.md` |
+| `Phase 1 Execution Snapshot` | Records actual endpoint-level validation evidence (auth success, policy snapshot, license upload failure response) and phase status. | `Docs/Institution-License-Validation-Phases.md` |
+
 ## Final-Touches Phase 34 - High-Load Optimization (2026-05-11)
 
 ### Stage 10 - Progressive Load Test Strategy

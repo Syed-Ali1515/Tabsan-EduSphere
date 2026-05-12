@@ -29,7 +29,7 @@ public class LicenseDomainMiddleware
 
     public LicenseDomainMiddleware(RequestDelegate next) => _next = next;
 
-    public async Task InvokeAsync(HttpContext context, ILicenseRepository licenseRepo)
+    public async Task InvokeAsync(HttpContext context, ILicenseRepository licenseRepo, IWebHostEnvironment env)
     {
         var path = context.Request.Path.Value ?? string.Empty;
 
@@ -40,12 +40,18 @@ public class LicenseDomainMiddleware
             return;
         }
 
+        // Allow localhost in Development mode for testing
+        var requestHost = context.Request.Host.Host;
+        if (env.IsDevelopment() && (requestHost == "localhost" || requestHost == "127.0.0.1"))
+        {
+            await _next(context);
+            return;
+        }
+
         var state = await licenseRepo.GetCurrentAsync(context.RequestAborted);
 
         if (state?.ActivatedDomain is { Length: > 0 } activatedDomain)
         {
-            var requestHost = context.Request.Host.Host;
-
             if (!string.Equals(activatedDomain, requestHost, StringComparison.OrdinalIgnoreCase))
             {
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
