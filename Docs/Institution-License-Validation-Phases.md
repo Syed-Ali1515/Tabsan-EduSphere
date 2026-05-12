@@ -259,6 +259,11 @@ Blocked/Pending: 0
 	- `phase4.student.20260512134426`
 - Import result: `totalRows=3`, `imported=3`, `duplicates=0`, `errors=0`.
 - Captured authenticated role evidence for Admin / Faculty / Student under `Artifacts/Phase4/Api` with timestamp set `20260512-134447` / `20260512-134448`.
+- Captured report export endpoint evidence for SuperAdmin / Admin / Faculty / Student under `Artifacts/Phase4/Api`:
+	- `SuperAdmin_ExportChecks_20260512-140651.json`
+	- `Admin_ExportChecks_20260512-140653.json`
+	- `Faculty_ExportChecks_20260512-140653.json`
+	- `Student_ExportChecks_20260512-140653.json`
 
 ### Validation Summary
 - Record per-role screenshots and report exports.
@@ -284,9 +289,18 @@ Blocked/Pending: 0
 	- Student denied on `GET /api/v1/admin-user` with `403 Forbidden`.
 	- Student denied on `GET /api/v1/reports/attendance-summary` with `403 Forbidden`.
 	- Admin call to `GET /api/v1/reports/attendance-summary` without scoped filters returned an error response in current dataset and should be re-run with valid report filters during report/export evidence capture.
+- Report export endpoint evidence captured:
+	- SuperAdmin export endpoints succeeded (`200`) with expected content types:
+		- `GET /api/v1/reports/result-summary/export/csv` -> `text/csv`
+		- `GET /api/v1/reports/result-summary/export/pdf` -> `application/pdf`
+		- `GET /api/v1/reports/attendance-summary/export/csv` -> `text/csv`
+		- `GET /api/v1/reports/attendance-summary/export/pdf` -> `application/pdf`
+	- Admin export endpoints returned `403 Forbidden` in current dataset (admin user has no effective department assignment in report scope).
+	- Faculty export endpoints returned `400 Bad Request` without `courseOfferingId` (expected by controller scope guard for faculty report generation).
+	- Student export endpoints returned `403 Forbidden` (role not authorized for operational report exports).
 - Remaining evidence pending:
 	- Role-wise UI screenshots (SuperAdmin/Admin/Faculty/Student) by mode.
-	- Report export artifacts by mode.
+	- Mode-specific report export artifacts (with explicit scoped filters for Admin/Faculty where required).
 	- Final negative authorization checks by mode-specific UI route.
 
 ### Execution Assets
