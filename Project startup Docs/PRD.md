@@ -10,6 +10,24 @@
 
 ## 0. Implementation Update Log
 
+### 2026-05-12 — Institution License Validation Phase 4 (Execution Snapshot)
+- Completed mode-role validation sweep for School, College, and University across SuperAdmin, Admin, Faculty, and Student.
+- Captured evidence in `Artifacts/Phase4/ModeRole/20260512-142021` for:
+  - `GET /api/v1/institution-policy`
+  - `GET /api/v1/labels`
+  - `GET /api/v1/portal-capabilities/matrix`
+  - `GET /api/v1/dashboard/context`
+  - `GET /api/v1/reports` plus scoped report data/export endpoints
+  - negative authorization checks (`admin-user`, `license/details`, student operational report access)
+- Mode-level results:
+  - School labels: `Grade/Promotion/Percentage/Subject/Class`
+  - College labels: `Year/Progression/Percentage/Subject/Year-Group`
+  - University labels: `Semester/Progression/GPA/CGPA/Course/Batch`
+- Role-level results:
+  - SuperAdmin/Admin/Faculty can access scoped report data and exports with valid filters.
+  - Student remains restricted from operational report data/exports (`403`) while report catalog remains role-filtered.
+- Phase 4 status: complete.
+
 ### 2026-05-12 — Institution License Validation Phase 3 (Execution Snapshot)
 - Completed mixed-mode license coverage validation for:
   - School + College

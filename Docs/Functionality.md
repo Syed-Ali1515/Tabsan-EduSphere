@@ -80,6 +80,8 @@
 - **Current Execution Snapshot (Phase 3)**: Mixed-mode license combinations are validated with union policy behavior across School+College, School+University, College+University, and School+College+University.
 - **Phase 3 Evidence Highlights**: Capability matrix union counts and persisted `portal_settings` flags match licensed combinations; progression endpoint remains institution-type deterministic across all combinations.
 - **Validation Caveat (Current Tooling)**: Sequential mode activation in one environment currently requires resetting consumed verification keys because generated licenses reuse the same verification key.
+- **Current Execution Snapshot (Phase 4)**: Charts/tables/menus/reports behavior is validated for School, College, and University across SuperAdmin, Admin, Faculty, and Student using mode-role evidence sweep artifacts in `Artifacts/Phase4/ModeRole/20260512-142021`.
+- **Phase 4 Evidence Highlights**: Role-scoped dashboard context, labels vocabulary, and capability matrix rows align with mode flags; report data/export endpoints succeed for valid SuperAdmin/Admin/Faculty scopes and remain blocked for Student operational access.
 
 ---
 

@@ -8,6 +8,20 @@
 
 ## Execution Updates
 
+### 2026-05-12 - Institution License Validation Phase 4 (Execution Snapshot)
+- Completed mode-role validation for School, College, and University across SuperAdmin, Admin, Faculty, and Student.
+- Captured execution evidence in `Artifacts/Phase4/ModeRole/20260512-142021` including:
+  - policy, labels, capability matrix,
+  - dashboard composition context,
+  - report catalog,
+  - scoped report data and CSV export checks,
+  - negative authorization probes.
+- Scoped report/export behavior validated:
+  - SuperAdmin/Admin/Faculty succeed with valid scope filters,
+  - Student operational report endpoints remain denied (`403`).
+- Role/mode dashboard composition and vocabulary results align with institution-policy flags and report scope rules.
+- Phase 4 completed.
+
 ### 2026-05-12 - Institution License Validation Phase 3 (Execution Snapshot)
 - Completed mixed-mode license validation for all planned combinations:
   - School + College

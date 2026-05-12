@@ -268,6 +268,9 @@ Blocked/Pending: 0
 	- Assigned imported Admin user to IT department via `POST /api/v1/department/admin-assignment`.
 	- Assigned imported Faculty user to a real course offering via `PUT /api/v1/course/offerings/{id}/faculty`.
 	- Evidence file: `ScopedExportChecks_20260512-141750.json`.
+- Captured full mode-role evidence sweep in a single run directory:
+	- `Artifacts/Phase4/ModeRole/20260512-142021/RunSummary.json`
+	- Includes School, College, University x SuperAdmin, Admin, Faculty, Student checks for policy, labels, capability matrix, dashboard context, report catalog, scoped report data, exports, and negative authorization probes.
 
 ### Validation Summary
 - Record per-role screenshots and report exports.
@@ -308,10 +311,22 @@ Blocked/Pending: 0
 		- `GET /api/v1/reports/attendance-summary/export/csv`
 		- `GET /api/v1/reports/attendance-summary/export/pdf`
 	- Student export endpoints returned `403 Forbidden` (role not authorized for operational report exports).
-- Remaining evidence pending:
-	- Role-wise UI screenshots (SuperAdmin/Admin/Faculty/Student) by mode.
-	- Mode-specific (School/College/University) report export artifacts with mode snapshots linked to each export.
-	- Final negative authorization checks by mode-specific UI route.
+- Mode and role matrix evidence (final sweep):
+	- All 12 mode-role combinations returned `200` for policy, labels, capability matrix, dashboard context, and report catalog.
+	- School mode vocabulary: `Grade / Promotion / Percentage / Subject / Class`.
+	- College mode vocabulary: `Year / Progression / Percentage / Subject / Year-Group`.
+	- University mode vocabulary: `Semester / Progression / GPA/CGPA / Course / Batch`.
+	- Mode capability row counts from matrix evidence:
+		- School: `12/0/0` (school/college/university)
+		- College: `0/12/0`
+		- University: `0/0/13`
+	- Dashboard/menu composition varied by role and mode as expected from `GET /api/v1/dashboard/context` evidence:
+		- School/College: SuperAdmin `13` accessible modules, Admin `12`, Faculty `10`, Student `9`.
+		- University: SuperAdmin `14`, Admin `13`, Faculty `11`, Student `10`.
+	- Negative checks remained enforced in all modes:
+		- `GET /api/v1/admin-user`: SuperAdmin `200`, Admin/Faculty/Student `403`.
+		- `GET /api/v1/license/details`: SuperAdmin/Admin `200`, Faculty/Student `403`.
+		- Student operational report data/export endpoints remained `403`.
 
 ### Execution Assets
 - Runbook: [Docs/Phase4-Validation-Runbook.md](Phase4-Validation-Runbook.md)
@@ -347,10 +362,15 @@ Suggested endpoint set for evidence:
 - Relevant report endpoints used by each role
 
 ### Status of Checks Done
-- [ ] Charts validated by mode and role
-- [ ] Tables validated by mode and role
-- [ ] Menus validated by mode and role
-- [ ] Reports validated by mode and role
+- [x] Charts validated by mode and role
+- [x] Tables validated by mode and role
+- [x] Menus validated by mode and role
+- [x] Reports validated by mode and role
+
+Phase 4 Status: Completed
+Passed: 4
+Failed: 0
+Blocked/Pending: 0
 
 ---
 

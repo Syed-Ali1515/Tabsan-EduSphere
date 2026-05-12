@@ -17,6 +17,20 @@
 - Current update is documentation-only.
 - No database schema change and no EF migration were required for this update.
 
+## 2026-05-12 Update — Institution License Validation Phase 4 (Execution Snapshot)
+
+- Completed School/College/University x role validation sweep for dashboard/menu/report behavior.
+- Confirmed policy and vocabulary switching by mode through runtime policy state:
+	- School labels: Grade/Promotion/Percentage/Subject/Class
+	- College labels: Year/Progression/Percentage/Subject/Year-Group
+	- University labels: Semester/Progression/GPA/CGPA/Course/Batch
+- Confirmed scoped report access behavior with existing assignment tables and report guards:
+	- Admin scope through admin-department assignment
+	- Faculty scope through assigned course offering
+	- Student restricted from operational report data/export endpoints
+- Validation artifacts stored at `Artifacts/Phase4/ModeRole/20260512-142021`.
+- No database schema change and no EF migration required.
+
 ## 2026-05-12 Update — Institution License Validation Phase 2 (Execution Snapshot)
 
 - Completed School/College/University lifecycle-mode validation with persisted policy checks.

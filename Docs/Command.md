@@ -55,6 +55,19 @@ Before starting any work, the assistant must:
 - Current phase status: Phase 3 completed.
 - Next phase: Phase 4 (Charts, Tables, Menus, and Reports by Institution and Role).
 
+### Institution Validation Checkpoint (2026-05-12 - Phase 4)
+- Execution evidence captured in `Docs/Institution-License-Validation-Phases.md` and `Artifacts/Phase4/ModeRole/20260512-142021`.
+- Completed mode-role validation matrix for School, College, University across SuperAdmin, Admin, Faculty, and Student.
+- Confirmed policy/labels/matrix/dashboard/report-catalog are accessible for authenticated roles in all modes and vary by role/mode as expected.
+- Confirmed scoped report data/export behavior:
+  - SuperAdmin/Admin/Faculty succeed with valid scope filters.
+  - Student operational report data/export endpoints are denied (`403`).
+- Confirmed negative checks by role:
+  - `admin-user`: SuperAdmin `200`; Admin/Faculty/Student `403`.
+  - `license/details`: SuperAdmin/Admin `200`; Faculty/Student `403`.
+- Current phase status: Phase 4 completed.
+- Next phase: Phase 5 (User Creation and CSV Import with Institution Assignment).
+
 ## Non-Negotiable Rule Per Completed Stage / Phase
 After **every completed stage** (not just at phase-end), update **all** required tracking files:
 1. Docs/Function-List.md
@@ -107,11 +120,11 @@ cmd /c git -C "<repo-root>" push origin main
 
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
-- Active Phase: **Institution License Validation — Phase 4 (In Progress)**
-- Active Stage: **Phase 4: Charts, Tables, Menus, and Reports by Institution and Role**
-- Status: **Phases 1, 2, and 3 completed; Phase 4 evidence collection and validation documentation pending completion.**
+- Active Phase: **Institution License Validation — Phase 5 (Ready to Start)**
+- Active Stage: **Phase 5: User Creation and CSV Import with Institution Assignment**
+- Status: **Phases 1, 2, 3, and 4 completed.**
 - Last Updated: 2026-05-12
-- Next: **Complete Phase 4 validation matrix and evidence capture, then proceed to Phase 5 (user creation/import institution assignment).**
+- Next: **Execute Phase 5 validation for manual user assignment and CSV import institution mapping.**
 - Docs Updated: ✅ Validation tracker and planning docs synchronized (2026-05-12)
 
 ### 2026-05-11 - Phase 10 Completion

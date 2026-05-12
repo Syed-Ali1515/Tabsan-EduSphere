@@ -17,6 +17,10 @@
 | `Phase 2 Replay-Key Validation Note` | Documents current license generator verification-key reuse behavior causing replay rejection without consumed-key reset during sequential validation runs. | `Docs/Institution-License-Validation-Phases.md` |
 | `Phase 3 Execution Snapshot` | Records School+College, School+University, College+University, and School+College+University union validation for policy flags, labels, matrix rows, progression outputs, and DB state. | `Docs/Institution-License-Validation-Phases.md` |
 | `Phase 3 Label-Resolution Observation` | Captures current mixed-mode label behavior where University-enabled combinations resolve to University vocabulary while pure School+College resolves to School vocabulary. | `Docs/Institution-License-Validation-Phases.md` |
+| `Phase 4 Mode-Role Sweep` | Captures School/College/University x SuperAdmin/Admin/Faculty/Student validation for policy, labels, capability matrix, dashboard context, report catalog, and role-scoped report data/export behavior. | `Artifacts/Phase4/ModeRole/20260512-142021/RunSummary.json` |
+| `DashboardCompositionController.GetContext` | Provides role- and policy-aware module/vocabulary/widget composition used as evidence for menu/dashboard correctness by mode and role. | `src/Tabsan.EduSphere.API/Controllers/DashboardCompositionController.cs` |
+| `InstitutionPolicyController.Save` | SuperAdmin mode-switch endpoint used to execute deterministic School/College/University validation runs in Phase 4. | `src/Tabsan.EduSphere.API/Controllers/InstitutionPolicyController.cs` |
+| `ReportController` scope guards (`EnforceAdminDepartmentScopeAsync`, `EnforceFacultyOfferingScopeAsync`) | Enforces department/offering scoped report data/export access and generates expected 403/400 guardrail responses when scope inputs are missing or unauthorized. | `src/Tabsan.EduSphere.API/Controllers/ReportController.cs` |
 
 ## Final-Touches Phase 34 - High-Load Optimization (2026-05-11)
 
