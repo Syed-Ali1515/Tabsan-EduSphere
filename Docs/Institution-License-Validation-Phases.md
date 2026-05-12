@@ -245,10 +245,25 @@ Blocked/Pending: 0
 ### Implementation Summary
 - Document UI composition source and filtering logic.
 - Document report query filters for institution constraints.
+- Added execution assets for repeatable validation:
+	- Runbook: `Docs/Phase4-Validation-Runbook.md`
+	- API helper: `Scripts/Phase4-Validate-Institution-Role.ps1`
+- Started API runtime in Development on `http://localhost:5181` and captured authenticated baseline evidence (SuperAdmin) for:
+	- `GET /api/v1/institution-policy`
+	- `GET /api/v1/labels`
+	- `GET /api/v1/portal-capabilities/matrix`
+- Evidence files created under `Artifacts/Phase4/Api` with timestamp `20260512-133716`.
 
 ### Validation Summary
 - Record per-role screenshots and report exports.
 - Record negative checks for out-of-scope institution data.
+- Baseline API check status:
+	- Unauthenticated calls correctly returned `401 Unauthorized` (expected for protected endpoints).
+	- Authenticated SuperAdmin calls succeeded and were archived as JSON evidence.
+- Remaining evidence pending:
+	- Role-wise UI screenshots (SuperAdmin/Admin/Faculty/Student) by mode.
+	- Report export artifacts by mode.
+	- Negative authorization checks for non-SuperAdmin roles.
 
 ### Execution Assets
 - Runbook: [Docs/Phase4-Validation-Runbook.md](Phase4-Validation-Runbook.md)
