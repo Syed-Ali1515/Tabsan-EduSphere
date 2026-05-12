@@ -27,6 +27,7 @@
 - Initial upload failure was traced to legacy `license_state` non-null columns (`InstitutionScope`, `ExpiryType`) lacking defaults in the active database schema.
 - Applied SQL defaults for those legacy columns in the validation environment.
 - Re-ran upload successfully; post-upload state is `license_status=Active`.
+- Final matrix validation confirmed policy-driven restriction (`school=false`, `college=false`, `university=true`).
 - No EF migration was introduced in this phase; remediation was environment-level compatibility for legacy schema constraints.
 
 ## 2026-05-10 Update — Phase 32 Stage 32.1

@@ -60,6 +60,11 @@ Each phase must be completed with:
 	- `GET /api/v1/license/status`: `Active`
 	- `GET /api/v1/license/details`: `status=Active`, `licenseType=Yearly`, `remainingDays=365`
 	- `GET /api/v1/institution-policy`: `{ includeSchool: false, includeCollege: false, includeUniversity: true, isValid: true }`
+	- `GET /api/v1/portal-capabilities/matrix`:
+		- policy flags: `school=false`, `college=false`, `university=true`
+		- rows with school enabled: `0`
+		- rows with college enabled: `0`
+		- `fyp_workspace`: `university=true`, `school=false`, `college=false`
 
 - Outcome:
 	- Runtime policy read path works.
@@ -71,12 +76,12 @@ Each phase must be completed with:
 - [x] Institution policy read validated
 - [x] License upload validated
 - [x] Institution mode binding validated
-- [ ] Mode-restricted module access validated
+- [x] Mode-restricted module access validated
 
-Phase 1 Status: In Progress (Final UI/module restriction validation pending)
-Passed: 4
+Phase 1 Status: Completed
+Passed: 5
 Failed: 0
-Blocked/Pending: 1
+Blocked/Pending: 0
 
 ---
 

@@ -75,7 +75,7 @@
 - **Execution Plan**: `Docs/Institution-License-Validation-Phases.md` defines 7 phases covering license binding, lifecycle, mixed-mode behavior, UI/report correctness, user import assignment, access boundaries, and SuperAdmin permission coverage.
 - **Per-Phase Evidence**: Each phase must include `Implementation Summary`, `Validation Summary`, and `Status of Checks Done`.
 - **Phase-End Sync**: After each phase, update required documentation and run commit/pull/push workflow.
-- **Current Execution Snapshot (Phase 1)**: Authentication, license activation, and policy binding checks succeeded (`status=Active` after upload); remaining work is final module/menu restriction validation in UI.
+- **Current Execution Snapshot (Phase 1)**: Authentication, license activation, policy binding, and module restriction checks succeeded; Phase 1 is complete for University-only license validation.
 
 ---
 

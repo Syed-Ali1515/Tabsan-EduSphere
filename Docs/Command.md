@@ -29,7 +29,8 @@ Before starting any work, the assistant must:
 - Execution evidence captured in `Docs/Institution-License-Validation-Phases.md`.
 - Authentication and policy-read checks passed.
 - License upload is now successful after resolving legacy DB schema defaults on `license_state` (`InstitutionScope`, `ExpiryType`).
-- Current phase status: active and in progress, with only final module/menu restriction validation pending.
+- Final module restriction validation completed through `portal-capabilities/matrix` (School/College disabled, University enabled).
+- Current phase status: Phase 1 completed.
 
 ## Non-Negotiable Rule Per Completed Stage / Phase
 After **every completed stage** (not just at phase-end), update **all** required tracking files:

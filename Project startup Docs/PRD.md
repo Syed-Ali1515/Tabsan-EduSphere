@@ -26,7 +26,11 @@
   - `GET /api/v1/license/status` -> `Active`
   - `GET /api/v1/license/details` -> `Active` (`Yearly`, 365 remaining days)
   - `GET /api/v1/institution-policy` -> `includeUniversity=true`, `includeSchool=false`, `includeCollege=false`
-- Phase 1 is now active and validated at API/policy level; final module/menu restriction validation remains open.
+- Final module/menu restriction validation:
+  - `GET /api/v1/portal-capabilities/matrix` confirmed `school=false`, `college=false`, `university=true`
+  - matrix rows with school enabled: `0`
+  - matrix rows with college enabled: `0`
+- Phase 1 is complete.
 
 ### 2026-05-12 — Institution License Validation Plan Added
 - Added execution plan: `Docs/Institution-License-Validation-Phases.md`.
