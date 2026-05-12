@@ -43,6 +43,18 @@ Before starting any work, the assistant must:
 - Current phase status: Phase 2 completed.
 - Known validation caveat: generated licenses currently reuse one verification key, so sequential mode validation in a single environment required clearing `consumed_verification_keys` between activations.
 
+### Institution Validation Checkpoint (2026-05-12 - Phase 3)
+- Execution evidence captured in `Docs/Institution-License-Validation-Phases.md`.
+- Completed mixed-mode validation for:
+  - School + College
+  - School + University
+  - College + University
+  - School + College + University
+- Confirmed union behavior in policy flags and capability matrix row exposure for each combination.
+- Confirmed DB persistence of `institution_include_school|college|university` keys per uploaded combination.
+- Current phase status: Phase 3 completed.
+- Next phase: Phase 4 (Charts, Tables, Menus, and Reports by Institution and Role).
+
 ## Non-Negotiable Rule Per Completed Stage / Phase
 After **every completed stage** (not just at phase-end), update **all** required tracking files:
 1. Docs/Function-List.md

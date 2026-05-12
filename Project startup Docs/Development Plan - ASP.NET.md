@@ -8,6 +8,29 @@
 
 ## Execution Updates
 
+### 2026-05-12 - Institution License Validation Phase 3 (Execution Snapshot)
+- Completed mixed-mode license validation for all planned combinations:
+  - School + College
+  - School + University
+  - College + University
+  - School + College + University
+- Captured evidence per combination for:
+  - license upload,
+  - institution policy,
+  - labels,
+  - portal capability matrix row union,
+  - progression evaluation by institution type,
+  - persisted `portal_settings` policy keys.
+- Validated union behavior:
+  - matrix rows expand according to enabled institution flags,
+  - persisted DB keys match runtime policy output.
+- Observed current label-resolution behavior:
+  - School+College uses School vocabulary,
+  - any combination containing University uses University vocabulary.
+- Known tooling caveat persisted:
+  - sequential uploads require clearing `consumed_verification_keys` because generated licenses reuse verification-key material.
+- Phase 3 completed.
+
 ### 2026-05-12 - Institution License Validation Phase 2 (Execution Snapshot)
 - Completed end-to-end mode validation for School, College, and University after applying policy persistence fix.
 - Applied service fix:

@@ -169,17 +169,65 @@ Blocked/Pending: 0
 - School + College + University
 
 ### Implementation Summary
-- Document how multi-mode union is resolved in policy/services.
-- Document safeguards to avoid accidental mode exclusion.
+- Executed live multi-mode validation on API runtime (`http://localhost:5181`) using four mixed-scope licenses:
+	- School+College: `tabsan-license-8f3f00e8ea1f499292d9ca9f77b33d1f.tablic`
+	- School+University: `tabsan-license-dd7eaebc155a47a1a98f43e87458fc6a.tablic`
+	- College+University: `tabsan-license-b216de81e83840ea985d5e64c7b3285a.tablic`
+	- School+College+University: `tabsan-license-1ab0597d6037499ea86451c27b8566f0.tablic`
+- Captured endpoint evidence per combination:
+	- `POST /api/v1/license/upload`
+	- `GET /api/v1/institution-policy`
+	- `GET /api/v1/labels`
+	- `GET /api/v1/portal-capabilities/matrix`
+	- `GET /api/v1/institution-grading-profiles/{type}` for all three types
+	- `POST /api/v1/progression/evaluate` for institutionType `School(1)`, `College(2)`, `University(0)`
+- Confirmed persisted union flags in `portal_settings` for each combination.
+- Sequential activations used consumed-key reset (`DELETE FROM dbo.consumed_verification_keys`) due current generator verification-key reuse.
 
 ### Validation Summary
-- Record module visibility, menus, and endpoint access for each combination.
-- Record policy snapshot output for each combination.
+- Shared student used for progression checks:
+	- `77777777-7777-7777-7777-777777777733`
+
+- School + College
+	- policy: `school=true, college=true, university=false`
+	- labels: School vocabulary (`Grade/Promotion/Percentage/Subject/Class`)
+	- matrix rows: `school=12, college=12, university=0`
+	- DB flags: `institution_include_school=true`, `institution_include_college=true`, `institution_include_university=false`
+
+- School + University
+	- policy: `school=true, college=false, university=true`
+	- labels: University vocabulary (`Semester/Progression/GPA/CGPA/Course/Batch`)
+	- matrix rows: `school=12, college=0, university=13`
+	- DB flags: `institution_include_school=true`, `institution_include_college=false`, `institution_include_university=true`
+
+- College + University
+	- policy: `school=false, college=true, university=true`
+	- labels: University vocabulary (`Semester/Progression/GPA/CGPA/Course/Batch`)
+	- matrix rows: `school=0, college=12, university=13`
+	- DB flags: `institution_include_school=false`, `institution_include_college=true`, `institution_include_university=true`
+
+- School + College + University
+	- policy: `school=true, college=true, university=true`
+	- labels: University vocabulary (`Semester/Progression/GPA/CGPA/Course/Batch`)
+	- matrix rows: `school=12, college=12, university=13`
+	- DB flags: all three `true`
+
+- Progression endpoint consistency across all combinations:
+	- `institutionType=1 (School)`: `canProgress=false`, `Grade 2 -> Grade 3`
+	- `institutionType=2 (College)`: `canProgress=false`, `Year 1 -> Year 2`
+	- `institutionType=0 (University)`: `canProgress=true`, `Semester 2 -> Semester 3`
+
+- Grading-profile endpoint currently returns `No grading profile found` for School/College/University in this dataset.
 
 ### Status of Checks Done
-- [ ] Two-mode combinations validated
-- [ ] Three-mode combination validated
-- [ ] Combined configuration behavior validated
+- [x] Two-mode combinations validated
+- [x] Three-mode combination validated
+- [x] Combined configuration behavior validated
+
+Phase 3 Status: Completed
+Passed: 3
+Failed: 0
+Blocked/Pending: 0
 
 ---
 

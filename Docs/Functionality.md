@@ -77,6 +77,8 @@
 - **Phase-End Sync**: After each phase, update required documentation and run commit/pull/push workflow.
 - **Current Execution Snapshot (Phase 1)**: Authentication, license activation, policy binding, and module restriction checks succeeded; Phase 1 is complete for University-only license validation.
 - **Current Execution Snapshot (Phase 2)**: School, College, and University lifecycle checks are validated with mode-specific policy flags, labels, capability matrix rows, and progression outcomes captured in `Docs/Institution-License-Validation-Phases.md`.
+- **Current Execution Snapshot (Phase 3)**: Mixed-mode license combinations are validated with union policy behavior across School+College, School+University, College+University, and School+College+University.
+- **Phase 3 Evidence Highlights**: Capability matrix union counts and persisted `portal_settings` flags match licensed combinations; progression endpoint remains institution-type deterministic across all combinations.
 - **Validation Caveat (Current Tooling)**: Sequential mode activation in one environment currently requires resetting consumed verification keys because generated licenses reuse the same verification key.
 
 ---

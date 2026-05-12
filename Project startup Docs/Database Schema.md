@@ -30,6 +30,18 @@
 - Validation-only environment workaround used during sequential mode switching:
 	- cleared `consumed_verification_keys` between uploads due verification-key reuse from current generator output.
 
+## 2026-05-12 Update — Institution License Validation Phase 3 (Execution Snapshot)
+
+- Completed multi-mode validation for School+College, School+University, College+University, and School+College+University.
+- Confirmed persisted union state in `portal_settings` keys:
+	- `institution_include_school`
+	- `institution_include_college`
+	- `institution_include_university`
+- Confirmed capability-matrix union row exposure aligns with persisted policy keys for each mixed-mode license.
+- No schema mutation and no EF migration required.
+- Validation-only environment workaround continued for sequential uploads:
+	- cleared `consumed_verification_keys` because current generator output reuses verification key material.
+
 ## 2026-05-12 Update — Institution License Validation Phase 1 (Execution Snapshot)
 
 - Executed baseline runtime checks for license/policy endpoints with SuperAdmin authentication.

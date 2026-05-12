@@ -15,6 +15,8 @@
 | `InstitutionPolicyService.SavePolicyAsync` persistence fix | Persists institution policy flags to `portal_settings` by committing settings repository changes, enabling mode switches from uploaded licenses to be retained. | `src/Tabsan.EduSphere.Application/Services/InstitutionPolicyService.cs` |
 | `Phase 2 Execution Snapshot` | Records School/College/University lifecycle evidence for policy, labels, capability matrix, progression evaluation, and DB policy persistence checks. | `Docs/Institution-License-Validation-Phases.md` |
 | `Phase 2 Replay-Key Validation Note` | Documents current license generator verification-key reuse behavior causing replay rejection without consumed-key reset during sequential validation runs. | `Docs/Institution-License-Validation-Phases.md` |
+| `Phase 3 Execution Snapshot` | Records School+College, School+University, College+University, and School+College+University union validation for policy flags, labels, matrix rows, progression outputs, and DB state. | `Docs/Institution-License-Validation-Phases.md` |
+| `Phase 3 Label-Resolution Observation` | Captures current mixed-mode label behavior where University-enabled combinations resolve to University vocabulary while pure School+College resolves to School vocabulary. | `Docs/Institution-License-Validation-Phases.md` |
 
 ## Final-Touches Phase 34 - High-Load Optimization (2026-05-11)
 

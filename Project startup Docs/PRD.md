@@ -10,6 +10,22 @@
 
 ## 0. Implementation Update Log
 
+### 2026-05-12 — Institution License Validation Phase 3 (Execution Snapshot)
+- Completed mixed-mode license coverage validation for:
+  - School + College
+  - School + University
+  - College + University
+  - School + College + University
+- Captured endpoint evidence for policy, labels, capability matrix, grading-profile lookups, progression evaluations, and DB policy-key persistence.
+- Validated union behavior:
+  - policy flags and capability matrix rows align with licensed institution combinations,
+  - persisted `institution_include_*` keys match each uploaded combination.
+- Observed current label-resolution behavior:
+  - School+College resolves to School vocabulary,
+  - combinations containing University resolve to University vocabulary.
+- Known test-environment caveat remained: generator verification-key reuse required consumed-key reset between sequential uploads.
+- Phase 3 status: complete.
+
 ### 2026-05-12 — Institution License Validation Phase 2 (Execution Snapshot)
 - Completed Phase 2 lifecycle validation for School, College, and University modes.
 - Applied persistence fix so mode flags are committed to `portal_settings`:
