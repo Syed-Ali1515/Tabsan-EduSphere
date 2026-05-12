@@ -76,6 +76,8 @@
 - **Per-Phase Evidence**: Each phase must include `Implementation Summary`, `Validation Summary`, and `Status of Checks Done`.
 - **Phase-End Sync**: After each phase, update required documentation and run commit/pull/push workflow.
 - **Current Execution Snapshot (Phase 1)**: Authentication, license activation, policy binding, and module restriction checks succeeded; Phase 1 is complete for University-only license validation.
+- **Current Execution Snapshot (Phase 2)**: School, College, and University lifecycle checks are validated with mode-specific policy flags, labels, capability matrix rows, and progression outcomes captured in `Docs/Institution-License-Validation-Phases.md`.
+- **Validation Caveat (Current Tooling)**: Sequential mode activation in one environment currently requires resetting consumed verification keys because generated licenses reuse the same verification key.
 
 ---
 

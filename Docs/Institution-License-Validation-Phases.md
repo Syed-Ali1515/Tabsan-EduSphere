@@ -98,17 +98,61 @@ Blocked/Pending: 0
 - Academic rules and progression behavior are institution-specific.
 
 ### Implementation Summary
-- Document lifecycle service and strategy selection logic.
-- Document grading and promotion rules bound to institution mode.
+- Executed live mode-switch validation on API runtime (`http://localhost:5181`) after applying policy persistence fix in `InstitutionPolicyService.SavePolicyAsync`.
+- Validated mode transitions using three licenses:
+	- School: `tabsan-license-ce3ee52ac7ae45f0943c506cd8117c56.tablic`
+	- College: `tabsan-license-dce6179f7e8e4f71b64835e0788bed39.tablic`
+	- University: `tabsan-license-f97ff736a0f84a14b3571bbb9a879368.tablic`
+- Executed endpoint set per mode:
+	- `POST /api/v1/license/upload`
+	- `GET /api/v1/institution-policy`
+	- `GET /api/v1/labels`
+	- `GET /api/v1/portal-capabilities/matrix`
+	- `GET /api/v1/institution-grading-profiles/{type}`
+	- `POST /api/v1/progression/evaluate`
+- Confirmed persisted mode flags in DB (`portal_settings`) after each mode activation.
+- Noted current license generator limitation: verification key reuse causes replay rejection unless consumed-key table is cleared between sequential activations in the same environment.
 
 ### Validation Summary
-- Record lifecycle tests for School, College, University students.
-- Record failed path prevention (for non-licensed mode behavior).
+- Student profile used:
+	- `77777777-7777-7777-7777-777777777733`
+
+- School mode evidence:
+	- upload: `License activated successfully`
+	- policy: `school=true, college=false, university=false`
+	- labels: `Grade / Promotion / Percentage / Subject / Class`
+	- matrix rows: `school=12, college=0, university=0`
+	- progression evaluate: `institutionType=1`, `canProgress=false`, `Grade 2 -> Grade 3`, required `40`
+	- DB policy keys: `institution_include_school=true`, others false
+
+- College mode evidence:
+	- upload: `License activated successfully`
+	- policy: `school=false, college=true, university=false`
+	- labels: `Year / Progression / Percentage / Subject / Year-Group`
+	- matrix rows: `school=0, college=12, university=0`
+	- progression evaluate: `institutionType=2`, `canProgress=false`, `Year 1 -> Year 2`, required `40`
+	- DB policy keys: `institution_include_college=true`, others false
+
+- University mode evidence:
+	- upload: `License activated successfully`
+	- policy: `school=false, college=false, university=true`
+	- labels: `Semester / Progression / GPA/CGPA / Course / Batch`
+	- matrix rows: `school=0, college=0, university=13`
+	- progression evaluate: `institutionType=0`, `canProgress=true`, `Semester 2 -> Semester 3`, CGPA `3.20 >= 2.00`
+	- DB policy keys: `institution_include_university=true`, others false
+
+- Grading profile endpoint result:
+	- currently returns `No grading profile found` for all three institution types in this dataset.
 
 ### Status of Checks Done
-- [ ] School lifecycle validated
-- [ ] College lifecycle validated
-- [ ] University lifecycle validated
+- [x] School lifecycle validated
+- [x] College lifecycle validated
+- [x] University lifecycle validated
+
+Phase 2 Status: Completed
+Passed: 3
+Failed: 0
+Blocked/Pending: 0
 
 ---
 

@@ -10,6 +10,23 @@
 
 ## 0. Implementation Update Log
 
+### 2026-05-12 — Institution License Validation Phase 2 (Execution Snapshot)
+- Completed Phase 2 lifecycle validation for School, College, and University modes.
+- Applied persistence fix so mode flags are committed to `portal_settings`:
+  - `InstitutionPolicyService.SavePolicyAsync` now executes repository `SaveChangesAsync`.
+- Captured mode-specific evidence for:
+  - `GET /api/v1/institution-policy`
+  - `GET /api/v1/labels`
+  - `GET /api/v1/portal-capabilities/matrix`
+  - `POST /api/v1/progression/evaluate`
+  - DB verification of `institution_include_school|college|university` keys.
+- Results:
+  - School mode -> Grade/Promotion vocabulary, school-only matrix rows, school progression evaluation path.
+  - College mode -> Year/Progression vocabulary, college-only matrix rows, college progression evaluation path.
+  - University mode -> Semester/GPA vocabulary, university-only matrix rows, university progression evaluation path.
+- Known test-environment caveat: generator currently emits licenses that share the same verification key; sequential mode uploads required clearing `consumed_verification_keys` between activations for validation flow continuity.
+- Phase 2 status: complete.
+
 ### 2026-05-12 — Institution License Validation Phase 1 (Execution Snapshot)
 - Executed Phase 1 checks against running API/Web environments.
 - Verified SuperAdmin authentication and protected endpoint access.

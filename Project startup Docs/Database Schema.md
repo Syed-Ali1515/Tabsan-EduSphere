@@ -17,6 +17,19 @@
 - Current update is documentation-only.
 - No database schema change and no EF migration were required for this update.
 
+## 2026-05-12 Update — Institution License Validation Phase 2 (Execution Snapshot)
+
+- Completed School/College/University lifecycle-mode validation with persisted policy checks.
+- Confirmed `portal_settings` now stores and updates:
+	- `institution_include_school`
+	- `institution_include_college`
+	- `institution_include_university`
+- Confirmed policy keys change per mode after license activation and are reflected in runtime endpoints.
+- Code fix impact: application-layer persistence only (`SaveChangesAsync` call in institution policy service).
+- No schema mutation and no EF migration required.
+- Validation-only environment workaround used during sequential mode switching:
+	- cleared `consumed_verification_keys` between uploads due verification-key reuse from current generator output.
+
 ## 2026-05-12 Update — Institution License Validation Phase 1 (Execution Snapshot)
 
 - Executed baseline runtime checks for license/policy endpoints with SuperAdmin authentication.

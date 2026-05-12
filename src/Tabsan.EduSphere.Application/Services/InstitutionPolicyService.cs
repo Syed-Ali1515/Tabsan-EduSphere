@@ -59,6 +59,7 @@ public sealed class InstitutionPolicyService : IInstitutionPolicyService
         await _settings.UpsertPortalSettingAsync(KeySchool,     BoolStr(cmd.IncludeSchool),     ct);
         await _settings.UpsertPortalSettingAsync(KeyCollege,    BoolStr(cmd.IncludeCollege),    ct);
         await _settings.UpsertPortalSettingAsync(KeyUniversity, BoolStr(cmd.IncludeUniversity), ct);
+        await _settings.SaveChangesAsync(ct);
 
         InvalidateCache();
     }

@@ -32,6 +32,17 @@ Before starting any work, the assistant must:
 - Final module restriction validation completed through `portal-capabilities/matrix` (School/College disabled, University enabled).
 - Current phase status: Phase 1 completed.
 
+### Institution Validation Checkpoint (2026-05-12 - Phase 2)
+- Execution evidence captured in `Docs/Institution-License-Validation-Phases.md`.
+- Root fix applied: institution policy persistence now commits `portal_settings` changes in `InstitutionPolicyService.SavePolicyAsync`.
+- Verified mode switching and lifecycle evidence:
+  - School mode: policy/labels/matrix/progression aligned to School semantics.
+  - College mode: policy/labels/matrix/progression aligned to College semantics.
+  - University mode: policy/labels/matrix/progression aligned to University semantics.
+- DB policy flags now persist correctly per uploaded mode.
+- Current phase status: Phase 2 completed.
+- Known validation caveat: generated licenses currently reuse one verification key, so sequential mode validation in a single environment required clearing `consumed_verification_keys` between activations.
+
 ## Non-Negotiable Rule Per Completed Stage / Phase
 After **every completed stage** (not just at phase-end), update **all** required tracking files:
 1. Docs/Function-List.md

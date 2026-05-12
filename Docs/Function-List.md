@@ -12,6 +12,9 @@
 | `Mandatory Docs Update After Each Phase` | Enforces synchronized updates across Function-List, Functionality, PRD, Database Schema, Development Plan, and Command docs. | `Docs/Institution-License-Validation-Phases.md` |
 | `Mandatory Git Workflow After Each Phase` | Defines commit, pull (rebase), push flow after each phase completion to keep repository state updated. | `Docs/Institution-License-Validation-Phases.md` |
 | `Phase 1 Execution Snapshot` | Records endpoint-level evidence for auth, license activation, institution policy binding, and capability-matrix based mode-restriction validation. | `Docs/Institution-License-Validation-Phases.md` |
+| `InstitutionPolicyService.SavePolicyAsync` persistence fix | Persists institution policy flags to `portal_settings` by committing settings repository changes, enabling mode switches from uploaded licenses to be retained. | `src/Tabsan.EduSphere.Application/Services/InstitutionPolicyService.cs` |
+| `Phase 2 Execution Snapshot` | Records School/College/University lifecycle evidence for policy, labels, capability matrix, progression evaluation, and DB policy persistence checks. | `Docs/Institution-License-Validation-Phases.md` |
+| `Phase 2 Replay-Key Validation Note` | Documents current license generator verification-key reuse behavior causing replay rejection without consumed-key reset during sequential validation runs. | `Docs/Institution-License-Validation-Phases.md` |
 
 ## Final-Touches Phase 34 - High-Load Optimization (2026-05-11)
 
