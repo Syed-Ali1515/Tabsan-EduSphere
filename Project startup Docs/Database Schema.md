@@ -5,6 +5,14 @@
 **Aligned With PRD:** v1.33  
 **Purpose:** Define database schemas for the University Portal Application and the License Creation Tool  
 
+## Institute Parity Stage Documentation Rule (2026-05-13)
+
+After every completed stage in `Docs/Institute-Parity-Issue-Fix-Phases.md`:
+- Add `Implementation Summary` and `Validation Summary` in the stage record.
+- Update this schema document with explicit statement of schema impact:
+	- `No schema mutation` or
+	- `Schema updated` with table/column/index/migration details.
+
 ## 2026-05-12 Update — Institution License Validation Phase 7 (Execution Snapshot)
 
 - Completed SuperAdmin permission matrix against existing management and policy tables.

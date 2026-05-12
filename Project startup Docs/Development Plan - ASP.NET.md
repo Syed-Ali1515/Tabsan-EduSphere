@@ -4,6 +4,17 @@
 **Date:** 8 May 2026  
 **Based On:** PRD v1.33, Modules v1.3, Database Schema v1.2
 
+## Institute Parity Stage Documentation Rule (2026-05-13)
+
+For each completed stage in `Docs/Institute-Parity-Issue-Fix-Phases.md`, this plan must be updated with:
+- `Implementation Summary`
+- `Validation Summary`
+
+Validation summaries must include at minimum:
+- commands/test suites executed,
+- role/institute behavior checks,
+- regression confirmation status.
+
 ---
 
 ## Execution Updates

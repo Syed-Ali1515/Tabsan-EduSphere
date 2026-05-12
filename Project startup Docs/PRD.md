@@ -6,6 +6,14 @@
 **Prepared By:** Product Team  
 **Last Updated:** 11 May 2026  
 
+## Institute Parity Stage Documentation Rule (2026-05-13)
+
+For each completed stage in `Docs/Institute-Parity-Issue-Fix-Phases.md`, PRD implementation log updates are mandatory and must include:
+- `Implementation Summary`
+- `Validation Summary`
+
+Each stage log entry must clearly describe behavior impact for School/College/University and role-based access/filter/report outcomes.
+
 ---
 
 ## 0. Implementation Update Log

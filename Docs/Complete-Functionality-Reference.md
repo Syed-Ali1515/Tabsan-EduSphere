@@ -5,6 +5,14 @@
 **Project Status:** Phase 33 (Hosting Configuration and Security Hardening)  
 **Last Updated:** Based on PRD v1.58 and complete codebase exploration  
 
+## Institute Parity Documentation Governance (2026-05-13)
+
+For every completed stage under `Docs/Institute-Parity-Issue-Fix-Phases.md`, the stage entry must include:
+- `Implementation Summary`
+- `Validation Summary`
+
+After each completed stage, this document must be updated to reflect any net functionality behavior change for School/College/University parity, including role/institute filters and report behavior.
+
 ---
 
 ## Table of Contents

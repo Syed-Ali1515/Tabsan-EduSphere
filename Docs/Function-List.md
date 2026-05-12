@@ -3,6 +3,15 @@
 > **Maintenance rule**: Every function added to the codebase must be registered here with Name, Purpose, and Location.
 > Format: `Name | Purpose | Location`
 
+## Institute Parity Stage Update Governance (2026-05-13)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `Institute-Parity Stage Closeout Protocol` | Enforces that each completed stage records both `Implementation Summary` and `Validation Summary` before progressing. | `Docs/Institute-Parity-Issue-Fix-Phases.md` |
+| `Institute-Parity Stage Completion Template` | Standardizes per-stage completion entries for repeatable implementation/validation evidence capture. | `Docs/Institute-Parity-Issue-Fix-Phases.md` |
+| `Institute-Parity Mandatory Documentation Sync` | Requires synchronized updates to Function-List, Complete Functionality Reference, Database Schema, Development Plan, PRD, and Command after each stage completion. | `Docs/Institute-Parity-Issue-Fix-Phases.md` |
+| `Institute-Parity Git Sync Order` | Enforces commit -> pull --rebase -> push sequence after each stage closeout. | `Docs/Institute-Parity-Issue-Fix-Phases.md`, `Docs/Command.md` |
+
 ## Institution License Validation Plan (2026-05-12)
 
 | Function Name | Purpose | Location |

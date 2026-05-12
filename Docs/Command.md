@@ -25,6 +25,27 @@ Before starting any work, the assistant must:
   2. Pull (rebase)
   3. Push
 
+## Institute Parity Workflow (2026-05-13)
+
+- Plan file: `Docs/Institute-Parity-Issue-Fix-Phases.md`
+- After every completed stage (not only phase-end), mandatory stage entry content:
+  1. `Implementation Summary`
+  2. `Validation Summary`
+
+- After every completed stage, mandatory document synchronization list:
+  1. `Docs/Institute-Parity-Issue-Fix-Phases.md`
+  2. `Docs/Function-List.md`
+  3. `Docs/Complete-Functionality-Reference.md`
+  4. `Project startup Docs/Database Schema.md`
+  5. `Project startup Docs/Development Plan - ASP.NET.md`
+  6. `Project startup Docs/PRD.md`
+  7. `Docs/Command.md`
+
+- Mandatory Git synchronization order after stage completion:
+  1. Commit
+  2. Pull (`--rebase`)
+  3. Push
+
 ### Institution Validation Checkpoint (2026-05-12 - Phase 1)
 - Execution evidence captured in `Docs/Institution-License-Validation-Phases.md`.
 - Authentication and policy-read checks passed.
