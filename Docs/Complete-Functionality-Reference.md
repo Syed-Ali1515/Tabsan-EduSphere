@@ -43,6 +43,16 @@ After each completed stage, this document must be updated to reflect any net fun
     - sparse dummy data causing empty outputs in some report scenarios.
 - This stage introduced no runtime code change; it establishes a tagged failure backlog for Phase 4 and Phase 5 execution.
 
+## 2026-05-13 Update - Institute Parity Stage 0.4 Exit Snapshot
+
+- Completed Phase 0 sign-off by consolidating module audit, role/institute matrix, and report failure inventory into a prioritized execution backlog.
+- Confirmed functional reference readiness for parity implementation phases:
+    - authorization and scope hardening (Phase 2),
+    - module workflow parity (Phase 3),
+    - report/analytics parity fixes (Phase 4),
+    - data-completeness hardening (Phase 5).
+- No runtime functionality changed in Stage 0.4; this is governance and execution-readiness closure for Phase 0.
+
 ---
 
 ## Table of Contents

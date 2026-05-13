@@ -45,6 +45,15 @@ After every completed stage in `Docs/Institute-Parity-Issue-Fix-Phases.md`:
 - Schema impact: `No schema mutation`.
 - EF migration impact: none.
 
+## 2026-05-13 Update - Institute Parity Stage 0.4 (Execution Snapshot)
+
+- Stage 0.4 completed as Phase 0 baseline exit sign-off.
+- Schema perspective confirmed:
+	- no additional unresolved schema blockers identified in Phase 0 inventories,
+	- pending schema-affecting parity work remains planned in subsequent phases.
+- Schema impact: `No schema mutation`.
+- EF migration impact: none.
+
 ## 2026-05-12 Update — Institution License Validation Phase 7 (Execution Snapshot)
 
 - Completed SuperAdmin permission matrix against existing management and policy tables.

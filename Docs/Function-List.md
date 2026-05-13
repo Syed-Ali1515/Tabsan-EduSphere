@@ -17,6 +17,7 @@
 | `Scope Guard Baseline (Dept/Offering/Ownership)` | Documents current enforcement basis used by major module endpoints before institute-specific hardening. | `Docs/Institute-Parity-Issue-Fix-Phases.md` |
 | `Stage 0.3 Report Failure Inventory` | Tracks report/analytics failures by root-cause tag and maps each to remediation stages. | `Docs/Institute-Parity-Issue-Fix-Phases.md` |
 | `Report Guardrail Outcome Classification` | Distinguishes expected scope-guard failures (400/403/404) from true report defects to reduce false-positive bug triage. | `Docs/Institute-Parity-Issue-Fix-Phases.md` |
+| `Stage 0.4 Phase-0 Exit Signoff` | Consolidates Phase 0 audit outputs into prioritized remediation backlog and confirms readiness for Phase 1 execution. | `Docs/Institute-Parity-Issue-Fix-Phases.md` |
 
 ## Institution License Validation Plan (2026-05-12)
 

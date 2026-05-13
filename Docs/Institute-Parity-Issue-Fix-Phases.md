@@ -350,3 +350,29 @@ Validation Summary
 - Confirmed historical critical failures (Result Summary exception and Report Center visibility) are documented as resolved with regression safeguards present.
 - Confirmed remaining report parity risks are primarily institute filter propagation and seeded-data completeness, not unresolved core runtime crashes.
 - Residual risks: parity regressions may still appear where institute-specific constraints are inferred indirectly via department/offering scope rather than explicit institute filters.
+
+### Stage 0.4 - Exit Criteria (Completed: 2026-05-13)
+
+Implementation Summary
+- Completed Phase 0 baseline sign-off by consolidating outputs from Stage 0.1 (module audit), Stage 0.2 (role/institute matrix), and Stage 0.3 (report failure inventory).
+- Produced prioritized parity backlog slices and sequencing alignment for Phase 1 through Phase 5 execution.
+- Confirmed traceability linkage from reported issues to planned remediation phases is complete and actionable.
+
+Prioritized Backlog (Phase 0 Sign-off Output)
+
+| Priority | Defect Cluster | Primary Risk | Planned Phase / Stage |
+|---|---|---|---|
+| P0 | Explicit institute scoping in report/analytics filters | Incorrect School/College/University data visibility | Phase 4 Stage 4.1 + 4.2 |
+| P0 | Role-scope parity hardening on mutation paths using indirect scope proxies | Cross-institute authorization drift | Phase 2 Stage 2.2 + 2.3 |
+| P1 | University-default labels/templates/messages in mixed-mode contexts | Incorrect institute semantics in UX/docs | Phase 3 Stage 3.3 + Phase 7 Stage 7.2 |
+| P1 | Dummy data sparsity for report/transcript parity scenarios | False-negative UAT outcomes and empty report outputs | Phase 5 Stage 5.2 + 5.3 |
+| P2 | Guardrail UX clarity for expected 400/403 report outcomes | Support load and mis-triaged defects | Phase 4 Stage 4.2 + 4.3 |
+
+Validation Summary
+- Verified Phase 0 exit conditions are satisfied:
+  - baseline parity defect inventory is documented,
+  - role/institute/module/action matrix is documented,
+  - report failure inventory is documented with root-cause tags,
+  - prioritized remediation mapping is present.
+- Verified no unresolved blocker in Phase 0 artifacts that prevents starting Phase 1 execution.
+- Residual risks accepted for next phase execution: institute-filter parity and seed completeness remain open by design and are queued in planned stages.
