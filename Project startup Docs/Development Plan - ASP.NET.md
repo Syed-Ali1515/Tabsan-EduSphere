@@ -19,6 +19,18 @@ Validation summaries must include at minimum:
 
 ## Execution Updates
 
+### 2026-05-13 - Institute Parity Stage 1.3 (Execution Snapshot)
+- Completed Phase 1 Stage 1.3 script hardening.
+- Implementation Summary:
+  - updated master schema script with idempotent Stage 1.1/1.2 parity DDL and migration-history inserts,
+  - updated maintenance script with parity index guardrails and safe legacy-index replacement,
+  - updated post-deployment check script with explicit parity migration/column/index assertions.
+- Validation Summary:
+  - verified new migration IDs and parity index checks are present in all three scripts,
+  - verified all new DDL operations are guarded for replay-safe/idempotent execution (`COL_LENGTH`, `sys.indexes`, migration-history checks).
+- Stage status: Stage 1.3 completed.
+- Phase status: Phase 1 in progress (next: Stage 1.4).
+
 ### 2026-05-13 - Institute Parity Stage 1.2 (Execution Snapshot)
 - Completed Phase 1 Stage 1.2 referential integrity and indexing hardening.
 - Implementation Summary:

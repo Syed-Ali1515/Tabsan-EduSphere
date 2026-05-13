@@ -87,6 +87,22 @@ After every completed stage in `Docs/Institute-Parity-Issue-Fix-Phases.md`:
 - Schema impact: `Schema updated`.
 - EF migration impact: applied in source and validated via integration-test migration path.
 
+## 2026-05-13 Update - Institute Parity Stage 1.3 (Execution Snapshot)
+
+- Stage 1.3 completed schema-script hardening for parity-safe deployment replay.
+- Script updates applied:
+	- `Scripts/01-Schema-Current.sql`
+		- appended idempotent Stage 1.1 + Stage 1.2 migration-equivalent DDL sections,
+		- added migration-history inserts for:
+			- `20260513121000_Phase1Stage11DepartmentInstitutionType`
+			- `20260513124500_Phase1Stage12ReferentialIntegrityAndIndexes`.
+	- `Scripts/04-Maintenance-Indexes-And-Views.sql`
+		- added guarded parity index ensure/replacement logic.
+	- `Scripts/05-PostDeployment-Checks.sql`
+		- added explicit parity migration/column/index verification checks.
+- Schema impact: `No additional model mutation beyond Stage 1.1/1.2`; this stage hardens script execution consistency.
+- EF migration impact: none (script-hardening stage only).
+
 ## 2026-05-12 Update — Institution License Validation Phase 7 (Execution Snapshot)
 
 - Completed SuperAdmin permission matrix against existing management and policy tables.

@@ -117,6 +117,18 @@ Before starting any work, the assistant must:
   - `Docs/Command.md`
 - Next stage: Stage 1.3 (Script Hardening).
 
+### Institute Parity Checkpoint (2026-05-13 - Stage 1.3)
+- Completed Stage 1.3 script hardening in `Docs/Institute-Parity-Issue-Fix-Phases.md` with required Implementation Summary and Validation Summary.
+- Updated schema, maintenance, and post-deployment SQL scripts for parity-safe idempotent rollout and verification of Stage 1.1/1.2 changes.
+- Synchronized required tracking docs for stage closeout:
+  - `Docs/Function-List.md`
+  - `Docs/Complete-Functionality-Reference.md`
+  - `Project startup Docs/Database Schema.md`
+  - `Project startup Docs/Development Plan - ASP.NET.md`
+  - `Project startup Docs/PRD.md`
+  - `Docs/Command.md`
+- Next stage: Stage 1.4 (Exit Criteria).
+
 ### Institution Validation Checkpoint (2026-05-12 - Phase 1)
 - Execution evidence captured in `Docs/Institution-License-Validation-Phases.md`.
 - Authentication and policy-read checks passed.

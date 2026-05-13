@@ -84,6 +84,32 @@ SELECT 'UsersInstitutionTypeAssignedCount' AS [CheckName], COUNT(1) AS [Value]
 FROM users
 WHERE InstitutionType IS NOT NULL;
 
+SELECT
+	'DepartmentsInstitutionTypeColumnExists' AS [CheckName],
+	CASE WHEN COL_LENGTH('departments', 'InstitutionType') IS NULL THEN 0 ELSE 1 END AS [Value];
+
+SELECT
+	'EnrollmentsStatusMaxLength' AS [CheckName],
+	ISNULL(COL_LENGTH('enrollments', 'Status'), 0) AS [Value];
+
+SELECT 'IndexExists_IX_departments_institution_type' AS [CheckName],
+	CASE WHEN EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_departments_institution_type' AND object_id = OBJECT_ID('departments')) THEN 1 ELSE 0 END AS [Value];
+
+SELECT 'IndexExists_IX_academic_programs_code_dept' AS [CheckName],
+	CASE WHEN EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_academic_programs_code_dept' AND object_id = OBJECT_ID('academic_programs')) THEN 1 ELSE 0 END AS [Value];
+
+SELECT 'IndexExists_IX_enrollments_offering_status' AS [CheckName],
+	CASE WHEN EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_enrollments_offering_status' AND object_id = OBJECT_ID('enrollments')) THEN 1 ELSE 0 END AS [Value];
+
+SELECT 'IndexExists_IX_enrollments_student_status' AS [CheckName],
+	CASE WHEN EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_enrollments_student_status' AND object_id = OBJECT_ID('enrollments')) THEN 1 ELSE 0 END AS [Value];
+
+SELECT 'MigrationExists_Stage11_DepartmentInstitutionType' AS [CheckName],
+	CASE WHEN EXISTS (SELECT 1 FROM __EFMigrationsHistory WHERE MigrationId = '20260513121000_Phase1Stage11DepartmentInstitutionType') THEN 1 ELSE 0 END AS [Value];
+
+SELECT 'MigrationExists_Stage12_ReferentialIntegrityAndIndexes' AS [CheckName],
+	CASE WHEN EXISTS (SELECT 1 FROM __EFMigrationsHistory WHERE MigrationId = '20260513124500_Phase1Stage12ReferentialIntegrityAndIndexes') THEN 1 ELSE 0 END AS [Value];
+
 SELECT TOP 20 [MigrationId], [ProductVersion]
 FROM __EFMigrationsHistory
 ORDER BY [MigrationId] DESC;

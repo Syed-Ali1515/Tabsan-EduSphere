@@ -28,6 +28,9 @@
 | `StudentRegistrationService` program-department alignment guard | Prevents StudentProfile creation when selected program and department do not belong to the same academic scope. | `src/Tabsan.EduSphere.Application/Academic/StudentRegistrationService.cs` |
 | `Phase1Stage12ReferentialIntegrityAndIndexes` migration | Applies Stage 1.2 index coverage and enrollment-status column normalization for institute/report scoped query performance. | `src/Tabsan.EduSphere.Infrastructure/Persistence/Migrations/20260513124500_Phase1Stage12ReferentialIntegrityAndIndexes.cs` |
 | `Stage 1.2 academic/report index pack` | Adds composite indexes for programs, courses, offerings, student profiles, enrollments, and assignment lookup paths used in parity filtering and analytics/report joins. | `src/Tabsan.EduSphere.Infrastructure/Persistence/Configurations/AcademicConfigurations.cs`, `src/Tabsan.EduSphere.Infrastructure/Persistence/Configurations/StudentAcademicConfigurations.cs` |
+| `Stage 1.3 schema replay hardening` | Adds idempotent Stage 1.1/1.2 parity DDL blocks and migration-history updates for script-first deployments. | `Scripts/01-Schema-Current.sql` |
+| `Stage 1.3 maintenance parity index guardrails` | Ensures critical institute/report parity indexes exist and safely replaces legacy program-code index during maintenance runs. | `Scripts/04-Maintenance-Indexes-And-Views.sql` |
+| `Stage 1.3 post-deployment parity verification` | Adds explicit checks for parity migration IDs, column shape, and critical index existence in deployment verification output. | `Scripts/05-PostDeployment-Checks.sql` |
 
 ## Institution License Validation Plan (2026-05-12)
 

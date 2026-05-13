@@ -414,3 +414,23 @@ Validation Summary
 - Role/Institute checks: department/course/offering creation paths now reject cross-scope or missing-link references earlier with explicit `BadRequest` responses.
 - Regression checks: existing department/program/course flows remain functional; integration suite confirmed admin-user + department assignment round-trips remain green after index/integrity changes.
 - Residual risks: Stage 1.3 still required to align SQL script artifacts with new index/constraint posture for deployment replay safety.
+
+### Stage 1.3 - Script Hardening (Completed: 2026-05-13)
+
+Implementation Summary
+- Updated `Scripts/01-Schema-Current.sql` with idempotent Stage 1.1 and Stage 1.2 migration-aligned blocks so schema-only deployments now apply:
+  - `departments.InstitutionType` with default and index,
+  - academic/report parity index pack,
+  - enrollment status column normalization to `nvarchar(32)`,
+  - migration-history inserts for Stage 1.1 and Stage 1.2 IDs.
+- Updated `Scripts/04-Maintenance-Indexes-And-Views.sql` to add replay-safe parity maintenance operations for institute/department/offering/student/enrollment/assignment index paths and safe legacy-index replacement for program uniqueness.
+- Updated `Scripts/05-PostDeployment-Checks.sql` with explicit parity checks for:
+  - stage migration presence,
+  - critical column existence/shape,
+  - critical index existence.
+
+Validation Summary
+- Script validation: verified stage migration IDs and new index/column checks are present in schema, maintenance, and post-deployment scripts.
+- Idempotency checks: all new DDL operations are guarded by `COL_LENGTH`, `sys.indexes`, and migration-history existence checks.
+- Regression checks: application code/tests remained unchanged by Stage 1.3 script-only hardening; no runtime behavior change expected until scripts are executed.
+- Residual risks: Stage 1.4 remains for formal exit verification after script execution in target environments.

@@ -72,6 +72,14 @@ After each completed stage, this document must be updated to reflect any net fun
 - Updated enrollment status storage to bounded string length for SQL index support on active-status query paths.
 - Behavior impact: invalid cross-scope academic links now fail early with explicit validation errors, while existing valid workflows remain backward-compatible.
 
+## 2026-05-13 Update - Institute Parity Stage 1.3 Script Hardening Snapshot
+
+- Hardened deployment SQL scripts to mirror Stage 1.1/1.2 runtime schema behavior for script-first rollout paths.
+- `01-Schema-Current.sql` now includes idempotent parity migration-aligned blocks for department institution dimension and Stage 1.2 index/column updates.
+- `04-Maintenance-Indexes-And-Views.sql` now enforces parity-critical index presence with safe existence guards.
+- `05-PostDeployment-Checks.sql` now emits explicit parity verification signals for migration IDs, column presence/shape, and critical index existence.
+- User-visible runtime behavior is unchanged by Stage 1.3 itself; this stage improves deployment safety and consistency across environments.
+
 ---
 
 ## Table of Contents
