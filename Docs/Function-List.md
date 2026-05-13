@@ -18,6 +18,11 @@
 | `Stage 0.3 Report Failure Inventory` | Tracks report/analytics failures by root-cause tag and maps each to remediation stages. | `Docs/Institute-Parity-Issue-Fix-Phases.md` |
 | `Report Guardrail Outcome Classification` | Distinguishes expected scope-guard failures (400/403/404) from true report defects to reduce false-positive bug triage. | `Docs/Institute-Parity-Issue-Fix-Phases.md` |
 | `Stage 0.4 Phase-0 Exit Signoff` | Consolidates Phase 0 audit outputs into prioritized remediation backlog and confirms readiness for Phase 1 execution. | `Docs/Institute-Parity-Issue-Fix-Phases.md` |
+| `Department.InstitutionType` canonical institute dimension | Anchors School/College/University parity at department level so downstream academic entities inherit institute scope consistently. | `src/Tabsan.EduSphere.Domain/Academic/Department.cs` |
+| `DepartmentConfiguration` institute-type persistence/indexing | Persists department institution type with default University mode and adds `IX_departments_institution_type` query index. | `src/Tabsan.EduSphere.Infrastructure/Persistence/Configurations/DepartmentConfiguration.cs` |
+| `Phase1Stage11DepartmentInstitutionType` migration | Adds `departments.InstitutionType` column and index to normalize institute dimension in schema. | `src/Tabsan.EduSphere.Infrastructure/Persistence/Migrations/20260513121000_Phase1Stage11DepartmentInstitutionType.cs` |
+| `DepartmentController` institution-policy enforcement for departments | Validates create/update institution type assignments against current license policy and returns institution type in department payloads. | `src/Tabsan.EduSphere.API/Controllers/DepartmentController.cs` |
+| `EduApiClient` department institution-type round-trip | Carries institution type in portal department reads and preserves backward-compatible create/update payload behavior. | `src/Tabsan.EduSphere.Web/Services/EduApiClient.cs` |
 
 ## Institution License Validation Plan (2026-05-12)
 

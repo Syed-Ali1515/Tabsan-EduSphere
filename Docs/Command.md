@@ -93,6 +93,18 @@ Before starting any work, the assistant must:
   - `Docs/Command.md`
 - Next phase: Phase 1 (Institute Domain and Data Foundation), starting Stage 1.1.
 
+### Institute Parity Checkpoint (2026-05-13 - Stage 1.1)
+- Completed Stage 1.1 institute model normalization in `Docs/Institute-Parity-Issue-Fix-Phases.md` with required Implementation Summary and Validation Summary.
+- Implemented canonical institute dimension at department level and synchronized API/web contracts with policy-aware write validation.
+- Synchronized required tracking docs for stage closeout:
+  - `Docs/Function-List.md`
+  - `Docs/Complete-Functionality-Reference.md`
+  - `Project startup Docs/Database Schema.md`
+  - `Project startup Docs/Development Plan - ASP.NET.md`
+  - `Project startup Docs/PRD.md`
+  - `Docs/Command.md`
+- Next stage: Stage 1.2 (Referential Integrity + Indexing).
+
 ### Institution Validation Checkpoint (2026-05-12 - Phase 1)
 - Execution evidence captured in `Docs/Institution-License-Validation-Phases.md`.
 - Authentication and policy-read checks passed.

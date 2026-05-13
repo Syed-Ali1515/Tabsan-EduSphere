@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Tabsan.EduSphere.Application.DTOs.Academic;
+using Tabsan.EduSphere.Application.Interfaces;
 using Tabsan.EduSphere.Domain.Academic;
+using Tabsan.EduSphere.Domain.Enums;
 using Tabsan.EduSphere.Domain.Interfaces;
 
 namespace Tabsan.EduSphere.API.Controllers;
@@ -21,19 +23,22 @@ public class DepartmentController : ControllerBase
     private readonly IAdminAssignmentRepository _adminAssignments;
     private readonly IUserRepository _users;
     private readonly IAuditService _audit;
+    private readonly IInstitutionPolicyService _institutionPolicyService;
 
     public DepartmentController(
         IDepartmentRepository deptRepo,
         IFacultyAssignmentRepository facultyAssignments,
         IAdminAssignmentRepository adminAssignments,
         IUserRepository users,
-        IAuditService audit)
+        IAuditService audit,
+        IInstitutionPolicyService institutionPolicyService)
     {
         _deptRepo = deptRepo;
         _facultyAssignments = facultyAssignments;
         _adminAssignments = adminAssignments;
         _users = users;
         _audit = audit;
+        _institutionPolicyService = institutionPolicyService;
     }
 
     // ── GET /api/v1/department ─────────────────────────────────────────────────
@@ -56,7 +61,7 @@ public class DepartmentController : ControllerBase
             depts = depts.Where(d => allowedDepartmentIds.Contains(d.Id)).ToList();
         }
 
-        return Ok(depts.Select(d => new { d.Id, d.Name, d.Code, d.IsActive }));
+        return Ok(depts.Select(d => new { d.Id, d.Name, d.Code, d.IsActive, d.InstitutionType }));
     }
 
     // ── GET /api/v1/department/{id} ────────────────────────────────────────────
@@ -66,7 +71,7 @@ public class DepartmentController : ControllerBase
     public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
     {
         var dept = await _deptRepo.GetByIdAsync(id, ct);
-        return dept is null ? NotFound() : Ok(new { dept.Id, dept.Name, dept.Code, dept.IsActive });
+        return dept is null ? NotFound() : Ok(new { dept.Id, dept.Name, dept.Code, dept.IsActive, dept.InstitutionType });
     }
 
     // ── POST /api/v1/department ────────────────────────────────────────────────
@@ -79,7 +84,11 @@ public class DepartmentController : ControllerBase
         if (await _deptRepo.CodeExistsAsync(request.Code, ct))
             return Conflict($"Department code '{request.Code}' is already in use.");
 
-        var dept = new Department(request.Name, request.Code);
+        var policy = await _institutionPolicyService.GetPolicyAsync(ct);
+        if (!policy.IsEnabled(request.InstitutionType))
+            return BadRequest($"Institution type '{request.InstitutionType}' is not enabled by the current license policy.");
+
+        var dept = new Department(request.Name, request.Code, request.InstitutionType);
         await _deptRepo.AddAsync(dept, ct);
         await _deptRepo.SaveChangesAsync(ct);
         return CreatedAtAction(nameof(GetById), new { id = dept.Id }, new { dept.Id });
@@ -94,6 +103,15 @@ public class DepartmentController : ControllerBase
     {
         var dept = await _deptRepo.GetByIdAsync(id, ct);
         if (dept is null) return NotFound();
+
+        if (request.InstitutionType is not null)
+        {
+            var policy = await _institutionPolicyService.GetPolicyAsync(ct);
+            if (!policy.IsEnabled(request.InstitutionType.Value))
+                return BadRequest($"Institution type '{request.InstitutionType}' is not enabled by the current license policy.");
+
+            dept.SetInstitutionType(request.InstitutionType.Value);
+        }
 
         dept.Rename(request.NewName);
         _deptRepo.Update(dept);
@@ -203,7 +221,7 @@ public class DepartmentController : ControllerBase
 // ── Inline request records (simple enough to keep co-located) ─────────────────
 
 /// <summary>Request body for creating a department.</summary>
-public sealed record CreateDepartmentRequest(string Name, string Code);
+public sealed record CreateDepartmentRequest(string Name, string Code, InstitutionType InstitutionType = InstitutionType.University);
 
 /// <summary>Request body for updating a department's display name.</summary>
-public sealed record UpdateDepartmentRequest(string NewName);
+public sealed record UpdateDepartmentRequest(string NewName, InstitutionType? InstitutionType = null);

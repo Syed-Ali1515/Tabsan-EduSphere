@@ -31,7 +31,7 @@ public class SecurityValidationTests
     [Fact]
     public void CreateAdminUserRequest_InvalidEmail_FailsValidation()
     {
-        var request = new CreateAdminUserRequest("admin.user", "not-an-email", "veryStrongPassword123!");
+        var request = new CreateAdminUserRequest("admin.user", "not-an-email", "veryStrongPassword123!", null);
 
         var results = Validate(request);
 

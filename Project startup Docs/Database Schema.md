@@ -54,6 +54,16 @@ After every completed stage in `Docs/Institute-Parity-Issue-Fix-Phases.md`:
 - Schema impact: `No schema mutation`.
 - EF migration impact: none.
 
+## 2026-05-13 Update - Institute Parity Stage 1.1 (Execution Snapshot)
+
+- Stage 1.1 implemented institute model normalization for department-level canonical institute scope.
+- Schema update applied through EF migration:
+	- `20260513121000_Phase1Stage11DepartmentInstitutionType`
+	- Adds non-null `InstitutionType` (`int`) to `departments` with default `0` (University).
+	- Adds index `IX_departments_institution_type` for institute-scoped lookup/query performance.
+- Schema impact: `Schema updated`.
+- EF migration impact: applied in source and ready for deployment migration pipeline.
+
 ## 2026-05-12 Update — Institution License Validation Phase 7 (Execution Snapshot)
 
 - Completed SuperAdmin permission matrix against existing management and policy tables.

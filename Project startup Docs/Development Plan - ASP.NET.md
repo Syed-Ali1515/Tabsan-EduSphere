@@ -19,6 +19,20 @@ Validation summaries must include at minimum:
 
 ## Execution Updates
 
+### 2026-05-13 - Institute Parity Stage 1.1 (Execution Snapshot)
+- Completed Phase 1 Stage 1.1 institute model normalization.
+- Implementation Summary:
+  - added canonical `InstitutionType` to `Department` domain entity,
+  - added EF persistence + default + institute index on departments,
+  - added migration `20260513121000_Phase1Stage11DepartmentInstitutionType`,
+  - updated department API contracts and policy enforcement to validate institution type against active license policy.
+- Validation Summary:
+  - `dotnet build Tabsan.EduSphere.sln` passed,
+  - targeted unit validation (`SecurityValidationTests`) passed `4/4`,
+  - verified backward-compatible defaults/optionals for existing department create/update flows.
+- Stage status: Stage 1.1 completed.
+- Phase status: Phase 1 in progress (next: Stage 1.2).
+
 ### 2026-05-13 - Institute Parity Stage 0.4 (Execution Snapshot)
 - Completed Phase 0 exit criteria and readiness sign-off.
 - Implementation Summary:

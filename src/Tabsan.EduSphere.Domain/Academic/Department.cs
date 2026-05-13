@@ -1,4 +1,5 @@
 using Tabsan.EduSphere.Domain.Common;
+using Tabsan.EduSphere.Domain.Enums;
 
 namespace Tabsan.EduSphere.Domain.Academic;
 
@@ -21,12 +22,19 @@ public class Department : AuditableEntity
     /// <summary>Controls whether the department is available for assignment and enrolment.</summary>
     public bool IsActive { get; private set; } = true;
 
+    /// <summary>
+    /// Canonical institute dimension for this department. Academic entities scoped by this
+    /// department inherit this institution type for parity and governance enforcement.
+    /// </summary>
+    public InstitutionType InstitutionType { get; private set; } = InstitutionType.University;
+
     private Department() { }
 
-    public Department(string name, string code)
+    public Department(string name, string code, InstitutionType institutionType = InstitutionType.University)
     {
         Name = name;
         Code = code.ToUpperInvariant();
+        InstitutionType = institutionType;
     }
 
     /// <summary>Updates the display name of the department.</summary>
@@ -47,6 +55,13 @@ public class Department : AuditableEntity
     public void Activate()
     {
         IsActive = true;
+        Touch();
+    }
+
+    /// <summary>Updates the canonical institution type for this department.</summary>
+    public void SetInstitutionType(InstitutionType institutionType)
+    {
+        InstitutionType = institutionType;
         Touch();
     }
 }

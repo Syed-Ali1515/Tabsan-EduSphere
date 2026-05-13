@@ -376,3 +376,19 @@ Validation Summary
   - prioritized remediation mapping is present.
 - Verified no unresolved blocker in Phase 0 artifacts that prevents starting Phase 1 execution.
 - Residual risks accepted for next phase execution: institute-filter parity and seed completeness remain open by design and are queued in planned stages.
+
+### Stage 1.1 - Institute Model Normalization (Completed: 2026-05-13)
+
+Implementation Summary
+- Normalized the canonical institute dimension by adding `InstitutionType` to the `Department` domain model, including constructor assignment and controlled mutation through `SetInstitutionType`.
+- Updated EF Core configuration for departments to persist `InstitutionType` with a default value (`University`) and added index `IX_departments_institution_type` for institute-scoped query paths.
+- Added migration `20260513121000_Phase1Stage11DepartmentInstitutionType` to introduce the new `departments.InstitutionType` column and supporting index.
+- Updated Department API create/update/read contracts to include institution type and enforce current license policy checks via `IInstitutionPolicyService`.
+- Updated Web API client department payload handling to round-trip institution type data without breaking existing create/update flows.
+
+Validation Summary
+- Automated tests: `dotnet build Tabsan.EduSphere.sln` -> passed after updating one pre-existing unit test constructor call to include optional institution-type argument.
+- Automated tests: `SecurityValidationTests` -> `4/4` passed.
+- Role/Institute checks: Department create/update now rejects institution types disabled by active policy; default create path remains University-compatible.
+- Regression checks: Existing department CRUD request shapes remain compatible because create defaults to University and update keeps institution type optional.
+- Residual risks: Phase 1.2 still required for broader referential/index tuning across additional institute-filter-heavy query paths.

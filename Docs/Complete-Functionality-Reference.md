@@ -53,6 +53,14 @@ After each completed stage, this document must be updated to reflect any net fun
     - data-completeness hardening (Phase 5).
 - No runtime functionality changed in Stage 0.4; this is governance and execution-readiness closure for Phase 0.
 
+## 2026-05-13 Update - Institute Parity Stage 1.1 Normalization Snapshot
+
+- Added canonical institute dimension normalization for departments by introducing persisted `InstitutionType` (School/College/University) with default compatibility set to University.
+- Department create/update API flows now enforce license policy constraints for institution type selection, preventing assignment to disabled modes.
+- Department read payloads now expose institution type to support downstream parity-aware UI/API behavior.
+- Existing department CRUD behavior remains backward-compatible for current University-first flows because create defaults and update optionals preserve prior request shapes.
+- Stage 1.1 establishes the schema and contract base for follow-on institute-scoped referential and indexing hardening in Stage 1.2.
+
 ---
 
 ## Table of Contents

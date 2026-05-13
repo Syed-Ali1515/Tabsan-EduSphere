@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Tabsan.EduSphere.Domain.Academic;
+using Tabsan.EduSphere.Domain.Enums;
 
 namespace Tabsan.EduSphere.Infrastructure.Persistence.Configurations;
 
@@ -21,12 +22,20 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
                .IsRequired()
                .HasMaxLength(20);
 
+        builder.Property(d => d.InstitutionType)
+               .HasConversion<int>()
+               .HasDefaultValue(InstitutionType.University)
+               .IsRequired();
+
         builder.Property(d => d.RowVersion).IsRowVersion();
 
         // Unique department code used throughout the system.
         builder.HasIndex(d => d.Code)
                .IsUnique()
                .HasDatabaseName("IX_departments_code");
+
+        builder.HasIndex(d => d.InstitutionType)
+               .HasDatabaseName("IX_departments_institution_type");
 
         // Soft-delete filter — normal queries never see deleted departments.
         builder.HasQueryFilter(d => !d.IsDeleted);

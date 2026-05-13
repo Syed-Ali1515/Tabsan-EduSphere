@@ -1293,7 +1293,11 @@ public class EduApiClient : IEduApiClient
         var raw = await GetAsync<List<DeptDetailDto>>("api/v1/department", ct) ?? new();
         return raw.Select(d => new DepartmentItem
         {
-            Id = d.Id, Name = d.Name ?? "", Code = d.Code ?? "", IsActive = d.IsActive
+            Id = d.Id,
+            Name = d.Name ?? "",
+            Code = d.Code ?? "",
+            IsActive = d.IsActive,
+            InstitutionType = d.InstitutionType
         }).ToList();
     }
 
@@ -1303,6 +1307,7 @@ public class EduApiClient : IEduApiClient
         public string? Name     { get; set; }
         public string? Code     { get; set; }
         public bool    IsActive { get; set; }
+        public int     InstitutionType { get; set; }
     }
 
     private sealed class AdminUserApiDto
@@ -1330,10 +1335,10 @@ public class EduApiClient : IEduApiClient
     }
 
     public Task CreateDepartmentAsync(string name, string code, CancellationToken ct)
-        => PostAsync<object, object>("api/v1/department", new { name, code }, ct);
+        => PostAsync<object, object>("api/v1/department", new { name, code, institutionType = 0 }, ct);
 
     public Task UpdateDepartmentAsync(Guid id, string newName, CancellationToken ct)
-        => PutAsync<object, object>($"api/v1/department/{id}", new { newName }, ct);
+        => PutAsync<object, object>($"api/v1/department/{id}", new { newName, institutionType = (int?)null }, ct);
 
     public Task DeactivateDepartmentAsync(Guid id, CancellationToken ct)
         => DeleteAsync($"api/v1/department/{id}", ct);

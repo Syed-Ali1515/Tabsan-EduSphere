@@ -18,6 +18,22 @@ Each stage log entry must clearly describe behavior impact for School/College/Un
 
 ## 0. Implementation Update Log
 
+### 2026-05-13 - Institute Parity Stage 1.1 (Execution Snapshot)
+- Completed institute model normalization baseline for Phase 1.
+- Implementation Summary:
+  - introduced canonical department-level `InstitutionType` (School/College/University) in domain model,
+  - persisted and indexed department institution type in schema,
+  - enforced policy-aware institution type validation in department create/update API flows,
+  - exposed institution type in department read payloads and synced web client contracts.
+- Validation Summary:
+  - solution build passed after Stage 1.1 updates,
+  - targeted validation test suite (`SecurityValidationTests`) passed `4/4`,
+  - confirmed backward-compatible behavior for existing University-default department operations.
+- Behavior impact:
+  - Department records are now explicit institute anchors for parity execution,
+  - disabled institution modes are blocked at department write paths by active policy,
+  - runtime behavior remains compatible for current University-only default workflows.
+
 ### 2026-05-13 - Institute Parity Stage 0.4 (Execution Snapshot)
 - Completed Phase 0 baseline exit sign-off.
 - Implementation Summary:
