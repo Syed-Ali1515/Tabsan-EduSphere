@@ -383,6 +383,18 @@ After each completed stage, this document must be updated to reflect any net fun
     - role-boundary expectations are now explicitly regression-protected across all three institution claim contexts,
     - no runtime feature contract changes or schema mutations introduced by Stage 6.2.
 
+## 2026-05-13 Update - Institute Parity Stage 6.3 Performance and Query Validation Snapshot
+
+- Completed performance and query validation for parity-sensitive institute-filtered report/dashboard paths.
+- Added Stage 6.3 validation coverage for:
+    - parity index read-usage confirmation on institute-filtered query patterns (`academic_programs`, `courses`, `course_offerings`),
+    - no-major-regression latency budgets on common Admin dashboard/report paths.
+- Validation evidence:
+    - focused Stage 6.3 integration run passed (`2/2`) across `PerformanceQueryValidationIntegrationTests`.
+- Behavior impact:
+    - index-backed institute-filtered query paths now have explicit automated validation evidence,
+    - no runtime feature contract changes or schema mutations introduced by Stage 6.3.
+
 ---
 
 ## Table of Contents

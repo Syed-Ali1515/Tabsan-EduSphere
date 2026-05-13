@@ -97,6 +97,9 @@
 | `Stage 6.2 cross-role account-security matrix` | Validates locked-account endpoint role boundaries across School/College/University institution claim contexts. | `tests/Tabsan.EduSphere.IntegrationTests/CrossRoleUatMatrixIntegrationTests.cs` |
 | `Stage 6.2 cross-role attendance authorization matrix` | Validates attendance-by-offering authorization outcomes for privileged roles vs Student across School/College/University institution claims. | `tests/Tabsan.EduSphere.IntegrationTests/CrossRoleUatMatrixIntegrationTests.cs` |
 | `Stage 6.2 focused cross-role UAT regression gate` | Executes cross-role UAT matrix plus authorization/report baseline suites as Stage 6.2 evidence. | `tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj` |
+| `Stage 6.3 parity index read-usage validation` | Validates read-path index activity for institute-filtered queries using parity indexes on programs, courses, and offerings. | `tests/Tabsan.EduSphere.IntegrationTests/PerformanceQueryValidationIntegrationTests.cs` |
+| `Stage 6.3 dashboard/report latency budget validation` | Validates no-major-regression latency budgets on common parity-sensitive dashboard/report endpoints for Admin callers. | `tests/Tabsan.EduSphere.IntegrationTests/PerformanceQueryValidationIntegrationTests.cs` |
+| `Stage 6.3 focused performance/query regression gate` | Executes Stage 6.3 performance and query validation suite for parity evidence. | `tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj` |
 
 ## Institution License Validation Plan (2026-05-12)
 

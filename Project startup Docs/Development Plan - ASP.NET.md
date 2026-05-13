@@ -19,6 +19,17 @@ Validation summaries must include at minimum:
 
 ## Execution Updates
 
+### 2026-05-13 - Institute Parity Stage 6.3 (Execution Snapshot)
+- Completed Phase 6 Stage 6.3 performance and query validation.
+- Implementation Summary:
+  - added parity index read-usage integration checks for institute-filtered query paths on programs, courses, and offerings,
+  - added no-major-regression latency budget integration checks on common Admin dashboard/report endpoints.
+- Validation Summary:
+  - `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~PerformanceQueryValidationIntegrationTests" -v minimal` passed (`2/2`),
+  - confirmed Stage 6.3 targets returned no `401/403` authorization regressions and no `5xx` responses in measured loops.
+- Stage status: Stage 6.3 completed.
+- Phase status: Phase 6 in progress (next: Stage 6.4).
+
 ### 2026-05-13 - Institute Parity Stage 6.2 (Execution Snapshot)
 - Completed Phase 6 Stage 6.2 cross-role UAT matrix.
 - Implementation Summary:

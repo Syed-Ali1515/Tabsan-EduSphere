@@ -18,6 +18,18 @@ Each stage log entry must clearly describe behavior impact for School/College/Un
 
 ## 0. Implementation Update Log
 
+### 2026-05-13 - Institute Parity Stage 6.3 (Execution Snapshot)
+- Completed performance and query validation for parity-sensitive report/dashboard load paths.
+- Implementation Summary:
+  - added parity index read-usage validation for institute-filtered query patterns using Stage 1 parity indexes,
+  - added common Admin dashboard/report latency budget regression checks for Stage 6.3 no-major-regression evidence.
+- Validation Summary:
+  - focused Stage 6.3 integration suite passed (`2/2`) via `PerformanceQueryValidationIntegrationTests`,
+  - index read-path validation and endpoint latency loops completed with zero failures.
+- Behavior impact:
+  - institute-filtered query performance assumptions now have direct automated regression evidence,
+  - no schema shape changes and no runtime contract changes were introduced in Stage 6.3.
+
 ### 2026-05-13 - Institute Parity Stage 6.2 (Execution Snapshot)
 - Completed cross-role UAT matrix automation for School/College/University parity contexts.
 - Implementation Summary:

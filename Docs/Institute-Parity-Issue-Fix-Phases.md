@@ -874,3 +874,22 @@ Validation Summary
   - confirmed report catalog remains role-scoped while account-security and attendance endpoints preserve expected permission boundaries across institution contexts.
 - Regression checks: Stage 6.2 focused UAT matrix completed with zero failures.
 - Residual risks: performance/query validation remains in Stage 6.3.
+
+### Stage 6.3 - Performance and Query Validation (Completed: 2026-05-13)
+
+Implementation Summary
+- Backend/API/service/repository updates: none.
+- Frontend/menu/filter updates: none.
+- Authorization/policy updates: none.
+- DB/schema/script updates: none.
+- Repository/test updates:
+  - added `PerformanceQueryValidationIntegrationTests` to validate read-usage of parity indexes (`IX_academic_programs_dept_active`, `IX_courses_dept_active`, `IX_course_offerings_semester_open`) on institute-filtered query patterns,
+  - added dashboard/report latency budget regression checks for Admin callers across common paths (`api/analytics/assignments`, `api/v1/reports`, `api/v1/attendance/below-threshold`).
+
+Validation Summary
+- Automated tests: `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~PerformanceQueryValidationIntegrationTests" -v minimal` -> passed (`2/2`).
+- Role/Institute checks:
+  - confirmed Admin parity-sensitive dashboard/report paths remain authorized under institution-scoped token context,
+  - confirmed no `401/403` regressions and no `5xx` responses in measured request loops for Stage 6.3 target endpoints.
+- Regression checks: Stage 6.3 performance/query validation suite completed with zero failures.
+- Residual risks: phase-exit consolidation remains in Stage 6.4.

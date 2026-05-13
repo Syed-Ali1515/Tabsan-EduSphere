@@ -297,6 +297,17 @@ After every completed stage in `Docs/Institute-Parity-Issue-Fix-Phases.md`:
 - Schema impact: `No schema mutation`.
 - EF migration impact: none.
 
+## 2026-05-13 Update - Institute Parity Stage 6.3 (Execution Snapshot)
+
+- Stage 6.3 completed performance and query validation for institute parity.
+- API/web contract updates applied:
+	- no runtime API/Web contract changes (test-only stage).
+- Query/runtime update applied:
+	- added integration-test validation for parity index read-usage on institute-filtered query paths,
+	- added integration-test latency budget checks for common Admin dashboard/report paths.
+- Schema impact: `No schema mutation`.
+- EF migration impact: none.
+
 ## 2026-05-12 Update — Institution License Validation Phase 7 (Execution Snapshot)
 
 - Completed SuperAdmin permission matrix against existing management and policy tables.
