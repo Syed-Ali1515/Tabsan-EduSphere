@@ -72,6 +72,7 @@
 | `ReportController faculty department-scope guardrails` | Enforces faculty department/department-or-offering report scope on GPA, enrollment, semester-results, low-attendance, and FYP status report endpoints. | `src/Tabsan.EduSphere.API/Controllers/ReportController.cs` |
 | `ReportController faculty offering assignment fallback` | Replaces strict offering owner check with faculty department-assignment scope validation to avoid false report forbids for assigned offerings. | `src/Tabsan.EduSphere.API/Controllers/ReportController.cs` |
 | `Stage 4.3 report reliability integration checks` | Adds deterministic faculty report scope tests for required filters and unassigned-department denial behavior on repaired report routes. | `tests/Tabsan.EduSphere.IntegrationTests/ReportExportsIntegrationTests.cs` |
+| `Stage 4.4 phase-exit full integration validation` | Confirms Phase 4 report and analytics parity closure with a full integration-suite regression gate. | `tests/Tabsan.EduSphere.IntegrationTests/*.cs` |
 
 ## Institution License Validation Plan (2026-05-12)
 

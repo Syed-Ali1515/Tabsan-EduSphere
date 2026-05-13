@@ -282,6 +282,20 @@ After each completed stage, this document must be updated to reflect any net fun
     - report endpoints now apply role + institute + department scope consistently for repaired routes,
     - no schema or migration update required for Stage 4.3.
 
+## 2026-05-13 Update - Institute Parity Stage 4.4 Exit Criteria Snapshot
+
+- Completed Phase 4 exit gate after the report and analytics reliability fixes.
+- Exit validation now confirms:
+    - full integration-suite regression stability across report, analytics, role, and institute guard paths,
+    - no remaining Phase 4 functional regressions in School/College/University parity flows,
+    - no schema or migration update required for the phase-exit checkpoint.
+- Validation evidence:
+    - solution build pass,
+    - full integration suite pass (`124/124`).
+- Behavior impact:
+    - Phase 4 is closed with error-free report and analytics parity behavior,
+    - the execution pointer advances to Phase 5 without additional code changes.
+
 ---
 
 ## Table of Contents
