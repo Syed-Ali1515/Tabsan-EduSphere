@@ -18,6 +18,22 @@ Each stage log entry must clearly describe behavior impact for School/College/Un
 
 ## 0. Implementation Update Log
 
+### 2026-05-13 - Institute Parity Stage 3.2 (Execution Snapshot)
+- Completed student lifecycle institute parity hardening for Phase 3.
+- Implementation Summary:
+  - added admin lifecycle endpoint guardrails for department-assignment and institution-type compatibility checks,
+  - preserved SuperAdmin full-scope lifecycle behavior,
+  - added web-session `institutionType` projection from JWT and institute-filtered lifecycle department selection in portal,
+  - fixed lifecycle promote/graduate action route-state continuity in portal screen,
+  - added integration coverage for lifecycle institution mismatch denial.
+- Validation Summary:
+  - focused integration validation suites passed (`37/37`) including new lifecycle mismatch tests and existing Stage 2/3 parity suites,
+  - verified no regressions in report/sidebar/assignment parity behavior after lifecycle scope enforcement.
+- Behavior impact:
+  - lifecycle transitions and candidate reads now honor institute boundaries for Admin callers,
+  - institute-mismatched lifecycle access attempts return deterministic forbidden responses,
+  - no schema migration introduced by this stage.
+
 ### 2026-05-13 - Institute Parity Stage 3.1 (Execution Snapshot)
 - Completed Phase 3 first stage for module CRUD/workflow parity in core academic/admin surfaces.
 - Implementation Summary:

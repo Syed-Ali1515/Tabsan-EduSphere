@@ -891,6 +891,16 @@ public class EduApiClient : IEduApiClient
 
             if (root.TryGetProperty("email", out var em)) identity.Email = em.GetString();
 
+            if (root.TryGetProperty("institutionType", out var it) && it.ValueKind == JsonValueKind.String)
+            {
+                if (int.TryParse(it.GetString(), out var parsed))
+                    identity.InstitutionType = parsed;
+            }
+            else if (root.TryGetProperty("institutionType", out it) && it.ValueKind == JsonValueKind.Number)
+            {
+                identity.InstitutionType = it.GetInt32();
+            }
+
             // Role claim may be emitted as `role` or the standard ClaimTypes.Role URI.
             if (TryReadRoleClaims(root, out var roles))
             {

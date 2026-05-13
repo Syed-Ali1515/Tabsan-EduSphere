@@ -2266,6 +2266,7 @@ public class PortalController : Controller
     public async Task<IActionResult> StudentLifecycle(Guid? departmentId, int semester = 1, CancellationToken ct = default)
     {
         ViewData["Title"] = "Student Lifecycle";
+        var identity = _api.GetSessionIdentity();
         var model = new StudentLifecyclePageModel
         {
             IsConnected         = _api.IsConnected(),
@@ -2277,10 +2278,27 @@ public class PortalController : Controller
         try
         {
             model.Departments = await _api.GetDepartmentsAsync(ct);
+
+            if (identity is { IsSuperAdmin: false, InstitutionType: not null })
+            {
+                model.Departments = model.Departments
+                    .Where(d => d.InstitutionType == identity.InstitutionType.Value)
+                    .ToList();
+
+                if (model.SelectedDepartmentId.HasValue && model.Departments.All(d => d.Id != model.SelectedDepartmentId.Value))
+                {
+                    model.Message = "Selected department is outside your current institute scope.";
+                    model.SelectedDepartmentId = null;
+                }
+            }
+
             if (departmentId.HasValue)
             {
-                model.GraduationCandidates = await _api.GetGraduationCandidatesAsync(departmentId.Value, ct);
-                model.StudentsBySemester   = await _api.GetStudentsBySemesterAsync(departmentId.Value, semester, ct);
+                if (model.Departments.Any(d => d.Id == departmentId.Value))
+                {
+                    model.GraduationCandidates = await _api.GetGraduationCandidatesAsync(departmentId.Value, ct);
+                    model.StudentsBySemester   = await _api.GetStudentsBySemesterAsync(departmentId.Value, semester, ct);
+                }
             }
         }
         catch (Exception ex) { model.Message = ex.Message; }

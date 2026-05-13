@@ -569,3 +569,30 @@ Validation Summary
   - verified existing role/institute authorization and menu/report guard suites remain green.
 - Regression checks: Stage 2 authorization and sidebar/report parity tests remained green after Stage 3.1 changes.
 - Residual risks: additional module parity hardening for timetable/assignments/enrollments/results/quizzes/payments/settings remains in upcoming Phase 3 stages.
+
+### Stage 3.2 - Student Lifecycle Institute Parity (Completed: 2026-05-13)
+
+Implementation Summary
+- Backend/API/service updates:
+  - added institute-aware lifecycle scope enforcement in `StudentLifecycleController` for graduation candidates, semester-student listing, graduate, promote, deactivate, reactivate, and lifecycle batch endpoints,
+  - enforced Admin department-assignment scope checks on lifecycle endpoints before lifecycle operations are executed,
+  - added student-target-to-department scope resolution in lifecycle endpoint guards so student-level mutations cannot bypass department/institute boundaries.
+- Frontend/menu/filter updates:
+  - added session-level `institutionType` decoding in web token identity so portal lifecycle screens can apply institute-aware filtering,
+  - filtered Student Lifecycle department dropdown by caller institute type for non-SuperAdmin sessions,
+  - fixed lifecycle action wiring to preserve selected department/semester filters across promote/graduate actions.
+- Authorization/policy updates:
+  - aligned lifecycle authorization behavior with Stage 2 institute-scope guard model used by report endpoints,
+  - preserved SuperAdmin global access behavior while constraining Admin flows to assignment + institute scope.
+- DB/schema/script updates: none.
+- Repository/test updates:
+  - added dedicated lifecycle integration suite `StudentLifecycleIntegrationTests` covering admin institution mismatch deny behavior on graduation candidate read and promote mutation endpoints.
+
+Validation Summary
+- Automated tests: `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~StudentLifecycleIntegrationTests|FullyQualifiedName~AdminUserManagementIntegrationTests|FullyQualifiedName~SidebarMenuIntegrationTests|FullyQualifiedName~ReportExportsIntegrationTests" -v minimal` -> passed (`37/37`).
+- Role/Institute checks:
+  - verified Admin requests with valid department assignment but mismatched institution claim are denied (`403`) on lifecycle candidate and promote paths,
+  - verified Stage 2 assignment/report/sidebar authorization suites remain green with lifecycle scope hardening in place,
+  - verified SuperAdmin authorization behavior remains unaffected by institute-claim restrictions.
+- Regression checks: no new failures observed in Stage 2 authorization/menu/report and Stage 3.1 admin-management parity suites.
+- Residual risks: lifecycle parity for hold/withdraw/transfer/graduation reporting depth and student submenu parity breadth continues in Stage 3.3.

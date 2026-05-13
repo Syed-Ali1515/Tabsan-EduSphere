@@ -165,6 +165,16 @@ After every completed stage in `Docs/Institute-Parity-Issue-Fix-Phases.md`:
 - Schema impact: `No schema mutation`.
 - EF migration impact: none.
 
+## 2026-05-13 Update - Institute Parity Stage 3.2 (Execution Snapshot)
+
+- Stage 3.2 completed lifecycle institute-parity enforcement for student lifecycle endpoints and portal lifecycle filters.
+- API/web contract updates applied:
+	- lifecycle endpoints now enforce admin assignment + institution scope compatibility,
+	- web session identity now projects JWT `institutionType` for institute-aware lifecycle filtering,
+	- lifecycle portal actions now preserve selected department/semester route state.
+- Schema impact: `No schema mutation`.
+- EF migration impact: none.
+
 ## 2026-05-12 Update — Institution License Validation Phase 7 (Execution Snapshot)
 
 - Completed SuperAdmin permission matrix against existing management and policy tables.

@@ -154,6 +154,26 @@ After each completed stage, this document must be updated to reflect any net fun
     - mixed-institution datasets no longer cause false assignment-path regressions in integration coverage,
     - no database schema or migration mutation was required for Stage 3.1.
 
+## 2026-05-13 Update - Institute Parity Stage 3.2 Student Lifecycle Snapshot
+
+- Completed lifecycle institute-parity hardening for student lifecycle workflows currently implemented in platform scope (graduation candidates, promote, graduate, deactivate, reactivate).
+- API lifecycle access behavior now enforces:
+    - Admin department-assignment scope checks,
+    - institution-type claim compatibility with target department/student department,
+    - SuperAdmin bypass for expected global governance behavior.
+- Portal lifecycle behavior now enforces institute-aware filtering:
+    - session JWT identity includes optional `institutionType`,
+    - lifecycle department selector is constrained by institute type for non-SuperAdmin sessions,
+    - out-of-scope department selections are blocked before lifecycle calls.
+- Lifecycle UI operation consistency improved:
+    - per-row graduation now posts correctly,
+    - promote/graduate actions preserve selected department and semester filter context.
+- Added focused integration validation proving Admin institute-mismatch deny behavior on lifecycle read/mutation paths while keeping Stage 2 report/menu/assignment parity suites green.
+- Behavior impact:
+    - student lifecycle operations now follow the same institute-boundary enforcement model already adopted by report authorization paths,
+    - lifecycle transitions cannot be invoked by Admin users outside assigned department + institution scope,
+    - no schema/model migration changes were required for Stage 3.2.
+
 ---
 
 ## Table of Contents

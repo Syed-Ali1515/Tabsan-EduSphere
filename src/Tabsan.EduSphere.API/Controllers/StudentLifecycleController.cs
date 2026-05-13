@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using Tabsan.EduSphere.Application.Dtos;
 using Tabsan.EduSphere.Application.Interfaces;
+using Tabsan.EduSphere.Domain.Interfaces;
 
 namespace Tabsan.EduSphere.API.Controllers;
 
@@ -16,10 +18,20 @@ namespace Tabsan.EduSphere.API.Controllers;
 public class StudentLifecycleController : ControllerBase
 {
     private readonly IStudentLifecycleService _service;
+    private readonly IDepartmentRepository _departments;
+    private readonly IStudentLifecycleRepository _studentLifecycle;
+    private readonly IAdminAssignmentRepository _adminAssignments;
 
-    public StudentLifecycleController(IStudentLifecycleService service)
+    public StudentLifecycleController(
+        IStudentLifecycleService service,
+        IDepartmentRepository departments,
+        IStudentLifecycleRepository studentLifecycle,
+        IAdminAssignmentRepository adminAssignments)
     {
         _service = service;
+        _departments = departments;
+        _studentLifecycle = studentLifecycle;
+        _adminAssignments = adminAssignments;
     }
 
     // ── GET /api/v1/student-lifecycle/graduation-candidates/{departmentId} ────
@@ -28,6 +40,10 @@ public class StudentLifecycleController : ControllerBase
     [HttpGet("graduation-candidates/{departmentId:guid}")]
     public async Task<IActionResult> GetGraduationCandidates(Guid departmentId, CancellationToken ct)
     {
+        var scope = await EnforceDepartmentScopeAsync(departmentId, ct);
+        if (scope is not null)
+            return scope;
+
         var candidates = await _service.GetGraduationCandidatesByDepartmentAsync(departmentId, ct);
         return Ok(candidates);
     }
@@ -40,6 +56,10 @@ public class StudentLifecycleController : ControllerBase
     {
         try
         {
+            var scope = await EnforceStudentScopeAsync(request.StudentProfileId, ct);
+            if (scope is not null)
+                return scope;
+
             await _service.GraduateStudentAsync(request.StudentProfileId, ct);
             return NoContent();
         }
@@ -57,6 +77,13 @@ public class StudentLifecycleController : ControllerBase
         [FromBody] IList<Guid> studentProfileIds,
         CancellationToken ct)
     {
+        foreach (var studentProfileId in studentProfileIds)
+        {
+            var scope = await EnforceStudentScopeAsync(studentProfileId, ct);
+            if (scope is not null)
+                return scope;
+        }
+
         await _service.GraduateStudentsBatchAsync(studentProfileIds, ct);
         return NoContent();
     }
@@ -69,6 +96,10 @@ public class StudentLifecycleController : ControllerBase
     {
         try
         {
+            var scope = await EnforceStudentScopeAsync(id, ct);
+            if (scope is not null)
+                return scope;
+
             await _service.DeactivateStudentAsync(id, ct);
             return NoContent();
         }
@@ -86,6 +117,10 @@ public class StudentLifecycleController : ControllerBase
     {
         try
         {
+            var scope = await EnforceStudentScopeAsync(id, ct);
+            if (scope is not null)
+                return scope;
+
             await _service.ReactivateStudentAsync(id, ct);
             return NoContent();
         }
@@ -104,6 +139,10 @@ public class StudentLifecycleController : ControllerBase
         int semesterNumber,
         CancellationToken ct)
     {
+        var scope = await EnforceDepartmentScopeAsync(departmentId, ct);
+        if (scope is not null)
+            return scope;
+
         var students = await _service.GetStudentsBySemesterAsync(departmentId, semesterNumber, ct);
         return Ok(students);
     }
@@ -116,6 +155,10 @@ public class StudentLifecycleController : ControllerBase
     {
         try
         {
+            var scope = await EnforceStudentScopeAsync(id, ct);
+            if (scope is not null)
+                return scope;
+
             await _service.PromoteStudentAsync(id, ct);
             return NoContent();
         }
@@ -140,7 +183,65 @@ public class StudentLifecycleController : ControllerBase
         [FromBody] PromoteStudentsBatchRequest request,
         CancellationToken ct)
     {
+        foreach (var studentProfileId in request.StudentProfileIds)
+        {
+            var scope = await EnforceStudentScopeAsync(studentProfileId, ct);
+            if (scope is not null)
+                return scope;
+        }
+
         var result = await _service.PromoteStudentsBatchAsync(request.StudentProfileIds, ct);
         return Ok(result);
+    }
+
+    private Guid GetCurrentUserId()
+    {
+        var raw = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return Guid.TryParse(raw, out var id) ? id : Guid.Empty;
+    }
+
+    private int? GetCurrentInstitutionType()
+    {
+        var raw = User.FindFirst("institutionType")?.Value;
+        return int.TryParse(raw, out var value) ? value : null;
+    }
+
+    private async Task<IActionResult?> EnforceDepartmentScopeAsync(Guid departmentId, CancellationToken ct)
+    {
+        if (User.IsInRole("SuperAdmin"))
+            return null;
+
+        if (User.IsInRole("Admin"))
+        {
+            var adminUserId = GetCurrentUserId();
+            if (adminUserId == Guid.Empty)
+                return Forbid();
+
+            var allowedDepartmentIds = await _adminAssignments.GetDepartmentIdsForAdminAsync(adminUserId, ct);
+            if (!allowedDepartmentIds.Contains(departmentId))
+                return Forbid();
+        }
+
+        var callerInstitutionType = GetCurrentInstitutionType();
+        if (!callerInstitutionType.HasValue)
+            return null;
+
+        var department = await _departments.GetByIdAsync(departmentId, ct);
+        if (department is null)
+            return NotFound("Department not found.");
+
+        return (int)department.InstitutionType == callerInstitutionType.Value ? null : Forbid();
+    }
+
+    private async Task<IActionResult?> EnforceStudentScopeAsync(Guid studentProfileId, CancellationToken ct)
+    {
+        if (User.IsInRole("SuperAdmin"))
+            return null;
+
+        var student = await _studentLifecycle.GetByIdAsync(studentProfileId, ct);
+        if (student is null)
+            return NotFound(new { message = $"Student profile {studentProfileId} not found." });
+
+        return await EnforceDepartmentScopeAsync(student.DepartmentId, ct);
     }
 }

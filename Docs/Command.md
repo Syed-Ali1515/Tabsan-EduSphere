@@ -202,6 +202,19 @@ Before starting any work, the assistant must:
   - `Docs/Command.md`
 - Next stage: Stage 3.2 (Core Academic/Admin Modules continuation).
 
+### Institute Parity Checkpoint (2026-05-13 - Stage 3.2)
+- Completed Stage 3.2 student lifecycle institute parity in `Docs/Institute-Parity-Issue-Fix-Phases.md` with required Implementation Summary and Validation Summary.
+- Added lifecycle institute-scope enforcement for Admin users and portal lifecycle institute-filter alignment, plus integration mismatch-deny coverage.
+- Synchronized required tracking docs for stage closeout:
+  - `Docs/Institute-Parity-Issue-Fix-Phases.md`
+  - `Docs/Function-List.md`
+  - `Docs/Complete-Functionality-Reference.md`
+  - `Project startup Docs/Database Schema.md`
+  - `Project startup Docs/Development Plan - ASP.NET.md`
+  - `Project startup Docs/PRD.md`
+  - `Docs/Command.md`
+- Next stage: Stage 3.3 (Student Submenu Parity).
+
 ### Institution Validation Checkpoint (2026-05-12 - Phase 1)
 - Execution evidence captured in `Docs/Institution-License-Validation-Phases.md`.
 - Authentication and policy-read checks passed.
@@ -330,11 +343,11 @@ cmd /c git -C "<repo-root>" push origin main
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
 - Active Phase: **Institute Parity - Phase 3 (Module CRUD and Workflow Parity)**
-- Active Stage: **Stage 3.2 (next execution target)**
-- Status: **Stage 3.1 completed and documented with validation evidence.**
+- Active Stage: **Stage 3.3 (next execution target)**
+- Status: **Stage 3.2 completed and documented with validation evidence.**
 - Last Updated: 2026-05-13
-- Next: **Execute Stage 3.2 parity scope and close out with required 7-document synchronization plus commit -> pull --rebase -> push.**
-- Docs Updated: ✅ Stage 3.1 tracker and planning docs synchronized (2026-05-13)
+- Next: **Execute Stage 3.3 parity scope and close out with required 7-document synchronization plus commit -> pull --rebase -> push.**
+- Docs Updated: ✅ Stage 3.2 tracker and planning docs synchronized (2026-05-13)
 
 ### 2026-05-11 - Phase 10 Completion
 - Stage 10.1: Added a parameterized progressive gate runner for stepwise scale validation and higher-tier execution.

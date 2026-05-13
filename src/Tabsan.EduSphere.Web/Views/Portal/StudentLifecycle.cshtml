@@ -61,41 +61,40 @@ else
             }
             else
             {
-                <form asp-action="GraduateStudent" method="post">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead class="table-light">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Reg. No.</th>
+                                <th>Name</th>
+                                <th>Program</th>
+                                <th>CGPA</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var s in Model.GraduationCandidates)
+                            {
                                 <tr>
-                                    <th><input type="checkbox" id="checkAll" /></th>
-                                    <th>Reg. No.</th>
-                                    <th>Name</th>
-                                    <th>Program</th>
-                                    <th>CGPA</th>
-                                    <th>Action</th>
+                                    <td><code>@s.RegistrationNumber</code></td>
+                                    <td>@s.FullName</td>
+                                    <td>@s.ProgramName</td>
+                                    <td>@(s.Cgpa.HasValue ? s.Cgpa.Value.ToString("0.00") : "–")</td>
+                                    <td>
+                                        <form asp-action="GraduateStudent" method="post" class="d-inline">
+                                            <input type="hidden" name="studentId" value="@s.Id" />
+                                            <input type="hidden" name="departmentId" value="@Model.SelectedDepartmentId" />
+                                            <button type="submit" class="btn btn-success btn-sm"
+                                                    onclick="return confirm('Graduate this student?')">
+                                                Graduate
+                                            </button>
+                                        </form>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var s in Model.GraduationCandidates)
-                                {
-                                    <tr>
-                                        <td><input type="checkbox" name="studentIds" value="@s.Id" class="row-check" /></td>
-                                        <td><code>@s.RegistrationNumber</code></td>
-                                        <td>@s.FullName</td>
-                                        <td>@s.ProgramName</td>
-                                        <td>@(s.Cgpa.HasValue ? s.Cgpa.Value.ToString("0.00") : "–")</td>
-                                        <td>
-                                            <a asp-action="GraduateStudent"
-                                               asp-route-studentId="@s.Id"
-                                               class="btn btn-success btn-sm"
-                                               onclick="return confirm('Graduate this student?')">Graduate</a>
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                    <button type="submit" class="btn btn-success">Graduate Selected</button>
-                </form>
+                            }
+                        </tbody>
+                    </table>
+                </div>
             }
         </div>
 
@@ -121,6 +120,8 @@ else
                                     <td>
                                         <form asp-action="PromoteStudent" method="post" class="d-inline">
                                             <input type="hidden" name="studentId" value="@s.Id" />
+                                            <input type="hidden" name="departmentId" value="@Model.SelectedDepartmentId" />
+                                            <input type="hidden" name="semester" value="@Model.SelectedSemester" />
                                             <button type="submit" class="btn btn-outline-primary btn-sm"
                                                     onclick="return confirm('Promote this student?')">
                                                 Promote
@@ -137,8 +138,3 @@ else
     </div>
 }
 
-<script>
-    document.getElementById('checkAll')?.addEventListener('change', function () {
-        document.querySelectorAll('.row-check').forEach(c => c.checked = this.checked);
-    });
-</script>

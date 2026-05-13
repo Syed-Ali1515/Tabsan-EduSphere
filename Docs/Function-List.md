@@ -48,6 +48,11 @@
 | `EduApiClient department institution-type write contract` | Removes silent University-only write behavior by requiring explicit institution type for department create/update operations. | `src/Tabsan.EduSphere.Web/Services/EduApiClient.cs` |
 | `Stage 3.1 cross-institution department/course CRUD integration` | Validates department/course CRUD paths across School/College/University when policy enables all institution types, and restores policy after execution. | `tests/Tabsan.EduSphere.IntegrationTests/AdminUserManagementIntegrationTests.cs` |
 | `Admin assignment round-trip institution-compatible department selector` | Hardens existing admin assignment round-trip integration test to select/create a department compatible with assigned institution type in mixed datasets. | `tests/Tabsan.EduSphere.IntegrationTests/AdminUserManagementIntegrationTests.cs` |
+| `StudentLifecycleController institute-aware admin lifecycle scope guard` | Enforces admin department-assignment and institution-type compatibility checks on lifecycle read/mutation endpoints while preserving SuperAdmin global scope. | `src/Tabsan.EduSphere.API/Controllers/StudentLifecycleController.cs` |
+| `SessionIdentity institution claim projection` | Projects optional `institutionType` from JWT payload into web session identity to enable institute-aware portal filtering behavior. | `src/Tabsan.EduSphere.Web/Models/Portal/PortalViewModels.cs`, `src/Tabsan.EduSphere.Web/Services/EduApiClient.cs` |
+| `Portal Student Lifecycle institute-filtered department selector` | Filters lifecycle department options by caller institution type and prevents out-of-scope selection execution in portal lifecycle flows. | `src/Tabsan.EduSphere.Web/Controllers/PortalController.cs` |
+| `Portal Student Lifecycle action route-state preservation` | Keeps selected lifecycle department/semester state during promote/graduate actions and fixes per-row graduate posting behavior. | `src/Tabsan.EduSphere.Web/Views/Portal/StudentLifecycle.cshtml` |
+| `Stage 3.2 lifecycle institute mismatch integration checks` | Validates that Admin lifecycle graduation-candidate and promote paths return forbidden on institution mismatch despite department assignment. | `tests/Tabsan.EduSphere.IntegrationTests/StudentLifecycleIntegrationTests.cs` |
 
 ## Institution License Validation Plan (2026-05-12)
 

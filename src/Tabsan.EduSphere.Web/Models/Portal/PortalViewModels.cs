@@ -208,6 +208,7 @@ public class SessionIdentity
     public string? UserName { get; set; }
     public string? Email { get; set; }
     public List<string> Roles { get; set; } = new();
+    public int? InstitutionType { get; set; }
     public bool MustChangePassword { get; set; }
 
     public bool IsAdmin => Roles.Contains("Admin") || Roles.Contains("SuperAdmin");

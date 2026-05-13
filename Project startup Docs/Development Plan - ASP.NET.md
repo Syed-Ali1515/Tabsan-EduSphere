@@ -19,6 +19,21 @@ Validation summaries must include at minimum:
 
 ## Execution Updates
 
+### 2026-05-13 - Institute Parity Stage 3.2 (Execution Snapshot)
+- Completed Phase 3 Stage 3.2 student lifecycle institute parity.
+- Implementation Summary:
+  - enforced lifecycle API scope checks for Admin based on department assignment and institute-type claim compatibility,
+  - preserved SuperAdmin unrestricted lifecycle behavior,
+  - projected JWT `institutionType` into web session identity and filtered portal lifecycle department options for non-SuperAdmin users,
+  - fixed lifecycle portal action wiring to preserve selected department/semester context during promote/graduate operations,
+  - added dedicated lifecycle integration tests for institution-mismatch deny cases.
+- Validation Summary:
+  - `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~StudentLifecycleIntegrationTests|FullyQualifiedName~AdminUserManagementIntegrationTests|FullyQualifiedName~SidebarMenuIntegrationTests|FullyQualifiedName~ReportExportsIntegrationTests" -v minimal` passed (`37/37`),
+  - verified lifecycle Admin requests are denied on institution mismatch even when department assignment exists,
+  - verified Stage 2 authorization/report/sidebar and Stage 3.1 admin-management parity suites remained green.
+- Stage status: Stage 3.2 completed.
+- Phase status: Phase 3 in progress (next: Stage 3.3).
+
 ### 2026-05-13 - Institute Parity Stage 3.1 (Execution Snapshot)
 - Completed Phase 3 Stage 3.1 core academic/admin module parity slice for department/course institution-type correctness.
 - Implementation Summary:
