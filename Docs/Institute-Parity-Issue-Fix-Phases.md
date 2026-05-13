@@ -278,3 +278,17 @@ Validation Summary
 - Document structure reviewed and template verified for direct reuse across all upcoming stage updates.
 - Cross-document requirements align with Command Center governance and requested tracking files.
 - No code/runtime changes introduced by this governance update.
+
+### Stage 0.1 - Module-by-Module Parity Audit (Completed: 2026-05-13)
+
+Implementation Summary
+- Completed controller-level audit for parity-scope modules and routes across timetable, course, building, room, department, assignment, enrollment, report, result, quiz, student lifecycle, payments, and settings/branding surfaces.
+- Mapped service/repository dependencies from controllers to identify institute-scoping enforcement points (department/offering scoped paths vs global defaults).
+- Identified University-default hotspots that still require parity normalization in later stages, including institution-policy defaults, branding/onboarding defaults, AI role prompt wording, and certificate wording.
+- Captured DB dependency map through the central DbContext and parity-related policy/settings entities for follow-on Stage 0.2 and Phase 1 remediation.
+
+Validation Summary
+- Static audit validation executed via workspace scans and source reads over API controllers, application services, infrastructure services, web policy/UI models, and DB context/entity mappings.
+- Verified current role guard and scoped-access patterns exist for core module surfaces (Admin/Faculty/Student/SuperAdmin combinations), with additional institute-specific hardening still required by later stages.
+- Confirmed no schema or runtime code mutation in Stage 0.1; this stage produced baseline inventory and dependency evidence only.
+- Residual risks: University-centric strings/defaults remain in selected services and templates; these are now explicitly queued for correction in upcoming stages.

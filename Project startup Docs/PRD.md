@@ -18,6 +18,16 @@ Each stage log entry must clearly describe behavior impact for School/College/Un
 
 ## 0. Implementation Update Log
 
+### 2026-05-13 - Institute Parity Stage 0.1 (Execution Snapshot)
+- Completed baseline module-by-module parity audit (School/College/University) for target issue scope.
+- Implementation Summary:
+  - audited parity-scope API surfaces and mapped related service/repository paths,
+  - documented current role/scope guards and identified University-default hotspots.
+- Validation Summary:
+  - source-level verification completed across API/Application/Infrastructure/Web/DB mapping layers,
+  - no runtime mutation in this stage; baseline evidence prepared for Stage 0.2 matrix and remediation backlog.
+- Behavior impact: no direct runtime behavior change in Stage 0.1; planning and traceability artifacts updated.
+
 ### 2026-05-12 — Institution License Validation Phase 7 (Execution Snapshot)
 - Completed SuperAdmin full-access and permission matrix validation.
 - Captured evidence in `Artifacts/Phase7/SuperAdmin/20260512-151302`.

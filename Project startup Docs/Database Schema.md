@@ -13,6 +13,18 @@ After every completed stage in `Docs/Institute-Parity-Issue-Fix-Phases.md`:
 	- `No schema mutation` or
 	- `Schema updated` with table/column/index/migration details.
 
+## 2026-05-13 Update - Institute Parity Stage 0.1 (Execution Snapshot)
+
+- Stage 0.1 completed as a schema/dependency audit baseline.
+- Reviewed parity-related schema touchpoints through `ApplicationDbContext` and module repositories, including:
+	- policy/config tables (`portal_settings`),
+	- academic entities (departments/courses/offerings/enrollments),
+	- assessments/results/quizzes,
+	- lifecycle and payment entities,
+	- timetable/building/room entities.
+- Schema impact: `No schema mutation`.
+- EF migration impact: none.
+
 ## 2026-05-12 Update — Institution License Validation Phase 7 (Execution Snapshot)
 
 - Completed SuperAdmin permission matrix against existing management and policy tables.

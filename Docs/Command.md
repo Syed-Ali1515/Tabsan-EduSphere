@@ -46,6 +46,17 @@ Before starting any work, the assistant must:
   2. Pull (`--rebase`)
   3. Push
 
+### Institute Parity Checkpoint (2026-05-13 - Stage 0.1)
+- Completed Stage 0.1 baseline parity audit in `Docs/Institute-Parity-Issue-Fix-Phases.md` with required Implementation Summary and Validation Summary.
+- Synchronized required tracking docs for stage closeout:
+  - `Docs/Function-List.md`
+  - `Docs/Complete-Functionality-Reference.md`
+  - `Project startup Docs/Database Schema.md`
+  - `Project startup Docs/Development Plan - ASP.NET.md`
+  - `Project startup Docs/PRD.md`
+  - `Docs/Command.md`
+- Next stage: Stage 0.2 (Role and Institute Access Matrix).
+
 ### Institution Validation Checkpoint (2026-05-12 - Phase 1)
 - Execution evidence captured in `Docs/Institution-License-Validation-Phases.md`.
 - Authentication and policy-read checks passed.

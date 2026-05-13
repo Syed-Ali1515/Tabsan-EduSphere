@@ -11,6 +11,8 @@
 | `Institute-Parity Stage Completion Template` | Standardizes per-stage completion entries for repeatable implementation/validation evidence capture. | `Docs/Institute-Parity-Issue-Fix-Phases.md` |
 | `Institute-Parity Mandatory Documentation Sync` | Requires synchronized updates to Function-List, Complete Functionality Reference, Database Schema, Development Plan, PRD, and Command after each stage completion. | `Docs/Institute-Parity-Issue-Fix-Phases.md` |
 | `Institute-Parity Git Sync Order` | Enforces commit -> pull --rebase -> push sequence after each stage closeout. | `Docs/Institute-Parity-Issue-Fix-Phases.md`, `Docs/Command.md` |
+| `Stage 0.1 Module Parity Audit Baseline` | Captures module-by-module endpoint/service/repository/UI/DB dependency inventory for School/College/University parity planning. | `Docs/Institute-Parity-Issue-Fix-Phases.md` |
+| `University-Default Hotspot Inventory` | Tracks University-centric defaults/labels/templates discovered during Stage 0.1 for Phase 1-4 remediation. | `Docs/Institute-Parity-Issue-Fix-Phases.md` |
 
 ## Institution License Validation Plan (2026-05-12)
 

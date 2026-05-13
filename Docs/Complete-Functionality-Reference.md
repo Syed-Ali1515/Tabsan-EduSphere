@@ -13,6 +13,13 @@ For every completed stage under `Docs/Institute-Parity-Issue-Fix-Phases.md`, the
 
 After each completed stage, this document must be updated to reflect any net functionality behavior change for School/College/University parity, including role/institute filters and report behavior.
 
+## 2026-05-13 Update - Institute Parity Stage 0.1 Audit Snapshot
+
+- Completed baseline functional inventory for parity-scope modules (timetable, courses, buildings/rooms, departments, assignments, enrollments, reports, results, quizzes, lifecycle, payments, settings surfaces).
+- Confirmed broad endpoint/service/repository coverage already exists for all target modules, with role guards primarily centered on SuperAdmin/Admin/Faculty/Student authorization and department/offering scoping.
+- Identified remaining University-default behavior hotspots in branding/onboarding/prompt/template text and default policy assumptions, now queued into subsequent parity implementation stages.
+- No user-visible functionality was changed in this stage; this is a validated baseline mapping update.
+
 ---
 
 ## Table of Contents
