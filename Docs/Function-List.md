@@ -13,6 +13,8 @@
 | `Institute-Parity Git Sync Order` | Enforces commit -> pull --rebase -> push sequence after each stage closeout. | `Docs/Institute-Parity-Issue-Fix-Phases.md`, `Docs/Command.md` |
 | `Stage 0.1 Module Parity Audit Baseline` | Captures module-by-module endpoint/service/repository/UI/DB dependency inventory for School/College/University parity planning. | `Docs/Institute-Parity-Issue-Fix-Phases.md` |
 | `University-Default Hotspot Inventory` | Tracks University-centric defaults/labels/templates discovered during Stage 0.1 for Phase 1-4 remediation. | `Docs/Institute-Parity-Issue-Fix-Phases.md` |
+| `Stage 0.2 Role-Institute Access Matrix` | Defines baseline role x institute x module x action coverage and identifies scope-enforcement gaps for parity fixes. | `Docs/Institute-Parity-Issue-Fix-Phases.md` |
+| `Scope Guard Baseline (Dept/Offering/Ownership)` | Documents current enforcement basis used by major module endpoints before institute-specific hardening. | `Docs/Institute-Parity-Issue-Fix-Phases.md` |
 
 ## Institution License Validation Plan (2026-05-12)
 

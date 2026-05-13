@@ -18,6 +18,18 @@ Each stage log entry must clearly describe behavior impact for School/College/Un
 
 ## 0. Implementation Update Log
 
+### 2026-05-13 - Institute Parity Stage 0.2 (Execution Snapshot)
+- Completed role x institute x module x action baseline matrix for School/College/University parity planning.
+- Implementation Summary:
+  - established module-level action coverage by SuperAdmin/Admin/Faculty/Student,
+  - identified current scope-guard basis (institution policy flags, department scope, offering scope, ownership scope),
+  - captured explicit parity enforcement gaps for next implementation stages.
+- Validation Summary:
+  - verified authorization and scope patterns from API/application source,
+  - confirmed baseline reflects current behavior without runtime changes,
+  - flagged report/analytics and selected mutation paths for explicit institute hardening.
+- Behavior impact: no direct runtime behavior change in Stage 0.2; traceability and remediation backlog quality improved.
+
 ### 2026-05-13 - Institute Parity Stage 0.1 (Execution Snapshot)
 - Completed baseline module-by-module parity audit (School/College/University) for target issue scope.
 - Implementation Summary:

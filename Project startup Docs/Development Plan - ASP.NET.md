@@ -19,6 +19,18 @@ Validation summaries must include at minimum:
 
 ## Execution Updates
 
+### 2026-05-13 - Institute Parity Stage 0.2 (Execution Snapshot)
+- Completed role and institute access matrix baseline for parity-scope modules.
+- Implementation Summary:
+  - mapped role-based view/create/edit/deactivate/export coverage by module,
+  - mapped institute-scope enforcement basis (policy flags vs department/offering/ownership scope),
+  - documented enforcement gaps for explicit institute checks.
+- Validation Summary:
+  - source-level verification completed on policy, admin-user, analytics/report, academic, assessment, lifecycle, and payment controller/service surfaces,
+  - confirmed no runtime or schema mutation in this stage,
+  - queued identified gaps for Phase 1-4 remediation stages.
+- Stage status: Stage 0.2 completed.
+
 ### 2026-05-13 - Institute Parity Stage 0.1 (Execution Snapshot)
 - Completed baseline module parity audit and dependency mapping for School/College/University execution planning.
 - Implementation Summary:

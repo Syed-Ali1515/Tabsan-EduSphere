@@ -20,6 +20,17 @@ After each completed stage, this document must be updated to reflect any net fun
 - Identified remaining University-default behavior hotspots in branding/onboarding/prompt/template text and default policy assumptions, now queued into subsequent parity implementation stages.
 - No user-visible functionality was changed in this stage; this is a validated baseline mapping update.
 
+## 2026-05-13 Update - Institute Parity Stage 0.2 Access Matrix Snapshot
+
+- Completed role/institute access matrix baseline across core modules and operations (view/create/edit/deactivate/export).
+- Confirmed effective enforcement pattern is currently mixed:
+    - explicit institution policy flags at platform level,
+    - operational scoping mainly through department assignment, course-offering ownership, and student self-ownership.
+- Identified parity risk areas:
+    - institute-specific checks not explicit on all mutation paths,
+    - School/College filter coverage still incomplete on selected analytics/report surfaces.
+- No runtime behavior changes were introduced in Stage 0.2; this is baseline authorization/scope mapping evidence for upcoming remediation stages.
+
 ---
 
 ## Table of Contents

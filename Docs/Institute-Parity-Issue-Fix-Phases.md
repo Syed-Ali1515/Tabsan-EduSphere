@@ -292,3 +292,35 @@ Validation Summary
 - Verified current role guard and scoped-access patterns exist for core module surfaces (Admin/Faculty/Student/SuperAdmin combinations), with additional institute-specific hardening still required by later stages.
 - Confirmed no schema or runtime code mutation in Stage 0.1; this stage produced baseline inventory and dependency evidence only.
 - Residual risks: University-centric strings/defaults remain in selected services and templates; these are now explicitly queued for correction in upcoming stages.
+
+### Stage 0.2 - Role and Institute Access Matrix (Completed: 2026-05-13)
+
+Implementation Summary
+- Produced baseline role x institute x module x action matrix from API authorization and scope-guard behavior across parity-scope modules.
+- Mapped effective access patterns by role for view/create/edit/deactivate/export operations and identified current institute-scope basis (policy flags, department scope, course-offering scope, or global).
+- Cataloged enforcement gaps where institute-specific checks are still indirect (department/offering proxies) and require explicit parity hardening in later phases.
+
+Role x Institute x Module x Action Matrix (Baseline)
+
+| Module | SuperAdmin | Admin | Faculty | Student | Institute Scope Basis | Gap / Follow-up |
+|---|---|---|---|---|---|---|
+| Institution Policy | View/Update | View | View | View | Explicit policy flags (`IncludeSchool/College/University`) | Flags exist, but downstream module enforcement is mixed.
+| Admin User Mgmt | View/Create/Update | No | No | No | Global + optional `InstitutionType` assignment | Needs broader institute assignment propagation beyond admin-create path.
+| Department | View/Create/Edit/Deactivate | View/Create/Edit/Deactivate | View (assigned depts) | View (filtered read) | Department assignment scoping | Department proxy used; no direct institute claim enforcement.
+| Course/Offerings | View/Create/Edit/Deactivate | View/Create/Edit/Deactivate (assigned depts) | View (assigned depts), limited managed actions | View/enroll path via student flows | Department + offering scoping | Institute parity depends on department mappings, not explicit institute checks.
+| Timetable | View/Create/Edit/Deactivate/Export | View/Create/Edit/Deactivate/Export | View published | View published | Department-based visibility | Requires institute-aware filter normalization in UI/API combinations.
+| Buildings/Rooms | View/Create/Edit/Deactivate | View/Create/Edit/Deactivate | View | View | Global catalog | No institute partitioning currently enforced.
+| Assignments | Full manage (author/publish/retract/grade) | Full manage | Full manage | View/submit/own submissions | Offering + role scope | Institute behavior inherited indirectly via offering ownership.
+| Enrollment | Admin enroll/drop + roster | Admin enroll/drop + roster | Roster view | Enroll/drop/my courses | Student profile + offering scope | Institute matrix needs explicit checks for cross-institute edge cases.
+| Results | Create/publish/correct/view/export | Create/publish/correct/view/export | Create/publish/view/export | View own published | Offering + role scope | Explicit institute filter missing on several result paths.
+| Quizzes | Author/publish/grade/view | Author/publish/grade/view | Author/publish/grade/view | Attempt/view own | Offering + policy/role scope | Institute-specific restrictions are mostly implicit.
+| Reports/Analytics | View/export (scoped) | View/export (scoped dept) | View/export (scoped offering/dept) | Limited read-only surfaces | Admin dept scope + faculty offering scope | School/College/University filters still incomplete for full parity.
+| Student Lifecycle | View/manage promote/deactivate/graduate | View/manage promote/deactivate/graduate | No direct lifecycle mutation | No direct lifecycle mutation | Department/entity context | Institute-type-aware transitions need formalized rules.
+| Payments | Create/confirm/cancel/view | Create/confirm/cancel/view | No | View own/submit proof | Role + student ownership | Finance scope present; institute-level fee policy checks not explicit.
+| Settings/Branding | View/Update | View | View | View | Global settings + policy overlays | University-default labels/templates still present in several paths.
+
+Validation Summary
+- Validation source: controller and service inspections for authorization attributes, role policies, and explicit scope guards (department/offering/user ownership).
+- Confirmed SuperAdmin global capability is largely present, Admin/Faculty scoping is mostly department/offering bounded, and Student actions are limited to self-service flows.
+- Confirmed institute parity is currently enforced via mixed mechanisms (policy flags and indirect scope proxies), creating inconsistent behavior risk across modules.
+- Residual risks: missing explicit institute checks in selected module mutation paths and incomplete School/College filter propagation in reports/analytics.
