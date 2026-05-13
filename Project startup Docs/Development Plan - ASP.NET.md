@@ -19,6 +19,20 @@ Validation summaries must include at minimum:
 
 ## Execution Updates
 
+### 2026-05-13 - Institute Parity Stage 4.3 (Execution Snapshot)
+- Completed Phase 4 Stage 4.3 broken report fixes.
+- Implementation Summary:
+  - repaired faculty scope enforcement for department-scoped report endpoints,
+  - added faculty department-assignment checks for GPA, enrollment, semester-results, low-attendance, and FYP status report routes,
+  - replaced strict faculty offering ownership check with assignment-based department scope checks for offering-scoped reports,
+  - added deterministic report reliability integration tests for missing-filter and unassigned-department deny scenarios.
+- Validation Summary:
+  - `dotnet build Tabsan.EduSphere.sln -v minimal` passed,
+  - `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~ReportExportsIntegrationTests|FullyQualifiedName~ReportCatalogIntegrationTests|FullyQualifiedName~AnalyticsInstituteParityIntegrationTests|FullyQualifiedName~StudentSubmenuParityIntegrationTests|FullyQualifiedName~StudentLifecycleIntegrationTests|FullyQualifiedName~AdminUserManagementIntegrationTests" -v minimal` passed (`42/42`),
+  - verified faculty missing required report filters return `400` and unassigned department report filters return `403` on repaired routes.
+- Stage status: Stage 4.3 completed.
+- Phase status: Phase 4 in progress (next: Stage 4.4).
+
 ### 2026-05-13 - Institute Parity Stage 4.2 (Execution Snapshot)
 - Completed Phase 4 Stage 4.2 reports filter expansion.
 - Implementation Summary:

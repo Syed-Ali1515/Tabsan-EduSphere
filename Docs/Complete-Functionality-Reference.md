@@ -263,6 +263,25 @@ After each completed stage, this document must be updated to reflect any net fun
     - constrained-role report requests are auto-scoped and protected against cross-institute filter drift,
     - no schema or migration update required for Stage 4.2.
 
+## 2026-05-13 Update - Institute Parity Stage 4.3 Broken Report Fixes Snapshot
+
+- Completed report reliability fixes for faculty report scope guardrails.
+- Report API behavior now enforces:
+    - faculty department-scoped reports require explicit department (or department/offering where applicable),
+    - faculty requests against unassigned departments are denied consistently,
+    - faculty offering-scoped report checks validate department assignment scope instead of strict offering owner match.
+- Reliability and deterministic validation additions:
+    - added integration checks proving `400` responses for missing required faculty filters,
+    - added integration checks proving `403` responses for faculty unassigned department filters,
+    - included repaired report endpoints in focused parity regression run.
+- Validation evidence:
+    - solution build pass,
+    - focused parity integration suites pass (`42/42`) including expanded report reliability tests.
+- Behavior impact:
+    - broken faculty report access behavior is corrected without changing report UI contracts,
+    - report endpoints now apply role + institute + department scope consistently for repaired routes,
+    - no schema or migration update required for Stage 4.3.
+
 ---
 
 ## Table of Contents

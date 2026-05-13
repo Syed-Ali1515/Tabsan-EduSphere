@@ -214,6 +214,17 @@ After every completed stage in `Docs/Institute-Parity-Issue-Fix-Phases.md`:
 - Schema impact: `No schema mutation`.
 - EF migration impact: none.
 
+## 2026-05-13 Update - Institute Parity Stage 4.3 (Execution Snapshot)
+
+- Stage 4.3 completed broken report reliability fixes for faculty report scope behavior.
+- API/web contract updates applied:
+	- report controller faculty scope checks now enforce department assignment boundaries for repaired report endpoints,
+	- no DTO or schema contract expansion required.
+- Query/runtime update applied:
+	- report endpoint runtime guardrails now require explicit faculty filters where needed and deny unassigned department queries.
+- Schema impact: `No schema mutation`.
+- EF migration impact: none.
+
 ## 2026-05-12 Update — Institution License Validation Phase 7 (Execution Snapshot)
 
 - Completed SuperAdmin permission matrix against existing management and policy tables.

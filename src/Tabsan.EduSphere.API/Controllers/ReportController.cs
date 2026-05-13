@@ -22,6 +22,7 @@ public sealed class ReportController : ControllerBase
     private readonly ICourseRepository _courses;
     private readonly IDepartmentRepository _departments;
     private readonly IAdminAssignmentRepository _adminAssignments;
+    private readonly IFacultyAssignmentRepository _facultyAssignments;
     private readonly ReportExportJobQueue _exportQueue;
     private readonly ReportExportJobStore _exportStore;
 
@@ -30,6 +31,7 @@ public sealed class ReportController : ControllerBase
         ICourseRepository courses,
         IDepartmentRepository departments,
         IAdminAssignmentRepository adminAssignments,
+        IFacultyAssignmentRepository facultyAssignments,
         ReportExportJobQueue exportQueue,
         ReportExportJobStore exportStore)
     {
@@ -37,6 +39,7 @@ public sealed class ReportController : ControllerBase
         _courses = courses;
         _departments = departments;
         _adminAssignments = adminAssignments;
+        _facultyAssignments = facultyAssignments;
         _exportQueue = exportQueue;
         _exportStore = exportStore;
     }
@@ -575,6 +578,9 @@ public sealed class ReportController : ControllerBase
         var scoped = await EnforceAdminDepartmentScopeAsync(departmentId, null, ct);
         if (scoped is not null) return scoped;
 
+        scoped = await EnforceFacultyDepartmentScopeAsync(departmentId, ct);
+        if (scoped is not null) return scoped;
+
         var request = new GpaReportRequest(scope.DepartmentId, programId, scope.InstitutionType);
         var result = await _reports.GetGpaReportAsync(request, ct);
         return Ok(result);
@@ -593,6 +599,9 @@ public sealed class ReportController : ControllerBase
         if (scope.ErrorResult is not null) return scope.ErrorResult;
 
         var scoped = await EnforceAdminDepartmentScopeAsync(departmentId, null, ct);
+        if (scoped is not null) return scoped;
+
+        scoped = await EnforceFacultyDepartmentScopeAsync(departmentId, ct);
         if (scoped is not null) return scoped;
 
         var request = new GpaReportRequest(scope.DepartmentId, programId, scope.InstitutionType);
@@ -615,6 +624,9 @@ public sealed class ReportController : ControllerBase
         if (scope.ErrorResult is not null) return scope.ErrorResult;
 
         var scoped = await EnforceAdminDepartmentScopeAsync(departmentId, null, ct);
+        if (scoped is not null) return scoped;
+
+        scoped = await EnforceFacultyDepartmentScopeAsync(departmentId, ct);
         if (scoped is not null) return scoped;
 
         var request = new EnrollmentSummaryRequest(semesterId, scope.DepartmentId, scope.InstitutionType);
@@ -640,6 +652,9 @@ public sealed class ReportController : ControllerBase
         if (scope.ErrorResult is not null) return scope.ErrorResult;
 
         var scoped = await EnforceAdminDepartmentScopeAsync(departmentId, null, ct);
+        if (scoped is not null) return scoped;
+
+        scoped = await EnforceFacultyDepartmentScopeAsync(departmentId, ct);
         if (scoped is not null) return scoped;
 
         var request = new SemesterResultsRequest(semesterId, scope.DepartmentId, scope.InstitutionType);
@@ -698,6 +713,9 @@ public sealed class ReportController : ControllerBase
         var scoped = await EnforceAdminDepartmentScopeAsync(departmentId, courseOfferingId, ct);
         if (scoped is not null) return scoped;
 
+        scoped = await EnforceFacultyDepartmentOrOfferingScopeAsync(departmentId, courseOfferingId, ct);
+        if (scoped is not null) return scoped;
+
         var request = new LowAttendanceRequest(threshold, scope.DepartmentId, courseOfferingId, scope.InstitutionType);
         var result = await _reports.GetLowAttendanceWarningAsync(request, ct);
         return Ok(result);
@@ -718,6 +736,9 @@ public sealed class ReportController : ControllerBase
         if (scope.ErrorResult is not null) return scope.ErrorResult;
 
         var scoped = await EnforceAdminDepartmentScopeAsync(departmentId, null, ct);
+        if (scoped is not null) return scoped;
+
+        scoped = await EnforceFacultyDepartmentScopeAsync(departmentId, ct);
         if (scoped is not null) return scoped;
 
         var request = new FypStatusRequest(scope.DepartmentId, status, scope.InstitutionType);
@@ -845,7 +866,14 @@ public sealed class ReportController : ControllerBase
         if (offering is null) return NotFound("Course offering not found.");
 
         var userId = GetCurrentUserId();
-        if (userId == Guid.Empty || offering.FacultyUserId != userId)
+        if (userId == Guid.Empty)
+            return Forbid();
+
+        var allowedDepartmentIds = await _facultyAssignments.GetDepartmentIdsForFacultyAsync(userId, ct);
+        if (allowedDepartmentIds.Count == 0)
+            return Forbid();
+
+        if (!allowedDepartmentIds.Contains(offering.Course.DepartmentId))
             return Forbid();
 
         var instituteScope = await EnforceInstitutionTypeDepartmentScopeAsync(offering.Course.DepartmentId, ct);
@@ -895,6 +923,78 @@ public sealed class ReportController : ControllerBase
         // Multi-department admin scope requires at least one explicit filter to avoid cross-dept aggregate leakage.
         if (!departmentId.HasValue && !courseOfferingId.HasValue)
             return BadRequest("Admin must select a department or course offering for report generation.");
+
+        return null;
+    }
+
+    private async Task<IActionResult?> EnforceFacultyDepartmentScopeAsync(Guid? departmentId, CancellationToken ct)
+    {
+        if (!User.IsInRole("Faculty") || User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))
+            return null;
+
+        if (!departmentId.HasValue)
+            return BadRequest("Faculty must select a department for report generation.");
+
+        var userId = GetCurrentUserId();
+        if (userId == Guid.Empty)
+            return Forbid();
+
+        var allowedDepartmentIds = await _facultyAssignments.GetDepartmentIdsForFacultyAsync(userId, ct);
+        if (allowedDepartmentIds.Count == 0)
+            return Forbid();
+
+        if (!allowedDepartmentIds.Contains(departmentId.Value))
+            return Forbid();
+
+        var instituteScope = await EnforceInstitutionTypeDepartmentScopeAsync(departmentId.Value, ct);
+        if (instituteScope is not null)
+            return instituteScope;
+
+        return null;
+    }
+
+    private async Task<IActionResult?> EnforceFacultyDepartmentOrOfferingScopeAsync(Guid? departmentId, Guid? courseOfferingId, CancellationToken ct)
+    {
+        if (!User.IsInRole("Faculty") || User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))
+            return null;
+
+        if (!departmentId.HasValue && !courseOfferingId.HasValue)
+            return BadRequest("Faculty must select a department or course offering for report generation.");
+
+        var userId = GetCurrentUserId();
+        if (userId == Guid.Empty)
+            return Forbid();
+
+        var allowedDepartmentIds = await _facultyAssignments.GetDepartmentIdsForFacultyAsync(userId, ct);
+        if (allowedDepartmentIds.Count == 0)
+            return Forbid();
+
+        if (departmentId.HasValue)
+        {
+            if (!allowedDepartmentIds.Contains(departmentId.Value))
+                return Forbid();
+
+            var instituteScope = await EnforceInstitutionTypeDepartmentScopeAsync(departmentId.Value, ct);
+            if (instituteScope is not null)
+                return instituteScope;
+        }
+
+        if (courseOfferingId.HasValue && courseOfferingId.Value != Guid.Empty)
+        {
+            var offering = await _courses.GetOfferingByIdAsync(courseOfferingId.Value, ct);
+            if (offering is null)
+                return NotFound("Course offering not found.");
+
+            if (!allowedDepartmentIds.Contains(offering.Course.DepartmentId))
+                return Forbid();
+
+            if (departmentId.HasValue && departmentId.Value != offering.Course.DepartmentId)
+                return BadRequest("departmentId does not match the selected course offering.");
+
+            var instituteScope = await EnforceInstitutionTypeDepartmentScopeAsync(offering.Course.DepartmentId, ct);
+            if (instituteScope is not null)
+                return instituteScope;
+        }
 
         return null;
     }

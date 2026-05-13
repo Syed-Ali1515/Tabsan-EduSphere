@@ -218,4 +218,122 @@ public class ReportExportsIntegrationTests
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
+
+    [Fact]
+    public async Task GpaReport_WithFacultyAndNoDepartment_ReturnsBadRequest()
+    {
+        var (facultyUserId, institutionType, _, _, _) = await SeedFacultyScopeFixtureAsync();
+
+        using var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", JwtTestHelper.GenerateToken(
+                role: "Faculty",
+                userId: facultyUserId.ToString(),
+                institutionType: institutionType));
+
+        var response = await client.GetAsync("api/v1/reports/gpa-report");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task EnrollmentSummary_WithFacultyUnassignedDepartment_ReturnsForbidden()
+    {
+        var (facultyUserId, institutionType, _, deniedDepartmentId, _) = await SeedFacultyScopeFixtureAsync();
+
+        using var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", JwtTestHelper.GenerateToken(
+                role: "Faculty",
+                userId: facultyUserId.ToString(),
+                institutionType: institutionType));
+
+        var response = await client.GetAsync($"api/v1/reports/enrollment-summary?departmentId={deniedDepartmentId}");
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task LowAttendance_WithFacultyAndNoFilters_ReturnsBadRequest()
+    {
+        var (facultyUserId, institutionType, _, _, _) = await SeedFacultyScopeFixtureAsync();
+
+        using var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", JwtTestHelper.GenerateToken(
+                role: "Faculty",
+                userId: facultyUserId.ToString(),
+                institutionType: institutionType));
+
+        var response = await client.GetAsync("api/v1/reports/low-attendance");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task SemesterResults_WithFacultyUnassignedDepartment_ReturnsForbidden()
+    {
+        var (facultyUserId, institutionType, _, deniedDepartmentId, semesterId) = await SeedFacultyScopeFixtureAsync();
+
+        using var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", JwtTestHelper.GenerateToken(
+                role: "Faculty",
+                userId: facultyUserId.ToString(),
+                institutionType: institutionType));
+
+        var response = await client.GetAsync($"api/v1/reports/semester-results?semesterId={semesterId}&departmentId={deniedDepartmentId}");
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task FypStatus_WithFacultyUnassignedDepartment_ReturnsForbidden()
+    {
+        var (facultyUserId, institutionType, _, deniedDepartmentId, _) = await SeedFacultyScopeFixtureAsync();
+
+        using var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", JwtTestHelper.GenerateToken(
+                role: "Faculty",
+                userId: facultyUserId.ToString(),
+                institutionType: institutionType));
+
+        var response = await client.GetAsync($"api/v1/reports/fyp-status?departmentId={deniedDepartmentId}");
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    private async Task<(Guid FacultyUserId, int InstitutionType, Guid AllowedDepartmentId, Guid DeniedDepartmentId, Guid SemesterId)> SeedFacultyScopeFixtureAsync()
+    {
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+        var role = db.Roles.First(r => r.Name == "Faculty");
+        var suffix = Guid.NewGuid().ToString("N")[..6];
+
+        var allowedDepartment = new Department($"Report Faculty Allow {suffix}", $"RFA{suffix}", InstitutionType.University);
+        var deniedDepartment = new Department($"Report Faculty Deny {suffix}", $"RFD{suffix}", InstitutionType.College);
+        var semester = new Semester($"Report Faculty Scope Sem {suffix}", DateTime.UtcNow.AddDays(-2), DateTime.UtcNow.AddDays(30));
+
+        db.Departments.AddRange(allowedDepartment, deniedDepartment);
+        db.Semesters.Add(semester);
+
+        var faculty = new User(
+            username: $"report_faculty_scope_{suffix}",
+            passwordHash: "integration-hash",
+            roleId: role.Id,
+            email: $"report_faculty_scope_{suffix}@tabsan.local",
+            departmentId: null,
+            mustChangePassword: false,
+            institutionType: allowedDepartment.InstitutionType);
+
+        db.Users.Add(faculty);
+        await db.SaveChangesAsync();
+
+        db.FacultyDepartmentAssignments.Add(new FacultyDepartmentAssignment(faculty.Id, allowedDepartment.Id));
+        await db.SaveChangesAsync();
+
+        return (faculty.Id, (int)allowedDepartment.InstitutionType, allowedDepartment.Id, deniedDepartment.Id, semester.Id);
+    }
 }

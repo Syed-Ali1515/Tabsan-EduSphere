@@ -18,6 +18,22 @@ Each stage log entry must clearly describe behavior impact for School/College/Un
 
 ## 0. Implementation Update Log
 
+### 2026-05-13 - Institute Parity Stage 4.3 (Execution Snapshot)
+- Completed broken report fixes for School/College/University parity reliability scope.
+- Implementation Summary:
+  - repaired faculty report-scope enforcement on GPA, enrollment, semester-results, low-attendance, and FYP status endpoints,
+  - enforced required faculty filter behavior for department-scoped report routes,
+  - aligned faculty offering report checks with department-assignment scope to prevent false forbids,
+  - added deterministic report integration coverage for missing-filter and unassigned-department denial scenarios.
+- Validation Summary:
+  - solution build passed,
+  - focused parity integration suites passed (`42/42`) including Stage 4.3 report reliability tests,
+  - no regressions detected in selected parity guard suites.
+- Behavior impact:
+  - broken faculty report behaviors are now deterministic and scope-safe,
+  - repaired report endpoints enforce role + institute + department boundaries consistently,
+  - no schema migration introduced in this stage.
+
 ### 2026-05-13 - Institute Parity Stage 4.2 (Execution Snapshot)
 - Completed reports filter expansion for School/College/University parity behavior.
 - Implementation Summary:

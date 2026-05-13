@@ -698,3 +698,29 @@ Validation Summary
   - verified report export/report parity suites remained green under expanded report filter contract.
 - Regression checks: no failures in selected Stage 2/3/4 parity guard suites.
 - Residual risks: broken-report reliability fixes remain staged for Stage 4.3.
+
+### Stage 4.3 - Broken Report Fixes (Completed: 2026-05-13)
+
+Implementation Summary
+- Backend/API/service/repository updates:
+  - repaired report authorization scope for faculty access on department-scoped reports (`gpa-report`, `enrollment-summary`, `semester-results`, `low-attendance`, `fyp-status`),
+  - added faculty department-assignment validation for report endpoints that previously allowed over-broad faculty reads,
+  - updated faculty offering-scope report checks to use department-assignment scope instead of strict `FacultyUserId` ownership to prevent false forbids on valid assigned-department offerings.
+- Frontend/menu/filter updates:
+  - no report UI contract change required; existing report filters now align correctly with corrected backend faculty scope enforcement.
+- Authorization/policy updates:
+  - faculty requests without required department or offering filters now return `400` on department-scoped report routes,
+  - faculty requests using unassigned department filters now return `403` consistently across repaired report endpoints.
+- DB/schema/script updates: none.
+- Repository/test updates:
+  - added deterministic Stage 4.3 report integration tests for faculty report-scope reliability and mismatch-deny coverage.
+
+Validation Summary
+- Automated tests: `dotnet build Tabsan.EduSphere.sln -v minimal` -> passed.
+- Automated tests: `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~ReportExportsIntegrationTests|FullyQualifiedName~ReportCatalogIntegrationTests|FullyQualifiedName~AnalyticsInstituteParityIntegrationTests|FullyQualifiedName~StudentSubmenuParityIntegrationTests|FullyQualifiedName~StudentLifecycleIntegrationTests|FullyQualifiedName~AdminUserManagementIntegrationTests" -v minimal` -> passed (`42/42`).
+- Role/Institute checks:
+  - verified faculty `gpa-report` without department is rejected (`400`),
+  - verified faculty unassigned department filters are denied (`403`) for enrollment, semester-results, and FYP status report endpoints,
+  - verified faculty low-attendance report requires department or offering filter (`400`).
+- Regression checks: no failures in selected Stage 2/3/4 parity guard suites.
+- Residual risks: none within Stage 4.3 scope; Phase 4 exit criteria closure remains Stage 4.4.
