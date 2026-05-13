@@ -189,6 +189,19 @@ Before starting any work, the assistant must:
   - `Docs/Command.md`
 - Next phase: Phase 3 (Module CRUD and Workflow Parity), starting Stage 3.1.
 
+### Institute Parity Checkpoint (2026-05-13 - Stage 3.1)
+- Completed Stage 3.1 core academic/admin module parity in `Docs/Institute-Parity-Issue-Fix-Phases.md` with required Implementation Summary and Validation Summary.
+- Corrected portal department create/edit paths to submit explicit institution type and added cross-institution CRUD validation for department/course workflows.
+- Synchronized required tracking docs for stage closeout:
+  - `Docs/Institute-Parity-Issue-Fix-Phases.md`
+  - `Docs/Function-List.md`
+  - `Docs/Complete-Functionality-Reference.md`
+  - `Project startup Docs/Database Schema.md`
+  - `Project startup Docs/Development Plan - ASP.NET.md`
+  - `Project startup Docs/PRD.md`
+  - `Docs/Command.md`
+- Next stage: Stage 3.2 (Core Academic/Admin Modules continuation).
+
 ### Institution Validation Checkpoint (2026-05-12 - Phase 1)
 - Execution evidence captured in `Docs/Institution-License-Validation-Phases.md`.
 - Authentication and policy-read checks passed.
@@ -316,12 +329,12 @@ cmd /c git -C "<repo-root>" push origin main
 
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
-- Active Phase: **Institution License Validation — Completed**
-- Active Stage: **All planned phases (1-7) completed**
-- Status: **Institution license validation execution closed with evidence.**
-- Last Updated: 2026-05-12
-- Next: **Return to the primary roadmap in Docs/Advance-Enhancements.md and continue the next queued phase/stage.**
-- Docs Updated: ✅ Validation tracker and planning docs synchronized (2026-05-12)
+- Active Phase: **Institute Parity - Phase 3 (Module CRUD and Workflow Parity)**
+- Active Stage: **Stage 3.2 (next execution target)**
+- Status: **Stage 3.1 completed and documented with validation evidence.**
+- Last Updated: 2026-05-13
+- Next: **Execute Stage 3.2 parity scope and close out with required 7-document synchronization plus commit -> pull --rebase -> push.**
+- Docs Updated: ✅ Stage 3.1 tracker and planning docs synchronized (2026-05-13)
 
 ### 2026-05-11 - Phase 10 Completion
 - Stage 10.1: Added a parameterized progressive gate runner for stepwise scale validation and higher-tier execution.

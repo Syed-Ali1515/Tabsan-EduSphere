@@ -134,6 +134,26 @@ After each completed stage, this document must be updated to reflect any net fun
     - Phase 2 authorization outcomes are now formally validated and documented as complete,
     - subsequent parity work can proceed to Phase 3 CRUD/workflow parity scope.
 
+## 2026-05-13 Update - Institute Parity Stage 3.1 Core Academic/Admin Modules Snapshot
+
+- Completed first Phase 3 module parity hardening slice focused on department and course operational parity across institution types.
+- Portal department management behavior was aligned for School/College/University:
+    - department list now shows institution type,
+    - create/edit forms now include institution-type selection,
+    - edit flow preloads institution-type value for deterministic updates.
+- Web API client and portal controller contract behavior was corrected to avoid silent University-default writes:
+    - department create now requires explicit institution type,
+    - department update now supports explicit institution-type mutation.
+- Added cross-institution integration validation:
+    - temporarily enables all institution policy flags,
+    - verifies department/course CRUD operations across School/College/University,
+    - restores original institution policy state after test execution.
+- Hardened legacy admin assignment round-trip integration path to choose/create institution-compatible departments in mixed datasets.
+- Behavior impact:
+    - School/College/University department CRUD paths are now parity-safe from portal create/edit surfaces,
+    - mixed-institution datasets no longer cause false assignment-path regressions in integration coverage,
+    - no database schema or migration mutation was required for Stage 3.1.
+
 ---
 
 ## Table of Contents

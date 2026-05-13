@@ -18,6 +18,22 @@ Each stage log entry must clearly describe behavior impact for School/College/Un
 
 ## 0. Implementation Update Log
 
+### 2026-05-13 - Institute Parity Stage 3.1 (Execution Snapshot)
+- Completed Phase 3 first stage for module CRUD/workflow parity in core academic/admin surfaces.
+- Implementation Summary:
+  - corrected portal department create/edit write path to carry explicit institution type instead of implicit University default,
+  - updated Departments UI to display and edit institution type for School/College/University parity visibility,
+  - expanded integration validation with cross-institution department/course CRUD checks under all-enabled institution policy,
+  - hardened legacy admin assignment round-trip test to avoid mixed-dataset institution mismatch assumptions.
+- Validation Summary:
+  - solution build passed,
+  - focused integration suites passed (`35/35`) for admin management, sidebar/menu guard, and report export coverage,
+  - confirmed Stage 2 authorization/menu/report parity remains stable after Stage 3.1 updates.
+- Behavior impact:
+  - department portal create/edit flows are now institution-explicit and parity-safe for School/College/University,
+  - cross-institution CRUD parity for core department/course paths is now integration-tested,
+  - no schema migration was introduced in this stage.
+
 ### 2026-05-13 - Institute Parity Stage 2.4 (Execution Snapshot)
 - Completed Phase 2 authorization exit criteria for role + institute matrix validation.
 - Implementation Summary:

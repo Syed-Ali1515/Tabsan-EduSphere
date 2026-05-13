@@ -19,6 +19,20 @@ Validation summaries must include at minimum:
 
 ## Execution Updates
 
+### 2026-05-13 - Institute Parity Stage 3.1 (Execution Snapshot)
+- Completed Phase 3 Stage 3.1 core academic/admin module parity slice for department/course institution-type correctness.
+- Implementation Summary:
+  - removed portal silent University-only department write behavior by passing explicit institution type through controller and API client,
+  - updated Departments portal UX to show institution type and expose institution-type selectors in create/edit flows,
+  - added cross-institution integration test covering School/College/University department+course CRUD when policy enables all,
+  - hardened admin assignment round-trip test to select/create institution-compatible departments in mixed-institution datasets.
+- Validation Summary:
+  - `dotnet build Tabsan.EduSphere.sln -v minimal` passed,
+  - `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~AdminUserManagementIntegrationTests|FullyQualifiedName~SidebarMenuIntegrationTests|FullyQualifiedName~ReportExportsIntegrationTests" -v minimal` passed (`35/35`),
+  - verified no regression in Stage 2 authorization/menu/report parity suites while adding Phase 3 CRUD parity checks.
+- Stage status: Stage 3.1 completed.
+- Phase status: Phase 3 in progress (next: Stage 3.2).
+
 ### 2026-05-13 - Institute Parity Stage 2.4 (Execution Snapshot)
 - Completed Phase 2 Stage 2.4 exit criteria.
 - Implementation Summary:

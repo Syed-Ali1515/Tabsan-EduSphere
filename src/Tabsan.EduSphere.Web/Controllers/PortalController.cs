@@ -1202,22 +1202,22 @@ public class PortalController : Controller
     }
 
     [HttpPost, ValidateAntiForgeryToken]
-    public async Task<IActionResult> CreateDepartment(string name, string code, CancellationToken ct)
+    public async Task<IActionResult> CreateDepartment(string name, string code, int institutionType, CancellationToken ct)
     {
         if (_api.IsConnected())
         {
-            try { await _api.CreateDepartmentAsync(name, code, ct); TempData["PortalMessage"] = $"Department '{name}' created."; }
+            try { await _api.CreateDepartmentAsync(name, code, institutionType, ct); TempData["PortalMessage"] = $"Department '{name}' created."; }
             catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
         }
         return RedirectToAction(nameof(Departments));
     }
 
     [HttpPost, ValidateAntiForgeryToken]
-    public async Task<IActionResult> UpdateDepartment(Guid id, string newName, CancellationToken ct)
+    public async Task<IActionResult> UpdateDepartment(Guid id, string newName, int? institutionType, CancellationToken ct)
     {
         if (_api.IsConnected())
         {
-            try { await _api.UpdateDepartmentAsync(id, newName, ct); TempData["PortalMessage"] = $"Department renamed to '{newName}'."; }
+            try { await _api.UpdateDepartmentAsync(id, newName, institutionType, ct); TempData["PortalMessage"] = $"Department updated to '{newName}'."; }
             catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
         }
         return RedirectToAction(nameof(Departments));

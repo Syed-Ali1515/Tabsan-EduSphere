@@ -120,8 +120,8 @@ public interface IEduApiClient
 
     // Departments
     Task<List<DepartmentItem>> GetDepartmentDetailsAsync(CancellationToken ct);
-    Task CreateDepartmentAsync(string name, string code, CancellationToken ct);
-    Task UpdateDepartmentAsync(Guid id, string newName, CancellationToken ct);
+    Task CreateDepartmentAsync(string name, string code, int institutionType, CancellationToken ct);
+    Task UpdateDepartmentAsync(Guid id, string newName, int? institutionType, CancellationToken ct);
     Task DeactivateDepartmentAsync(Guid id, CancellationToken ct);
     Task<UserImportResultItem> ImportUsersCsvAsync(Stream fileStream, string fileName, CancellationToken ct);
     Task<List<AdminUserLookupItem>> GetAdminUsersAsync(CancellationToken ct);
@@ -1334,11 +1334,11 @@ public class EduApiClient : IEduApiClient
         public List<string>? ErrorDetails { get; set; }
     }
 
-    public Task CreateDepartmentAsync(string name, string code, CancellationToken ct)
-        => PostAsync<object, object>("api/v1/department", new { name, code, institutionType = 0 }, ct);
+    public Task CreateDepartmentAsync(string name, string code, int institutionType, CancellationToken ct)
+        => PostAsync<object, object>("api/v1/department", new { name, code, institutionType }, ct);
 
-    public Task UpdateDepartmentAsync(Guid id, string newName, CancellationToken ct)
-        => PutAsync<object, object>($"api/v1/department/{id}", new { newName, institutionType = (int?)null }, ct);
+    public Task UpdateDepartmentAsync(Guid id, string newName, int? institutionType, CancellationToken ct)
+        => PutAsync<object, object>($"api/v1/department/{id}", new { newName, institutionType }, ct);
 
     public Task DeactivateDepartmentAsync(Guid id, CancellationToken ct)
         => DeleteAsync($"api/v1/department/{id}", ct);

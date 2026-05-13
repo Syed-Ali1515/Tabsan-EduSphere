@@ -40,6 +40,7 @@ else
                             <tr>
                                 <th>Code</th>
                                 <th>Name</th>
+                                <th>Institution</th>
                                 <th>Status</th>
                                 @if (User.IsInRole("SuperAdmin") || User.IsInRole("Admin"))
                                 {
@@ -54,6 +55,20 @@ else
                                     <td><code>@d.Code</code></td>
                                     <td>@d.Name</td>
                                     <td>
+                                        @switch (d.InstitutionType)
+                                        {
+                                            case 1:
+                                                <span class="badge bg-info">School</span>
+                                                break;
+                                            case 2:
+                                                <span class="badge bg-warning text-dark">College</span>
+                                                break;
+                                            default:
+                                                <span class="badge bg-primary">University</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td>
                                         <span class="badge @(d.IsActive ? "bg-success" : "bg-secondary")">
                                             @(d.IsActive ? "Active" : "Inactive")
                                         </span>
@@ -63,7 +78,7 @@ else
                                         <td class="text-end">
                                             <button type="button" class="btn btn-xs btn-outline-secondary btn-sm me-1"
                                                     data-bs-toggle="modal" data-bs-target="#editDeptModal"
-                                                    data-id="@d.Id" data-name="@d.Name">
+                                                    data-id="@d.Id" data-name="@d.Name" data-institution-type="@d.InstitutionType">
                                                 Edit
                                             </button>
                                             @if ((User.IsInRole("SuperAdmin") || User.IsInRole("Admin")) && d.IsActive)
@@ -169,6 +184,14 @@ else
                         <label class="form-label">Department Name <span class="text-danger">*</span></label>
                         <input type="text" name="name" class="form-control" required maxlength="200" placeholder="e.g. Computer Science">
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label">Institution Type <span class="text-danger">*</span></label>
+                        <select class="form-select" name="institutionType" required>
+                            <option value="0">University</option>
+                            <option value="1">School</option>
+                            <option value="2">College</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -195,6 +218,14 @@ else
                         <label class="form-label">New Name <span class="text-danger">*</span></label>
                         <input type="text" id="edit_deptName" name="newName" class="form-control" required maxlength="200">
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label">Institution Type</label>
+                        <select id="edit_institutionType" class="form-select" name="institutionType">
+                            <option value="0">University</option>
+                            <option value="1">School</option>
+                            <option value="2">College</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -211,6 +242,7 @@ document.getElementById('editDeptModal')?.addEventListener('show.bs.modal', func
     var btn = e.relatedTarget;
     document.getElementById('edit_deptId').value   = btn.dataset.id;
     document.getElementById('edit_deptName').value = btn.dataset.name;
+    document.getElementById('edit_institutionType').value = btn.dataset.institutionType || '0';
 });
 
 function toggleAllDeptAssignments(checked) {

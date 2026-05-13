@@ -543,3 +543,29 @@ Validation Summary
   - Student/Admin/Faculty/SuperAdmin sidebar visibility and guarded section access expectations passed.
 - Regression checks: all selected Stage 2 suites passed with no failures and no new unresolved authorization mismatches.
 - Residual risks: broader module parity beyond Stage 2 authorization scope remains in Phase 3+ execution backlog.
+
+### Stage 3.1 - Core Academic/Admin Modules (Completed: 2026-05-13)
+
+Implementation Summary
+- Backend/API/service updates:
+  - updated Web-to-API department create/update flow to pass explicit `institutionType` instead of silently forcing University mode,
+  - updated department update flow to support institution-type edits from portal management surfaces.
+- Frontend/menu/filter updates:
+  - updated Departments portal page to display each department's institution type (School/College/University),
+  - added institution-type selector to department create modal,
+  - added institution-type selector to department edit modal and bound existing value during edit open.
+- Authorization/policy updates:
+  - added end-to-end integration validation that temporarily enables all institution policy flags and verifies core department/course CRUD operations succeed across School/College/University contexts.
+- Repository/test updates:
+  - added `DepartmentAndCourse_Crud_WorksAcrossAllInstitutionTypes_WhenPolicyEnablesAll` integration test,
+  - hardened existing admin assignment round-trip test to select/create institution-compatible departments in mixed-institution datasets.
+- DB/schema/script updates: none.
+
+Validation Summary
+- Automated tests: `dotnet build Tabsan.EduSphere.sln -v minimal` -> passed.
+- Automated tests: `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~AdminUserManagementIntegrationTests|FullyQualifiedName~SidebarMenuIntegrationTests|FullyQualifiedName~ReportExportsIntegrationTests" -v minimal` -> passed (`35/35`).
+- Role/Institute checks:
+  - verified department create/update and course create/update/deactivate flows execute successfully for School/College/University when policy enables all three,
+  - verified existing role/institute authorization and menu/report guard suites remain green.
+- Regression checks: Stage 2 authorization and sidebar/report parity tests remained green after Stage 3.1 changes.
+- Residual risks: additional module parity hardening for timetable/assignments/enrollments/results/quizzes/payments/settings remains in upcoming Phase 3 stages.

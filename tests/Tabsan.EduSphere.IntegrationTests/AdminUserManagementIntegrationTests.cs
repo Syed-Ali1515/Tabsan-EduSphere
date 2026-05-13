@@ -14,6 +14,8 @@ public class AdminUserManagementIntegrationTests
 {
     private readonly EduSphereWebFactory _factory;
 
+    private sealed record InstitutionPolicySnapshot(bool IncludeSchool, bool IncludeCollege, bool IncludeUniversity);
+
     public AdminUserManagementIntegrationTests(EduSphereWebFactory factory)
     {
         _factory = factory;
@@ -26,6 +28,26 @@ public class AdminUserManagementIntegrationTests
             new AuthenticationHeaderValue("Bearer", JwtTestHelper.GenerateToken(role, userId));
         return client;
     }
+
+    private static async Task<InstitutionPolicySnapshot> GetPolicySnapshotAsync(HttpClient client)
+    {
+        var response = await client.GetAsync("api/v1/institution-policy");
+        response.EnsureSuccessStatusCode();
+
+        using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        return new InstitutionPolicySnapshot(
+            doc.RootElement.GetProperty("includeSchool").GetBoolean(),
+            doc.RootElement.GetProperty("includeCollege").GetBoolean(),
+            doc.RootElement.GetProperty("includeUniversity").GetBoolean());
+    }
+
+    private static Task<HttpResponseMessage> SetPolicyAsync(HttpClient client, bool includeSchool, bool includeCollege, bool includeUniversity)
+        => client.PutAsJsonAsync("api/v1/institution-policy", new
+        {
+            includeSchool,
+            includeCollege,
+            includeUniversity
+        });
 
     [Fact]
     public async Task AdminUser_List_WithSuperAdminRole_ReturnsSuccess()
@@ -74,9 +96,12 @@ public class AdminUserManagementIntegrationTests
         using var deptsDoc = JsonDocument.Parse(await deptsResponse.Content.ReadAsStringAsync());
         var departmentItems = deptsDoc.RootElement.EnumerateArray().ToList();
         Guid firstDepartmentId;
-        if (departmentItems.Count > 0)
+        var universityDepartment = departmentItems
+            .FirstOrDefault(d => d.TryGetProperty("institutionType", out var t) && t.GetInt32() == 0);
+
+        if (universityDepartment.ValueKind != JsonValueKind.Undefined)
         {
-            firstDepartmentId = departmentItems[0].GetProperty("id").GetGuid();
+            firstDepartmentId = universityDepartment.GetProperty("id").GetGuid();
         }
         else
         {
@@ -84,7 +109,8 @@ public class AdminUserManagementIntegrationTests
             var createDepartmentResponse = await client.PostAsJsonAsync("api/v1/department", new
             {
                 name = $"Integration Dept {suffix}",
-                code = $"INT{suffix}"
+                code = $"INT{suffix}",
+                institutionType = 0
             });
             Assert.Equal(HttpStatusCode.Created, createDepartmentResponse.StatusCode);
 
@@ -250,5 +276,93 @@ public class AdminUserManagementIntegrationTests
             departmentId
         });
         Assert.Equal(HttpStatusCode.BadRequest, assignResponse.StatusCode);
+    }
+
+    [Fact]
+    public async Task DepartmentAndCourse_Crud_WorksAcrossAllInstitutionTypes_WhenPolicyEnablesAll()
+    {
+        using var client = CreateClient("SuperAdmin", "00000000-0000-0000-0000-000000000014");
+
+        var originalPolicy = await GetPolicySnapshotAsync(client);
+
+        try
+        {
+            var enableAllResponse = await SetPolicyAsync(client, includeSchool: true, includeCollege: true, includeUniversity: true);
+            Assert.Equal(HttpStatusCode.NoContent, enableAllResponse.StatusCode);
+
+            async Task<Guid> CreateDepartmentAsync(string prefix, int institutionType)
+            {
+                var suffix = Guid.NewGuid().ToString("N")[..6];
+                var response = await client.PostAsJsonAsync("api/v1/department", new
+                {
+                    name = $"{prefix} Dept {suffix}",
+                    code = $"{prefix[..Math.Min(3, prefix.Length)].ToUpperInvariant()}{suffix}",
+                    institutionType
+                });
+                Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+                using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+                return doc.RootElement.GetProperty("id").GetGuid();
+            }
+
+            async Task<Guid> CreateCourseAsync(Guid departmentId, string prefix)
+            {
+                var suffix = Guid.NewGuid().ToString("N")[..6];
+                var response = await client.PostAsJsonAsync("api/v1/course", new
+                {
+                    title = $"{prefix} Course {suffix}",
+                    code = $"{prefix[..Math.Min(3, prefix.Length)].ToUpperInvariant()}{suffix}",
+                    creditHours = 3,
+                    departmentId,
+                    hasSemesters = true,
+                    totalSemesters = 2,
+                    durationValue = (int?)null,
+                    durationUnit = (string?)null,
+                    gradingType = "GPA"
+                });
+                Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+                using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+                return doc.RootElement.GetProperty("id").GetGuid();
+            }
+
+            var schoolDepartmentId = await CreateDepartmentAsync("School", institutionType: 1);
+            var collegeDepartmentId = await CreateDepartmentAsync("College", institutionType: 2);
+            var universityDepartmentId = await CreateDepartmentAsync("University", institutionType: 0);
+
+            var schoolCourseId = await CreateCourseAsync(schoolDepartmentId, "School");
+            var collegeCourseId = await CreateCourseAsync(collegeDepartmentId, "College");
+            var universityCourseId = await CreateCourseAsync(universityDepartmentId, "University");
+
+            var schoolUpdateResponse = await client.PutAsJsonAsync($"api/v1/course/{schoolCourseId}/title", new { newTitle = "School Course Updated" });
+            Assert.Equal(HttpStatusCode.NoContent, schoolUpdateResponse.StatusCode);
+
+            var collegeDeactivateResponse = await client.DeleteAsync($"api/v1/course/{collegeCourseId}");
+            Assert.Equal(HttpStatusCode.NoContent, collegeDeactivateResponse.StatusCode);
+
+            var departmentUpdateResponse = await client.PutAsJsonAsync($"api/v1/department/{schoolDepartmentId}", new
+            {
+                newName = "School Department Updated",
+                institutionType = 2
+            });
+            Assert.Equal(HttpStatusCode.NoContent, departmentUpdateResponse.StatusCode);
+
+            var getDepartmentResponse = await client.GetAsync($"api/v1/department/{schoolDepartmentId}");
+            Assert.Equal(HttpStatusCode.OK, getDepartmentResponse.StatusCode);
+            using var getDepartmentDoc = JsonDocument.Parse(await getDepartmentResponse.Content.ReadAsStringAsync());
+            Assert.Equal(2, getDepartmentDoc.RootElement.GetProperty("institutionType").GetInt32());
+
+            // Keep one university course active to avoid impacting unrelated tests that expect baseline data.
+            Assert.NotEqual(Guid.Empty, universityCourseId);
+        }
+        finally
+        {
+            var restoreResponse = await SetPolicyAsync(
+                client,
+                originalPolicy.IncludeSchool,
+                originalPolicy.IncludeCollege,
+                originalPolicy.IncludeUniversity);
+            Assert.Equal(HttpStatusCode.NoContent, restoreResponse.StatusCode);
+        }
     }
 }
