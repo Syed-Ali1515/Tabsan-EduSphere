@@ -2173,17 +2173,46 @@ public class PortalController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Analytics(CancellationToken ct)
+    public async Task<IActionResult> Analytics(int? institutionType, Guid? departmentId, CancellationToken ct)
     {
         ViewData["Title"] = "Analytics";
-        var model = new AnalyticsPageModel { IsConnected = _api.IsConnected() };
+        var identity = _api.GetSessionIdentity();
+        var model = new AnalyticsPageModel
+        {
+            IsConnected = _api.IsConnected(),
+            SelectedInstitutionType = institutionType,
+            SelectedDepartmentId = departmentId
+        };
+
         if (!model.IsConnected) return View(model);
+
         try
         {
+            model.Departments = await _api.GetDepartmentsAsync(ct);
+
+            // Constrained roles are auto-scoped to their institute claim for analytics filters.
+            if (identity is { IsSuperAdmin: false, InstitutionType: not null })
+            {
+                model.SelectedInstitutionType = identity.InstitutionType.Value;
+            }
+
+            if (model.SelectedInstitutionType.HasValue)
+            {
+                model.Departments = model.Departments
+                    .Where(d => !d.InstitutionType.HasValue || d.InstitutionType.Value == model.SelectedInstitutionType.Value)
+                    .ToList();
+            }
+
+            if (model.SelectedDepartmentId.HasValue && model.Departments.All(d => d.Id != model.SelectedDepartmentId.Value))
+            {
+                model.Message = "Selected department is outside your current analytics scope.";
+                model.SelectedDepartmentId = null;
+            }
+
             // Final-Touches Phase 6 Stage 6.2 — fetch typed DTOs instead of raw JSON
-            model.Performance = await _api.GetPerformanceAnalyticsAsync(ct);
-            model.Attendance  = await _api.GetAttendanceAnalyticsAsync(ct);
-            model.Assignments = await _api.GetAssignmentAnalyticsAsync(ct);
+            model.Performance = await _api.GetPerformanceAnalyticsAsync(model.SelectedDepartmentId, model.SelectedInstitutionType, ct);
+            model.Attendance  = await _api.GetAttendanceAnalyticsAsync(model.SelectedDepartmentId, model.SelectedInstitutionType, ct);
+            model.Assignments = await _api.GetAssignmentAnalyticsAsync(model.SelectedDepartmentId, model.SelectedInstitutionType, ct);
 
             // Populate summary cards from real data
             if (model.Performance is not null)

@@ -58,6 +58,11 @@
 | `Stage 3.3 student submenu institute-parity integration checks` | Validates student list endpoint denies mismatched institute department requests and returns institute-compatible students for admin scope. | `tests/Tabsan.EduSphere.IntegrationTests/StudentSubmenuParityIntegrationTests.cs` |
 | `LookupItem institution-type parity contract` | Adds optional institution-type metadata to shared portal lookup model so institute-aware lifecycle/student filters compile and execute consistently. | `src/Tabsan.EduSphere.Web/Models/Portal/PortalViewModels.cs` |
 | `Stage 3.4 phase-exit full integration validation` | Confirms consolidated Phase 3 parity behavior by running full integration suite and solution build as exit-criteria evidence. | `Docs/Institute-Parity-Issue-Fix-Phases.md`, `tests/Tabsan.EduSphere.IntegrationTests/*.cs` |
+| `AnalyticsController role-aware institute scope resolver` | Applies institute claim defaults and mismatch-deny checks for analytics query/export requests while validating department/institute compatibility. | `src/Tabsan.EduSphere.API/Controllers/AnalyticsController.cs` |
+| `AnalyticsService institution-type query filter support` | Extends performance/attendance/assignment/quiz analytics queries and cache keys with optional institution-type scope filtering. | `src/Tabsan.EduSphere.Infrastructure/Analytics/AnalyticsService.cs`, `src/Tabsan.EduSphere.Application/Interfaces/IAnalyticsService.cs` |
+| `Portal analytics institute + department filters` | Adds analytics dashboard filter controls and role-aware filter defaults for institute-safe dashboard behavior. | `src/Tabsan.EduSphere.Web/Controllers/PortalController.cs`, `src/Tabsan.EduSphere.Web/Views/Portal/Analytics.cshtml`, `src/Tabsan.EduSphere.Web/Models/Portal/PortalViewModels.cs` |
+| `EduApiClient analytics scoped query support` | Sends analytics filter query parameters (`departmentId`, `institutionType`) from portal to API analytics endpoints. | `src/Tabsan.EduSphere.Web/Services/EduApiClient.cs` |
+| `Stage 4.1 analytics institute parity integration checks` | Verifies analytics mismatch-deny and claim-default institute scoping behavior for admin analytics access. | `tests/Tabsan.EduSphere.IntegrationTests/AnalyticsInstituteParityIntegrationTests.cs` |
 
 ## Institution License Validation Plan (2026-05-12)
 

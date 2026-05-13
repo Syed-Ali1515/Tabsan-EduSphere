@@ -13,6 +13,74 @@
 }
 else
 {
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form asp-action="Analytics" method="get" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Institution</label>
+                    <select class="form-select" name="institutionType">
+                        @if (!Model.SelectedInstitutionType.HasValue)
+                        {
+                            <option value="" selected>All Institutions</option>
+                        }
+                        else
+                        {
+                            <option value="">All Institutions</option>
+                        }
+
+                        @if (Model.SelectedInstitutionType == 0)
+                        {
+                            <option value="0" selected>University</option>
+                        }
+                        else
+                        {
+                            <option value="0">University</option>
+                        }
+
+                        @if (Model.SelectedInstitutionType == 1)
+                        {
+                            <option value="1" selected>College</option>
+                        }
+                        else
+                        {
+                            <option value="1">College</option>
+                        }
+
+                        @if (Model.SelectedInstitutionType == 2)
+                        {
+                            <option value="2" selected>School</option>
+                        }
+                        else
+                        {
+                            <option value="2">School</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label">Department</label>
+                    <select class="form-select" name="departmentId">
+                        <option value="">All Departments</option>
+                        @foreach (var d in Model.Departments)
+                        {
+                            if (Model.SelectedDepartmentId == d.Id)
+                            {
+                                <option value="@d.Id" selected>@d.Name</option>
+                            }
+                            else
+                            {
+                                <option value="@d.Id">@d.Name</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                    <a asp-action="Analytics" class="btn btn-outline-secondary">Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
     @* Summary cards *@
     @if (Model.Cards.Count > 0)
     {

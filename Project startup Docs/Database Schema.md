@@ -192,6 +192,17 @@ After every completed stage in `Docs/Institute-Parity-Issue-Fix-Phases.md`:
 - Schema impact: `No schema mutation`.
 - EF migration impact: none.
 
+## 2026-05-13 Update - Institute Parity Stage 4.1 (Execution Snapshot)
+
+- Stage 4.1 completed analytics filter expansion for institute-aware analytics queries and dashboard filters.
+- API/web contract updates applied:
+	- analytics API and web client now accept optional `institutionType` filter for analytics reads/exports,
+	- portal analytics now carries institute + department filter state with role-aware defaults.
+- Query/runtime update applied:
+	- analytics query layer now filters by department and institution-type scope with scope-aware cache keys.
+- Schema impact: `No schema mutation`.
+- EF migration impact: none.
+
 ## 2026-05-12 Update — Institution License Validation Phase 7 (Execution Snapshot)
 
 - Completed SuperAdmin permission matrix against existing management and policy tables.

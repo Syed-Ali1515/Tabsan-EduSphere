@@ -641,3 +641,31 @@ Validation Summary
   - verified cross-institution department/course parity path from Stage 3.1 remains covered via integration suite.
 - Regression checks: no failures across complete integration suite and no new compile blockers after Stage 3.4 contract alignment.
 - Residual risks: analytics/report institute-filter breadth and report reliability items are intentionally deferred to Phase 4 stages.
+
+### Stage 4.1 - Analytics Filter Expansion (Completed: 2026-05-13)
+
+Implementation Summary
+- Backend/API/service/repository updates:
+  - expanded analytics API endpoints and exports to accept optional `institutionType` filter in addition to existing department filters,
+  - added role-aware analytics scope resolution in `AnalyticsController` so constrained roles auto-inherit their JWT `institutionType` claim and explicit mismatch requests are denied,
+  - added department-to-institution compatibility enforcement for analytics requests to prevent cross-institute filter bypasses,
+  - extended `IAnalyticsService` and `AnalyticsService` to apply institution-type filtering in performance, attendance, assignment, and quiz analytics queries.
+- Frontend/menu/filter updates:
+  - added Analytics page filter controls for institution and department,
+  - applied role-aware default filter behavior in portal analytics action so non-SuperAdmin sessions auto-scope to claim institution and out-of-scope department selections are cleared safely,
+  - wired analytics API client calls to send `departmentId` and `institutionType` query filters.
+- Authorization/policy updates:
+  - analytics institute mismatch requests now return `403` when a constrained role attempts to query outside claim scope.
+- DB/schema/script updates: none.
+- Repository/test updates:
+  - added `AnalyticsInstituteParityIntegrationTests` for mismatch deny and claim-default scoping behavior on analytics assignment endpoint.
+
+Validation Summary
+- Automated tests: `dotnet build Tabsan.EduSphere.sln -v minimal` -> passed.
+- Automated tests: `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~AnalyticsInstituteParityIntegrationTests|FullyQualifiedName~ReportExportsIntegrationTests|FullyQualifiedName~SidebarMenuIntegrationTests|FullyQualifiedName~StudentSubmenuParityIntegrationTests|FullyQualifiedName~StudentLifecycleIntegrationTests|FullyQualifiedName~AdminUserManagementIntegrationTests" -v minimal` -> passed (`41/41`).
+- Role/Institute checks:
+  - verified analytics institute mismatch query for Admin claim is denied (`403`),
+  - verified analytics endpoint defaults to claim-compatible institute scope when no explicit analytics filters are supplied,
+  - verified report/sidebar/student-lifecycle/student-submenu parity suites remained green with analytics filter expansion in place.
+- Regression checks: no failures in selected Stage 2/3/4 parity guard suites.
+- Residual risks: report-definition/report-export institute filter breadth is handled in Stage 4.2; broken report reliability items remain staged for Stage 4.3.

@@ -804,6 +804,9 @@ public class AnalyticsPageModel
 {
     public bool   IsConnected { get; set; }
     public string? Message    { get; set; }
+    public int? SelectedInstitutionType { get; set; }
+    public Guid? SelectedDepartmentId { get; set; }
+    public List<LookupItem> Departments { get; set; } = new();
     public List<AnalyticsSummaryCard>   Cards       { get; set; } = new();
     public DepartmentPerformanceReport? Performance { get; set; }
     public DepartmentAttendanceReport?  Attendance  { get; set; }

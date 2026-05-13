@@ -9,6 +9,7 @@ using Tabsan.EduSphere.Application.DTOs.Analytics;
 using Tabsan.EduSphere.Application.Interfaces;
 using Tabsan.EduSphere.Domain.Attendance;
 using Tabsan.EduSphere.Domain.Assignments;
+using Tabsan.EduSphere.Domain.Enums;
 using Tabsan.EduSphere.Domain.Quizzes;
 using Tabsan.EduSphere.Infrastructure.Persistence;
 
@@ -36,10 +37,12 @@ public sealed class AnalyticsService : IAnalyticsService
     // Performance report
     /// <summary>Returns a performance report for a department, or all departments if null.</summary>
     public async Task<DepartmentPerformanceReport?> GetPerformanceReportAsync(
-        Guid? departmentId, CancellationToken ct = default)
+        Guid? departmentId,
+        int? institutionType = null,
+        CancellationToken ct = default)
     {
         // Final-Touches Phase 34 Stage 4.1 — cache expensive analytics report reads in shared distributed cache.
-        var cacheKey = BuildAnalyticsCacheKey("performance", departmentId);
+        var cacheKey = BuildAnalyticsCacheKey("performance", departmentId, institutionType);
         var cached = await _distributedCache.GetStringAsync(cacheKey, ct);
         if (!string.IsNullOrWhiteSpace(cached))
         {
@@ -50,14 +53,16 @@ public sealed class AnalyticsService : IAnalyticsService
             }
         }
 
-        var deptName = await ResolveDeptNameAsync(departmentId, ct);
+        var deptName = await ResolveDeptNameAsync(departmentId, institutionType, ct);
         var query =
             from sp in _db.StudentProfiles
             join u  in _db.Users           on sp.UserId           equals u.Id
             join e  in _db.Enrollments     on sp.Id               equals e.StudentProfileId
             join co in _db.CourseOfferings on e.CourseOfferingId  equals co.Id
             join c  in _db.Courses         on co.CourseId         equals c.Id
-            where departmentId == null || c.DepartmentId == departmentId
+            join d  in _db.Departments     on c.DepartmentId      equals d.Id
+            where (departmentId == null || c.DepartmentId == departmentId)
+               && (!institutionType.HasValue || (int)d.InstitutionType == institutionType.Value)
             select new { sp.Id, sp.RegistrationNumber, DisplayName = u.Username, sp.CurrentSemesterNumber, OfferingId = co.Id };
 
         var raw = await query.Distinct().ToListAsync(ct);
@@ -96,10 +101,12 @@ public sealed class AnalyticsService : IAnalyticsService
     // Attendance report
     /// <summary>Returns an attendance summary for a department, or all departments if null.</summary>
     public async Task<DepartmentAttendanceReport?> GetAttendanceReportAsync(
-        Guid? departmentId, CancellationToken ct = default)
+        Guid? departmentId,
+        int? institutionType = null,
+        CancellationToken ct = default)
     {
         // Final-Touches Phase 34 Stage 4.1 — cache expensive analytics report reads in shared distributed cache.
-        var cacheKey = BuildAnalyticsCacheKey("attendance", departmentId);
+        var cacheKey = BuildAnalyticsCacheKey("attendance", departmentId, institutionType);
         var cached = await _distributedCache.GetStringAsync(cacheKey, ct);
         if (!string.IsNullOrWhiteSpace(cached))
         {
@@ -110,14 +117,16 @@ public sealed class AnalyticsService : IAnalyticsService
             }
         }
 
-        var deptName = await ResolveDeptNameAsync(departmentId, ct);
+        var deptName = await ResolveDeptNameAsync(departmentId, institutionType, ct);
         var rows = await (
             from ar in _db.AttendanceRecords
             join sp in _db.StudentProfiles on ar.StudentProfileId equals sp.Id
             join u  in _db.Users           on sp.UserId           equals u.Id
             join co in _db.CourseOfferings on ar.CourseOfferingId equals co.Id
             join c  in _db.Courses         on co.CourseId         equals c.Id
-            where departmentId == null || c.DepartmentId == departmentId
+            join d  in _db.Departments     on c.DepartmentId      equals d.Id
+            where (departmentId == null || c.DepartmentId == departmentId)
+               && (!institutionType.HasValue || (int)d.InstitutionType == institutionType.Value)
             select new { sp.Id, DisplayName = u.Username, CourseName = c.Title, ar.Status }
         ).ToListAsync(ct);
 
@@ -152,10 +161,12 @@ public sealed class AnalyticsService : IAnalyticsService
     // Assignment stats
     /// <summary>Returns assignment statistics for a department, or all if null.</summary>
     public async Task<AssignmentStatsReport?> GetAssignmentStatsAsync(
-        Guid? departmentId, CancellationToken ct = default)
+        Guid? departmentId,
+        int? institutionType = null,
+        CancellationToken ct = default)
     {
         // Final-Touches Phase 34 Stage 4.1 — cache expensive analytics report reads in shared distributed cache.
-        var cacheKey = BuildAnalyticsCacheKey("assignments", departmentId);
+        var cacheKey = BuildAnalyticsCacheKey("assignments", departmentId, institutionType);
         var cached = await _distributedCache.GetStringAsync(cacheKey, ct);
         if (!string.IsNullOrWhiteSpace(cached))
         {
@@ -166,12 +177,14 @@ public sealed class AnalyticsService : IAnalyticsService
             }
         }
 
-        var deptName = await ResolveDeptNameAsync(departmentId, ct);
+        var deptName = await ResolveDeptNameAsync(departmentId, institutionType, ct);
         var assignments = await (
             from a  in _db.Assignments
             join co in _db.CourseOfferings on a.CourseOfferingId equals co.Id
             join c  in _db.Courses         on co.CourseId         equals c.Id
-            where departmentId == null || c.DepartmentId == departmentId
+            join d  in _db.Departments     on c.DepartmentId      equals d.Id
+            where (departmentId == null || c.DepartmentId == departmentId)
+               && (!institutionType.HasValue || (int)d.InstitutionType == institutionType.Value)
             select new { a.Id, a.Title, CourseName = c.Title, OfferingId = co.Id }
         ).ToListAsync(ct);
 
@@ -204,10 +217,12 @@ public sealed class AnalyticsService : IAnalyticsService
     // Quiz stats
     /// <summary>Returns quiz statistics for a department, or all if null.</summary>
     public async Task<QuizStatsReport?> GetQuizStatsAsync(
-        Guid? departmentId, CancellationToken ct = default)
+        Guid? departmentId,
+        int? institutionType = null,
+        CancellationToken ct = default)
     {
         // Final-Touches Phase 34 Stage 4.1 — cache expensive analytics report reads in shared distributed cache.
-        var cacheKey = BuildAnalyticsCacheKey("quizzes", departmentId);
+        var cacheKey = BuildAnalyticsCacheKey("quizzes", departmentId, institutionType);
         var cached = await _distributedCache.GetStringAsync(cacheKey, ct);
         if (!string.IsNullOrWhiteSpace(cached))
         {
@@ -218,12 +233,14 @@ public sealed class AnalyticsService : IAnalyticsService
             }
         }
 
-        var deptName = await ResolveDeptNameAsync(departmentId, ct);
+        var deptName = await ResolveDeptNameAsync(departmentId, institutionType, ct);
         var quizzes = await (
             from q  in _db.Quizzes.IgnoreQueryFilters()
             join co in _db.CourseOfferings on q.CourseOfferingId equals co.Id
             join c  in _db.Courses         on co.CourseId         equals c.Id
-            where departmentId == null || c.DepartmentId == departmentId
+            join d  in _db.Departments     on c.DepartmentId      equals d.Id
+            where (departmentId == null || c.DepartmentId == departmentId)
+               && (!institutionType.HasValue || (int)d.InstitutionType == institutionType.Value)
             select new { q.Id, q.Title, CourseName = c.Title }
         ).ToListAsync(ct);
 
@@ -256,9 +273,9 @@ public sealed class AnalyticsService : IAnalyticsService
 
     // PDF exports
     /// <summary>Exports the performance report to a PDF byte array.</summary>
-    public async Task<byte[]> ExportPerformancePdfAsync(Guid? departmentId, CancellationToken ct = default)
+    public async Task<byte[]> ExportPerformancePdfAsync(Guid? departmentId, int? institutionType = null, CancellationToken ct = default)
     {
-        var report = await GetPerformanceReportAsync(departmentId, ct)
+        var report = await GetPerformanceReportAsync(departmentId, institutionType, ct)
                      ?? new DepartmentPerformanceReport(Guid.Empty, "All Departments", 0, 0, []);
         return Document.Create(container => container.Page(page =>
         {
@@ -285,9 +302,9 @@ public sealed class AnalyticsService : IAnalyticsService
     }
 
     /// <summary>Exports the attendance report to a PDF byte array.</summary>
-    public async Task<byte[]> ExportAttendancePdfAsync(Guid? departmentId, CancellationToken ct = default)
+    public async Task<byte[]> ExportAttendancePdfAsync(Guid? departmentId, int? institutionType = null, CancellationToken ct = default)
     {
-        var report = await GetAttendanceReportAsync(departmentId, ct)
+        var report = await GetAttendanceReportAsync(departmentId, institutionType, ct)
                      ?? new DepartmentAttendanceReport(Guid.Empty, "All Departments", 0, []);
         return Document.Create(container => container.Page(page =>
         {
@@ -316,9 +333,9 @@ public sealed class AnalyticsService : IAnalyticsService
 
     // Excel exports
     /// <summary>Exports the performance report to an Excel byte array.</summary>
-    public async Task<byte[]> ExportPerformanceExcelAsync(Guid? departmentId, CancellationToken ct = default)
+    public async Task<byte[]> ExportPerformanceExcelAsync(Guid? departmentId, int? institutionType = null, CancellationToken ct = default)
     {
-        var report = await GetPerformanceReportAsync(departmentId, ct)
+        var report = await GetPerformanceReportAsync(departmentId, institutionType, ct)
                      ?? new DepartmentPerformanceReport(Guid.Empty, "All Departments", 0, 0, []);
         using var wb = new XLWorkbook();
         var ws = wb.AddWorksheet("Performance");
@@ -338,9 +355,9 @@ public sealed class AnalyticsService : IAnalyticsService
     }
 
     /// <summary>Exports the attendance report to an Excel byte array.</summary>
-    public async Task<byte[]> ExportAttendanceExcelAsync(Guid? departmentId, CancellationToken ct = default)
+    public async Task<byte[]> ExportAttendanceExcelAsync(Guid? departmentId, int? institutionType = null, CancellationToken ct = default)
     {
-        var report = await GetAttendanceReportAsync(departmentId, ct)
+        var report = await GetAttendanceReportAsync(departmentId, institutionType, ct)
                      ?? new DepartmentAttendanceReport(Guid.Empty, "All Departments", 0, []);
         using var wb = new XLWorkbook();
         var ws = wb.AddWorksheet("Attendance");
@@ -361,17 +378,22 @@ public sealed class AnalyticsService : IAnalyticsService
 
     // Private helpers
     /// <summary>Resolves a department name from its ID; returns "All Departments" for null.</summary>
-    private async Task<string> ResolveDeptNameAsync(Guid? departmentId, CancellationToken ct)
+    private async Task<string> ResolveDeptNameAsync(Guid? departmentId, int? institutionType, CancellationToken ct)
     {
-        if (departmentId is null) return "All Departments";
+        if (departmentId is null)
+            return institutionType.HasValue && Enum.IsDefined(typeof(InstitutionType), institutionType.Value)
+                ? $"All {((InstitutionType)institutionType.Value)} Departments"
+                : "All Departments";
+
         var dept = await _db.Departments.FindAsync([departmentId], ct);
         return dept?.Name ?? "Unknown Department";
     }
 
-    private static string BuildAnalyticsCacheKey(string reportType, Guid? departmentId)
+    private static string BuildAnalyticsCacheKey(string reportType, Guid? departmentId, int? institutionType)
     {
         var departmentSegment = departmentId?.ToString("N") ?? "all";
-        return $"analytics:{reportType}:{departmentSegment}";
+        var institutionSegment = institutionType?.ToString() ?? "any";
+        return $"analytics:{reportType}:{departmentSegment}:{institutionSegment}";
     }
 
     private static void AddPdfHeader(TableDescriptor table, params string[] headers)

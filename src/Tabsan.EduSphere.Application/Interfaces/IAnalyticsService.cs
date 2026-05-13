@@ -8,26 +8,26 @@ namespace Tabsan.EduSphere.Application.Interfaces;
 public interface IAnalyticsService
 {
     /// <summary>Returns a performance report for a department, or all departments if null.</summary>
-    Task<DepartmentPerformanceReport?> GetPerformanceReportAsync(Guid? departmentId, CancellationToken ct = default);
+    Task<DepartmentPerformanceReport?> GetPerformanceReportAsync(Guid? departmentId, int? institutionType = null, CancellationToken ct = default);
 
     /// <summary>Returns an attendance summary report for a department, or all departments if null.</summary>
-    Task<DepartmentAttendanceReport?> GetAttendanceReportAsync(Guid? departmentId, CancellationToken ct = default);
+    Task<DepartmentAttendanceReport?> GetAttendanceReportAsync(Guid? departmentId, int? institutionType = null, CancellationToken ct = default);
 
     /// <summary>Returns assignment statistics for a department, or all departments if null.</summary>
-    Task<AssignmentStatsReport?> GetAssignmentStatsAsync(Guid? departmentId, CancellationToken ct = default);
+    Task<AssignmentStatsReport?> GetAssignmentStatsAsync(Guid? departmentId, int? institutionType = null, CancellationToken ct = default);
 
     /// <summary>Returns quiz statistics for a department, or all departments if null.</summary>
-    Task<QuizStatsReport?> GetQuizStatsAsync(Guid? departmentId, CancellationToken ct = default);
+    Task<QuizStatsReport?> GetQuizStatsAsync(Guid? departmentId, int? institutionType = null, CancellationToken ct = default);
 
     /// <summary>Exports the performance report for a department to a PDF byte array.</summary>
-    Task<byte[]> ExportPerformancePdfAsync(Guid? departmentId, CancellationToken ct = default);
+    Task<byte[]> ExportPerformancePdfAsync(Guid? departmentId, int? institutionType = null, CancellationToken ct = default);
 
     /// <summary>Exports the performance report for a department to an Excel byte array.</summary>
-    Task<byte[]> ExportPerformanceExcelAsync(Guid? departmentId, CancellationToken ct = default);
+    Task<byte[]> ExportPerformanceExcelAsync(Guid? departmentId, int? institutionType = null, CancellationToken ct = default);
 
     /// <summary>Exports the attendance report for a department to a PDF byte array.</summary>
-    Task<byte[]> ExportAttendancePdfAsync(Guid? departmentId, CancellationToken ct = default);
+    Task<byte[]> ExportAttendancePdfAsync(Guid? departmentId, int? institutionType = null, CancellationToken ct = default);
 
     /// <summary>Exports the attendance report for a department to an Excel byte array.</summary>
-    Task<byte[]> ExportAttendanceExcelAsync(Guid? departmentId, CancellationToken ct = default);
+    Task<byte[]> ExportAttendanceExcelAsync(Guid? departmentId, int? institutionType = null, CancellationToken ct = default);
 }

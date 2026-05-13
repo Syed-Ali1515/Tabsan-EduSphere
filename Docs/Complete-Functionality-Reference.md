@@ -207,6 +207,32 @@ After each completed stage, this document must be updated to reflect any net fun
     - no schema/model migration change required for Stage 3.4,
     - next execution focus moves to Phase 4 analytics/report parity and reliability stages.
 
+## 2026-05-13 Update - Institute Parity Stage 4.1 Analytics Filter Expansion Snapshot
+
+- Completed analytics filter expansion across API queries and portal analytics dashboard controls.
+- Analytics API behavior now enforces:
+    - optional institute filter support across analytics read/export surfaces,
+    - role-aware institute defaults for constrained roles via JWT `institutionType` claim,
+    - forbidden responses on explicit institute mismatch requests,
+    - department + institute compatibility checks before analytics query execution.
+- Analytics service behavior now supports institution-aware filtering for:
+    - performance analytics,
+    - attendance analytics,
+    - assignment analytics,
+    - quiz analytics,
+    while preserving distributed cache behavior with scope-aware cache keys.
+- Portal analytics behavior now includes:
+    - institution + department filter controls,
+    - claim-driven default institute filtering for constrained roles,
+    - safe clearing of out-of-scope department selections.
+- Validation evidence:
+    - solution build pass,
+    - focused parity integration suites pass (`41/41`) including new analytics institute parity tests.
+- Behavior impact:
+    - analytics dashboards and analytics API queries are now institute-aware for School/College/University contexts,
+    - constrained-role analytics requests are auto-scoped and protected against cross-institute filter drift,
+    - no schema or migration update required for Stage 4.1.
+
 ---
 
 ## Table of Contents

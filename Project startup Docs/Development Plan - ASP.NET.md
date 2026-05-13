@@ -19,6 +19,20 @@ Validation summaries must include at minimum:
 
 ## Execution Updates
 
+### 2026-05-13 - Institute Parity Stage 4.1 (Execution Snapshot)
+- Completed Phase 4 Stage 4.1 analytics filter expansion.
+- Implementation Summary:
+  - added institution filter support to analytics API and analytics service query paths,
+  - added role-aware institute defaulting and mismatch-deny behavior in analytics controller for constrained roles,
+  - added portal analytics institute + department filter controls with claim-based default institute scope,
+  - added analytics institute parity integration tests for mismatch-deny and default-scope behavior.
+- Validation Summary:
+  - `dotnet build Tabsan.EduSphere.sln -v minimal` passed,
+  - `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~AnalyticsInstituteParityIntegrationTests|FullyQualifiedName~ReportExportsIntegrationTests|FullyQualifiedName~SidebarMenuIntegrationTests|FullyQualifiedName~StudentSubmenuParityIntegrationTests|FullyQualifiedName~StudentLifecycleIntegrationTests|FullyQualifiedName~AdminUserManagementIntegrationTests" -v minimal` passed (`41/41`),
+  - verified constrained-role analytics requests auto-scope to claim institution and reject explicit mismatch filters.
+- Stage status: Stage 4.1 completed.
+- Phase status: Phase 4 in progress (next: Stage 4.2).
+
 ### 2026-05-13 - Institute Parity Stage 3.4 (Execution Snapshot)
 - Completed Phase 3 Stage 3.4 exit criteria.
 - Implementation Summary:

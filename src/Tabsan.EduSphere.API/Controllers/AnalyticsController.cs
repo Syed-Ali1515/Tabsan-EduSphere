@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Tabsan.EduSphere.Application.Interfaces;
+using Tabsan.EduSphere.Domain.Interfaces;
 
 namespace Tabsan.EduSphere.API.Controllers;
 
@@ -15,9 +16,14 @@ namespace Tabsan.EduSphere.API.Controllers;
 public sealed class AnalyticsController : ControllerBase
 {
     private readonly IAnalyticsService _analytics;
+    private readonly IDepartmentRepository _departments;
 
     /// <summary>Initialises the controller with the analytics service.</summary>
-    public AnalyticsController(IAnalyticsService analytics) => _analytics = analytics;
+    public AnalyticsController(IAnalyticsService analytics, IDepartmentRepository departments)
+    {
+        _analytics = analytics;
+        _departments = departments;
+    }
 
     // ── Report endpoints ──────────────────────────────────────────────────────
 
@@ -28,10 +34,13 @@ public sealed class AnalyticsController : ControllerBase
     [HttpGet("performance")]
     public async Task<IActionResult> GetPerformance(
         [FromQuery] Guid? departmentId,
+        [FromQuery] int? institutionType,
         CancellationToken ct)
     {
-        var effectiveDeptId = ResolveEffectiveDepartment(departmentId);
-        var result = await _analytics.GetPerformanceReportAsync(effectiveDeptId, ct);
+        var scope = await ResolveEffectiveScopeAsync(departmentId, institutionType, ct);
+        if (scope.Error is not null) return scope.Error;
+
+        var result = await _analytics.GetPerformanceReportAsync(scope.DepartmentId, scope.InstitutionType, ct);
         return result is null ? NotFound("No data found.") : Ok(result);
     }
 
@@ -39,10 +48,13 @@ public sealed class AnalyticsController : ControllerBase
     [HttpGet("attendance")]
     public async Task<IActionResult> GetAttendance(
         [FromQuery] Guid? departmentId,
+        [FromQuery] int? institutionType,
         CancellationToken ct)
     {
-        var effectiveDeptId = ResolveEffectiveDepartment(departmentId);
-        var result = await _analytics.GetAttendanceReportAsync(effectiveDeptId, ct);
+        var scope = await ResolveEffectiveScopeAsync(departmentId, institutionType, ct);
+        if (scope.Error is not null) return scope.Error;
+
+        var result = await _analytics.GetAttendanceReportAsync(scope.DepartmentId, scope.InstitutionType, ct);
         return result is null ? NotFound("No data found.") : Ok(result);
     }
 
@@ -50,10 +62,13 @@ public sealed class AnalyticsController : ControllerBase
     [HttpGet("assignments")]
     public async Task<IActionResult> GetAssignmentStats(
         [FromQuery] Guid? departmentId,
+        [FromQuery] int? institutionType,
         CancellationToken ct)
     {
-        var effectiveDeptId = ResolveEffectiveDepartment(departmentId);
-        var result = await _analytics.GetAssignmentStatsAsync(effectiveDeptId, ct);
+        var scope = await ResolveEffectiveScopeAsync(departmentId, institutionType, ct);
+        if (scope.Error is not null) return scope.Error;
+
+        var result = await _analytics.GetAssignmentStatsAsync(scope.DepartmentId, scope.InstitutionType, ct);
         return result is null ? NotFound("No data found.") : Ok(result);
     }
 
@@ -61,10 +76,13 @@ public sealed class AnalyticsController : ControllerBase
     [HttpGet("quizzes")]
     public async Task<IActionResult> GetQuizStats(
         [FromQuery] Guid? departmentId,
+        [FromQuery] int? institutionType,
         CancellationToken ct)
     {
-        var effectiveDeptId = ResolveEffectiveDepartment(departmentId);
-        var result = await _analytics.GetQuizStatsAsync(effectiveDeptId, ct);
+        var scope = await ResolveEffectiveScopeAsync(departmentId, institutionType, ct);
+        if (scope.Error is not null) return scope.Error;
+
+        var result = await _analytics.GetQuizStatsAsync(scope.DepartmentId, scope.InstitutionType, ct);
         return result is null ? NotFound("No data found.") : Ok(result);
     }
 
@@ -75,9 +93,13 @@ public sealed class AnalyticsController : ControllerBase
     [Authorize(Policy = "Admin")]
     public async Task<IActionResult> ExportPerformancePdf(
         [FromQuery] Guid? departmentId,
+        [FromQuery] int? institutionType,
         CancellationToken ct)
     {
-        var bytes = await _analytics.ExportPerformancePdfAsync(departmentId, ct);
+        var scope = await ResolveEffectiveScopeAsync(departmentId, institutionType, ct);
+        if (scope.Error is not null) return scope.Error;
+
+        var bytes = await _analytics.ExportPerformancePdfAsync(scope.DepartmentId, scope.InstitutionType, ct);
         return File(bytes, "application/pdf", "performance-report.pdf");
     }
 
@@ -86,9 +108,13 @@ public sealed class AnalyticsController : ControllerBase
     [Authorize(Policy = "Admin")]
     public async Task<IActionResult> ExportPerformanceExcel(
         [FromQuery] Guid? departmentId,
+        [FromQuery] int? institutionType,
         CancellationToken ct)
     {
-        var bytes = await _analytics.ExportPerformanceExcelAsync(departmentId, ct);
+        var scope = await ResolveEffectiveScopeAsync(departmentId, institutionType, ct);
+        if (scope.Error is not null) return scope.Error;
+
+        var bytes = await _analytics.ExportPerformanceExcelAsync(scope.DepartmentId, scope.InstitutionType, ct);
         return File(bytes,
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             "performance-report.xlsx");
@@ -99,9 +125,13 @@ public sealed class AnalyticsController : ControllerBase
     [Authorize(Policy = "Admin")]
     public async Task<IActionResult> ExportAttendancePdf(
         [FromQuery] Guid? departmentId,
+        [FromQuery] int? institutionType,
         CancellationToken ct)
     {
-        var bytes = await _analytics.ExportAttendancePdfAsync(departmentId, ct);
+        var scope = await ResolveEffectiveScopeAsync(departmentId, institutionType, ct);
+        if (scope.Error is not null) return scope.Error;
+
+        var bytes = await _analytics.ExportAttendancePdfAsync(scope.DepartmentId, scope.InstitutionType, ct);
         return File(bytes, "application/pdf", "attendance-report.pdf");
     }
 
@@ -110,9 +140,13 @@ public sealed class AnalyticsController : ControllerBase
     [Authorize(Policy = "Admin")]
     public async Task<IActionResult> ExportAttendanceExcelAsync(
         [FromQuery] Guid? departmentId,
+        [FromQuery] int? institutionType,
         CancellationToken ct)
     {
-        var bytes = await _analytics.ExportAttendanceExcelAsync(departmentId, ct);
+        var scope = await ResolveEffectiveScopeAsync(departmentId, institutionType, ct);
+        if (scope.Error is not null) return scope.Error;
+
+        var bytes = await _analytics.ExportAttendanceExcelAsync(scope.DepartmentId, scope.InstitutionType, ct);
         return File(bytes,
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             "attendance-report.xlsx");
@@ -120,17 +154,55 @@ public sealed class AnalyticsController : ControllerBase
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    /// <summary>
-    /// Faculty users are scoped to their own department; Admin/SuperAdmin may query any department.
-    /// Returns the requested departmentId for Admin/SuperAdmin, or the caller's own department for Faculty.
-    /// </summary>
-    private Guid? ResolveEffectiveDepartment(Guid? requested)
+    private int? GetCurrentInstitutionType()
     {
-        var isAdminOrAbove = User.IsInRole("Admin") || User.IsInRole("SuperAdmin");
-        if (isAdminOrAbove) return requested;
+        var raw = User.FindFirst("institutionType")?.Value;
+        return int.TryParse(raw, out var value) ? value : null;
+    }
 
-        // Faculty: always scoped to their own department.
-        var claim = User.FindFirstValue("departmentId");
-        return Guid.TryParse(claim, out var id) ? id : requested;
+    /// <summary>
+    /// Faculty users are scoped to their own department. Constrained roles are auto-scoped
+    /// to their institution claim when present; explicit mismatches are forbidden.
+    /// </summary>
+    private async Task<(Guid? DepartmentId, int? InstitutionType, IActionResult? Error)> ResolveEffectiveScopeAsync(
+        Guid? requestedDepartmentId,
+        int? requestedInstitutionType,
+        CancellationToken ct)
+    {
+        Guid? effectiveDepartmentId = requestedDepartmentId;
+
+        var isAdminOrAbove = User.IsInRole("Admin") || User.IsInRole("SuperAdmin");
+        if (!isAdminOrAbove)
+        {
+            var claim = User.FindFirstValue("departmentId");
+            if (Guid.TryParse(claim, out var facultyDepartmentId))
+                effectiveDepartmentId = facultyDepartmentId;
+        }
+
+        var callerInstitutionType = GetCurrentInstitutionType();
+        var effectiveInstitutionType = requestedInstitutionType;
+
+        if (!User.IsInRole("SuperAdmin") && callerInstitutionType.HasValue)
+        {
+            if (requestedInstitutionType.HasValue && requestedInstitutionType.Value != callerInstitutionType.Value)
+                return (null, null, Forbid());
+
+            effectiveInstitutionType = callerInstitutionType.Value;
+        }
+
+        if (effectiveDepartmentId.HasValue)
+        {
+            var department = await _departments.GetByIdAsync(effectiveDepartmentId.Value, ct);
+            if (department is null)
+                return (null, null, NotFound("Department not found."));
+
+            if (effectiveInstitutionType.HasValue && (int)department.InstitutionType != effectiveInstitutionType.Value)
+                return (null, null, Forbid());
+
+            if (!effectiveInstitutionType.HasValue)
+                effectiveInstitutionType = (int)department.InstitutionType;
+        }
+
+        return (effectiveDepartmentId, effectiveInstitutionType, null);
     }
 }

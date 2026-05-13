@@ -18,6 +18,22 @@ Each stage log entry must clearly describe behavior impact for School/College/Un
 
 ## 0. Implementation Update Log
 
+### 2026-05-13 - Institute Parity Stage 4.1 (Execution Snapshot)
+- Completed analytics filter expansion for School/College/University parity behavior.
+- Implementation Summary:
+  - analytics endpoints and exports now support institute filtering,
+  - constrained-role analytics requests now auto-default to caller claim institute and reject explicit mismatches,
+  - analytics dashboard now includes institute + department filters aligned with API analytics query scope,
+  - analytics service queries now apply institution-aware filtering for performance, attendance, assignment, and quiz analytics paths.
+- Validation Summary:
+  - solution build passed,
+  - focused parity integration suites passed (`41/41`) including new analytics parity tests,
+  - no regressions detected in Stage 2/3 institute-scope guard suites included in the run.
+- Behavior impact:
+  - analytics dashboard and analytics API queries are institute-aware and role-scoped by default for constrained users,
+  - cross-institute analytics filter drift is denied for constrained roles,
+  - no schema migration introduced in this stage.
+
 ### 2026-05-13 - Institute Parity Stage 3.4 (Execution Snapshot)
 - Completed Phase 3 exit criteria for module CRUD and workflow parity scope.
 - Implementation Summary:
