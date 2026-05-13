@@ -79,6 +79,17 @@
 - Validation status: Stage 24.2 integration verification passed (`4/4`).
 - Status: Stage 24.2 completed and validated as of 2026-05-14.
 
+### Stage 24.3 - UI/Navigation Filtering
+- Sidebar visibility now respects module activation state in addition to role/menu status.
+- `GET /api/v1/sidebar-menu/my-visible` applies module-aware filtering so disabled module entries are hidden from navigation output.
+- Portal route protection remains aligned through existing action-to-menu key guards, preventing access attempts through hidden menu keys.
+- Integration tests in `SidebarMenuIntegrationTests` verify:
+	- disabling `courses` hides course navigation entries,
+	- disabling `reports` hides report-center/analytics navigation entries,
+	- disabling `themes` hides theme-settings navigation entries.
+- Validation status: Stage 24.3 sidebar integration verification passed (`17/17` for the suite).
+- Status: Stage 24.3 completed and validated as of 2026-05-14.
+
 ## Authentication & Authorization
 
 ### User Authentication

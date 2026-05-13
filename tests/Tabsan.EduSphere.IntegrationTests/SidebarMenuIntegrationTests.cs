@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text.Json;
 using Tabsan.EduSphere.IntegrationTests.Infrastructure;
 
 namespace Tabsan.EduSphere.IntegrationTests;
@@ -12,13 +13,54 @@ namespace Tabsan.EduSphere.IntegrationTests;
 /// always start from the seeded baseline.
 /// </summary>
 [Collection(EduSphereCollection.Name)]
-public class SidebarMenuIntegrationTests
+public class SidebarMenuIntegrationTests : IAsyncLifetime
 {
     private readonly EduSphereWebFactory _factory;
+    private readonly Dictionary<string, bool> _originalModuleStates = new(StringComparer.OrdinalIgnoreCase);
+
+    private static readonly string[] SidebarControlledModuleKeys =
+    {
+        "departments",
+        "sis",
+        "courses",
+        "assignments",
+        "attendance",
+        "results",
+        "quizzes",
+        "fyp",
+        "notifications",
+        "ai_chat",
+        "reports",
+        "themes"
+    };
 
     public SidebarMenuIntegrationTests(EduSphereWebFactory factory)
     {
         _factory = factory;
+    }
+
+    public async Task InitializeAsync()
+    {
+        using var superClient = CreateClient("SuperAdmin");
+
+        foreach (var moduleKey in SidebarControlledModuleKeys)
+        {
+            var isActive = await GetModuleStatusAsync(superClient, moduleKey);
+            _originalModuleStates[moduleKey] = isActive;
+
+            if (!isActive)
+                await SetModuleStatusAsync(superClient, moduleKey, isActive: true);
+        }
+    }
+
+    public async Task DisposeAsync()
+    {
+        using var superClient = CreateClient("SuperAdmin");
+
+        foreach (var kv in _originalModuleStates)
+        {
+            await SetModuleStatusAsync(superClient, kv.Key, kv.Value);
+        }
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
@@ -45,6 +87,25 @@ public class SidebarMenuIntegrationTests
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync<ReportCatalogDto>()
                ?? new ReportCatalogDto();
+    }
+
+    private static async Task<bool> GetModuleStatusAsync(HttpClient client, string moduleKey)
+    {
+        var response = await client.GetAsync($"api/v1/module/{moduleKey}/status");
+        response.EnsureSuccessStatusCode();
+
+        using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        return doc.RootElement.GetProperty("isActive").GetBoolean();
+    }
+
+    private static async Task SetModuleStatusAsync(HttpClient client, string moduleKey, bool isActive)
+    {
+        var endpoint = isActive
+            ? $"api/v1/module/{moduleKey}/activate"
+            : $"api/v1/module/{moduleKey}/deactivate";
+
+        var response = await client.PostAsync(endpoint, content: null);
+        response.EnsureSuccessStatusCode();
     }
 
     /// <summary>Flattens top-level + sub-menu keys into a single set.</summary>
@@ -244,6 +305,73 @@ public class SidebarMenuIntegrationTests
 
         var response = await client.GetAsync("api/v1/sidebar-menu");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task DisabledCoursesModule_HidesCoursesFromAdminVisibleSidebar()
+    {
+        using var superClient = CreateClient("SuperAdmin");
+        using var adminClient = CreateClient("Admin");
+        const string moduleKey = "courses";
+
+        var original = await GetModuleStatusAsync(superClient, moduleKey);
+
+        try
+        {
+            await SetModuleStatusAsync(superClient, moduleKey, isActive: false);
+
+            var keys = FlatKeys(await GetVisibleAsync(adminClient));
+            Assert.DoesNotContain("courses", keys);
+        }
+        finally
+        {
+            await SetModuleStatusAsync(superClient, moduleKey, original);
+        }
+    }
+
+    [Fact]
+    public async Task DisabledReportsModule_HidesReportMenuEntriesFromAdminVisibleSidebar()
+    {
+        using var superClient = CreateClient("SuperAdmin");
+        using var adminClient = CreateClient("Admin");
+        const string moduleKey = "reports";
+
+        var original = await GetModuleStatusAsync(superClient, moduleKey);
+
+        try
+        {
+            await SetModuleStatusAsync(superClient, moduleKey, isActive: false);
+
+            var keys = FlatKeys(await GetVisibleAsync(adminClient));
+            Assert.DoesNotContain("report_center", keys);
+            Assert.DoesNotContain("analytics", keys);
+        }
+        finally
+        {
+            await SetModuleStatusAsync(superClient, moduleKey, original);
+        }
+    }
+
+    [Fact]
+    public async Task DisabledThemesModule_HidesThemeSettingsFromStudentVisibleSidebar()
+    {
+        using var superClient = CreateClient("SuperAdmin");
+        using var studentClient = CreateClient("Student");
+        const string moduleKey = "themes";
+
+        var original = await GetModuleStatusAsync(superClient, moduleKey);
+
+        try
+        {
+            await SetModuleStatusAsync(superClient, moduleKey, isActive: false);
+
+            var keys = FlatKeys(await GetVisibleAsync(studentClient));
+            Assert.DoesNotContain("theme_settings", keys);
+        }
+        finally
+        {
+            await SetModuleStatusAsync(superClient, moduleKey, original);
+        }
     }
 
     // ── Status toggle ─────────────────────────────────────────────────────────

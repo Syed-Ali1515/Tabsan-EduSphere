@@ -5,6 +5,11 @@
 **Phases are ordered by implementation sequence** — lowest complexity and fewest dependencies first.  
 **Status:** All phases are **Planned — Not Started** unless noted.
 
+### 2026-05-14 — Phase 24 Stage 24.3 Complete
+- Sidebar navigation now filters module-governed entries by current module activation status through the `my-visible` sidebar endpoint.
+- Disabled module areas are hidden from menu output, keeping navigation aligned with Stage 24.2 backend module enforcement.
+- Validation: `SidebarMenuIntegrationTests` passed (`17/17`) including module disable/restore visibility checks.
+
 ### 2026-05-09 — Phase 28 Stage 28.1 Complete
 - Phase 28 is now **In Progress** with **Stage 28.1 — API and App Tier Scaling** completed.
 - API and Web now enable Brotli/Gzip response compression for lower payload cost under higher concurrent traffic.

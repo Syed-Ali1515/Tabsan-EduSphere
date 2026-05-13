@@ -16,8 +16,50 @@ namespace Tabsan.EduSphere.API.Controllers;
 public class SidebarMenuController : ControllerBase
 {
     private readonly ISidebarMenuService _service;
+    private readonly IModuleEntitlementResolver _moduleEntitlement;
 
-    public SidebarMenuController(ISidebarMenuService service) => _service = service;
+    private static readonly IReadOnlyDictionary<string, string> MenuModuleKeyMap =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["departments"] = "departments",
+            ["courses"] = "courses",
+            ["prerequisites"] = "courses",
+            ["degree_audit"] = "courses",
+            ["degree_rules"] = "courses",
+            ["graduation_eligibility"] = "courses",
+            ["graduation_apply"] = "courses",
+            ["graduation_applications"] = "courses",
+            ["grading_config"] = "courses",
+            ["study_plan"] = "courses",
+            ["lms_manage"] = "courses",
+            ["discussion"] = "courses",
+            ["announcements"] = "courses",
+            ["students"] = "sis",
+            ["user_import"] = "sis",
+            ["student_lifecycle"] = "sis",
+            ["payments"] = "sis",
+            ["enrollments"] = "sis",
+            ["assignments"] = "assignments",
+            ["attendance"] = "attendance",
+            ["results"] = "results",
+            ["result_calculation"] = "results",
+            ["gradebook"] = "results",
+            ["quizzes"] = "quizzes",
+            ["fyp"] = "fyp",
+            ["notifications"] = "notifications",
+            ["helpdesk"] = "notifications",
+            ["analytics"] = "reports",
+            ["report_center"] = "reports",
+            ["report_settings"] = "reports",
+            ["ai_chat"] = "ai_chat",
+            ["theme_settings"] = "themes"
+        };
+
+    public SidebarMenuController(ISidebarMenuService service, IModuleEntitlementResolver moduleEntitlement)
+    {
+        _service = service;
+        _moduleEntitlement = moduleEntitlement;
+    }
 
     // ── GET /api/v1/sidebar-menu/my-visible ───────────────────────────────────
 
@@ -32,7 +74,8 @@ public class SidebarMenuController : ControllerBase
         if (User.IsInRole("SuperAdmin"))
         {
             var allMenus = await _service.GetTopLevelMenusAsync(ct);
-            return Ok(allMenus.OrderBy(m => m.DisplayOrder));
+            var moduleFiltered = await FilterByModuleActivationAsync(allMenus, ct);
+            return Ok(moduleFiltered.OrderBy(m => m.DisplayOrder));
         }
 
         var effectiveRoles = User.Claims
@@ -50,7 +93,8 @@ public class SidebarMenuController : ControllerBase
 
         var topLevel = await _service.GetTopLevelMenusAsync(ct);
         var visible = FilterVisible(topLevel, filteredRoles);
-        return Ok(visible);
+        var moduleFilteredVisible = await FilterByModuleActivationAsync(visible, ct);
+        return Ok(moduleFilteredVisible);
     }
 
     // ── GET /api/v1/sidebar-menu ──────────────────────────────────────────────
@@ -163,5 +207,31 @@ public class SidebarMenuController : ControllerBase
 
         return menu.RoleAccesses.Any(a =>
             a.IsAllowed && roles.Contains(a.RoleName, StringComparer.OrdinalIgnoreCase));
+    }
+
+    private async Task<IList<SidebarMenuItemDto>> FilterByModuleActivationAsync(
+        IEnumerable<SidebarMenuItemDto> menus,
+        CancellationToken ct)
+    {
+        var result = new List<SidebarMenuItemDto>();
+
+        foreach (var menu in menus.OrderBy(m => m.DisplayOrder))
+        {
+            var children = await FilterByModuleActivationAsync(menu.SubMenus, ct);
+            var moduleVisible = await IsMenuModuleVisibleAsync(menu.Key, ct);
+
+            if (moduleVisible || children.Count > 0)
+                result.Add(menu with { SubMenus = children.ToList() });
+        }
+
+        return result;
+    }
+
+    private async Task<bool> IsMenuModuleVisibleAsync(string menuKey, CancellationToken ct)
+    {
+        if (!MenuModuleKeyMap.TryGetValue(menuKey, out var moduleKey))
+            return true;
+
+        return await _moduleEntitlement.IsActiveAsync(moduleKey, ct);
     }
 }

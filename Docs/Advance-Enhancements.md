@@ -13,7 +13,7 @@ Purpose:
 - Preserve core functionality, global configuration behavior, and role-rights policy.
 
 Status:
-- In progress (Phase 24 in progress, Stage 24.2 completed)
+- In progress (Phase 24 completed, Stage 24.3 completed)
 
 ## Execution Updates
 
@@ -81,6 +81,23 @@ Status:
 - Behavior impact: disabled modules are blocked at backend entry consistently, yielding clear forbidden responses without controller-specific duplication.
 - Residual risks: none for Stage 24.2; next stage is Stage 24.3 (UI/Navigation Filtering).
 - Documentation synchronization completed for Stage 24.2 across planning and tracker docs.
+
+### 2026-05-14 - Phase 24 Stage 24.3 (UI/Navigation Filtering)
+- Completed Stage 24.3 by aligning sidebar visibility with module activation state and preserving route guard consistency.
+- Implementation evidence:
+	- `SidebarMenuController` now applies module-activation filtering to `GET /api/v1/sidebar-menu/my-visible` results,
+	- menu-key to module-key mapping added for module-governed areas (courses, reports, ai_chat, themes, sis-derived surfaces, and related entries),
+	- existing portal guard flow remains consistent because guarded routes already depend on currently visible sidebar keys.
+- Validation evidence:
+	- extended `SidebarMenuIntegrationTests` with module-aware navigation checks:
+		- disabled courses module hides `courses` menu entry,
+		- disabled reports module hides report-related sidebar entries,
+		- disabled themes module hides `theme_settings`.
+	- test suite stabilized with deterministic module-state setup/restore in class lifecycle to avoid environment-dependent flakiness.
+	- sidebar integration suite passing (`17/17`).
+- Behavior impact: disabled modules are no longer shown in navigation surfaces and users are less likely to attempt unavailable module flows.
+- Residual risks: low; portal route-level behavior remains sidebar-key driven and therefore inherits the filtered visibility contract.
+- Documentation synchronization completed for Stage 24.3 across planning and tracker docs.
 
 ---
 
