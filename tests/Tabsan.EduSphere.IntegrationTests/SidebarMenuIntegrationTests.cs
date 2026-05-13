@@ -221,6 +221,31 @@ public class SidebarMenuIntegrationTests
         Assert.NotEmpty(catalog.Reports);
     }
 
+    [Fact]
+    public async Task SidebarSettings_HiddenForAdmin_IsForbiddenOnSettingsEndpoint()
+    {
+        // Stage 2.3 guard consistency: if a menu is hidden in sidebar, direct settings endpoint access must be forbidden.
+        using var client = CreateClient("Admin");
+
+        var sidebarKeys = FlatKeys(await GetVisibleAsync(client));
+        Assert.DoesNotContain("sidebar_settings", sidebarKeys);
+
+        var response = await client.GetAsync("api/v1/sidebar-menu");
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task SidebarSettings_VisibleForSuperAdmin_CanAccessSettingsEndpoint()
+    {
+        using var client = CreateClient("SuperAdmin");
+
+        var sidebarKeys = FlatKeys(await GetVisibleAsync(client));
+        Assert.Contains("sidebar_settings", sidebarKeys);
+
+        var response = await client.GetAsync("api/v1/sidebar-menu");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
     // ── Status toggle ─────────────────────────────────────────────────────────
 
     /// <summary>

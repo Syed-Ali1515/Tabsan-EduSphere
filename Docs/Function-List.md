@@ -40,6 +40,9 @@
 | `ReportController institute-scope enforcement` | Composes role scope (admin assignment/faculty ownership) with institution-type scope checks on report endpoints for Admin/Faculty callers. | `src/Tabsan.EduSphere.API/Controllers/ReportController.cs` |
 | `ReportExportsIntegrationTests institute mismatch guard` | Verifies admin requests are forbidden when department access exists but institution claim mismatches target department institution. | `tests/Tabsan.EduSphere.IntegrationTests/ReportExportsIntegrationTests.cs` |
 | `JwtTestHelper institutionType claim support` | Supports emitting optional `institutionType` JWT claim for integration authorization-path validation. | `tests/Tabsan.EduSphere.IntegrationTests/Infrastructure/JwtTestHelper.cs` |
+| `PortalController menu/action guard` | Enforces sidebar-driven menu visibility checks on portal actions so direct URL access cannot bypass hidden menu restrictions. | `src/Tabsan.EduSphere.Web/Controllers/PortalController.cs` |
+| `Portal action-to-menu key map` | Defines canonical mapping between portal actions and sidebar menu keys for consistent navigation authorization behavior. | `src/Tabsan.EduSphere.Web/Controllers/PortalController.cs` |
+| `Sidebar settings guard consistency integration tests` | Verifies hidden menu state and endpoint authorization outcomes remain aligned for Admin and SuperAdmin roles. | `tests/Tabsan.EduSphere.IntegrationTests/SidebarMenuIntegrationTests.cs` |
 
 ## Institution License Validation Plan (2026-05-12)
 

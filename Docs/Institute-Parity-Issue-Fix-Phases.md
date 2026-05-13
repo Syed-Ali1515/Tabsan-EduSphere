@@ -503,3 +503,19 @@ Validation Summary
 - Role/Institute checks: verified Admin access is denied when department scope is valid but institute claim mismatches target department.
 - Regression checks: export endpoint metadata tests and SuperAdmin/Admin assignment management integration tests remained green.
 - Residual risks: Stage 2.3 still required to align menu/action guard consistency and remove any remaining backend/UI authorization mismatches.
+
+### Stage 2.3 - Menu/Action Guard Consistency (Completed: 2026-05-13)
+
+Implementation Summary
+- Added centralized menu/action guard enforcement in `PortalController` so direct portal URL navigation is validated against current sidebar visibility rules for non-SuperAdmin users.
+- Added explicit action-to-menu-key mapping for parity-scope menu routes to keep UI-visible navigation and backend-invokable portal actions aligned.
+- Preserved SuperAdmin global bypass behavior while enforcing redirect-on-deny behavior for hidden sections to prevent hidden-action leakage.
+- Added integration checks in `SidebarMenuIntegrationTests` to assert consistency between hidden menu state and endpoint authorization outcomes (`403` for hidden settings path, `200` for SuperAdmin visible path).
+- DB/schema/script updates: none.
+
+Validation Summary
+- Automated tests: `dotnet build Tabsan.EduSphere.sln -v minimal` -> passed.
+- Automated tests: `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~SidebarMenuIntegrationTests" -v minimal` -> passed (`14/14`).
+- Role/Institute checks: verified Admin hidden sidebar settings path remains blocked while SuperAdmin visible settings path remains accessible.
+- Regression checks: existing sidebar role matrix tests remained green alongside new guard consistency tests.
+- Residual risks: write-action routing outside mapped menu surfaces still relies on downstream API authorization and should be expanded in later parity hardening stages.

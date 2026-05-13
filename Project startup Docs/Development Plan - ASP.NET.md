@@ -19,6 +19,19 @@ Validation summaries must include at minimum:
 
 ## Execution Updates
 
+### 2026-05-13 - Institute Parity Stage 2.3 (Execution Snapshot)
+- Completed Phase 2 Stage 2.3 menu/action guard consistency.
+- Implementation Summary:
+  - added centralized portal action guard checks that enforce sidebar visibility alignment,
+  - added canonical action-to-menu key mapping for parity-scope portal routes,
+  - added integration tests validating hidden-menu/endpoint consistency behavior.
+- Validation Summary:
+  - `dotnet build Tabsan.EduSphere.sln -v minimal` passed,
+  - `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~SidebarMenuIntegrationTests" -v minimal` passed (`14/14`),
+  - verified Admin hidden settings path is denied while SuperAdmin visible path remains accessible.
+- Stage status: Stage 2.3 completed.
+- Phase status: Phase 2 in progress (next: Stage 2.4).
+
 ### 2026-05-13 - Institute Parity Stage 2.2 (Execution Snapshot)
 - Completed Phase 2 Stage 2.2 role-scoped institute enforcement.
 - Implementation Summary:

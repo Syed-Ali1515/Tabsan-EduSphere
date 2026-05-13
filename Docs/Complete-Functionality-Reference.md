@@ -110,6 +110,17 @@ After each completed stage, this document must be updated to reflect any net fun
     - SuperAdmin behavior remains global and unchanged,
     - existing report export contracts and metadata remain stable.
 
+## 2026-05-13 Update - Institute Parity Stage 2.3 Menu/Action Guard Consistency Snapshot
+
+- Added portal-level guard consistency enforcement so direct portal URL navigation must match visible sidebar menu permissions for non-SuperAdmin users.
+- Introduced a centralized action-to-menu key map in `PortalController` to keep menu visibility and invokable portal section routes aligned.
+- Preserved SuperAdmin unrestricted behavior while applying deterministic redirect-on-deny behavior for hidden sections.
+- Added integration proof that hidden menu state and endpoint authorization remain consistent (`Admin` hidden settings path -> forbidden, `SuperAdmin` visible settings path -> allowed).
+- Behavior impact:
+    - hidden menu sections can no longer be accessed by direct URL path in the portal flow,
+    - visible menu sections retain expected accessibility for authorized roles,
+    - existing role matrix behavior remains backward-compatible.
+
 ---
 
 ## Table of Contents

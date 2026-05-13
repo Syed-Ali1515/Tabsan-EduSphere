@@ -9,9 +9,58 @@ public class PortalController : Controller
 {
     private readonly IEduApiClient _api;
 
+    private static readonly Dictionary<string, string> ActionMenuKeyMap = new(StringComparer.OrdinalIgnoreCase)
+    {
+        [nameof(ModuleComposition)] = "module_composition",
+        [nameof(TimetableAdmin)] = "timetable_admin",
+        [nameof(TimetableStudent)] = "timetable_student",
+        [nameof(TimetableTeacher)] = "timetable_teacher",
+        [nameof(Buildings)] = "buildings",
+        [nameof(Rooms)] = "rooms",
+        [nameof(ReportSettings)] = "report_settings",
+        [nameof(ResultCalculation)] = "result_calculation",
+        [nameof(SidebarSettings)] = "sidebar_settings",
+        [nameof(LicenseUpdate)] = "license_update",
+        [nameof(ThemeSettings)] = "theme_settings",
+        [nameof(Notifications)] = "notifications",
+        [nameof(Students)] = "students",
+        [nameof(UserImport)] = "user_import",
+        [nameof(Departments)] = "departments",
+        [nameof(AdminUsers)] = "admin_users",
+        [nameof(Courses)] = "courses",
+        [nameof(Assignments)] = "assignments",
+        [nameof(Attendance)] = "attendance",
+        [nameof(Results)] = "results",
+        [nameof(Quizzes)] = "quizzes",
+        [nameof(Fyp)] = "fyp",
+        [nameof(Helpdesk)] = "helpdesk",
+        [nameof(Prerequisites)] = "prerequisites",
+        [nameof(Gradebook)] = "gradebook",
+        [nameof(RubricManage)] = "rubric_manage",
+        [nameof(Analytics)] = "analytics",
+        [nameof(AiChat)] = "ai_chat",
+        [nameof(StudentLifecycle)] = "student_lifecycle",
+        [nameof(Payments)] = "payments",
+        [nameof(Enrollments)] = "enrollments",
+        [nameof(ReportCenter)] = "report_center",
+        [nameof(DashboardSettings)] = "dashboard_settings",
+        [nameof(DegreeAudit)] = "degree_audit",
+        [nameof(GraduationEligibility)] = "graduation_eligibility",
+        [nameof(DegreeRules)] = "degree_rules",
+        [nameof(GraduationApply)] = "graduation_apply",
+        [nameof(GraduationApplications)] = "graduation_applications",
+        [nameof(GradingConfig)] = "grading_config",
+        [nameof(LmsManage)] = "lms_manage",
+        [nameof(Discussion)] = "discussion",
+        [nameof(Announcements)] = "announcements",
+        [nameof(StudyPlan)] = "study_plan",
+        [nameof(LibraryConfig)] = "library_config",
+        [nameof(InstitutionPolicy)] = "institution_policy"
+    };
+
     public PortalController(IEduApiClient api) => _api = api;
 
-    public override void OnActionExecuting(ActionExecutingContext context)
+    public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
         var action = context.RouteData.Values["action"]?.ToString();
         var isForceChangeAction = string.Equals(action, nameof(ForceChangePassword), StringComparison.OrdinalIgnoreCase);
@@ -22,7 +71,46 @@ public class PortalController : Controller
             return;
         }
 
-        base.OnActionExecuting(context);
+        if (ShouldEnforceSidebarGuard(action) && !CanBypassSidebarGuard())
+        {
+            var requiredMenuKey = ActionMenuKeyMap[action!];
+            var visibleMenuKeys = await GetVisibleMenuKeysAsync(context.HttpContext.RequestAborted);
+            if (!visibleMenuKeys.Contains(requiredMenuKey))
+            {
+                TempData["PortalMessage"] = "Access denied for this section based on your current role and menu permissions.";
+                context.Result = RedirectToAction(nameof(Dashboard));
+                return;
+            }
+        }
+
+        await base.OnActionExecutionAsync(context, next);
+    }
+
+    private bool ShouldEnforceSidebarGuard(string? actionName)
+        => _api.IsConnected()
+           && !string.IsNullOrWhiteSpace(actionName)
+           && ActionMenuKeyMap.ContainsKey(actionName)
+           && !string.Equals(actionName, nameof(Dashboard), StringComparison.OrdinalIgnoreCase);
+
+    private bool CanBypassSidebarGuard()
+    {
+        var identity = _api.GetSessionIdentity();
+        return identity?.IsSuperAdmin == true;
+    }
+
+    private async Task<HashSet<string>> GetVisibleMenuKeysAsync(CancellationToken ct)
+    {
+        var visibleMenus = await _api.GetVisibleSidebarMenusForCurrentUserAsync(ct);
+        var keys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var menu in visibleMenus)
+        {
+            keys.Add(menu.Key);
+            foreach (var subMenu in menu.SubMenus)
+                keys.Add(subMenu.Key);
+        }
+
+        return keys;
     }
 
     [HttpGet]

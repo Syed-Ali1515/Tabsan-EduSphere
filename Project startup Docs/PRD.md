@@ -18,6 +18,21 @@ Each stage log entry must clearly describe behavior impact for School/College/Un
 
 ## 0. Implementation Update Log
 
+### 2026-05-13 - Institute Parity Stage 2.3 (Execution Snapshot)
+- Completed menu/action guard consistency hardening for portal navigation and direct route access.
+- Implementation Summary:
+  - added centralized portal route guard enforcement based on sidebar visibility,
+  - introduced explicit action-to-menu key consistency mapping for parity-scope sections,
+  - added integration verification for hidden-menu endpoint denial and SuperAdmin visible endpoint allowance.
+- Validation Summary:
+  - solution build passed,
+  - focused sidebar integration suite passed (`14/14`),
+  - verified deterministic access alignment between hidden menu state and guarded settings endpoints.
+- Behavior impact:
+  - hidden sections are no longer reachable through direct portal URL navigation for constrained roles,
+  - SuperAdmin retains unrestricted navigation behavior,
+  - existing role matrix and menu assignment behavior remains backward-compatible.
+
 ### 2026-05-13 - Institute Parity Stage 2.2 (Execution Snapshot)
 - Completed role-scoped institute enforcement hardening for report access paths.
 - Implementation Summary:

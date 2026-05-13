@@ -135,6 +135,16 @@ After every completed stage in `Docs/Institute-Parity-Issue-Fix-Phases.md`:
 - Schema impact: `No schema mutation`.
 - EF migration impact: none.
 
+## 2026-05-13 Update - Institute Parity Stage 2.3 (Execution Snapshot)
+
+- Stage 2.3 completed menu/action guard consistency hardening.
+- API/web updates applied:
+	- `PortalController` now enforces sidebar visibility guard checks on mapped portal actions.
+	- Direct access to hidden menu sections now redirects to allowed portal surfaces for constrained roles.
+	- Added integration verification for hidden-menu endpoint denial and SuperAdmin-visible endpoint access.
+- Schema impact: `No schema mutation`.
+- EF migration impact: none.
+
 ## 2026-05-12 Update — Institution License Validation Phase 7 (Execution Snapshot)
 
 - Completed SuperAdmin permission matrix against existing management and policy tables.
