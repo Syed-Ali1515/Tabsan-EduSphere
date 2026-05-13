@@ -86,6 +86,9 @@ public sealed record StudentSelfRegisterRequest(
 /// <summary>Request body for assigning a faculty member to a department.</summary>
 public sealed record AssignFacultyToDepartmentRequest(Guid FacultyUserId, Guid DepartmentId);
 
+/// <summary>Request body for revoking a faculty user's access to a department.</summary>
+public sealed record RemoveFacultyFromDepartmentRequest(Guid FacultyUserId, Guid DepartmentId);
+
 /// <summary>Request body for assigning an admin user to a department.</summary>
 public sealed record AssignAdminToDepartmentRequest(Guid AdminUserId, Guid DepartmentId);
 

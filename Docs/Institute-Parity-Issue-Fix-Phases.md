@@ -458,3 +458,27 @@ Validation Summary
 - Role/Institute checks: verified Stage 1.4 post-deployment check markers are present for institute coverage and orphan counts.
 - Regression checks: no runtime code paths changed in Stage 1.4; build and targeted integration/security checks remained green.
 - Residual risks: final orphan/coverage numeric outcomes depend on execution against target database data; script checks are now in place for deterministic verification.
+
+### Stage 2.1 - SuperAdmin Global Capability (Completed: 2026-05-13)
+
+Implementation Summary
+- Extended SuperAdmin user-assignment capabilities in `DepartmentController` by adding full faculty department-assignment management endpoints:
+  - assign faculty to department,
+  - remove faculty from department,
+  - list faculty department assignments,
+  - list active faculty users for assignment workflows.
+- Strengthened assignment integrity for cross-institute operation by enforcing institution-type compatibility checks on assignment writes:
+  - admin-to-department assignment rejects institution mismatch,
+  - faculty-to-department assignment rejects institution mismatch.
+- Expanded assignment management response payloads with user institution type for better SuperAdmin visibility in institute-aware assignment flows.
+- Added request contract support for faculty-assignment revoke operations (`RemoveFacultyFromDepartmentRequest`).
+- Validation coverage extended through integration tests for:
+  - SuperAdmin faculty assignment round-trip,
+  - institution-mismatch rejection on admin department assignment.
+
+Validation Summary
+- Automated tests: `dotnet build Tabsan.EduSphere.sln -v minimal` -> passed.
+- Automated tests: `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~AdminUserManagementIntegrationTests" -v minimal` -> passed (`6/6`).
+- Role/Institute checks: SuperAdmin can now manage faculty department assignments directly and receives deterministic `BadRequest` responses for cross-institute mismatched assignment attempts.
+- Regression checks: existing admin user create/update/assignment integration flows remained green in the same test suite.
+- Residual risks: Stage 2.2 is still required to complete broader role-scoped institute enforcement across remaining module handlers and policies.

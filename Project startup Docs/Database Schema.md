@@ -113,6 +113,18 @@ After every completed stage in `Docs/Institute-Parity-Issue-Fix-Phases.md`:
 - Schema impact: `No schema mutation`; verification coverage expanded for post-deployment integrity checks.
 - EF migration impact: none.
 
+## 2026-05-13 Update - Institute Parity Stage 2.1 (Execution Snapshot)
+
+- Stage 2.1 completed SuperAdmin global capability hardening for assignment management.
+- API updates applied:
+	- `DepartmentController`:
+		- added faculty department assignment endpoints (assign/remove/list/list users),
+		- added institution-type compatibility checks for admin/faculty assignment operations.
+	- `AcademicDtos`:
+		- added `RemoveFacultyFromDepartmentRequest` contract.
+- Schema impact: `No schema mutation`.
+- EF migration impact: none.
+
 ## 2026-05-12 Update — Institution License Validation Phase 7 (Execution Snapshot)
 
 - Completed SuperAdmin permission matrix against existing management and policy tables.

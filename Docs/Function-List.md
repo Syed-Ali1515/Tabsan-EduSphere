@@ -32,6 +32,10 @@
 | `Stage 1.3 maintenance parity index guardrails` | Ensures critical institute/report parity indexes exist and safely replaces legacy program-code index during maintenance runs. | `Scripts/04-Maintenance-Indexes-And-Views.sql` |
 | `Stage 1.3 post-deployment parity verification` | Adds explicit checks for parity migration IDs, column shape, and critical index existence in deployment verification output. | `Scripts/05-PostDeployment-Checks.sql` |
 | `Stage 1.4 parity exit criteria checks` | Adds institute-type coverage/validity checks and orphan-count checks for institute-linked entities to close Phase 1 with measurable integrity validation. | `Scripts/05-PostDeployment-Checks.sql` |
+| `DepartmentController faculty assignment management endpoints` | Enables SuperAdmin to assign/remove/list faculty department assignments and retrieve faculty candidates for assignment workflows. | `src/Tabsan.EduSphere.API/Controllers/DepartmentController.cs` |
+| `Department assignment institute-compatibility guards` | Blocks admin/faculty department assignments when user institution type conflicts with the target department institution type. | `src/Tabsan.EduSphere.API/Controllers/DepartmentController.cs` |
+| `RemoveFacultyFromDepartmentRequest` | Adds request contract for revoking faculty department assignment through API. | `src/Tabsan.EduSphere.Application/DTOs/Academic/AcademicDtos.cs` |
+| `Stage 2.1 SuperAdmin assignment integration checks` | Validates SuperAdmin faculty assignment round-trip and admin assignment institution-mismatch rejection. | `tests/Tabsan.EduSphere.IntegrationTests/AdminUserManagementIntegrationTests.cs` |
 
 ## Institution License Validation Plan (2026-05-12)
 

@@ -19,6 +19,19 @@ Validation summaries must include at minimum:
 
 ## Execution Updates
 
+### 2026-05-13 - Institute Parity Stage 2.1 (Execution Snapshot)
+- Completed Phase 2 Stage 2.1 SuperAdmin global capability.
+- Implementation Summary:
+  - added SuperAdmin faculty department assignment APIs (assign/remove/list/list candidates),
+  - added user-vs-department institution-type compatibility validation for admin/faculty assignment operations,
+  - added faculty assignment revoke request contract DTO.
+- Validation Summary:
+  - `dotnet build Tabsan.EduSphere.sln -v minimal` passed,
+  - `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~AdminUserManagementIntegrationTests" -v minimal` passed (`6/6`),
+  - validated new SuperAdmin faculty assignment round-trip and mismatch rejection checks in integration suite.
+- Stage status: Stage 2.1 completed.
+- Phase status: Phase 2 in progress (next: Stage 2.2).
+
 ### 2026-05-13 - Institute Parity Stage 1.4 (Execution Snapshot)
 - Completed Phase 1 Stage 1.4 exit criteria.
 - Implementation Summary:

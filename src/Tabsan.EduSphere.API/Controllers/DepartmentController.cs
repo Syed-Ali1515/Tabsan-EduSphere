@@ -156,6 +156,9 @@ public class DepartmentController : ControllerBase
         if (dept is null)
             return NotFound("Department not found.");
 
+        if (adminUser.InstitutionType is not null && adminUser.InstitutionType.Value != dept.InstitutionType)
+            return BadRequest("Admin user's institution type does not match the target department institution type.");
+
         var existing = await _adminAssignments.GetAsync(request.AdminUserId, request.DepartmentId, ct);
         if (existing is not null)
             return NoContent();
@@ -207,7 +210,85 @@ public class DepartmentController : ControllerBase
     public async Task<IActionResult> GetAdminUsers(CancellationToken ct)
     {
         var users = await _users.GetActiveUsersByRolesAsync(new[] { "Admin" }, ct);
-        return Ok(users.Select(u => new { u.Id, u.Username, u.Email }));
+        return Ok(users.Select(u => new { u.Id, u.Username, u.Email, u.InstitutionType }));
+    }
+
+    // ── POST /api/v1/department/faculty-assignment ───────────────────────────
+
+    /// <summary>Assigns a Faculty user to a department. SuperAdmin only.</summary>
+    [HttpPost("faculty-assignment")]
+    [Authorize(Roles = "SuperAdmin")]
+    public async Task<IActionResult> AssignFacultyToDepartment([FromBody] AssignFacultyToDepartmentRequest request, CancellationToken ct)
+    {
+        if (request.FacultyUserId == Guid.Empty || request.DepartmentId == Guid.Empty)
+            return BadRequest("FacultyUserId and DepartmentId are required.");
+
+        var facultyUser = await _users.GetByIdAsync(request.FacultyUserId, ct);
+        if (facultyUser is null)
+            return NotFound("Faculty user not found.");
+
+        if (!string.Equals(facultyUser.Role?.Name, "Faculty", StringComparison.OrdinalIgnoreCase))
+            return BadRequest("Only users with Faculty role can be assigned.");
+
+        var dept = await _deptRepo.GetByIdAsync(request.DepartmentId, ct);
+        if (dept is null)
+            return NotFound("Department not found.");
+
+        if (facultyUser.InstitutionType is not null && facultyUser.InstitutionType.Value != dept.InstitutionType)
+            return BadRequest("Faculty user's institution type does not match the target department institution type.");
+
+        var existing = await _facultyAssignments.GetAsync(request.FacultyUserId, request.DepartmentId, ct);
+        if (existing is not null)
+            return NoContent();
+
+        await _facultyAssignments.AddAsync(new FacultyDepartmentAssignment(request.FacultyUserId, request.DepartmentId), ct);
+        await _facultyAssignments.SaveChangesAsync(ct);
+        return NoContent();
+    }
+
+    // ── DELETE /api/v1/department/faculty-assignment ─────────────────────────
+
+    /// <summary>Revokes a Faculty user's department assignment. SuperAdmin only.</summary>
+    [HttpDelete("faculty-assignment")]
+    [Authorize(Roles = "SuperAdmin")]
+    public async Task<IActionResult> RemoveFacultyFromDepartment([FromBody] RemoveFacultyFromDepartmentRequest request, CancellationToken ct)
+    {
+        if (request.FacultyUserId == Guid.Empty || request.DepartmentId == Guid.Empty)
+            return BadRequest("FacultyUserId and DepartmentId are required.");
+
+        var existing = await _facultyAssignments.GetAsync(request.FacultyUserId, request.DepartmentId, ct);
+        if (existing is null)
+            return NotFound("Assignment not found.");
+
+        existing.Remove();
+        _facultyAssignments.Update(existing);
+        await _facultyAssignments.SaveChangesAsync(ct);
+        return NoContent();
+    }
+
+    // ── GET /api/v1/department/faculty-assignment/{facultyUserId} ───────────
+
+    /// <summary>Lists active department assignments for a Faculty user. SuperAdmin only.</summary>
+    [HttpGet("faculty-assignment/{facultyUserId:guid}")]
+    [Authorize(Roles = "SuperAdmin")]
+    public async Task<IActionResult> GetFacultyDepartmentAssignments(Guid facultyUserId, CancellationToken ct)
+    {
+        if (facultyUserId == Guid.Empty)
+            return BadRequest("facultyUserId is required.");
+
+        var assignments = await _facultyAssignments.GetByFacultyAsync(facultyUserId, ct);
+        return Ok(assignments.Select(a => new { a.FacultyUserId, a.DepartmentId, DepartmentName = a.Department.Name, a.AssignedAt }));
+    }
+
+    // ── GET /api/v1/department/faculty-users ─────────────────────────────────
+
+    /// <summary>Returns active users in Faculty role for department assignment management. SuperAdmin only.</summary>
+    [HttpGet("faculty-users")]
+    [Authorize(Roles = "SuperAdmin")]
+    public async Task<IActionResult> GetFacultyUsers(CancellationToken ct)
+    {
+        var users = await _users.GetActiveUsersByRolesAsync(new[] { "Faculty" }, ct);
+        return Ok(users.Select(u => new { u.Id, u.Username, u.Email, u.InstitutionType }));
     }
 
     // ── Helper ─────────────────────────────────────────────────────────────────

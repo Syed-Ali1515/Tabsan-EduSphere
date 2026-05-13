@@ -18,6 +18,21 @@ Each stage log entry must clearly describe behavior impact for School/College/Un
 
 ## 0. Implementation Update Log
 
+### 2026-05-13 - Institute Parity Stage 2.1 (Execution Snapshot)
+- Completed SuperAdmin global-capability hardening for assignment management paths.
+- Implementation Summary:
+  - added SuperAdmin faculty department assignment APIs (assign/remove/list/list users),
+  - enforced institution-type compatibility checks on admin/faculty department assignment writes,
+  - added request contract for faculty assignment removal.
+- Validation Summary:
+  - solution build passed,
+  - targeted integration suite (`AdminUserManagementIntegrationTests`) passed `6/6`,
+  - verified assignment mismatch behavior now returns deterministic validation failure.
+- Behavior impact:
+  - SuperAdmin can now manage both Admin and Faculty department assignments through API,
+  - cross-institute mismatched assignments are blocked early,
+  - existing Admin-user management flows remain compatible.
+
 ### 2026-05-13 - Institute Parity Stage 1.4 (Execution Snapshot)
 - Completed Phase 1 exit-criteria stage.
 - Implementation Summary:

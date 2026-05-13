@@ -90,6 +90,16 @@ After each completed stage, this document must be updated to reflect any net fun
     - no API contract or user-flow mutation in Stage 1.4,
     - improved operational confidence by making Phase 1 exit criteria auditable with deterministic SQL check outputs.
 
+## 2026-05-13 Update - Institute Parity Stage 2.1 SuperAdmin Capability Snapshot
+
+- Expanded SuperAdmin management capabilities for user-to-department assignment workflows by adding direct Faculty department assignment APIs (assign/remove/list).
+- Strengthened institute-scope correctness for assignment operations by enforcing institution-type compatibility between users and target departments when explicit user institution type is set.
+- Added assignment-management response visibility for user institution type in SuperAdmin user candidate listings.
+- Behavior impact:
+    - SuperAdmin assignment flows now cover both Admin and Faculty department assignment operations,
+    - cross-institute assignment mismatches now fail early with explicit validation responses,
+    - existing Admin-user create/update/assignment behavior remains backward-compatible.
+
 ---
 
 ## Table of Contents
