@@ -519,3 +519,27 @@ Validation Summary
 - Role/Institute checks: verified Admin hidden sidebar settings path remains blocked while SuperAdmin visible settings path remains accessible.
 - Regression checks: existing sidebar role matrix tests remained green alongside new guard consistency tests.
 - Residual risks: write-action routing outside mapped menu surfaces still relies on downstream API authorization and should be expanded in later parity hardening stages.
+
+### Stage 2.4 - Exit Criteria (Completed: 2026-05-13)
+
+Implementation Summary
+- Completed Phase 2 authorization closure by validating the consolidated role + institute access matrix across SuperAdmin/Admin/Faculty/Student behavior surfaces.
+- Consolidated Stage 2 evidence from:
+  - SuperAdmin assignment capability and institute-compatibility enforcement (Stage 2.1),
+  - role-scoped institute enforcement on report handlers (Stage 2.2),
+  - menu/action guard consistency between visible sidebar routes and direct portal access (Stage 2.3).
+- Verified the Stage 2 matrix through end-to-end integration suites covering assignment authorization, report scope authorization, and sidebar/section guard consistency.
+- Backend/API/service/repository updates: none in Stage 2.4 (validation and closeout stage).
+- Frontend/menu/filter updates: none in Stage 2.4 (validation and closeout stage).
+- Authorization/policy updates: none in Stage 2.4 (validation and closeout stage).
+- DB/schema/script updates: none.
+
+Validation Summary
+- Automated tests: `dotnet build Tabsan.EduSphere.sln -v minimal` -> passed.
+- Automated tests: `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~AdminUserManagementIntegrationTests|FullyQualifiedName~ReportExportsIntegrationTests|FullyQualifiedName~SidebarMenuIntegrationTests" -v minimal` -> passed (`34/34`).
+- Role/Institute checks:
+  - SuperAdmin assignment administration and institute-compatible assignment paths passed,
+  - Admin/Faculty report access institute-scope checks passed (including mismatch denial),
+  - Student/Admin/Faculty/SuperAdmin sidebar visibility and guarded section access expectations passed.
+- Regression checks: all selected Stage 2 suites passed with no failures and no new unresolved authorization mismatches.
+- Residual risks: broader module parity beyond Stage 2 authorization scope remains in Phase 3+ execution backlog.

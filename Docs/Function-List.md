@@ -43,6 +43,7 @@
 | `PortalController menu/action guard` | Enforces sidebar-driven menu visibility checks on portal actions so direct URL access cannot bypass hidden menu restrictions. | `src/Tabsan.EduSphere.Web/Controllers/PortalController.cs` |
 | `Portal action-to-menu key map` | Defines canonical mapping between portal actions and sidebar menu keys for consistent navigation authorization behavior. | `src/Tabsan.EduSphere.Web/Controllers/PortalController.cs` |
 | `Sidebar settings guard consistency integration tests` | Verifies hidden menu state and endpoint authorization outcomes remain aligned for Admin and SuperAdmin roles. | `tests/Tabsan.EduSphere.IntegrationTests/SidebarMenuIntegrationTests.cs` |
+| `Stage 2.4 authorization matrix exit validation` | Confirms Phase 2 role + institute access matrix passes end-to-end by running assignment, report-scope, and menu/action guard integration suites together. | `Docs/Institute-Parity-Issue-Fix-Phases.md`, `tests/Tabsan.EduSphere.IntegrationTests/AdminUserManagementIntegrationTests.cs`, `tests/Tabsan.EduSphere.IntegrationTests/ReportExportsIntegrationTests.cs`, `tests/Tabsan.EduSphere.IntegrationTests/SidebarMenuIntegrationTests.cs` |
 
 ## Institution License Validation Plan (2026-05-12)
 

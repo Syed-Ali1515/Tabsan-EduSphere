@@ -121,6 +121,19 @@ After each completed stage, this document must be updated to reflect any net fun
     - visible menu sections retain expected accessibility for authorized roles,
     - existing role matrix behavior remains backward-compatible.
 
+## 2026-05-13 Update - Institute Parity Stage 2.4 Exit Criteria Snapshot
+
+- Completed Phase 2 authorization and permission correction closeout.
+- Confirmed role + institute access matrix pass state across integrated Stage 2 behavior surfaces:
+    - SuperAdmin assignment management with institute-compatibility enforcement,
+    - Admin/Faculty report scope checks including institution mismatch denial,
+    - sidebar visibility and direct-route guard consistency for non-SuperAdmin users.
+- Validation evidence executed as a combined integration matrix (`AdminUserManagementIntegrationTests`, `ReportExportsIntegrationTests`, `SidebarMenuIntegrationTests`) with all tests passing.
+- Behavior impact:
+    - no new runtime behavior introduced in Stage 2.4 itself,
+    - Phase 2 authorization outcomes are now formally validated and documented as complete,
+    - subsequent parity work can proceed to Phase 3 CRUD/workflow parity scope.
+
 ---
 
 ## Table of Contents

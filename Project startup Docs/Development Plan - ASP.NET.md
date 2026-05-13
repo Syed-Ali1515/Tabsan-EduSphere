@@ -19,6 +19,19 @@ Validation summaries must include at minimum:
 
 ## Execution Updates
 
+### 2026-05-13 - Institute Parity Stage 2.4 (Execution Snapshot)
+- Completed Phase 2 Stage 2.4 exit criteria.
+- Implementation Summary:
+  - completed consolidated role + institute access-matrix validation across Stage 2 authorization surfaces,
+  - verified Stage 2.1 assignment controls, Stage 2.2 report institute scope checks, and Stage 2.3 menu/action guard consistency as one integrated matrix,
+  - no additional runtime code mutation introduced in this closeout stage.
+- Validation Summary:
+  - `dotnet build Tabsan.EduSphere.sln -v minimal` passed,
+  - `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~AdminUserManagementIntegrationTests|FullyQualifiedName~ReportExportsIntegrationTests|FullyQualifiedName~SidebarMenuIntegrationTests" -v minimal` passed (`34/34`),
+  - verified cross-role authorization outcomes remain consistent for SuperAdmin/Admin/Faculty/Student.
+- Stage status: Stage 2.4 completed.
+- Phase status: Phase 2 completed (next: Phase 3 Stage 3.1).
+
 ### 2026-05-13 - Institute Parity Stage 2.3 (Execution Snapshot)
 - Completed Phase 2 Stage 2.3 menu/action guard consistency.
 - Implementation Summary:
