@@ -420,12 +420,12 @@ cmd /c git -C "<repo-root>" push origin main
 
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
-- Active Phase: **Institute Parity - Phase 5 (User Creation and CSV Import with Institution Assignment)**
-- Active Stage: **Stage 5.1 (next execution target)**
+- Active Phase: **Institute Parity - Phase 5 (Database Scripts and Full Dummy Data Completion)**
+- Active Stage: **Stage 5.1 Core Seed Coverage (next execution target)**
 - Status: **Stage 4.4 completed and documented with validation evidence.**
 - Last Updated: 2026-05-13
-- Next: **Execute Stage 5.1 user creation and CSV import with institution assignment and close out with required 7-document synchronization plus commit -> pull --rebase -> push.**
-- Docs Updated: ✅ Stage 4.4 tracker and planning docs synchronized (2026-05-13)
+- Next: **Execute Stage 5.1 core seed coverage and close out with required 7-document synchronization plus commit -> pull --rebase -> push.**
+- Docs Updated: ✅ Stage 4.4 tracker and planning docs synchronized (2026-05-13); execution pointer realigned after confirming user-import assignment flow is already complete.
 
 ### 2026-05-11 - Phase 10 Completion
 - Stage 10.1: Added a parameterized progressive gate runner for stepwise scale validation and higher-tier execution.
