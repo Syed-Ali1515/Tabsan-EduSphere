@@ -20,6 +20,8 @@ public class CourseController : ControllerBase
     private readonly IFacultyAssignmentRepository _facultyAssignments;
     private readonly IAdminAssignmentRepository _adminAssignments;
     private readonly IEnrollmentRepository _enrollments;
+    private readonly IDepartmentRepository _departments;
+    private readonly ISemesterRepository _semesters;
     private readonly Tabsan.EduSphere.Application.Interfaces.ICourseService _courseService;
 
     public CourseController(
@@ -27,12 +29,16 @@ public class CourseController : ControllerBase
         IFacultyAssignmentRepository facultyAssignments,
         IAdminAssignmentRepository adminAssignments,
         IEnrollmentRepository enrollments,
+        IDepartmentRepository departments,
+        ISemesterRepository semesters,
         Tabsan.EduSphere.Application.Interfaces.ICourseService courseService)
     {
         _repo = repo;
         _facultyAssignments = facultyAssignments;
         _adminAssignments = adminAssignments;
         _enrollments = enrollments;
+        _departments = departments;
+        _semesters = semesters;
         _courseService = courseService;
     }
 
@@ -91,6 +97,9 @@ public class CourseController : ControllerBase
     [Authorize(Roles = "SuperAdmin,Admin")]
     public async Task<IActionResult> Create([FromBody] CreateCourseRequest request, CancellationToken ct)
     {
+        if (await _departments.GetByIdAsync(request.DepartmentId, ct) is null)
+            return BadRequest("Department not found.");
+
         if (await _repo.CodeExistsAsync(request.Code, request.DepartmentId, ct))
             return Conflict($"Course code '{request.Code}' already exists in this department.");
 
@@ -312,6 +321,20 @@ public class CourseController : ControllerBase
     [Authorize(Roles = "SuperAdmin,Admin")]
     public async Task<IActionResult> CreateOffering([FromBody] CreateOfferingRequest request, CancellationToken ct)
     {
+        var course = await _repo.GetByIdAsync(request.CourseId, ct);
+        if (course is null)
+            return BadRequest("Course not found.");
+
+        if (await _semesters.GetByIdAsync(request.SemesterId, ct) is null)
+            return BadRequest("Semester not found.");
+
+        if (request.FacultyUserId.HasValue)
+        {
+            var assignment = await _facultyAssignments.GetAsync(request.FacultyUserId.Value, course.DepartmentId, ct);
+            if (assignment is null)
+                return BadRequest("Faculty user is not actively assigned to the course department.");
+        }
+
         var offering = new CourseOffering(request.CourseId, request.SemesterId, request.MaxEnrollment, request.FacultyUserId);
         await _repo.AddOfferingAsync(offering, ct);
         await _repo.SaveChangesAsync(ct);

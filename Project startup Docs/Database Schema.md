@@ -64,6 +64,29 @@ After every completed stage in `Docs/Institute-Parity-Issue-Fix-Phases.md`:
 - Schema impact: `Schema updated`.
 - EF migration impact: applied in source and ready for deployment migration pipeline.
 
+## 2026-05-13 Update - Institute Parity Stage 1.2 (Execution Snapshot)
+
+- Stage 1.2 implemented referential-integrity support and institute/report query indexing hardening.
+- Schema update applied through EF migration:
+	- `20260513124500_Phase1Stage12ReferentialIntegrityAndIndexes`
+	- Replaces program unique index with department-scoped unique index:
+		- drop `IX_academic_programs_code`
+		- add `IX_academic_programs_code_dept` (`Code`, `DepartmentId`, unique)
+	- Adds operational indexes:
+		- `IX_academic_programs_dept_active`
+		- `IX_courses_dept_active`
+		- `IX_course_offerings_semester_open`
+		- `IX_course_offerings_faculty_open`
+		- `IX_student_profiles_dept_status`
+		- `IX_student_profiles_program_status`
+		- `IX_enrollments_offering_status`
+		- `IX_enrollments_student_status`
+		- `IX_faculty_dept_assignments_active_lookup`
+		- `IX_admin_dept_assignments_active_lookup`
+	- Alters `enrollments.Status` to `nvarchar(32)` to support indexed status filters.
+- Schema impact: `Schema updated`.
+- EF migration impact: applied in source and validated via integration-test migration path.
+
 ## 2026-05-12 Update — Institution License Validation Phase 7 (Execution Snapshot)
 
 - Completed SuperAdmin permission matrix against existing management and policy tables.

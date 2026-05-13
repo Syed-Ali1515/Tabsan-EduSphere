@@ -19,6 +19,21 @@ Validation summaries must include at minimum:
 
 ## Execution Updates
 
+### 2026-05-13 - Institute Parity Stage 1.2 (Execution Snapshot)
+- Completed Phase 1 Stage 1.2 referential integrity and indexing hardening.
+- Implementation Summary:
+  - enforced program code uniqueness per department,
+  - added academic write-path integrity checks for course/offering creation,
+  - added student profile program-department alignment validation,
+  - added Stage 1.2 index pack for report/analytics and scope-guard query paths,
+  - added migration `20260513124500_Phase1Stage12ReferentialIntegrityAndIndexes` with enrollment status column normalization for index support.
+- Validation Summary:
+  - `dotnet build Tabsan.EduSphere.sln` passed,
+  - targeted test set passed: `AdminUserManagementIntegrationTests` + `SecurityValidationTests` (`8/8`),
+  - verified migration pipeline applies both Stage 1.1 and Stage 1.2 migrations in integration startup.
+- Stage status: Stage 1.2 completed.
+- Phase status: Phase 1 in progress (next: Stage 1.3).
+
 ### 2026-05-13 - Institute Parity Stage 1.1 (Execution Snapshot)
 - Completed Phase 1 Stage 1.1 institute model normalization.
 - Implementation Summary:

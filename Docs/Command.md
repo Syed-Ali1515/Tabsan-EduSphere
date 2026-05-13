@@ -105,6 +105,18 @@ Before starting any work, the assistant must:
   - `Docs/Command.md`
 - Next stage: Stage 1.2 (Referential Integrity + Indexing).
 
+### Institute Parity Checkpoint (2026-05-13 - Stage 1.2)
+- Completed Stage 1.2 referential integrity + indexing in `Docs/Institute-Parity-Issue-Fix-Phases.md` with required Implementation Summary and Validation Summary.
+- Implemented department-scoped program uniqueness, academic write-path link validation, and report/analytics-focused index hardening.
+- Synchronized required tracking docs for stage closeout:
+  - `Docs/Function-List.md`
+  - `Docs/Complete-Functionality-Reference.md`
+  - `Project startup Docs/Database Schema.md`
+  - `Project startup Docs/Development Plan - ASP.NET.md`
+  - `Project startup Docs/PRD.md`
+  - `Docs/Command.md`
+- Next stage: Stage 1.3 (Script Hardening).
+
 ### Institution Validation Checkpoint (2026-05-12 - Phase 1)
 - Execution evidence captured in `Docs/Institution-License-Validation-Phases.md`.
 - Authentication and policy-read checks passed.

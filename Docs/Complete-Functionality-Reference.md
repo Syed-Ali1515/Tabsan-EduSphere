@@ -61,6 +61,17 @@ After each completed stage, this document must be updated to reflect any net fun
 - Existing department CRUD behavior remains backward-compatible for current University-first flows because create defaults and update optionals preserve prior request shapes.
 - Stage 1.1 establishes the schema and contract base for follow-on institute-scoped referential and indexing hardening in Stage 1.2.
 
+## 2026-05-13 Update - Institute Parity Stage 1.2 Referential Integrity + Indexing Snapshot
+
+- Added referential guards on academic write paths:
+    - course create now requires valid department,
+    - offering create now requires valid course/semester and faculty-department assignment when faculty is provided,
+    - student profile creation now enforces program-department alignment.
+- Normalized academic program uniqueness to department scope (`Code + DepartmentId`) for parity-safe multi-department operation.
+- Added institute/report-heavy index coverage on programs, courses, offerings, student profiles, enrollments, and role-assignment lookup paths to reduce filter/join overhead.
+- Updated enrollment status storage to bounded string length for SQL index support on active-status query paths.
+- Behavior impact: invalid cross-scope academic links now fail early with explicit validation errors, while existing valid workflows remain backward-compatible.
+
 ---
 
 ## Table of Contents

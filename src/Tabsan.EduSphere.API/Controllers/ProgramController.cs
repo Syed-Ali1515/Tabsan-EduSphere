@@ -55,7 +55,7 @@ public class ProgramController : ControllerBase
     [Authorize(Roles = "SuperAdmin,Admin")]
     public async Task<IActionResult> Create([FromBody] CreateProgramRequest request, CancellationToken ct)
     {
-        if (await _repo.CodeExistsAsync(request.Code, ct))
+        if (await _repo.CodeExistsAsync(request.Code, request.DepartmentId, ct))
             return Conflict($"Programme code '{request.Code}' is already in use.");
 
         if (await _deptRepo.GetByIdAsync(request.DepartmentId, ct) is null)

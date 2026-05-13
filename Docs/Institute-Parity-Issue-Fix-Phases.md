@@ -392,3 +392,25 @@ Validation Summary
 - Role/Institute checks: Department create/update now rejects institution types disabled by active policy; default create path remains University-compatible.
 - Regression checks: Existing department CRUD request shapes remain compatible because create defaults to University and update keeps institution type optional.
 - Residual risks: Phase 1.2 still required for broader referential/index tuning across additional institute-filter-heavy query paths.
+
+### Stage 1.2 - Referential Integrity + Indexing (Completed: 2026-05-13)
+
+Implementation Summary
+- Tightened referential integrity for academic write paths by enforcing department existence before course creation, semester/course existence before offering creation, and faculty-to-department assignment validation when faculty is bound to a new offering.
+- Hardened student-profile integrity by validating Program/Department alignment in both whitelist self-registration and admin profile creation flows.
+- Normalized academic program uniqueness to department scope (`Code + DepartmentId`) instead of global code-only uniqueness.
+- Added Stage 1.2 index coverage for high-use institute-scoped/report paths:
+  - programs (`DepartmentId + IsActive`),
+  - courses (`DepartmentId + IsActive`),
+  - offerings (`SemesterId + IsOpen`, `FacultyUserId + IsOpen`),
+  - student profiles (`DepartmentId + Status`, `ProgramId + Status`),
+  - enrollments (`CourseOfferingId + Status`, `StudentProfileId + Status`),
+  - assignment lookups (`AdminUserId/FacultyUserId + RemovedAt + DepartmentId`).
+- Added migration `20260513124500_Phase1Stage12ReferentialIntegrityAndIndexes` and adjusted enrollment status column length to support indexed status filters in SQL Server.
+
+Validation Summary
+- Automated tests: `dotnet build Tabsan.EduSphere.sln` -> passed.
+- Automated tests: targeted validation set -> `AdminUserManagementIntegrationTests` + `SecurityValidationTests` passed (`8/8`).
+- Role/Institute checks: department/course/offering creation paths now reject cross-scope or missing-link references earlier with explicit `BadRequest` responses.
+- Regression checks: existing department/program/course flows remain functional; integration suite confirmed admin-user + department assignment round-trips remain green after index/integrity changes.
+- Residual risks: Stage 1.3 still required to align SQL script artifacts with new index/constraint posture for deployment replay safety.

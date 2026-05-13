@@ -61,6 +61,7 @@ public class StudentRegistrationService : IStudentRegistrationService
 
         var program = await _programRepo.GetByIdAsync(entry.ProgramId, ct);
         if (program is null) return null;
+        if (program.DepartmentId != entry.DepartmentId) return null;
 
         // Hardcoded Student role ID = 4 (seeded in Phase 1).
         const int studentRoleId = 4;
@@ -99,6 +100,12 @@ public class StudentRegistrationService : IStudentRegistrationService
     {
         if (await _studentProfileRepo.RegistrationNumberExistsAsync(request.RegistrationNumber, ct))
             throw new InvalidOperationException($"Registration number '{request.RegistrationNumber}' is already in use.");
+
+        var program = await _programRepo.GetByIdAsync(request.ProgramId, ct)
+            ?? throw new InvalidOperationException("Academic program was not found.");
+
+        if (program.DepartmentId != request.DepartmentId)
+            throw new InvalidOperationException("Program and department must belong to the same academic scope.");
 
         var profile = new StudentProfile(
             request.UserId,

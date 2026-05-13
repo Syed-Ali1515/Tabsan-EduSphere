@@ -18,10 +18,14 @@ public class AcademicProgramConfiguration : IEntityTypeConfiguration<AcademicPro
         // Final-Touches Phase 21 Stage 21.1 — credit-load limit per programme
         builder.Property(p => p.MaxCreditLoadPerSemester).HasDefaultValue(18);
 
-        // Unique programme code per department.
-        builder.HasIndex(p => p.Code)
+        // Stage 1.2 — keep program codes unique inside each department scope.
+        builder.HasIndex(p => new { p.Code, p.DepartmentId })
                .IsUnique()
-               .HasDatabaseName("IX_academic_programs_code");
+               .HasDatabaseName("IX_academic_programs_code_dept");
+
+        // Stage 1.2 — frequent report/catalog filtering uses department + active state.
+        builder.HasIndex(p => new { p.DepartmentId, p.IsActive })
+               .HasDatabaseName("IX_academic_programs_dept_active");
 
         builder.HasOne(p => p.Department)
                .WithMany()
@@ -61,6 +65,10 @@ public class CourseConfiguration : IEntityTypeConfiguration<Course>
         builder.HasIndex(c => new { c.Code, c.DepartmentId })
                .IsUnique()
                .HasDatabaseName("IX_courses_code_dept");
+
+        // Stage 1.2 — supports institute-scoped course lookups by department and lifecycle state.
+        builder.HasIndex(c => new { c.DepartmentId, c.IsActive })
+               .HasDatabaseName("IX_courses_dept_active");
 
         builder.HasOne(c => c.Department)
                .WithMany()
@@ -105,6 +113,14 @@ public class CourseOfferingConfiguration : IEntityTypeConfiguration<CourseOfferi
         builder.HasIndex(o => new { o.CourseId, o.SemesterId })
                .IsUnique()
                .HasDatabaseName("IX_course_offerings_course_semester");
+
+        // Stage 1.2 — report and roster paths frequently filter by semester and open-state.
+        builder.HasIndex(o => new { o.SemesterId, o.IsOpen })
+               .HasDatabaseName("IX_course_offerings_semester_open");
+
+        // Stage 1.2 — faculty assignment and teaching-load queries use faculty + open-state.
+        builder.HasIndex(o => new { o.FacultyUserId, o.IsOpen })
+               .HasDatabaseName("IX_course_offerings_faculty_open");
 
         builder.HasOne(o => o.Course)
                .WithMany()

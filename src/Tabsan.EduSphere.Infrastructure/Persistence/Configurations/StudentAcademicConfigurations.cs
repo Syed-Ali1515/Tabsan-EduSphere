@@ -24,6 +24,14 @@ public class StudentProfileConfiguration : IEntityTypeConfiguration<StudentProfi
                .IsUnique()
                .HasDatabaseName("IX_student_profiles_user_id");
 
+        // Stage 1.2 — supports institute/department-scoped student listing and lifecycle dashboards.
+        builder.HasIndex(sp => new { sp.DepartmentId, sp.Status })
+               .HasDatabaseName("IX_student_profiles_dept_status");
+
+        // Stage 1.2 — supports program roster and progression pipelines.
+        builder.HasIndex(sp => new { sp.ProgramId, sp.Status })
+               .HasDatabaseName("IX_student_profiles_program_status");
+
         builder.HasOne(sp => sp.Program)
                .WithMany()
                .HasForeignKey(sp => sp.ProgramId)
@@ -47,12 +55,21 @@ public class EnrollmentConfiguration : IEntityTypeConfiguration<Enrollment>
         builder.HasKey(e => e.Id);
 
         // Store enrollment status as a string for human-readable DB values.
-        builder.Property(e => e.Status).HasConversion<string>();
+        builder.Property(e => e.Status)
+               .HasConversion<string>()
+               .HasMaxLength(32);
 
         // A student can only have one enrollment row per offering (active OR dropped).
         builder.HasIndex(e => new { e.StudentProfileId, e.CourseOfferingId })
                .IsUnique()
                .HasDatabaseName("IX_enrollments_student_offering");
+
+        // Stage 1.2 — common roster and active enrollment checks.
+        builder.HasIndex(e => new { e.CourseOfferingId, e.Status })
+               .HasDatabaseName("IX_enrollments_offering_status");
+
+        builder.HasIndex(e => new { e.StudentProfileId, e.Status })
+               .HasDatabaseName("IX_enrollments_student_status");
 
         builder.HasOne(e => e.StudentProfile)
                .WithMany()
@@ -97,6 +114,10 @@ public class FacultyDepartmentAssignmentConfiguration : IEntityTypeConfiguration
         builder.HasIndex(a => new { a.FacultyUserId, a.DepartmentId })
                .HasDatabaseName("IX_faculty_dept_assignments_faculty_dept");
 
+        // Stage 1.2 — accelerates active assignment lookups used by scope guards.
+        builder.HasIndex(a => new { a.FacultyUserId, a.RemovedAt, a.DepartmentId })
+               .HasDatabaseName("IX_faculty_dept_assignments_active_lookup");
+
         builder.HasOne(a => a.Department)
                .WithMany()
                .HasForeignKey(a => a.DepartmentId)
@@ -114,6 +135,10 @@ public class AdminDepartmentAssignmentConfiguration : IEntityTypeConfiguration<A
 
               builder.HasIndex(a => new { a.AdminUserId, a.DepartmentId })
                         .HasDatabaseName("IX_admin_dept_assignments_admin_dept");
+
+              // Stage 1.2 — accelerates active assignment lookups used by role scope guards.
+              builder.HasIndex(a => new { a.AdminUserId, a.RemovedAt, a.DepartmentId })
+                        .HasDatabaseName("IX_admin_dept_assignments_active_lookup");
 
               builder.HasOne(a => a.Department)
                         .WithMany()

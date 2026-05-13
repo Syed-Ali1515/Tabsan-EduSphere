@@ -18,6 +18,23 @@ Each stage log entry must clearly describe behavior impact for School/College/Un
 
 ## 0. Implementation Update Log
 
+### 2026-05-13 - Institute Parity Stage 1.2 (Execution Snapshot)
+- Completed referential-integrity and index-hardening execution for Phase 1.
+- Implementation Summary:
+  - made academic program code uniqueness department-scoped,
+  - added course/offering creation guards for invalid or cross-scope references,
+  - enforced program-department alignment for student profile creation,
+  - added SQL index coverage for institute/report-heavy query paths,
+  - normalized enrollment status column type for status-index compatibility.
+- Validation Summary:
+  - solution build passed,
+  - targeted integration + unit checks passed (`8/8`),
+  - migration flow verified during integration host startup.
+- Behavior impact:
+  - invalid academic link combinations now fail early with deterministic validation responses,
+  - report/analytics/filter paths gain improved index support for department/institute scoped reads,
+  - existing valid workflows remain backward-compatible.
+
 ### 2026-05-13 - Institute Parity Stage 1.1 (Execution Snapshot)
 - Completed institute model normalization baseline for Phase 1.
 - Implementation Summary:

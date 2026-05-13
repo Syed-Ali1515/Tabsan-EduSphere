@@ -1,10 +1,14 @@
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Tabsan.EduSphere.Infrastructure.Persistence;
 
 #nullable disable
 
 namespace Tabsan.EduSphere.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
+    [DbContext(typeof(ApplicationDbContext))]
+    [Migration("20260513121000_Phase1Stage11DepartmentInstitutionType")]
     public partial class Phase1Stage11DepartmentInstitutionType : Migration
     {
         /// <inheritdoc />

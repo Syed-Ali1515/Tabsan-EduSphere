@@ -11,8 +11,8 @@ public interface IAcademicProgramRepository
     /// <summary>Returns the programme with the given ID, or null.</summary>
     Task<AcademicProgram?> GetByIdAsync(Guid id, CancellationToken ct = default);
 
-    /// <summary>Returns true when the code is already taken.</summary>
-    Task<bool> CodeExistsAsync(string code, CancellationToken ct = default);
+    /// <summary>Returns true when the code is already taken inside the given department.</summary>
+    Task<bool> CodeExistsAsync(string code, Guid departmentId, CancellationToken ct = default);
 
     /// <summary>Queues the programme for insertion.</summary>
     Task AddAsync(AcademicProgram program, CancellationToken ct = default);

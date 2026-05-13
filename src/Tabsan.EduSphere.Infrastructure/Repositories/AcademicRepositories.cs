@@ -24,9 +24,9 @@ public class AcademicProgramRepository : IAcademicProgramRepository
     public Task<AcademicProgram?> GetByIdAsync(Guid id, CancellationToken ct = default)
         => _db.AcademicPrograms.Include(p => p.Department).FirstOrDefaultAsync(p => p.Id == id, ct);
 
-    /// <summary>Returns true when the uppercase code is already taken.</summary>
-    public Task<bool> CodeExistsAsync(string code, CancellationToken ct = default)
-        => _db.AcademicPrograms.AnyAsync(p => p.Code == code.ToUpperInvariant(), ct);
+    /// <summary>Returns true when the uppercase code is already taken inside the given department.</summary>
+    public Task<bool> CodeExistsAsync(string code, Guid departmentId, CancellationToken ct = default)
+        => _db.AcademicPrograms.AnyAsync(p => p.Code == code.ToUpperInvariant() && p.DepartmentId == departmentId, ct);
 
     /// <summary>Queues the programme for insertion.</summary>
     public async Task AddAsync(AcademicProgram program, CancellationToken ct = default)
