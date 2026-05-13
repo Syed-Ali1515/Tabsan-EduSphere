@@ -19,6 +19,18 @@ Validation summaries must include at minimum:
 
 ## Execution Updates
 
+### 2026-05-13 - Institute Parity Stage 6.1 (Execution Snapshot)
+- Completed Phase 6 Stage 6.1 automated test expansion.
+- Implementation Summary:
+  - added lifecycle matched-institute Admin allow-path integration coverage,
+  - added student submenu explicit department-filter scope-shaping integration coverage,
+  - added enrollment-summary report matched-institution Admin allow-path integration coverage.
+- Validation Summary:
+  - `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~StudentLifecycleIntegrationTests|FullyQualifiedName~StudentSubmenuParityIntegrationTests|FullyQualifiedName~ReportExportsIntegrationTests" -v minimal` passed (`28/28`),
+  - verified institute mismatch-deny checks remain intact while matched-scope parity requests succeed on targeted paths.
+- Stage status: Stage 6.1 completed.
+- Phase status: Phase 6 in progress (next: Stage 6.2).
+
 ### 2026-05-13 - Institute Parity Stage 5.4 (Execution Snapshot)
 - Completed Phase 5 Stage 5.4 exit criteria.
 - Implementation Summary:

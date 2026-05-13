@@ -32,6 +32,18 @@ public class StudentLifecycleIntegrationTests
     }
 
     [Fact]
+    public async Task GraduationCandidates_WithAdminMatchingInstitution_ReturnsOk()
+    {
+        var seeded = await SeedLifecycleScopeDataAsync(InstitutionType.University, InstitutionType.University);
+
+        using var client = CreateAdminClient(seeded.AdminUserId, seeded.AdminInstitutionType);
+
+        var response = await client.GetAsync($"api/v1/student-lifecycle/graduation-candidates/{seeded.DepartmentId}");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
     public async Task PromoteStudent_WithAdminInstitutionMismatch_ReturnsForbidden()
     {
         var seeded = await SeedLifecycleScopeDataAsync(InstitutionType.College, InstitutionType.University);

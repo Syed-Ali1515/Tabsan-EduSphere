@@ -89,6 +89,10 @@
 | `Post-deployment replay-safety duplicate checks` | Adds duplicate-detection outputs for usernames and registration numbers plus dataset-version single-row integrity check. | `Scripts/05-PostDeployment-Checks.sql` |
 | `Full dummy superadmin identity reuse` | Reuses existing superadmin identity when present to keep replay runs deterministic and prevent duplicate-email failures across mixed baseline environments. | `Scripts/03-FullDummyData.sql` |
 | `Phase 5 one-run deployment chain gate` | Validates end-to-end script readiness by executing schema, core seed, full dummy seed, and post-deployment checks in the required deployment order. | `Scripts/01-Schema-Current.sql`, `Scripts/02-Seed-Core.sql`, `Scripts/03-FullDummyData.sql`, `Scripts/05-PostDeployment-Checks.sql` |
+| `Stage 6.1 lifecycle institute parity success-path check` | Verifies Admin lifecycle graduation-candidates access succeeds when department assignment and institution scope match. | `tests/Tabsan.EduSphere.IntegrationTests/StudentLifecycleIntegrationTests.cs` |
+| `Stage 6.1 student submenu explicit department scope check` | Verifies Admin student-list requests with explicit department filter return only students from the requested in-scope department. | `tests/Tabsan.EduSphere.IntegrationTests/StudentSubmenuParityIntegrationTests.cs` |
+| `Stage 6.1 report enrollment-summary matched-institution check` | Verifies Admin enrollment-summary report access succeeds when institution query matches caller institution claim and assigned department scope. | `tests/Tabsan.EduSphere.IntegrationTests/ReportExportsIntegrationTests.cs` |
+| `Stage 6.1 focused parity regression gate` | Executes targeted lifecycle, submenu, and report institute-parity integration suites as automated regression evidence. | `tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj` |
 
 ## Institution License Validation Plan (2026-05-12)
 

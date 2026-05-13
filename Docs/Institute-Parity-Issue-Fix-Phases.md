@@ -834,3 +834,23 @@ Validation Summary
   - duplicate-safety checks remained clean (`DummySeed_RegistrationNumberDuplicates=0`, `DummySeed_UsernameDuplicates=0`).
 - Regression checks: no application-code regressions introduced (script-only phase exit).
 - Residual risks: none within Phase 5 scope.
+
+### Stage 6.1 - Automated Test Expansion (Completed: 2026-05-13)
+
+Implementation Summary
+- Backend/API/service/repository updates: none.
+- Frontend/menu/filter updates: none.
+- Authorization/policy updates: none.
+- DB/schema/script updates: none.
+- Repository/test updates:
+  - added lifecycle positive-path institute parity coverage in `StudentLifecycleIntegrationTests` by verifying Admin requests succeed on matched institute + assigned department scope,
+  - added student submenu scoped-filter parity coverage in `StudentSubmenuParityIntegrationTests` by verifying explicit department filter results stay constrained to the requested in-scope department,
+  - added report enrollment-summary positive-path institute parity coverage in `ReportExportsIntegrationTests` by verifying Admin callers with matched institution query + department assignment receive successful responses.
+
+Validation Summary
+- Automated tests: `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~StudentLifecycleIntegrationTests|FullyQualifiedName~StudentSubmenuParityIntegrationTests|FullyQualifiedName~ReportExportsIntegrationTests" -v minimal` -> passed (`28/28`).
+- Role/Institute checks:
+  - confirmed Admin institute mismatch guards remain intact while matched institute requests pass for lifecycle/report student-scope paths,
+  - confirmed explicit department-filter student list behavior remains department-bounded under institute-compatible admin scope.
+- Regression checks: focused Stage 6.1 parity suite completed with zero failures.
+- Residual risks: broader cross-role UAT matrix remains in Stage 6.2.

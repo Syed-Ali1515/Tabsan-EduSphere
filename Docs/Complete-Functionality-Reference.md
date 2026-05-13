@@ -357,6 +357,19 @@ After each completed stage, this document must be updated to reflect any net fun
     - Phase 5 database script parity scope is now closed with executable one-run readiness evidence,
     - execution can proceed to Phase 6 QA/UAT/regression protection expansion.
 
+## 2026-05-13 Update - Institute Parity Stage 6.1 Automated Test Expansion Snapshot
+
+- Completed automated parity regression expansion for institute-scope lifecycle, student submenu, and report access paths.
+- Added integration coverage for matched-scope success paths that complement existing mismatch-deny checks:
+    - lifecycle graduation-candidates access now has explicit Admin matched-institute allow-path evidence,
+    - student submenu explicit department filter now has institute-compatible scope-shaping allow-path evidence,
+    - enrollment-summary report now has Admin matched-institution query allow-path evidence.
+- Validation evidence:
+    - focused Stage 6.1 parity integration run passed (`28/28`) across `StudentLifecycleIntegrationTests`, `StudentSubmenuParityIntegrationTests`, and `ReportExportsIntegrationTests`.
+- Behavior impact:
+    - institute parity guard model now has both deny-path and allow-path automated coverage on key Phase 5-expanded surfaces,
+    - no runtime feature contract changes or schema mutations introduced by Stage 6.1.
+
 ---
 
 ## Table of Contents

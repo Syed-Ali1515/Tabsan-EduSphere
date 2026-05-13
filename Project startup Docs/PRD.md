@@ -18,6 +18,19 @@ Each stage log entry must clearly describe behavior impact for School/College/Un
 
 ## 0. Implementation Update Log
 
+### 2026-05-13 - Institute Parity Stage 6.1 (Execution Snapshot)
+- Completed automated regression expansion for institute parity validation in Phase 6.
+- Implementation Summary:
+  - added lifecycle matched-institute allow-path integration coverage for Admin callers,
+  - added student submenu explicit department-filter allow-path coverage with institute-compatible scope assertions,
+  - added enrollment-summary report matched-institution allow-path coverage for assigned Admin callers.
+- Validation Summary:
+  - focused integration parity suite passed (`28/28`) across lifecycle, submenu, and report parity tests,
+  - existing mismatch-deny guard behavior remained intact while matched-scope requests returned expected success responses.
+- Behavior impact:
+  - institute parity validation depth increased with balanced deny-path and allow-path evidence on key lifecycle/report/student surfaces,
+  - no schema shape changes and no runtime contract changes were introduced in Stage 6.1.
+
 ### 2026-05-13 - Institute Parity Stage 5.4 (Execution Snapshot)
 - Completed Phase 5 exit-criteria validation for DB script readiness.
 - Implementation Summary:

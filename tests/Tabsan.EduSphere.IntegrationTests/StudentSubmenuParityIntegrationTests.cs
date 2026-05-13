@@ -58,6 +58,30 @@ public class StudentSubmenuParityIntegrationTests
         });
     }
 
+    [Fact]
+    public async Task StudentList_WithAdminScopedDepartmentFilter_ReturnsOnlyRequestedDepartmentStudents()
+    {
+        var seeded = await SeedStudentsForInstitutionScopeAsync(
+            adminInstitutionType: InstitutionType.College,
+            requestedDepartmentInstitutionType: InstitutionType.University,
+            secondaryDepartmentInstitutionType: InstitutionType.College);
+
+        using var client = CreateAdminClient(seeded.AdminUserId, seeded.AdminInstitutionType);
+
+        var response = await client.GetAsync($"api/v1/student?departmentId={seeded.SecondaryDepartmentId}");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        using var doc = System.Text.Json.JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var items = doc.RootElement.EnumerateArray().ToList();
+
+        Assert.NotEmpty(items);
+        Assert.All(items, item =>
+        {
+            var departmentId = item.GetProperty("departmentId").GetGuid();
+            Assert.Equal(seeded.SecondaryDepartmentId, departmentId);
+        });
+    }
+
     private HttpClient CreateAdminClient(Guid adminUserId, int institutionType)
     {
         var client = _factory.CreateClient();
