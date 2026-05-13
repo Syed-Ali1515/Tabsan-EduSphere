@@ -1,6 +1,7 @@
 using Tabsan.EduSphere.Application.DTOs.Academic;
 using Tabsan.EduSphere.Application.Interfaces;
 using Tabsan.EduSphere.Domain.Academic;
+using Tabsan.EduSphere.Domain.Enums;
 using Tabsan.EduSphere.Domain.Interfaces;
 
 namespace Tabsan.EduSphere.Application.Academic;
@@ -52,11 +53,23 @@ public class SchoolStreamService : ISchoolStreamService
         AssignStudentStreamRequest request,
         CancellationToken ct = default)
     {
-        _ = await _studentRepo.GetByIdAsync(request.StudentProfileId, ct)
+        var student = await _studentRepo.GetByIdAsync(request.StudentProfileId, ct)
             ?? throw new KeyNotFoundException($"Student profile {request.StudentProfileId} not found.");
+
+        if (student.Department is null)
+            throw new InvalidOperationException("Student profile department context is required for stream assignment.");
+
+        if (student.Department.InstitutionType != InstitutionType.School)
+            throw new InvalidOperationException("Stream assignment is only available for School institution students.");
+
+        if (student.CurrentSemesterNumber < 9 || student.CurrentSemesterNumber > 12)
+            throw new InvalidOperationException("Stream assignment is only available for Grades 9-12.");
 
         var stream = await _streamRepo.GetStreamByIdAsync(request.StreamId, ct)
             ?? throw new KeyNotFoundException($"Stream {request.StreamId} not found.");
+
+        if (!stream.IsActive)
+            throw new InvalidOperationException("Cannot assign an inactive stream.");
 
         var assignment = new StudentStreamAssignment(request.StudentProfileId, request.StreamId, request.AssignedByUserId);
         await _streamRepo.UpsertStudentAssignmentAsync(assignment, ct);

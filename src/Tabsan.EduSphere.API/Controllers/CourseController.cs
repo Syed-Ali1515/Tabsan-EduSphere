@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Tabsan.EduSphere.Application.Academic;
 using Tabsan.EduSphere.Application.DTOs.Academic;
 using Tabsan.EduSphere.Domain.Academic;
+using Tabsan.EduSphere.Domain.Enums;
 using Tabsan.EduSphere.Domain.Interfaces;
 
 namespace Tabsan.EduSphere.API.Controllers;
@@ -20,6 +22,8 @@ public class CourseController : ControllerBase
     private readonly IFacultyAssignmentRepository _facultyAssignments;
     private readonly IAdminAssignmentRepository _adminAssignments;
     private readonly IEnrollmentRepository _enrollments;
+    private readonly IStudentProfileRepository _studentProfiles;
+    private readonly ISchoolStreamRepository _schoolStreams;
     private readonly IDepartmentRepository _departments;
     private readonly ISemesterRepository _semesters;
     private readonly Tabsan.EduSphere.Application.Interfaces.ICourseService _courseService;
@@ -29,6 +33,8 @@ public class CourseController : ControllerBase
         IFacultyAssignmentRepository facultyAssignments,
         IAdminAssignmentRepository adminAssignments,
         IEnrollmentRepository enrollments,
+        IStudentProfileRepository studentProfiles,
+        ISchoolStreamRepository schoolStreams,
         IDepartmentRepository departments,
         ISemesterRepository semesters,
         Tabsan.EduSphere.Application.Interfaces.ICourseService courseService)
@@ -37,6 +43,8 @@ public class CourseController : ControllerBase
         _facultyAssignments = facultyAssignments;
         _adminAssignments = adminAssignments;
         _enrollments = enrollments;
+        _studentProfiles = studentProfiles;
+        _schoolStreams = schoolStreams;
         _departments = departments;
         _semesters = semesters;
         _courseService = courseService;
@@ -196,6 +204,8 @@ public class CourseController : ControllerBase
                 .ToList();
         }
 
+        offerings = await ApplyStudentStreamFilteringAsync(offerings, ct);
+
         return Ok(offerings.Select(o => new
         {
             o.Id, o.CourseId, CourseCode = o.Course.Code, CourseTitle = o.Course.Title,
@@ -260,11 +270,14 @@ public class CourseController : ControllerBase
             if (studentProfileId != Guid.Empty)
             {
                 var enrollments = await _enrollments.GetByStudentAsync(studentProfileId, ct);
-                var offerings = enrollments
+                IReadOnlyList<CourseOffering> offerings = enrollments
                     .Where(e => e.CourseOffering is not null)
                     .Select(e => e.CourseOffering)
                     .GroupBy(o => o!.Id)
-                    .Select(g => g.First()!);
+                    .Select(g => g.First()!)
+                    .ToList();
+
+                offerings = await ApplyStudentStreamFilteringAsync(offerings, ct);
 
                 return Ok(offerings.Select(o => new
                 {
@@ -275,6 +288,7 @@ public class CourseController : ControllerBase
 
             // Keep portal usable if legacy student tokens do not carry studentProfileId.
             var fallback = await _repo.GetAllOfferingsAsync(ct);
+            fallback = await ApplyStudentStreamFilteringAsync(fallback, ct);
             return Ok(fallback.Select(o => new
             {
                 o.Id, CourseTitle = o.Course.Title, SemesterName = o.Semester.Name,
@@ -296,6 +310,47 @@ public class CourseController : ControllerBase
     {
         var raw = User.FindFirst("studentProfileId")?.Value;
         return Guid.TryParse(raw, out var id) ? id : Guid.Empty;
+    }
+
+    private async Task<StudentProfile?> ResolveCurrentStudentProfileAsync(CancellationToken ct)
+    {
+        var studentProfileId = GetStudentProfileId();
+        if (studentProfileId != Guid.Empty)
+            return await _studentProfiles.GetByIdAsync(studentProfileId, ct);
+
+        var userId = GetUserId();
+        if (userId == Guid.Empty)
+            return null;
+
+        return await _studentProfiles.GetByUserIdAsync(userId, ct);
+    }
+
+    private async Task<IReadOnlyList<CourseOffering>> ApplyStudentStreamFilteringAsync(
+        IReadOnlyList<CourseOffering> offerings,
+        CancellationToken ct)
+    {
+        if (!User.IsInRole("Student") || offerings.Count == 0)
+            return offerings;
+
+        var student = await ResolveCurrentStudentProfileAsync(ct);
+        if (student?.Department is null)
+            return offerings;
+
+        if (student.Department.InstitutionType != InstitutionType.School)
+            return offerings;
+
+        if (student.CurrentSemesterNumber < 9 || student.CurrentSemesterNumber > 12)
+            return offerings;
+
+        var assignment = await _schoolStreams.GetStudentAssignmentAsync(student.Id, ct);
+        if (assignment is null)
+            return Array.Empty<CourseOffering>();
+
+        var stream = await _schoolStreams.GetStreamByIdAsync(assignment.SchoolStreamId, ct);
+        if (stream is null)
+            return Array.Empty<CourseOffering>();
+
+        return SchoolStreamSubjectFilter.FilterOfferingsByStream(offerings, stream.Name);
     }
 
     // ── DELETE /api/v1/course/offerings/{id} ───────────────────────────────────

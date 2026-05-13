@@ -42,7 +42,7 @@ public class SchoolStreamServiceTests
     [Fact]
     public async Task AssignAndGetStudentAssignment_ReturnsMappedDto()
     {
-        var student = TestData.MakeStudent(semester: 9);
+        var student = TestData.MakeStudent(semester: 9, institutionType: InstitutionType.School);
         var streamRepo = new StubSchoolStreamRepository();
         var stream = new SchoolStream("Science", null);
         await streamRepo.AddStreamAsync(stream);
@@ -54,6 +54,38 @@ public class SchoolStreamServiceTests
 
         assignment.Should().NotBeNull();
         assignment!.StreamName.Should().Be("Science");
+    }
+
+    [Fact]
+    public async Task AssignStudent_WhenDepartmentIsNotSchool_ThrowsInvalidOperation()
+    {
+        var student = TestData.MakeStudent(semester: 9, institutionType: InstitutionType.University);
+        var streamRepo = new StubSchoolStreamRepository();
+        var stream = new SchoolStream("Science", null);
+        await streamRepo.AddStreamAsync(stream);
+
+        var sut = new SchoolStreamService(streamRepo, new StubStudentProfileRepository([student]));
+
+        var act = () => sut.AssignStudentAsync(new AssignStudentStreamRequest(student.Id, stream.Id, Guid.NewGuid()));
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*School institution*");
+    }
+
+    [Fact]
+    public async Task AssignStudent_WhenGradeOutsideRange_ThrowsInvalidOperation()
+    {
+        var student = TestData.MakeStudent(semester: 8, institutionType: InstitutionType.School);
+        var streamRepo = new StubSchoolStreamRepository();
+        var stream = new SchoolStream("Biology", null);
+        await streamRepo.AddStreamAsync(stream);
+
+        var sut = new SchoolStreamService(streamRepo, new StubStudentProfileRepository([student]));
+
+        var act = () => sut.AssignStudentAsync(new AssignStudentStreamRequest(student.Id, stream.Id, Guid.NewGuid()));
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*Grades 9-12*");
     }
 }
 
@@ -163,14 +195,17 @@ public class ParentPortalServiceTests
 
 file static class TestData
 {
-    internal static StudentProfile MakeStudent(int semester)
+    internal static StudentProfile MakeStudent(int semester, InstitutionType institutionType = InstitutionType.University)
     {
+        var department = new Department($"Dept-{Guid.NewGuid():N}"[..9], $"D{Guid.NewGuid():N}"[..5], institutionType);
+
         var profile = (StudentProfile)RuntimeHelpers.GetUninitializedObject(typeof(StudentProfile));
         Set(profile, nameof(StudentProfile.Id), Guid.NewGuid());
         Set(profile, nameof(StudentProfile.UserId), Guid.NewGuid());
         Set(profile, nameof(StudentProfile.RegistrationNumber), $"REG-{Guid.NewGuid():N}"[..12]);
         Set(profile, nameof(StudentProfile.ProgramId), Guid.NewGuid());
-        Set(profile, nameof(StudentProfile.DepartmentId), Guid.NewGuid());
+        Set(profile, nameof(StudentProfile.DepartmentId), department.Id);
+        Set(profile, nameof(StudentProfile.Department), department);
         Set(profile, nameof(StudentProfile.AdmissionDate), DateTime.UtcNow.Date);
         Set(profile, nameof(StudentProfile.Cgpa), 3.0m);
         Set(profile, nameof(StudentProfile.CurrentSemesterGpa), 70m);

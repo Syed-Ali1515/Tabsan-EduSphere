@@ -13,7 +13,7 @@ Purpose:
 - Preserve core functionality, global configuration behavior, and role-rights policy.
 
 Status:
-- In progress (Phase 25 in progress, Stage 25.1 completed)
+- In progress (Phase 25 in progress, Stage 25.2 completed)
 
 ## Execution Updates
 
@@ -112,6 +112,24 @@ Status:
 - Behavior impact: lifecycle screens are no longer semester-first in wording, enabling grade/class-oriented flow for School mode while preserving existing contracts.
 - Residual risks: low; numeric storage remains `CurrentSemesterNumber` internally, with presentation and routing now academic-level oriented.
 - Documentation synchronization completed for Stage 25.1 across planning and tracker docs.
+
+### 2026-05-14 - Phase 25 Stage 25.2 (Stream Support for Grades 9-12)
+- Completed Stage 25.2 by enforcing stream assignment eligibility and adding stream-aware subject filtering for student offerings.
+- Implementation evidence:
+	- `SchoolStreamService.AssignStudentAsync(...)` now requires School institution context, Grade 9-12 level range, and active stream assignment target,
+	- `CourseController` now applies student stream filtering for School Grade 9-12 views on:
+		- `GET /api/v1/course/offerings`,
+		- `GET /api/v1/course/offerings/my`,
+	- `SchoolStreamSubjectFilter` introduces stream keyword handling for Science, Biology, Computer, Commerce, and Arts with core-subject inclusion and compatibility fallback.
+- Validation evidence:
+	- extended `Phase26Tests` with stage-specific stream guard tests:
+		- non-school assignment rejection,
+		- out-of-range grade rejection,
+		- successful eligible assignment and retrieval.
+	- focused unit suite passing for new stream guard coverage.
+- Behavior impact: School grade-band stream governance is now enforced server-side, and student subject visibility aligns with assigned stream without schema churn.
+- Residual risks: low; keyword filtering is naming-dependent and intentionally keeps fallback behavior for legacy datasets until explicit stream-to-subject mapping is introduced.
+- Documentation synchronization completed for Stage 25.2 across planning and tracker docs.
 
 ---
 

@@ -15,6 +15,12 @@
 - Student Lifecycle portal now uses institution-aware period vocabulary (`Semester`/`Grade`/`Year`) from labels API for filter labels and student-level table headings.
 - Validation: `StudentLifecycleIntegrationTests` passed (`4/4`) including academic-level route coverage.
 
+### 2026-05-14 — Phase 25 Stage 25.2 Complete
+- Enforced stream assignment guardrails in stream service: School-only context, Grade 9-12 range, and active stream requirement.
+- Added stream-aware subject filtering for student offering endpoints using Science, Biology, Computer, Commerce, and Arts keyword bundles.
+- Preserved compatibility by falling back to unfiltered offerings when legacy course naming does not include stream-specific subject markers.
+- Validation: `Phase26Tests` stream-assignment unit coverage passed with new School/grade-band constraint scenarios.
+
 ### 2026-05-09 — Phase 28 Stage 28.1 Complete
 - Phase 28 is now **In Progress** with **Stage 28.1 — API and App Tier Scaling** completed.
 - API and Web now enable Brotli/Gzip response compression for lower payload cost under higher concurrent traffic.

@@ -104,6 +104,18 @@
 - Validation status: Stage 25.1 lifecycle integration verification passed (`4/4` for suite).
 - Status: Stage 25.1 completed and validated as of 2026-05-14.
 
+### Stage 25.2 - Stream Support (Grades 9-12)
+- Stream assignment enforcement now requires:
+	- School institution department context,
+	- Grade range 9-12,
+	- active target stream.
+- Student subject surfaces now apply stream-aware filtering for School Grade 9-12 learners:
+	- `GET /api/v1/course/offerings`,
+	- `GET /api/v1/course/offerings/my`.
+- Supported stream keyword handling includes Science, Biology, Computer, Commerce, and Arts, with safe compatibility fallback for legacy course naming.
+- Validation status: Stage 25.2 unit verification passed in `Phase26Tests` (stream constraint scenarios covered).
+- Status: Stage 25.2 completed and validated as of 2026-05-14.
+
 ## Authentication & Authorization
 
 ### User Authentication
