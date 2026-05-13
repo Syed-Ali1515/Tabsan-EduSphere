@@ -73,6 +73,11 @@
 | `ReportController faculty offering assignment fallback` | Replaces strict offering owner check with faculty department-assignment scope validation to avoid false report forbids for assigned offerings. | `src/Tabsan.EduSphere.API/Controllers/ReportController.cs` |
 | `Stage 4.3 report reliability integration checks` | Adds deterministic faculty report scope tests for required filters and unassigned-department denial behavior on repaired report routes. | `tests/Tabsan.EduSphere.IntegrationTests/ReportExportsIntegrationTests.cs` |
 | `Stage 4.4 phase-exit full integration validation` | Confirms Phase 4 report and analytics parity closure with a full integration-suite regression gate. | `tests/Tabsan.EduSphere.IntegrationTests/*.cs` |
+| `Core seed institution policy flags` | Seeds default institution-mode policy keys (`institution_include_school|college|university`) in `portal_settings` with idempotent upsert behavior. | `Scripts/02-Seed-Core.sql` |
+| `Core seed institute baseline departments` | Seeds deterministic School, College, and University baseline departments with explicit `InstitutionType` values for parity-safe foundational coverage. | `Scripts/02-Seed-Core.sql` |
+| `Core seed report key normalization + parity report set` | Normalizes legacy hyphenated report keys to current underscore keys and seeds the full report definition matrix used by current API/report catalog behavior. | `Scripts/02-Seed-Core.sql` |
+| `Core seed report role-access parity matrix` | Seeds report-role assignments aligned with policy matrix: SuperAdmin/Admin/Faculty for operational reports and Student access for transcript only. | `Scripts/02-Seed-Core.sql` |
+| `Core seed sidebar SuperAdmin access alignment` | Adds explicit SuperAdmin allowed rows for baseline sidebar menu access to align seeded role matrix with policy expectations. | `Scripts/02-Seed-Core.sql` |
 
 ## Institution License Validation Plan (2026-05-12)
 

@@ -19,6 +19,19 @@ Validation summaries must include at minimum:
 
 ## Execution Updates
 
+### 2026-05-13 - Institute Parity Stage 5.1 (Execution Snapshot)
+- Completed Phase 5 Stage 5.1 core seed coverage.
+- Implementation Summary:
+  - updated core seed script to initialize institution policy flags for School/College/University,
+  - seeded deterministic baseline departments spanning all institution types,
+  - normalized legacy report keys and seeded current report definition/role-access matrix,
+  - aligned baseline sidebar role-access seed with explicit SuperAdmin allow rows on core menus.
+- Validation Summary:
+  - `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~UserImportAndForceChangeIntegrationTests" -v minimal` passed (`3/3`),
+  - script verification confirms institution policy keys and institution-typed foundational seed rows are present.
+- Stage status: Stage 5.1 completed.
+- Phase status: Phase 5 in progress (next: Stage 5.2).
+
 ### 2026-05-13 - Institute Parity Stage 4.4 (Execution Snapshot)
 - Completed Phase 4 exit-criteria validation.
 - Implementation Summary:

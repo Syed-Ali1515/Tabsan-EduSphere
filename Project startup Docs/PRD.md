@@ -18,6 +18,20 @@ Each stage log entry must clearly describe behavior impact for School/College/Un
 
 ## 0. Implementation Update Log
 
+### 2026-05-13 - Institute Parity Stage 5.1 (Execution Snapshot)
+- Completed core seed coverage for Phase 5 database script parity scope.
+- Implementation Summary:
+  - hardened `Scripts/02-Seed-Core.sql` to seed institution policy flags for School/College/University,
+  - added deterministic core departments across all institution types,
+  - normalized legacy report keys and seeded the current parity report definition set,
+  - aligned seeded report/sidebar role-access defaults with policy matrix expectations.
+- Validation Summary:
+  - targeted user-import institution-assignment regression suite passed (`3/3`),
+  - script-level verification confirms presence of new policy keys, institution-typed foundational rows, and updated report-role matrix.
+- Behavior impact:
+  - core DB seed output is now institute-aware and parity-aligned for foundational setup,
+  - schema shape remains unchanged; no migration required.
+
 ### 2026-05-13 - Institute Parity Stage 4.4 (Execution Snapshot)
 - Completed Phase 4 exit criteria for analytics and report parity + reliability.
 - Implementation Summary:

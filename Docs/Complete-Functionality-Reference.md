@@ -296,6 +296,22 @@ After each completed stage, this document must be updated to reflect any net fun
     - Phase 4 is closed with error-free report and analytics parity behavior,
     - the execution pointer advances to Phase 5 without additional code changes.
 
+## 2026-05-13 Update - Institute Parity Stage 5.1 Core Seed Coverage Snapshot
+
+- Completed core seed coverage hardening for institute-aware foundational data.
+- Core script behavior now enforces:
+    - default institution policy flags in `portal_settings` for School/College/University enablement,
+    - deterministic baseline departments mapped to all three institution types,
+    - normalized legacy report keys to current canonical report-key format,
+    - parity-aligned report role assignment defaults (operational reports for SuperAdmin/Admin/Faculty, transcript also for Student),
+    - explicit SuperAdmin baseline sidebar role-access seed rows.
+- Validation evidence:
+    - user-import institution-assignment regression suite passed (`3/3`),
+    - script content verification confirms policy keys, institution-typed baseline departments, and updated report key matrix are present.
+- Behavior impact:
+    - fresh and replayed core seed runs now produce institute-aware foundational policy and access baselines required for Phase 5 data completion,
+    - no schema/migration mutation introduced in this stage.
+
 ---
 
 ## Table of Contents

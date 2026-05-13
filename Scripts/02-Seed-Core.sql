@@ -77,6 +77,9 @@ USING (
     UNION ALL SELECT N'portal.brandInitials', N'TE'
     UNION ALL SELECT N'portal.theme', N'default'
     UNION ALL SELECT N'portal.timeZone', N'UTC'
+    UNION ALL SELECT N'institution_include_school', N'true'
+    UNION ALL SELECT N'institution_include_college', N'true'
+    UNION ALL SELECT N'institution_include_university', N'true'
 ) AS src
 ON tgt.[Key] = src.[Key]
 WHEN MATCHED THEN
@@ -85,12 +88,45 @@ WHEN NOT MATCHED THEN
     INSERT ([Id], [Key], [Value], [CreatedAt], [UpdatedAt])
     VALUES (NEWID(), src.[Key], src.[Value], @Now, NULL);
 
-/* 4) Baseline report definitions + role assignments */
+/* 4) Baseline institute-aware departments (School, College, University) */
+DECLARE @CoreDepartments TABLE ([Id] UNIQUEIDENTIFIER, [Name] NVARCHAR(200), [Code] NVARCHAR(20), [InstitutionType] INT);
+INSERT INTO @CoreDepartments ([Id], [Name], [Code], [InstitutionType]) VALUES
+(CAST('21000000-0000-0000-0000-000000000001' AS UNIQUEIDENTIFIER), N'Core University Department', N'CORE-UNI', 0),
+(CAST('21000000-0000-0000-0000-000000000002' AS UNIQUEIDENTIFIER), N'Core College Department', N'CORE-COL', 1),
+(CAST('21000000-0000-0000-0000-000000000003' AS UNIQUEIDENTIFIER), N'Core School Department', N'CORE-SCH', 2);
+
+INSERT INTO [departments] ([Id], [Name], [Code], [InstitutionType], [IsActive], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt])
+SELECT d.[Id], d.[Name], d.[Code], d.[InstitutionType], 1, @Now, NULL, 0, NULL
+FROM @CoreDepartments d
+WHERE NOT EXISTS (SELECT 1 FROM [departments] x WHERE x.[Id] = d.[Id]);
+
+/* 5) Baseline report definitions + role assignments */
+-- Normalize legacy report keys from older seed scripts to current underscore keys.
+UPDATE [report_definitions]
+SET [Key] = N'academic_transcript', [UpdatedAt] = @Now
+WHERE [Key] = N'academic-transcript'
+    AND NOT EXISTS (SELECT 1 FROM [report_definitions] x WHERE x.[Key] = N'academic_transcript');
+
+UPDATE [report_definitions]
+SET [Key] = N'attendance_summary', [UpdatedAt] = @Now
+WHERE [Key] = N'attendance-summary'
+    AND NOT EXISTS (SELECT 1 FROM [report_definitions] x WHERE x.[Key] = N'attendance_summary');
+
+UPDATE [report_definitions]
+SET [Key] = N'result_summary', [UpdatedAt] = @Now
+WHERE [Key] = N'result-sheet'
+    AND NOT EXISTS (SELECT 1 FROM [report_definitions] x WHERE x.[Key] = N'result_summary');
+
 DECLARE @Reports TABLE ([Key] NVARCHAR(100), [Name] NVARCHAR(150), [Purpose] NVARCHAR(500));
 INSERT INTO @Reports ([Key], [Name], [Purpose]) VALUES
-(N'academic-transcript', N'Academic Transcript', N'Official transcript export for students'),
-(N'attendance-summary', N'Attendance Summary', N'Attendance snapshot by offering and semester'),
-(N'result-sheet', N'Result Sheet', N'Course-wise published result overview');
+(N'attendance_summary', N'Attendance Summary', N'Per-student attendance percentage per course offering, filterable by semester and department.'),
+(N'result_summary', N'Result Summary', N'All published result entries with marks and percentage, filterable by semester, offering, or student.'),
+(N'gpa_report', N'GPA & CGPA Report', N'Per-student current semester GPA and cumulative CGPA, filterable by department and program.'),
+(N'enrollment_summary', N'Enrollment Summary', N'Course offering seat utilisation showing enrolled count versus maximum capacity.'),
+(N'semester_results', N'Semester Results', N'Full published result set for a selected semester with optional department filter.'),
+(N'student_transcript', N'Student Transcript', N'Full academic record for a selected student including all result components.'),
+(N'low_attendance_warning', N'Low Attendance Warning', N'Students whose attendance falls below a configurable threshold.'),
+(N'fyp_status', N'FYP Status Report', N'Final Year Project status overview filterable by department and project status.');
 
 INSERT INTO [report_definitions] ([Id], [Name], [Purpose], [Key], [IsActive], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt])
 SELECT NEWID(), r.[Name], r.[Purpose], r.[Key], 1, @Now, NULL, 0, NULL
@@ -101,14 +137,32 @@ INSERT INTO [report_role_assignments] ([Id], [ReportDefinitionId], [RoleName], [
 SELECT NEWID(), d.[Id], rr.[RoleName], @Now, NULL
 FROM [report_definitions] d
 CROSS APPLY (VALUES (N'SuperAdmin'), (N'Admin'), (N'Faculty')) rr([RoleName])
-WHERE d.[Key] IN (N'academic-transcript', N'attendance-summary', N'result-sheet')
+WHERE d.[Key] IN (
+        N'attendance_summary',
+        N'result_summary',
+        N'gpa_report',
+        N'enrollment_summary',
+        N'semester_results',
+        N'student_transcript',
+        N'low_attendance_warning',
+        N'fyp_status')
   AND NOT EXISTS (
       SELECT 1
       FROM [report_role_assignments] x
       WHERE x.[ReportDefinitionId] = d.[Id] AND x.[RoleName] = rr.[RoleName]
   );
 
-/* 5) Baseline sidebar menus */
+INSERT INTO [report_role_assignments] ([Id], [ReportDefinitionId], [RoleName], [CreatedAt], [UpdatedAt])
+SELECT NEWID(), d.[Id], N'Student', @Now, NULL
+FROM [report_definitions] d
+WHERE d.[Key] = N'student_transcript'
+    AND NOT EXISTS (
+            SELECT 1
+            FROM [report_role_assignments] x
+            WHERE x.[ReportDefinitionId] = d.[Id] AND x.[RoleName] = N'Student'
+    );
+
+/* 6) Baseline sidebar menus */
 DECLARE @DashboardId UNIQUEIDENTIFIER = (SELECT TOP 1 [Id] FROM [sidebar_menu_items] WHERE [Key] = N'dashboard');
 IF @DashboardId IS NULL
 BEGIN
@@ -145,12 +199,16 @@ INSERT INTO [sidebar_menu_role_accesses] ([Id], [SidebarMenuItemId], [RoleName],
 SELECT NEWID(), m.[Id], ra.[RoleName], ra.[IsAllowed], @Now, NULL
 FROM [sidebar_menu_items] m
 JOIN (VALUES
+    (N'dashboard', N'SuperAdmin', 1),
     (N'dashboard', N'Admin', 1),
     (N'dashboard', N'Faculty', 1),
     (N'dashboard', N'Student', 1),
+    (N'academic', N'SuperAdmin', 1),
     (N'academic', N'Admin', 1),
+    (N'courses', N'SuperAdmin', 1),
     (N'courses', N'Admin', 1),
     (N'courses', N'Faculty', 1),
+    (N'attendance', N'SuperAdmin', 1),
     (N'attendance', N'Admin', 1),
     (N'attendance', N'Faculty', 1),
     (N'attendance', N'Student', 1)

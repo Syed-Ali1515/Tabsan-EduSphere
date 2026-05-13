@@ -235,6 +235,16 @@ After every completed stage in `Docs/Institute-Parity-Issue-Fix-Phases.md`:
 - Schema impact: `No schema mutation`.
 - EF migration impact: none.
 
+## 2026-05-13 Update - Institute Parity Stage 5.1 (Execution Snapshot)
+
+- Stage 5.1 completed core seed coverage for institute-aware foundational data.
+- API/web contract updates applied:
+	- no runtime API/Web contract changes (script-only stage).
+- Query/runtime update applied:
+	- core seed script now initializes institution policy flags, institution-typed baseline departments, and current report key/role-access defaults.
+- Schema impact: `No schema mutation`.
+- EF migration impact: none.
+
 ## 2026-05-12 Update — Institution License Validation Phase 7 (Execution Snapshot)
 
 - Completed SuperAdmin permission matrix against existing management and policy tables.

@@ -746,3 +746,27 @@ Validation Summary
   - confirmed phase-exit stability for School/College/University parity flows.
 - Regression checks: full integration suite passed with no failures.
 - Residual risks: none within Phase 4 exit scope.
+
+### Stage 5.1 - Core Seed Coverage (Completed: 2026-05-13)
+
+Implementation Summary
+- Backend/API/service/repository updates: none.
+- Frontend/menu/filter updates: none.
+- Authorization/policy updates:
+  - aligned core DB seed role-access matrix with explicit SuperAdmin allowance rows on baseline sidebar menus,
+  - aligned seeded report-role assignments with current report policy matrix including Student access for transcript report only.
+- DB/schema/script updates:
+  - updated `Scripts/02-Seed-Core.sql` to seed institution policy flags (`institution_include_school|college|university`) with idempotent upsert behavior,
+  - added deterministic institute-aware baseline departments for School, College, and University with explicit `InstitutionType` values,
+  - normalized legacy report keys (`academic-transcript`, `attendance-summary`, `result-sheet`) to current underscore keys and seeded full parity report definition set,
+  - preserved idempotent behavior for rerunnable core seed execution.
+- Repository/test updates: none.
+
+Validation Summary
+- Automated tests: `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~UserImportAndForceChangeIntegrationTests" -v minimal` -> passed (`3/3`).
+- Role/Institute checks:
+  - verified core seed now contains School/College/University policy flags,
+  - verified seeded report-role matrix includes SuperAdmin/Admin/Faculty for operational reports and Student for transcript only,
+  - verified baseline seed includes one deterministic core department per institution type.
+- Regression checks: no code-layer regressions introduced (script-only stage).
+- Residual risks: full cross-entity institute dummy coverage remains in Stage 5.2.
