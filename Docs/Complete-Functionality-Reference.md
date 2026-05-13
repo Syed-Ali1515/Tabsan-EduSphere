@@ -395,6 +395,19 @@ After each completed stage, this document must be updated to reflect any net fun
     - index-backed institute-filtered query paths now have explicit automated validation evidence,
     - no runtime feature contract changes or schema mutations introduced by Stage 6.3.
 
+## 2026-05-13 Update - Institute Parity Stage 6.4 Exit Criteria Snapshot
+
+- Completed Phase 6 exit-criteria consolidation for institute parity.
+- Executed consolidated parity certification run across Stage 6 suites covering:
+    - lifecycle and student submenu parity success + scope checks,
+    - cross-role UAT matrix and authorization/report boundary checks,
+    - performance/query validation checks for parity-sensitive paths.
+- Validation evidence:
+    - consolidated Stage 6 phase-exit run passed (`132/132`) with zero failures.
+- Behavior impact:
+    - Phase 6 parity scenarios are fully regression-certified with no critical/blocker defects,
+    - no runtime feature contract changes or schema mutations introduced by Stage 6.4.
+
 ---
 
 ## Table of Contents

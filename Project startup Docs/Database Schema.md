@@ -308,6 +308,16 @@ After every completed stage in `Docs/Institute-Parity-Issue-Fix-Phases.md`:
 - Schema impact: `No schema mutation`.
 - EF migration impact: none.
 
+## 2026-05-13 Update - Institute Parity Stage 6.4 (Execution Snapshot)
+
+- Stage 6.4 completed Phase 6 exit criteria validation for institute parity.
+- API/web contract updates applied:
+	- no runtime API/Web contract changes (validation-only stage).
+- Query/runtime update applied:
+	- executed consolidated parity phase-exit regression suite over Stage 6 test scopes.
+- Schema impact: `No schema mutation`.
+- EF migration impact: none.
+
 ## 2026-05-12 Update — Institution License Validation Phase 7 (Execution Snapshot)
 
 - Completed SuperAdmin permission matrix against existing management and policy tables.

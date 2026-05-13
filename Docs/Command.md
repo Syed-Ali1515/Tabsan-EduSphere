@@ -386,6 +386,20 @@ Before starting any work, the assistant must:
   - `Docs/Command.md`
 - Next stage: Stage 6.4 (Exit Criteria).
 
+### Institute Parity Checkpoint (2026-05-13 - Stage 6.4)
+- Completed Stage 6.4 phase exit criteria in `Docs/Institute-Parity-Issue-Fix-Phases.md` with required Implementation Summary and Validation Summary.
+- Executed consolidated Phase 6 parity certification run across lifecycle/submenu parity, cross-role UAT matrix, report/authorization guards, analytics parity, and performance/query validation suites.
+- Consolidated Stage 6 phase-exit suite passed 132/132 with zero failures and no critical/blocker defects.
+- Synchronized required tracking docs for stage closeout:
+  - `Docs/Institute-Parity-Issue-Fix-Phases.md`
+  - `Docs/Function-List.md`
+  - `Docs/Complete-Functionality-Reference.md`
+  - `Project startup Docs/Database Schema.md`
+  - `Project startup Docs/Development Plan - ASP.NET.md`
+  - `Project startup Docs/PRD.md`
+  - `Docs/Command.md`
+- Next phase: Phase 7 (Release, Documentation, and Operational Readiness), starting Stage 7.1.
+
 ### Institution Validation Checkpoint (2026-05-12 - Phase 1)
 - Execution evidence captured in `Docs/Institution-License-Validation-Phases.md`.
 - Authentication and policy-read checks passed.
@@ -513,12 +527,12 @@ cmd /c git -C "<repo-root>" push origin main
 
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
-- Active Phase: **Institute Parity - Phase 6 (QA, UAT, and Regression Protection)**
-- Active Stage: **Stage 6.4 Exit Criteria (next execution target)**
-- Status: **Stage 6.3 completed and documented; performance/query validation passed 2/2 with index-read and latency evidence captured.**
+- Active Phase: **Institute Parity - Phase 7 (Release, Documentation, and Operational Readiness)**
+- Active Stage: **Stage 7.1 Deployment Runbook (next execution target)**
+- Status: **Phase 6 completed and documented; consolidated parity exit certification passed 132/132 with zero critical/blocker defects.**
 - Last Updated: 2026-05-13
-- Next: **Execute Stage 6.4 phase exit criteria consolidation for institute parity Phase 6 and close out with required 7-document synchronization plus commit -> pull --rebase -> push.**
-- Docs Updated: ✅ Stage 6.3 tracker and planning docs synchronized (2026-05-13).
+- Next: **Execute Stage 7.1 deployment runbook finalization (DB run-order, environment notes, rollback/verification checklist) and close out with required 7-document synchronization plus commit -> pull --rebase -> push.**
+- Docs Updated: ✅ Stage 6.4 tracker and planning docs synchronized (2026-05-13).
 
 ### 2026-05-11 - Phase 10 Completion
 - Stage 10.1: Added a parameterized progressive gate runner for stepwise scale validation and higher-tier execution.

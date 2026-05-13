@@ -100,6 +100,7 @@
 | `Stage 6.3 parity index read-usage validation` | Validates read-path index activity for institute-filtered queries using parity indexes on programs, courses, and offerings. | `tests/Tabsan.EduSphere.IntegrationTests/PerformanceQueryValidationIntegrationTests.cs` |
 | `Stage 6.3 dashboard/report latency budget validation` | Validates no-major-regression latency budgets on common parity-sensitive dashboard/report endpoints for Admin callers. | `tests/Tabsan.EduSphere.IntegrationTests/PerformanceQueryValidationIntegrationTests.cs` |
 | `Stage 6.3 focused performance/query regression gate` | Executes Stage 6.3 performance and query validation suite for parity evidence. | `tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj` |
+| `Stage 6.4 consolidated parity exit gate` | Executes combined Stage 6.1/6.2/6.3 regression suites as Phase 6 exit certification evidence across role and institution matrices. | `tests/Tabsan.EduSphere.IntegrationTests` |
 
 ## Institution License Validation Plan (2026-05-12)
 
