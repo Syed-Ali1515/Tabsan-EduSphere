@@ -19,6 +19,19 @@ Validation summaries must include at minimum:
 
 ## Execution Updates
 
+### 2026-05-13 - Institute Parity Stage 3.4 (Execution Snapshot)
+- Completed Phase 3 Stage 3.4 exit criteria.
+- Implementation Summary:
+  - consolidated Phase 3 parity closure across Stage 3.1 (core module CRUD parity), Stage 3.2 (lifecycle institute scope), and Stage 3.3 (student submenu institute scope),
+  - fixed web compile parity by extending shared portal `LookupItem` with optional `InstitutionType` used by institute-aware department filtering logic,
+  - no additional DB or policy mutation introduced in this closeout stage.
+- Validation Summary:
+  - `dotnet build Tabsan.EduSphere.sln -v minimal` passed,
+  - `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj -v minimal` passed (`115/115`),
+  - verified no regressions in role/institute guards and Phase 3 module parity behaviors under full integration run.
+- Stage status: Stage 3.4 completed.
+- Phase status: Phase 3 completed (next: Phase 4 Stage 4.1).
+
 ### 2026-05-13 - Institute Parity Stage 3.3 (Execution Snapshot)
 - Completed Phase 3 Stage 3.3 student submenu parity.
 - Implementation Summary:

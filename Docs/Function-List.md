@@ -56,6 +56,8 @@
 | `StudentController admin assignment + institution submenu scope` | Enforces department-assignment and institution-claim scope on student listing endpoint used by student-related submenu data sources. | `src/Tabsan.EduSphere.API/Controllers/StudentController.cs` |
 | `Student submenu institute-neutral level labels` | Replaces University-specific semester-only wording with institute-neutral level wording in student submenu tables. | `src/Tabsan.EduSphere.Web/Views/Portal/Students.cshtml`, `src/Tabsan.EduSphere.Web/Views/Portal/Enrollments.cshtml` |
 | `Stage 3.3 student submenu institute-parity integration checks` | Validates student list endpoint denies mismatched institute department requests and returns institute-compatible students for admin scope. | `tests/Tabsan.EduSphere.IntegrationTests/StudentSubmenuParityIntegrationTests.cs` |
+| `LookupItem institution-type parity contract` | Adds optional institution-type metadata to shared portal lookup model so institute-aware lifecycle/student filters compile and execute consistently. | `src/Tabsan.EduSphere.Web/Models/Portal/PortalViewModels.cs` |
+| `Stage 3.4 phase-exit full integration validation` | Confirms consolidated Phase 3 parity behavior by running full integration suite and solution build as exit-criteria evidence. | `Docs/Institute-Parity-Issue-Fix-Phases.md`, `tests/Tabsan.EduSphere.IntegrationTests/*.cs` |
 
 ## Institution License Validation Plan (2026-05-12)
 

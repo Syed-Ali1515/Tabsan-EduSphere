@@ -621,3 +621,23 @@ Validation Summary
   - verified Stage 2 role/institute report/menu guards and Stage 3.2 lifecycle scope checks remain green.
 - Regression checks: no new failures in focused Stage 2+3 integration suites.
 - Residual risks: broader student-submenu parity for additional institute-adaptive terminology/widgets and cross-page filter cohesion can be expanded in Stage 3.4 closeout hardening.
+
+### Stage 3.4 - Exit Criteria (Completed: 2026-05-13)
+
+Implementation Summary
+- Completed Phase 3 exit-criteria consolidation across Stage 3.1 (core module CRUD parity), Stage 3.2 (student lifecycle institute scope), and Stage 3.3 (student submenu institute scope).
+- Added portal lookup contract parity by extending shared `LookupItem` with optional `InstitutionType` to support institute-aware lifecycle department filtering in web compilation paths.
+- Backend/API/service/repository updates in Stage 3.4: none beyond the web contract compile-alignment fix above.
+- Frontend/menu/filter updates in Stage 3.4: none (Stage 3.3 wording/filter work carried forward as-is).
+- Authorization/policy updates in Stage 3.4: none (validation closeout stage).
+- DB/schema/script updates: none.
+
+Validation Summary
+- Automated tests: `dotnet build Tabsan.EduSphere.sln -v minimal` -> passed.
+- Automated tests: `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj -v minimal` -> passed (`115/115`).
+- Role/Institute checks:
+  - verified Admin/SuperAdmin/Faculty/Student role-scope suites remain green under full integration run,
+  - verified institute mismatch denial remains enforced on lifecycle and student-submenu scope endpoints,
+  - verified cross-institution department/course parity path from Stage 3.1 remains covered via integration suite.
+- Regression checks: no failures across complete integration suite and no new compile blockers after Stage 3.4 contract alignment.
+- Residual risks: analytics/report institute-filter breadth and report reliability items are intentionally deferred to Phase 4 stages.

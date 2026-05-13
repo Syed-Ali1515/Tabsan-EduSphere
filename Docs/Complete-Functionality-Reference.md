@@ -191,6 +191,22 @@ After each completed stage, this document must be updated to reflect any net fun
     - mixed-assignment/mixed-institute datasets no longer risk cross-institute student list leakage in Admin submenu reads,
     - no schema or migration update required for Stage 3.3.
 
+## 2026-05-13 Update - Institute Parity Stage 3.4 Exit Snapshot
+
+- Completed Phase 3 exit-criteria validation and closure for module CRUD/workflow parity.
+- Consolidated verified behavior from Stage 3.1-3.3:
+    - core department/course parity across School/College/University,
+    - lifecycle institute-scope enforcement,
+    - student submenu institute-scope enforcement and institute-neutral terminology.
+- Added web contract alignment fix by extending shared portal `LookupItem` with optional `InstitutionType` required by institute-aware department filtering paths.
+- Validation evidence:
+    - solution build pass,
+    - full integration suite pass (`115/115`) with no failures.
+- Behavior impact:
+    - Phase 3 module parity exit criteria met for implemented scope,
+    - no schema/model migration change required for Stage 3.4,
+    - next execution focus moves to Phase 4 analytics/report parity and reliability stages.
+
 ---
 
 ## Table of Contents

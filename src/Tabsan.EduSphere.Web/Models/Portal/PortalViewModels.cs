@@ -13,6 +13,7 @@ public class LookupItem
 {
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
+    public int? InstitutionType { get; set; }
 }
 
 public class FacultyLookupItem

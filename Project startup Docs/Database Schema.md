@@ -184,6 +184,14 @@ After every completed stage in `Docs/Institute-Parity-Issue-Fix-Phases.md`:
 - Schema impact: `No schema mutation`.
 - EF migration impact: none.
 
+## 2026-05-13 Update - Institute Parity Stage 3.4 (Execution Snapshot)
+
+- Stage 3.4 completed Phase 3 exit-criteria validation for module CRUD/workflow parity.
+- API/web contract updates applied:
+	- shared portal lookup contract now includes optional `InstitutionType` metadata for institute-aware lifecycle/student filtering compile consistency.
+- Schema impact: `No schema mutation`.
+- EF migration impact: none.
+
 ## 2026-05-12 Update — Institution License Validation Phase 7 (Execution Snapshot)
 
 - Completed SuperAdmin permission matrix against existing management and policy tables.
