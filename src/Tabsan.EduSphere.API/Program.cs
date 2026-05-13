@@ -657,6 +657,7 @@ if (corsOrigins.Length > 0)
 // P2-S3-02: Reject requests from domains that do not match the activated license domain.
 app.UseMiddleware<LicenseDomainMiddleware>();
 app.UseAuthentication();
+app.UseMiddleware<Tabsan.EduSphere.API.Middleware.ModuleLicenseEnforcementMiddleware>();
 app.UseAuthorization();
 // Phase 23 — resolve institution policy snapshot once per request (after auth)
 app.UseMiddleware<Tabsan.EduSphere.API.Middleware.InstitutionContextMiddleware>();

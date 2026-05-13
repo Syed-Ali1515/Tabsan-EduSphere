@@ -13,7 +13,7 @@ Purpose:
 - Preserve core functionality, global configuration behavior, and role-rights policy.
 
 Status:
-- In progress (Phase 24 in progress, Stage 24.1 completed)
+- In progress (Phase 24 in progress, Stage 24.2 completed)
 
 ## Execution Updates
 
@@ -64,6 +64,23 @@ Status:
 - Behavior impact: license-mode configuration remains centralized and deterministic for downstream module filtering phases.
 - Residual risks: none for Stage 24.1; next stage is Stage 24.2 (Backend Enforcement).
 - Documentation synchronization completed for Stage 24.1 across planning and tracker docs.
+
+### 2026-05-14 - Phase 24 Stage 24.2 (Backend Enforcement)
+- Completed Stage 24.2 by introducing centralized backend module-license enforcement before controller execution.
+- Implementation evidence:
+	- Added `ModuleLicenseEnforcementMiddleware` to map API route prefixes to module keys,
+	- Middleware checks `IModuleEntitlementResolver` and returns `403 Forbidden` when module is inactive,
+	- Middleware registered in API pipeline after authentication and before authorization to block disabled module APIs consistently.
+- Validation evidence:
+	- Added `ModuleBackendEnforcementIntegrationTests` verifying disabled-module blocking (`403`) for representative modules and endpoints:
+		- courses (`/api/v1/course`),
+		- reports (`/api/v1/reports`),
+		- ai_chat (`/api/ai/conversations`),
+		- fyp (`/api/v1/fyp/{id}`).
+	- All Stage 24.2 integration tests passing (4/4).
+- Behavior impact: disabled modules are blocked at backend entry consistently, yielding clear forbidden responses without controller-specific duplication.
+- Residual risks: none for Stage 24.2; next stage is Stage 24.3 (UI/Navigation Filtering).
+- Documentation synchronization completed for Stage 24.2 across planning and tracker docs.
 
 ---
 

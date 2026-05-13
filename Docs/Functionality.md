@@ -67,6 +67,18 @@
 	- valid payload persistence and read-back.
 - Status: Stage 24.1 completed and validated as of 2026-05-14.
 
+### Stage 24.2 - Backend Enforcement
+- Added centralized backend module-license enforcement middleware for API paths.
+- Middleware maps API route prefixes to module keys and checks `IModuleEntitlementResolver` before controller execution.
+- Disabled modules now return consistent `403 Forbidden` with a clear message.
+- Integration tests in `ModuleBackendEnforcementIntegrationTests` verify blocking for representative modules/endpoints:
+	- courses (`/api/v1/course`),
+	- reports (`/api/v1/reports`),
+	- ai_chat (`/api/ai/conversations`),
+	- fyp (`/api/v1/fyp/{id}`).
+- Validation status: Stage 24.2 integration verification passed (`4/4`).
+- Status: Stage 24.2 completed and validated as of 2026-05-14.
+
 ## Authentication & Authorization
 
 ### User Authentication

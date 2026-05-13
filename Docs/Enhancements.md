@@ -458,6 +458,11 @@
 - `ILabelService` / `LabelService` (singleton) — returns institution-mode-appropriate vocabulary (University: Semester/GPA/Course/Batch; School: Grade/Percentage/Subject/Class; College: Year/Percentage/Subject/Year-Group).
 - `LabelController` — `GET api/v1/labels` (all authenticated).
 
+### Stage 24.2 — Backend Enforcement ✅
+- Added centralized `ModuleLicenseEnforcementMiddleware` for API route-prefix module gating.
+- Middleware blocks disabled module endpoints with `403 Forbidden` before controller execution.
+- Integration validation in `ModuleBackendEnforcementIntegrationTests` confirms disabled-module blocking for courses, reports, ai_chat, and fyp endpoints (`4/4` passing on 2026-05-14).
+
 ### Stage 24.3 — Dashboard Composition ✅
 - `WidgetDescriptor` sealed record: `Key`, `Title`, `Icon`, `Order`.
 - `IDashboardCompositionService` / `DashboardCompositionService` (singleton) — 10-widget catalogue filtered by role + institution type (`fyp_panel` University-only; `system_health` SuperAdmin-only; `ai_assistant` all roles).
