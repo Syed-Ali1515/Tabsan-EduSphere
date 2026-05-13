@@ -13,7 +13,7 @@ Purpose:
 - Preserve core functionality, global configuration behavior, and role-rights policy.
 
 Status:
-- In progress (Phase 23 in progress, Stage 23.2 completed)
+- In progress (Phase 24 in progress, Stage 24.1 completed)
 
 ## Execution Updates
 
@@ -50,6 +50,20 @@ Status:
 - Behavior impact: labels now dynamically adapt by institution policy (tenant-wide, not per-user). Views render correct terminology without code duplication.
 - Residual risks: none for Stage 23.2; next stage is Stage 23.3 (Dashboard Context Switching).
 - Documentation synchronization completed for Stage 23.2 across planning and tracker docs, including `Docs/Functionality.md`.
+
+### 2026-05-14 - Phase 24 Stage 24.1 (License Flags)
+- Completed Stage 24.1 by validating centralized institution-mode license flags and write guards.
+- Validation evidence:
+	- `InstitutionPolicyService` enforces at least one enabled mode before save (`IncludeSchool` / `IncludeCollege` / `IncludeUniversity`),
+	- `InstitutionPolicyController` keeps GET readable by authenticated roles and PUT restricted to `SuperAdmin`,
+	- dedicated integration suite `InstitutionPolicyLicenseFlagsIntegrationTests` validates:
+		- GET access for SuperAdmin/Admin/Faculty/Student,
+		- PUT forbidden for non-SuperAdmin roles,
+		- all-false payload rejected with `400 BadRequest`,
+		- valid payload persistence and read-back consistency.
+- Behavior impact: license-mode configuration remains centralized and deterministic for downstream module filtering phases.
+- Residual risks: none for Stage 24.1; next stage is Stage 24.2 (Backend Enforcement).
+- Documentation synchronization completed for Stage 24.1 across planning and tracker docs.
 
 ---
 

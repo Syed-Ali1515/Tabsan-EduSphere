@@ -53,6 +53,20 @@
 	- All tests passing (13/13)
 - Implementation: `DashboardCompositionService`, `DashboardCompositionController`, web client and view integration.
 - Status: Stage 23.3 completed and validated as of 2026-05-14.
+
+### Stage 24.1 - License Flags
+- Institution mode flags (`IncludeSchool`, `IncludeCollege`, `IncludeUniversity`) remain centrally persisted and validated.
+- Save guard rejects invalid all-false payloads to keep at least one active institution mode.
+- API contract enforcement:
+	- `GET /api/v1/institution-policy` is accessible to authenticated roles.
+	- `PUT /api/v1/institution-policy` remains restricted to SuperAdmin.
+- Integration tests in `InstitutionPolicyLicenseFlagsIntegrationTests` verify:
+	- role-based GET accessibility,
+	- non-SuperAdmin PUT rejection (`403 Forbidden`),
+	- all-false payload rejection (`400 BadRequest`),
+	- valid payload persistence and read-back.
+- Status: Stage 24.1 completed and validated as of 2026-05-14.
+
 ## Authentication & Authorization
 
 ### User Authentication

@@ -451,6 +451,7 @@
 - `ModuleRegistry` static class in `Application/Modules/`: catalogue of all 14 module descriptors (e.g. `fyp` = University-only, `ai_chat` = license-gated, `advanced_audit` = SuperAdmin-only).
 - `IModuleRegistryService` + `ModuleRegistryService` — combines registry with live activation (`IModuleEntitlementResolver`) + institution policy to produce `ModuleVisibilityResult(Key, Name, IsActive, IsAccessible)` list.
 - `ModuleRegistryController` — `GET api/v1/module-registry/visible` (all authenticated).
+- Validation refresh (2026-05-14): `InstitutionPolicyLicenseFlagsIntegrationTests` confirms institution policy license-flag contract (GET role accessibility, PUT SuperAdmin-only, all-false rejection, valid persistence/read-back) to harden Stage 24.1 prerequisites.
 
 ### Stage 24.2 — Dynamic Labels ✅
 - `AcademicVocabulary` sealed record: `PeriodLabel`, `ProgressionLabel`, `GradingLabel`, `CourseLabel`, `StudentGroupLabel`; static `Default` = University vocab.
