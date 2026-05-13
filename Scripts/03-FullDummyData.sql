@@ -54,25 +54,39 @@ END;
 IF OBJECT_ID(N'[Tabsan-EduSphere]') IS NOT NULL
 BEGIN
     INSERT INTO [Tabsan-EduSphere] ([Id], [DemoKey], [DemoValue], [CreatedAt], [UpdatedAt])
-    SELECT '10101010-1010-1010-1010-101010101010', N'DemoDatasetVersion', N'FullDummyData-v2', @Now, NULL
+    SELECT '10101010-1010-1010-1010-101010101010', N'DemoDatasetVersion', N'FullDummyData-v3', @Now, NULL
     WHERE NOT EXISTS (SELECT 1 FROM [Tabsan-EduSphere] x WHERE x.[DemoKey] = N'DemoDatasetVersion');
 
     INSERT INTO [Tabsan-EduSphere] ([Id], [DemoKey], [DemoValue], [CreatedAt], [UpdatedAt])
     SELECT '10101010-1010-1010-1010-101010101011', N'DemoSeededAtUtc', CONVERT(NVARCHAR(40), @Now, 127), @Now, NULL
     WHERE NOT EXISTS (SELECT 1 FROM [Tabsan-EduSphere] x WHERE x.[DemoKey] = N'DemoSeededAtUtc');
+    UPDATE [Tabsan-EduSphere]
+    SET [DemoValue] = N'FullDummyData-v3',
+        [UpdatedAt] = @Now
+    WHERE [DemoKey] = N'DemoDatasetVersion';
 END
 
 /* 1) Departments */
-DECLARE @Departments TABLE (Id UNIQUEIDENTIFIER, Name NVARCHAR(200), Code NVARCHAR(20));
-INSERT INTO @Departments (Id, Name, Code) VALUES
-('11111111-1111-1111-1111-111111111111', N'Information Technology', N'IT'),
-('11111111-1111-1111-1111-111111111112', N'Business', N'BUS'),
-('11111111-1111-1111-1111-111111111113', N'Languages', N'LANG');
+DECLARE @Departments TABLE (Id UNIQUEIDENTIFIER, Name NVARCHAR(200), Code NVARCHAR(20), InstitutionType INT);
+INSERT INTO @Departments (Id, Name, Code, InstitutionType) VALUES
+('11111111-1111-1111-1111-111111111111', N'Information Technology', N'IT', 2),
+('11111111-1111-1111-1111-111111111112', N'Business', N'BUS', 1),
+('11111111-1111-1111-1111-111111111113', N'Languages', N'LANG', 0);
 
 INSERT INTO [departments] ([Id], [Name], [Code], [IsActive], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt])
 SELECT d.Id, d.Name, d.Code, 1, @Now, NULL, 0, NULL
 FROM @Departments d
 WHERE NOT EXISTS (SELECT 1 FROM [departments] x WHERE x.[Id] = d.Id);
+
+IF COL_LENGTH('departments', 'InstitutionType') IS NOT NULL
+BEGIN
+    UPDATE d
+    SET d.[InstitutionType] = src.[InstitutionType],
+        d.[UpdatedAt] = @Now
+    FROM [departments] d
+    INNER JOIN @Departments src ON src.[Id] = d.[Id]
+    WHERE d.[InstitutionType] <> src.[InstitutionType];
+END;
 
 /* 2) Programs */
 DECLARE @Programs TABLE (Id UNIQUEIDENTIFIER, DepartmentId UNIQUEIDENTIFIER, Name NVARCHAR(200), Code NVARCHAR(20), TotalSemesters INT);
@@ -115,22 +129,60 @@ DECLARE @Users TABLE (
 
 INSERT INTO @Users VALUES
 ('66666666-6666-6666-6666-666666666601', N'superadmin', N'superadmin@demo.local', @RoleSuperAdmin, NULL, NULL),
-('66666666-6666-6666-6666-666666666611', N'admin.it', N'admin.it@demo.local', @RoleAdmin, '11111111-1111-1111-1111-111111111111', NULL),
-('66666666-6666-6666-6666-666666666612', N'admin.bus', N'admin.bus@demo.local', @RoleAdmin, '11111111-1111-1111-1111-111111111112', NULL),
-('66666666-6666-6666-6666-666666666613', N'admin.lang', N'admin.lang@demo.local', @RoleAdmin, '11111111-1111-1111-1111-111111111113', NULL),
-('66666666-6666-6666-6666-666666666621', N'faculty.it.1', N'faculty.it.1@demo.local', @RoleFaculty, '11111111-1111-1111-1111-111111111111', NULL),
-('66666666-6666-6666-6666-666666666622', N'faculty.it.2', N'faculty.it.2@demo.local', @RoleFaculty, '11111111-1111-1111-1111-111111111111', NULL),
-('66666666-6666-6666-6666-666666666623', N'faculty.bus.1', N'faculty.bus.1@demo.local', @RoleFaculty, '11111111-1111-1111-1111-111111111112', NULL),
-('66666666-6666-6666-6666-666666666624', N'faculty.lang.1', N'faculty.lang.1@demo.local', @RoleFaculty, '11111111-1111-1111-1111-111111111113', NULL),
-('66666666-6666-6666-6666-666666666631', N'student.it.1', N'student.it.1@demo.local', @RoleStudent, '11111111-1111-1111-1111-111111111111', NULL),
-('66666666-6666-6666-6666-666666666632', N'student.it.2', N'student.it.2@demo.local', @RoleStudent, '11111111-1111-1111-1111-111111111111', NULL),
-('66666666-6666-6666-6666-666666666633', N'student.bus.1', N'student.bus.1@demo.local', @RoleStudent, '11111111-1111-1111-1111-111111111112', NULL),
-('66666666-6666-6666-6666-666666666634', N'student.lang.1', N'student.lang.1@demo.local', @RoleStudent, '11111111-1111-1111-1111-111111111113', NULL);
+('66666666-6666-6666-6666-666666666611', N'admin.it', N'admin.it@demo.local', @RoleAdmin, '11111111-1111-1111-1111-111111111111', 2),
+('66666666-6666-6666-6666-666666666612', N'admin.bus', N'admin.bus@demo.local', @RoleAdmin, '11111111-1111-1111-1111-111111111112', 1),
+('66666666-6666-6666-6666-666666666613', N'admin.lang', N'admin.lang@demo.local', @RoleAdmin, '11111111-1111-1111-1111-111111111113', 0),
+('66666666-6666-6666-6666-666666666621', N'faculty.it.1', N'faculty.it.1@demo.local', @RoleFaculty, '11111111-1111-1111-1111-111111111111', 2),
+('66666666-6666-6666-6666-666666666622', N'faculty.it.2', N'faculty.it.2@demo.local', @RoleFaculty, '11111111-1111-1111-1111-111111111111', 2),
+('66666666-6666-6666-6666-666666666623', N'faculty.bus.1', N'faculty.bus.1@demo.local', @RoleFaculty, '11111111-1111-1111-1111-111111111112', 1),
+('66666666-6666-6666-6666-666666666624', N'faculty.lang.1', N'faculty.lang.1@demo.local', @RoleFaculty, '11111111-1111-1111-1111-111111111113', 0),
+('66666666-6666-6666-6666-666666666631', N'student.it.1', N'student.it.1@demo.local', @RoleStudent, '11111111-1111-1111-1111-111111111111', 2),
+('66666666-6666-6666-6666-666666666632', N'student.it.2', N'student.it.2@demo.local', @RoleStudent, '11111111-1111-1111-1111-111111111111', 2),
+('66666666-6666-6666-6666-666666666633', N'student.bus.1', N'student.bus.1@demo.local', @RoleStudent, '11111111-1111-1111-1111-111111111112', 1),
+('66666666-6666-6666-6666-666666666634', N'student.lang.1', N'student.lang.1@demo.local', @RoleStudent, '11111111-1111-1111-1111-111111111113', 0);
 
 INSERT INTO [users] ([Id], [Username], [Email], [PasswordHash], [RoleId], [DepartmentId], [InstitutionType], [IsActive], [LastLoginAt], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt])
 SELECT u.Id, u.Username, u.Email, @PwdHash, u.RoleId, u.DepartmentId, u.InstitutionType, 1, NULL, @Now, NULL, 0, NULL
 FROM @Users u
 WHERE NOT EXISTS (SELECT 1 FROM [users] x WHERE x.[Id] = u.Id);
+
+UPDATE u
+SET u.[InstitutionType] = src.[InstitutionType],
+    u.[UpdatedAt] = @Now
+FROM [users] u
+INNER JOIN @Users src ON src.[Id] = u.[Id]
+WHERE src.[InstitutionType] IS NOT NULL
+  AND (u.[InstitutionType] IS NULL OR u.[InstitutionType] <> src.[InstitutionType]);
+
+/* 4.1) Admin and faculty department assignments */
+IF OBJECT_ID(N'[admin_department_assignments]') IS NOT NULL
+BEGIN
+    DECLARE @AdminDepartmentAssignments TABLE (Id UNIQUEIDENTIFIER, AdminUserId UNIQUEIDENTIFIER, DepartmentId UNIQUEIDENTIFIER);
+    INSERT INTO @AdminDepartmentAssignments VALUES
+    ('26111111-1111-1111-1111-111111111611', '66666666-6666-6666-6666-666666666611', '11111111-1111-1111-1111-111111111111'),
+    ('26111111-1111-1111-1111-111111111612', '66666666-6666-6666-6666-666666666612', '11111111-1111-1111-1111-111111111112'),
+    ('26111111-1111-1111-1111-111111111613', '66666666-6666-6666-6666-666666666613', '11111111-1111-1111-1111-111111111113');
+
+    INSERT INTO [admin_department_assignments] ([Id], [AdminUserId], [DepartmentId], [AssignedAt], [RemovedAt], [CreatedAt], [UpdatedAt])
+    SELECT a.[Id], a.[AdminUserId], a.[DepartmentId], @Now, NULL, @Now, NULL
+    FROM @AdminDepartmentAssignments a
+    WHERE NOT EXISTS (SELECT 1 FROM [admin_department_assignments] x WHERE x.[Id] = a.[Id]);
+END
+
+IF OBJECT_ID(N'[faculty_department_assignments]') IS NOT NULL
+BEGIN
+    DECLARE @FacultyDepartmentAssignments TABLE (Id UNIQUEIDENTIFIER, FacultyUserId UNIQUEIDENTIFIER, DepartmentId UNIQUEIDENTIFIER);
+    INSERT INTO @FacultyDepartmentAssignments VALUES
+    ('27111111-1111-1111-1111-111111111621', '66666666-6666-6666-6666-666666666621', '11111111-1111-1111-1111-111111111111'),
+    ('27111111-1111-1111-1111-111111111622', '66666666-6666-6666-6666-666666666622', '11111111-1111-1111-1111-111111111111'),
+    ('27111111-1111-1111-1111-111111111623', '66666666-6666-6666-6666-666666666623', '11111111-1111-1111-1111-111111111112'),
+    ('27111111-1111-1111-1111-111111111624', '66666666-6666-6666-6666-666666666624', '11111111-1111-1111-1111-111111111113');
+
+    INSERT INTO [faculty_department_assignments] ([Id], [FacultyUserId], [DepartmentId], [AssignedAt], [RemovedAt], [CreatedAt], [UpdatedAt])
+    SELECT a.[Id], a.[FacultyUserId], a.[DepartmentId], @Now, NULL, @Now, NULL
+    FROM @FacultyDepartmentAssignments a
+    WHERE NOT EXISTS (SELECT 1 FROM [faculty_department_assignments] x WHERE x.[Id] = a.[Id]);
+END
 
 /* 5) Student profiles */
 DECLARE @StudentProfiles TABLE (
@@ -170,6 +222,80 @@ INSERT INTO [courses] ([Id], [Title], [Code], [CreditHours], [DepartmentId], [Is
 SELECT c.Id, c.Title, c.Code, c.CreditHours, c.DepartmentId, 1, @Now, NULL, 0, NULL
 FROM @Courses c
 WHERE NOT EXISTS (SELECT 1 FROM [courses] x WHERE x.[Id] = c.Id);
+
+/* 6.1) Buildings, rooms, and timetable parity coverage */
+IF OBJECT_ID(N'[buildings]') IS NOT NULL
+BEGIN
+    DECLARE @Buildings TABLE (Id UNIQUEIDENTIFIER, [Name] NVARCHAR(100), [Code] NVARCHAR(20));
+    INSERT INTO @Buildings VALUES
+    ('23232323-2323-2323-2323-232323232301', N'University Block A', N'BLD-U1'),
+    ('23232323-2323-2323-2323-232323232302', N'College Commerce Block', N'BLD-C1'),
+    ('23232323-2323-2323-2323-232323232303', N'School Language Block', N'BLD-S1');
+
+    INSERT INTO [buildings] ([Id], [Name], [Code], [IsActive], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt])
+    SELECT b.[Id], b.[Name], b.[Code], 1, @Now, NULL, 0, NULL
+    FROM @Buildings b
+    WHERE NOT EXISTS (SELECT 1 FROM [buildings] x WHERE x.[Id] = b.[Id]);
+END
+
+IF OBJECT_ID(N'[rooms]') IS NOT NULL
+BEGIN
+    DECLARE @Rooms TABLE (Id UNIQUEIDENTIFIER, [Number] NVARCHAR(50), BuildingId UNIQUEIDENTIFIER, Capacity INT);
+    INSERT INTO @Rooms VALUES
+    ('24242424-2424-2424-2424-242424242401', N'U-101', '23232323-2323-2323-2323-232323232301', 70),
+    ('24242424-2424-2424-2424-242424242402', N'U-201', '23232323-2323-2323-2323-232323232301', 55),
+    ('24242424-2424-2424-2424-242424242403', N'C-101', '23232323-2323-2323-2323-232323232302', 60),
+    ('24242424-2424-2424-2424-242424242404', N'C-202', '23232323-2323-2323-2323-232323232302', 45),
+    ('24242424-2424-2424-2424-242424242405', N'S-101', '23232323-2323-2323-2323-232323232303', 40),
+    ('24242424-2424-2424-2424-242424242406', N'S-102', '23232323-2323-2323-2323-232323232303', 35);
+
+    INSERT INTO [rooms] ([Id], [Number], [BuildingId], [Capacity], [IsActive], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt])
+    SELECT r.[Id], r.[Number], r.[BuildingId], r.[Capacity], 1, @Now, NULL, 0, NULL
+    FROM @Rooms r
+    WHERE NOT EXISTS (SELECT 1 FROM [rooms] x WHERE x.[Id] = r.[Id]);
+END
+
+IF OBJECT_ID(N'[timetables]') IS NOT NULL
+BEGIN
+    DECLARE @Timetables TABLE (Id UNIQUEIDENTIFIER, DepartmentId UNIQUEIDENTIFIER, SemesterId UNIQUEIDENTIFIER, AcademicProgramId UNIQUEIDENTIFIER, EffectiveDate DATE, SemesterNumber INT);
+    INSERT INTO @Timetables VALUES
+    ('25252525-2525-2525-2525-252525252501', '11111111-1111-1111-1111-111111111111', '33333333-3333-3333-3333-333333333332', '22222222-2222-2222-2222-222222222211', '2026-01-15', 2),
+    ('25252525-2525-2525-2525-252525252502', '11111111-1111-1111-1111-111111111112', '33333333-3333-3333-3333-333333333332', '22222222-2222-2222-2222-222222222213', '2026-01-15', 2),
+    ('25252525-2525-2525-2525-252525252503', '11111111-1111-1111-1111-111111111113', '33333333-3333-3333-3333-333333333332', '22222222-2222-2222-2222-222222222215', '2026-01-15', 2);
+
+    INSERT INTO [timetables] ([Id], [DepartmentId], [SemesterId], [IsPublished], [PublishedAt], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt], [AcademicProgramId], [EffectiveDate], [SemesterNumber])
+    SELECT t.[Id], t.[DepartmentId], t.[SemesterId], 1, @Now, @Now, NULL, 0, NULL, t.[AcademicProgramId], t.[EffectiveDate], t.[SemesterNumber]
+    FROM @Timetables t
+    WHERE NOT EXISTS (SELECT 1 FROM [timetables] x WHERE x.[Id] = t.[Id]);
+END
+
+IF OBJECT_ID(N'[timetable_entries]') IS NOT NULL
+BEGIN
+    DECLARE @TimetableEntries TABLE (
+        Id UNIQUEIDENTIFIER,
+        TimetableId UNIQUEIDENTIFIER,
+        DayOfWeek INT,
+        StartTime TIME,
+        EndTime TIME,
+        SubjectName NVARCHAR(200),
+        RoomNumber NVARCHAR(50),
+        FacultyName NVARCHAR(200),
+        RoomId UNIQUEIDENTIFIER,
+        BuildingId UNIQUEIDENTIFIER,
+        CourseId UNIQUEIDENTIFIER,
+        FacultyUserId UNIQUEIDENTIFIER
+    );
+
+    INSERT INTO @TimetableEntries VALUES
+    ('26262626-2626-2626-2626-262626262601', '25252525-2525-2525-2525-252525252501', 1, '09:00:00', '10:30:00', N'Programming Fundamentals', N'U-101', N'Faculty IT 1', '24242424-2424-2424-2424-242424242401', '23232323-2323-2323-2323-232323232301', '44444444-4444-4444-4444-444444444401', '66666666-6666-6666-6666-666666666621'),
+    ('26262626-2626-2626-2626-262626262602', '25252525-2525-2525-2525-252525252502', 2, '10:45:00', '12:15:00', N'Principles of Management', N'C-101', N'Faculty BUS 1', '24242424-2424-2424-2424-242424242403', '23232323-2323-2323-2323-232323232302', '44444444-4444-4444-4444-444444444404', '66666666-6666-6666-6666-666666666623'),
+    ('26262626-2626-2626-2626-262626262603', '25252525-2525-2525-2525-252525252503', 3, '08:30:00', '10:00:00', N'English Composition', N'S-101', N'Faculty LANG 1', '24242424-2424-2424-2424-242424242405', '23232323-2323-2323-2323-232323232303', '44444444-4444-4444-4444-444444444407', '66666666-6666-6666-6666-666666666624');
+
+    INSERT INTO [timetable_entries] ([Id], [TimetableId], [DayOfWeek], [StartTime], [EndTime], [SubjectName], [RoomNumber], [FacultyName], [RoomId], [CreatedAt], [UpdatedAt], [BuildingId], [CourseId], [FacultyUserId])
+    SELECT te.[Id], te.[TimetableId], te.[DayOfWeek], te.[StartTime], te.[EndTime], te.[SubjectName], te.[RoomNumber], te.[FacultyName], te.[RoomId], @Now, NULL, te.[BuildingId], te.[CourseId], te.[FacultyUserId]
+    FROM @TimetableEntries te
+    WHERE NOT EXISTS (SELECT 1 FROM [timetable_entries] x WHERE x.[Id] = te.[Id]);
+END
 
 /* 7) Course offerings (Spring 2026) */
 DECLARE @SpringSemester UNIQUEIDENTIFIER = '33333333-3333-3333-3333-333333333332';
@@ -265,6 +391,48 @@ BEGIN
     WHERE NOT EXISTS (SELECT 1 FROM [results] x WHERE x.[Id] = r.Id);
 END
 
+/* 12.1) Payments */
+IF OBJECT_ID(N'[payment_receipts]') IS NOT NULL
+BEGIN
+    DECLARE @PaymentReceipts TABLE (
+        Id UNIQUEIDENTIFIER,
+        StudentProfileId UNIQUEIDENTIFIER,
+        CreatedByUserId UNIQUEIDENTIFIER,
+        [Status] INT,
+        Amount DECIMAL(10,2),
+        [Description] NVARCHAR(500),
+        DueDate DATETIME2,
+        ConfirmedByUserId UNIQUEIDENTIFIER NULL,
+        ConfirmedAt DATETIME2 NULL,
+        Notes NVARCHAR(2000) NULL
+    );
+
+    INSERT INTO @PaymentReceipts VALUES
+    ('27272727-2727-2727-2727-272727272701', '77777777-7777-7777-7777-777777777731', '66666666-6666-6666-6666-666666666611', 1, 15000.00, N'Spring semester tuition installment', DATEADD(day, 14, @Now), '66666666-6666-6666-6666-666666666611', @Now, N'Paid at campus counter.'),
+    ('27272727-2727-2727-2727-272727272702', '77777777-7777-7777-7777-777777777733', '66666666-6666-6666-6666-666666666612', 0, 12000.00, N'College semester fee', DATEADD(day, 21, @Now), NULL, NULL, N'Awaiting proof of payment.'),
+    ('27272727-2727-2727-2727-272727272703', '77777777-7777-7777-7777-777777777734', '66666666-6666-6666-6666-666666666613', 1, 9500.00, N'School term fee', DATEADD(day, 10, @Now), '66666666-6666-6666-6666-666666666613', @Now, N'Confirmed by school admin.');
+
+    INSERT INTO [payment_receipts] ([Id], [StudentProfileId], [CreatedByUserId], [Status], [Amount], [Description], [DueDate], [ProofOfPaymentPath], [ProofUploadedAt], [ConfirmedByUserId], [ConfirmedAt], [Notes], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt])
+    SELECT p.[Id], p.[StudentProfileId], p.[CreatedByUserId], p.[Status], p.[Amount], p.[Description], p.[DueDate], NULL, NULL, p.[ConfirmedByUserId], p.[ConfirmedAt], p.[Notes], @Now, @Now, 0, NULL
+    FROM @PaymentReceipts p
+    WHERE NOT EXISTS (SELECT 1 FROM [payment_receipts] x WHERE x.[Id] = p.[Id]);
+END
+
+/* 12.2) Report export artifacts */
+IF OBJECT_ID(N'[transcript_export_logs]') IS NOT NULL
+BEGIN
+    DECLARE @TranscriptExports TABLE (Id UNIQUEIDENTIFIER, StudentProfileId UNIQUEIDENTIFIER, RequestedByUserId UNIQUEIDENTIFIER, ExportedAt DATETIME2, DocumentUrl NVARCHAR(2048), [Format] NVARCHAR(10), IpAddress NVARCHAR(45));
+    INSERT INTO @TranscriptExports VALUES
+    ('28282828-2828-2828-2828-282828282801', '77777777-7777-7777-7777-777777777731', '66666666-6666-6666-6666-666666666611', DATEADD(day, -5, @Now), N'https://demo.local/transcripts/2026-IT-0001.pdf', N'PDF', N'10.10.1.25'),
+    ('28282828-2828-2828-2828-282828282802', '77777777-7777-7777-7777-777777777733', '66666666-6666-6666-6666-666666666612', DATEADD(day, -3, @Now), N'https://demo.local/transcripts/2026-BUS-0001.pdf', N'PDF', N'10.10.2.40'),
+    ('28282828-2828-2828-2828-282828282803', '77777777-7777-7777-7777-777777777734', '66666666-6666-6666-6666-666666666613', DATEADD(day, -1, @Now), N'https://demo.local/transcripts/2026-LANG-0001.pdf', N'PDF', N'10.10.3.56');
+
+    INSERT INTO [transcript_export_logs] ([Id], [StudentProfileId], [RequestedByUserId], [ExportedAt], [DocumentUrl], [Format], [IpAddress], [CreatedAt], [UpdatedAt])
+    SELECT t.[Id], t.[StudentProfileId], t.[RequestedByUserId], t.[ExportedAt], t.[DocumentUrl], t.[Format], t.[IpAddress], @Now, NULL
+    FROM @TranscriptExports t
+    WHERE NOT EXISTS (SELECT 1 FROM [transcript_export_logs] x WHERE x.[Id] = t.[Id]);
+END
+
 /* 13) Quizzes + questions + attempts + answers */
 IF OBJECT_ID(N'[quizzes]') IS NOT NULL
 BEGIN
@@ -321,6 +489,97 @@ BEGIN
     SELECT qa.Id, qa.QuizAttemptId, qa.QuizQuestionId, qa.SelectedOptionId, qa.TextResponse, qa.MarksAwarded, @Now, NULL
     FROM @QuizAnswers qa
     WHERE NOT EXISTS (SELECT 1 FROM [quiz_answers] x WHERE x.[Id] = qa.Id);
+END
+
+/* 13.1) Lifecycle parity artifacts */
+IF OBJECT_ID(N'[bulk_promotion_batches]') IS NOT NULL
+BEGIN
+    DECLARE @PromotionBatches TABLE (Id UNIQUEIDENTIFIER, Title NVARCHAR(180), [Status] INT, CreatedByUserId UNIQUEIDENTIFIER, ApprovedByUserId UNIQUEIDENTIFIER NULL, ReviewedAt DATETIME2 NULL, AppliedAt DATETIME2 NULL, ReviewNote NVARCHAR(1000) NULL);
+    INSERT INTO @PromotionBatches VALUES
+    ('29292929-2929-2929-2929-292929292901', N'Institute Parity Cycle 2026', 2, '66666666-6666-6666-6666-666666666601', '66666666-6666-6666-6666-666666666601', DATEADD(day, -2, @Now), DATEADD(day, -1, @Now), N'Applied for school, college, and university demo students.');
+
+    INSERT INTO [bulk_promotion_batches] ([Id], [Title], [Status], [CreatedByUserId], [ApprovedByUserId], [ReviewedAt], [AppliedAt], [ReviewNote], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt])
+    SELECT b.[Id], b.[Title], b.[Status], b.[CreatedByUserId], b.[ApprovedByUserId], b.[ReviewedAt], b.[AppliedAt], b.[ReviewNote], @Now, NULL, 0, NULL
+    FROM @PromotionBatches b
+    WHERE NOT EXISTS (SELECT 1 FROM [bulk_promotion_batches] x WHERE x.[Id] = b.[Id]);
+END
+
+IF OBJECT_ID(N'[bulk_promotion_entries]') IS NOT NULL
+BEGIN
+    DECLARE @PromotionEntries TABLE (Id UNIQUEIDENTIFIER, BatchId UNIQUEIDENTIFIER, StudentProfileId UNIQUEIDENTIFIER, Decision INT, Reason NVARCHAR(500), IsApplied BIT, AppliedAt DATETIME2 NULL);
+    INSERT INTO @PromotionEntries VALUES
+    ('30303030-3030-3030-3030-303030303001', '29292929-2929-2929-2929-292929292901', '77777777-7777-7777-7777-777777777731', 0, N'Promoted to next term.', 1, DATEADD(day, -1, @Now)),
+    ('30303030-3030-3030-3030-303030303002', '29292929-2929-2929-2929-292929292901', '77777777-7777-7777-7777-777777777733', 0, N'Promoted to next year.', 1, DATEADD(day, -1, @Now)),
+    ('30303030-3030-3030-3030-303030303003', '29292929-2929-2929-2929-292929292901', '77777777-7777-7777-7777-777777777734', 0, N'Promoted to next class.', 1, DATEADD(day, -1, @Now));
+
+    INSERT INTO [bulk_promotion_entries] ([Id], [BatchId], [StudentProfileId], [Decision], [Reason], [IsApplied], [AppliedAt], [CreatedAt], [UpdatedAt])
+    SELECT e.[Id], e.[BatchId], e.[StudentProfileId], e.[Decision], e.[Reason], e.[IsApplied], e.[AppliedAt], @Now, NULL
+    FROM @PromotionEntries e
+    WHERE NOT EXISTS (SELECT 1 FROM [bulk_promotion_entries] x WHERE x.[Id] = e.[Id]);
+END
+
+IF OBJECT_ID(N'[graduation_applications]') IS NOT NULL
+BEGIN
+    DECLARE @GraduationApplications TABLE (Id UNIQUEIDENTIFIER, StudentProfileId UNIQUEIDENTIFIER, [Status] INT, StudentNote NVARCHAR(2000), SubmittedAt DATETIME2, CertificatePath NVARCHAR(500) NULL, CertificateGeneratedAt DATETIME2 NULL);
+    INSERT INTO @GraduationApplications VALUES
+    ('31313131-3131-3131-3131-313131313101', '77777777-7777-7777-7777-777777777731', 2, N'All degree requirements completed.', DATEADD(day, -20, @Now), N'https://demo.local/certificates/2026-IT-0001.pdf', DATEADD(day, -2, @Now));
+
+    INSERT INTO [graduation_applications] ([Id], [StudentProfileId], [Status], [StudentNote], [SubmittedAt], [CertificatePath], [CertificateGeneratedAt], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt])
+    SELECT g.[Id], g.[StudentProfileId], g.[Status], g.[StudentNote], g.[SubmittedAt], g.[CertificatePath], g.[CertificateGeneratedAt], @Now, NULL, 0, NULL
+    FROM @GraduationApplications g
+    WHERE NOT EXISTS (SELECT 1 FROM [graduation_applications] x WHERE x.[Id] = g.[Id]);
+END
+
+IF OBJECT_ID(N'[graduation_application_approvals]') IS NOT NULL
+BEGIN
+    DECLARE @GraduationApprovals TABLE (Id UNIQUEIDENTIFIER, GraduationApplicationId UNIQUEIDENTIFIER, Stage INT, ApproverUserId UNIQUEIDENTIFIER, IsApproved BIT, Note NVARCHAR(1000), ActedAt DATETIME2);
+    INSERT INTO @GraduationApprovals VALUES
+    ('32323232-3232-3232-3232-323232323201', '31313131-3131-3131-3131-313131313101', 0, '66666666-6666-6666-6666-666666666611', 1, N'Department verification approved.', DATEADD(day, -10, @Now)),
+    ('32323232-3232-3232-3232-323232323202', '31313131-3131-3131-3131-313131313101', 1, '66666666-6666-6666-6666-666666666601', 1, N'Final approval granted.', DATEADD(day, -2, @Now));
+
+    INSERT INTO [graduation_application_approvals] ([Id], [GraduationApplicationId], [Stage], [ApproverUserId], [IsApproved], [Note], [ActedAt], [CreatedAt], [UpdatedAt])
+    SELECT a.[Id], a.[GraduationApplicationId], a.[Stage], a.[ApproverUserId], a.[IsApproved], a.[Note], a.[ActedAt], @Now, NULL
+    FROM @GraduationApprovals a
+    WHERE NOT EXISTS (SELECT 1 FROM [graduation_application_approvals] x WHERE x.[Id] = a.[Id]);
+END
+
+IF OBJECT_ID(N'[student_report_cards]') IS NOT NULL
+BEGIN
+    DECLARE @StudentReportCards TABLE (Id UNIQUEIDENTIFIER, StudentProfileId UNIQUEIDENTIFIER, InstitutionType INT, PeriodLabel NVARCHAR(80), PayloadJson NVARCHAR(MAX), GeneratedByUserId UNIQUEIDENTIFIER, GeneratedAt DATETIME2);
+    INSERT INTO @StudentReportCards VALUES
+    ('33333333-3333-3333-3333-333333333901', '77777777-7777-7777-7777-777777777731', 2, N'Spring 2026 Semester 2', N'{"summary":"University parity card","gpa":3.40}', '66666666-6666-6666-6666-666666666611', DATEADD(day, -2, @Now)),
+    ('33333333-3333-3333-3333-333333333902', '77777777-7777-7777-7777-777777777733', 1, N'2026 Year 2', N'{"summary":"College parity card","percentage":78.5}', '66666666-6666-6666-6666-666666666612', DATEADD(day, -2, @Now)),
+    ('33333333-3333-3333-3333-333333333903', '77777777-7777-7777-7777-777777777734', 0, N'Class 10 Term 1', N'{"summary":"School parity card","percentage":82.0}', '66666666-6666-6666-6666-666666666613', DATEADD(day, -2, @Now));
+
+    INSERT INTO [student_report_cards] ([Id], [StudentProfileId], [InstitutionType], [PeriodLabel], [PayloadJson], [GeneratedByUserId], [GeneratedAt], [CreatedAt], [UpdatedAt])
+    SELECT rc.[Id], rc.[StudentProfileId], rc.[InstitutionType], rc.[PeriodLabel], rc.[PayloadJson], rc.[GeneratedByUserId], rc.[GeneratedAt], @Now, NULL
+    FROM @StudentReportCards rc
+    WHERE NOT EXISTS (SELECT 1 FROM [student_report_cards] x WHERE x.[Id] = rc.[Id]);
+END
+
+IF OBJECT_ID(N'[school_streams]') IS NOT NULL
+BEGIN
+    DECLARE @SchoolStreams TABLE (Id UNIQUEIDENTIFIER, [Name] NVARCHAR(120), [Description] NVARCHAR(500));
+    INSERT INTO @SchoolStreams VALUES
+    ('34343434-3434-3434-3434-343434343401', N'Science', N'School-level science stream for parity data.'),
+    ('34343434-3434-3434-3434-343434343402', N'Commerce', N'School-level commerce stream for parity data.');
+
+    INSERT INTO [school_streams] ([Id], [Name], [Description], [IsActive], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt])
+    SELECT s.[Id], s.[Name], s.[Description], 1, @Now, NULL, 0, NULL
+    FROM @SchoolStreams s
+    WHERE NOT EXISTS (SELECT 1 FROM [school_streams] x WHERE x.[Id] = s.[Id]);
+END
+
+IF OBJECT_ID(N'[student_stream_assignments]') IS NOT NULL
+BEGIN
+    DECLARE @StudentStreamAssignments TABLE (Id UNIQUEIDENTIFIER, StudentProfileId UNIQUEIDENTIFIER, SchoolStreamId UNIQUEIDENTIFIER, AssignedByUserId UNIQUEIDENTIFIER);
+    INSERT INTO @StudentStreamAssignments VALUES
+    ('35353535-3535-3535-3535-353535353501', '77777777-7777-7777-7777-777777777734', '34343434-3434-3434-3434-343434343401', '66666666-6666-6666-6666-666666666613');
+
+    INSERT INTO [student_stream_assignments] ([Id], [StudentProfileId], [SchoolStreamId], [AssignedAt], [AssignedByUserId], [CreatedAt], [UpdatedAt])
+    SELECT a.[Id], a.[StudentProfileId], a.[SchoolStreamId], @Now, a.[AssignedByUserId], @Now, NULL
+    FROM @StudentStreamAssignments a
+    WHERE NOT EXISTS (SELECT 1 FROM [student_stream_assignments] x WHERE x.[Id] = a.[Id]);
 END
 
 /* 14) Helpdesk demo tickets */

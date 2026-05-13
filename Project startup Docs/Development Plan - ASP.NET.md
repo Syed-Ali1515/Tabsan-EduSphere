@@ -19,6 +19,19 @@ Validation summaries must include at minimum:
 
 ## Execution Updates
 
+### 2026-05-13 - Institute Parity Stage 5.2 (Execution Snapshot)
+- Completed Phase 5 Stage 5.2 full dummy coverage.
+- Implementation Summary:
+  - expanded full dummy script with deterministic institute-assigned users and department institution-type alignment updates,
+  - added assignment-junction baseline rows for admin/faculty scoped parity scenarios,
+  - added buildings, rooms, timetables, and timetable-entry coverage across representative School/College/University departments,
+  - added payment receipts, transcript export artifacts, and lifecycle/report artifacts (bulk promotions, graduation approvals, school streams, student report cards).
+- Validation Summary:
+  - `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~UserImportAndForceChangeIntegrationTests" -v minimal` passed (`3/3`),
+  - script verification confirms new parity-coverage entity blocks and deterministic institution-assignment rows are present.
+- Stage status: Stage 5.2 completed.
+- Phase status: Phase 5 in progress (next: Stage 5.3).
+
 ### 2026-05-13 - Institute Parity Stage 5.1 (Execution Snapshot)
 - Completed Phase 5 Stage 5.1 core seed coverage.
 - Implementation Summary:

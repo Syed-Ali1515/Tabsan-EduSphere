@@ -245,6 +245,16 @@ After every completed stage in `Docs/Institute-Parity-Issue-Fix-Phases.md`:
 - Schema impact: `No schema mutation`.
 - EF migration impact: none.
 
+## 2026-05-13 Update - Institute Parity Stage 5.2 (Execution Snapshot)
+
+- Stage 5.2 completed full dummy data coverage expansion for parity testing surfaces.
+- API/web contract updates applied:
+	- no runtime API/Web contract changes (script-only stage).
+- Query/runtime update applied:
+	- `Scripts/03-FullDummyData.sql` now seeds buildings/rooms/timetables/payments/lifecycle/report artifacts and deterministic institute-type alignment for demo users/departments.
+- Schema impact: `No schema mutation`.
+- EF migration impact: none.
+
 ## 2026-05-12 Update — Institution License Validation Phase 7 (Execution Snapshot)
 
 - Completed SuperAdmin permission matrix against existing management and policy tables.

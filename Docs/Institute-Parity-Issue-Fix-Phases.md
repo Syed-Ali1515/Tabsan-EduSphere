@@ -770,3 +770,25 @@ Validation Summary
   - verified baseline seed includes one deterministic core department per institution type.
 - Regression checks: no code-layer regressions introduced (script-only stage).
 - Residual risks: full cross-entity institute dummy coverage remains in Stage 5.2.
+
+### Stage 5.2 - Full Dummy Coverage (All Tables) (Completed: 2026-05-13)
+
+Implementation Summary
+- Backend/API/service/repository updates: none.
+- Frontend/menu/filter updates: none.
+- Authorization/policy updates:
+  - aligned dummy users with explicit `InstitutionType` assignment (School/College/University representative coverage),
+  - added deterministic admin/faculty department-assignment rows used by role/institute scope checks in parity scenarios.
+- DB/schema/script updates:
+  - expanded `Scripts/03-FullDummyData.sql` to include parity coverage for buildings, rooms, timetables, timetable entries, payment receipts, transcript export logs, lifecycle artifacts (bulk promotion, graduation approval path, school stream assignment), and student report cards,
+  - added deterministic institute-aware updates for seeded departments (`InstitutionType`) and user institution assignments to keep replay output parity-safe,
+  - kept script idempotency via stable GUID keys and `NOT EXISTS` insertion guards.
+- Repository/test updates: none.
+
+Validation Summary
+- Automated tests: `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~UserImportAndForceChangeIntegrationTests" -v minimal` -> passed (`3/3`).
+- Role/Institute checks:
+  - verified full dummy script now seeds representative parity entities for School/College/University across users/departments/programs/courses/offerings/enrollments/results/quizzes/payments/lifecycle/report artifacts,
+  - verified deterministic institution assignment values are explicitly persisted for parity demo users and departments.
+- Regression checks: no application-code regressions introduced (script-only stage).
+- Residual risks: replay safety count assertions and post-deployment aggregate checks are completed in Stage 5.3.

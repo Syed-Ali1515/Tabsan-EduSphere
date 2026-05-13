@@ -78,6 +78,11 @@
 | `Core seed report key normalization + parity report set` | Normalizes legacy hyphenated report keys to current underscore keys and seeds the full report definition matrix used by current API/report catalog behavior. | `Scripts/02-Seed-Core.sql` |
 | `Core seed report role-access parity matrix` | Seeds report-role assignments aligned with policy matrix: SuperAdmin/Admin/Faculty for operational reports and Student access for transcript only. | `Scripts/02-Seed-Core.sql` |
 | `Core seed sidebar SuperAdmin access alignment` | Adds explicit SuperAdmin allowed rows for baseline sidebar menu access to align seeded role matrix with policy expectations. | `Scripts/02-Seed-Core.sql` |
+| `Full dummy institute assignment alignment` | Assigns deterministic `InstitutionType` values to parity users and enforces department institution mapping updates for replay-safe School/College/University representative coverage. | `Scripts/03-FullDummyData.sql` |
+| `Full dummy assignment scope seeds` | Seeds admin and faculty department-assignment junction rows for deterministic role/institute scope test baselines. | `Scripts/03-FullDummyData.sql` |
+| `Full dummy timetable infrastructure coverage` | Seeds buildings, rooms, timetables, and timetable entries across School/College/University representative departments. | `Scripts/03-FullDummyData.sql` |
+| `Full dummy payment + report artifact coverage` | Seeds payment receipts and transcript export logs for parity testing of finance and report-export workflows. | `Scripts/03-FullDummyData.sql` |
+| `Full dummy lifecycle parity artifacts` | Seeds bulk promotion batches/entries, graduation applications/approvals, student report cards, school streams, and stream assignments for lifecycle parity scenarios. | `Scripts/03-FullDummyData.sql` |
 
 ## Institution License Validation Plan (2026-05-12)
 

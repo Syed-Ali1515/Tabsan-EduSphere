@@ -312,6 +312,22 @@ After each completed stage, this document must be updated to reflect any net fun
     - fresh and replayed core seed runs now produce institute-aware foundational policy and access baselines required for Phase 5 data completion,
     - no schema/migration mutation introduced in this stage.
 
+## 2026-05-13 Update - Institute Parity Stage 5.2 Full Dummy Coverage Snapshot
+
+- Completed full dummy parity dataset expansion for School/College/University representative execution paths.
+- Full dummy script behavior now enforces:
+    - explicit institution-type assignment for parity users and deterministic department institution mapping,
+    - assignment-junction coverage for Admin and Faculty department scopes,
+    - buildings/rooms/timetable/timetable-entry parity data across representative institute departments,
+    - payment receipt and transcript export artifact coverage,
+    - lifecycle/report artifacts including bulk promotions, graduation approvals, school stream assignment, and student report cards.
+- Validation evidence:
+    - targeted user-import institution-assignment regression suite passed (`3/3`),
+    - script verification confirms new parity entity blocks and institution-type alignment rows are present.
+- Behavior impact:
+    - one-run full dummy seeding now provides broader parity validation data for reports, lifecycle, timetable, payments, and role/institute scope checks,
+    - no schema/migration mutation introduced in this stage.
+
 ---
 
 ## Table of Contents
