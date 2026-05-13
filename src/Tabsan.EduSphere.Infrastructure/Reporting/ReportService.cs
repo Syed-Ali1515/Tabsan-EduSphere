@@ -65,7 +65,7 @@ public sealed class ReportService : IReportService
         AttendanceSummaryRequest request, CancellationToken ct = default)
     {
         var raw = await _repo.GetAttendanceDataAsync(
-            request.SemesterId, request.CourseOfferingId, request.StudentProfileId, ct);
+            request.SemesterId, request.CourseOfferingId, request.StudentProfileId, request.InstitutionType, ct);
 
         var rows = raw.Select(r => new AttendanceSummaryRow(
             r.StudentProfileId, r.RegistrationNumber, r.StudentName,
@@ -84,7 +84,7 @@ public sealed class ReportService : IReportService
         ResultSummaryRequest request, CancellationToken ct = default)
     {
         var raw = await _repo.GetResultDataAsync(
-            request.SemesterId, request.CourseOfferingId, request.StudentProfileId, ct);
+            request.SemesterId, request.CourseOfferingId, request.StudentProfileId, request.InstitutionType, ct);
 
         var rows = raw.Select(r => new ResultSummaryRow(
             r.StudentProfileId, r.RegistrationNumber, r.StudentName,
@@ -100,7 +100,7 @@ public sealed class ReportService : IReportService
         AssignmentSummaryRequest request, CancellationToken ct = default)
     {
         var raw = await _repo.GetAssignmentDataAsync(
-            request.SemesterId, request.CourseOfferingId, request.StudentProfileId, ct);
+            request.SemesterId, request.CourseOfferingId, request.StudentProfileId, request.InstitutionType, ct);
 
         if (request.DepartmentId.HasValue)
         {
@@ -122,7 +122,7 @@ public sealed class ReportService : IReportService
         QuizSummaryRequest request, CancellationToken ct = default)
     {
         var raw = await _repo.GetQuizDataAsync(
-            request.SemesterId, request.CourseOfferingId, request.StudentProfileId, ct);
+            request.SemesterId, request.CourseOfferingId, request.StudentProfileId, request.InstitutionType, ct);
 
         if (request.DepartmentId.HasValue)
         {
@@ -143,7 +143,7 @@ public sealed class ReportService : IReportService
     public async Task<GpaReportResponse> GetGpaReportAsync(
         GpaReportRequest request, CancellationToken ct = default)
     {
-        var raw = await _repo.GetGpaDataAsync(request.DepartmentId, request.ProgramId, ct);
+        var raw = await _repo.GetGpaDataAsync(request.DepartmentId, request.ProgramId, request.InstitutionType, ct);
 
         var rows = raw.Select(r => new Tabsan.EduSphere.Application.DTOs.Reports.GpaReportRow(
             r.StudentProfileId, r.RegistrationNumber, r.StudentName,
@@ -159,7 +159,7 @@ public sealed class ReportService : IReportService
     public async Task<EnrollmentSummaryReportResponse> GetEnrollmentSummaryAsync(
         EnrollmentSummaryRequest request, CancellationToken ct = default)
     {
-        var raw = await _repo.GetEnrollmentDataAsync(request.SemesterId, request.DepartmentId, ct);
+        var raw = await _repo.GetEnrollmentDataAsync(request.SemesterId, request.DepartmentId, request.InstitutionType, ct);
 
         var rows = raw.Select(r => new EnrollmentSummaryRow(
             r.CourseOfferingId, r.CourseCode, r.CourseTitle, r.SemesterName,
@@ -174,7 +174,7 @@ public sealed class ReportService : IReportService
     public async Task<SemesterResultsReportResponse> GetSemesterResultsAsync(
         SemesterResultsRequest request, CancellationToken ct = default)
     {
-        var raw = await _repo.GetSemesterResultDataAsync(request.SemesterId, request.DepartmentId, ct);
+        var raw = await _repo.GetSemesterResultDataAsync(request.SemesterId, request.DepartmentId, request.InstitutionType, ct);
 
         var rows = raw.Select(r => new SemesterResultsRow(
             r.StudentProfileId, r.RegistrationNumber, r.StudentName,
@@ -455,7 +455,7 @@ public sealed class ReportService : IReportService
         LowAttendanceRequest request, CancellationToken ct = default)
     {
         var raw = await _repo.GetLowAttendanceDataAsync(
-            request.ThresholdPercent, request.DepartmentId, request.CourseOfferingId, ct);
+            request.ThresholdPercent, request.DepartmentId, request.CourseOfferingId, request.InstitutionType, ct);
 
         var rows = raw.Select(r => new LowAttendanceRow(
             r.StudentProfileId, r.RegistrationNumber, r.StudentName,
@@ -470,7 +470,7 @@ public sealed class ReportService : IReportService
     public async Task<FypStatusReportResponse> GetFypStatusReportAsync(
         FypStatusRequest request, CancellationToken ct = default)
     {
-        var raw = await _repo.GetFypStatusDataAsync(request.DepartmentId, request.Status, ct);
+        var raw = await _repo.GetFypStatusDataAsync(request.DepartmentId, request.Status, request.InstitutionType, ct);
 
         var rows = raw.Select(r => new FypStatusRow(
             r.ProjectId, r.Title, r.StudentName, r.RegistrationNumber,

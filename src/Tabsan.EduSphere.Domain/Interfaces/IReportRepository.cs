@@ -21,6 +21,7 @@ public interface IReportRepository
         Guid? semesterId,
         Guid? courseOfferingId,
         Guid? studentProfileId,
+        int? institutionType,
         CancellationToken ct = default);
 
     /// <summary>
@@ -30,6 +31,7 @@ public interface IReportRepository
         Guid? semesterId,
         Guid? courseOfferingId,
         Guid? studentProfileId,
+        int? institutionType,
         CancellationToken ct = default);
 
     /// <summary>
@@ -39,6 +41,7 @@ public interface IReportRepository
         Guid? semesterId,
         Guid? courseOfferingId,
         Guid? studentProfileId,
+        int? institutionType,
         CancellationToken ct = default);
 
     /// <summary>
@@ -48,6 +51,7 @@ public interface IReportRepository
         Guid? semesterId,
         Guid? courseOfferingId,
         Guid? studentProfileId,
+        int? institutionType,
         CancellationToken ct = default);
 
     /// <summary>
@@ -56,6 +60,7 @@ public interface IReportRepository
     Task<IList<GpaReportRow>> GetGpaDataAsync(
         Guid? departmentId,
         Guid? programId,
+        int? institutionType,
         CancellationToken ct = default);
 
     /// <summary>
@@ -64,6 +69,7 @@ public interface IReportRepository
     Task<IList<EnrollmentReportRow>> GetEnrollmentDataAsync(
         Guid? semesterId,
         Guid? departmentId,
+        int? institutionType,
         CancellationToken ct = default);
 
     /// <summary>
@@ -72,6 +78,7 @@ public interface IReportRepository
     Task<IList<ResultReportRow>> GetSemesterResultDataAsync(
         Guid semesterId,
         Guid? departmentId,
+        int? institutionType,
         CancellationToken ct = default);
 
     /// <summary>
@@ -88,6 +95,7 @@ public interface IReportRepository
         decimal thresholdPercent,
         Guid? departmentId,
         Guid? courseOfferingId,
+        int? institutionType,
         CancellationToken ct = default);
 
     /// <summary>
@@ -96,6 +104,7 @@ public interface IReportRepository
     Task<IList<FypStatusReportRow>> GetFypStatusDataAsync(
         Guid? departmentId,
         string? status,
+        int? institutionType,
         CancellationToken ct = default);
 }
 

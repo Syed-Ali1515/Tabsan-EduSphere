@@ -16,6 +16,7 @@ public sealed record ResultSummaryExportJobRequest(
     Guid? DepartmentId,
     Guid? CourseOfferingId,
     Guid? StudentProfileId,
+    int? InstitutionType,
     ReportExportFormat Format);
 
 public sealed class ReportExportJobQueue

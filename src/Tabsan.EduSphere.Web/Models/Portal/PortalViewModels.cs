@@ -995,6 +995,7 @@ public class ReportAttendancePageModel
     public Guid?  DepartmentId { get; set; }
     public Guid?  OfferingId   { get; set; }
     public Guid?  StudentId    { get; set; }
+    public int?   InstitutionType { get; set; }
     public List<LookupItem>          Semesters   { get; set; } = new();
     public List<LookupItem>          Departments { get; set; } = new();
     public List<CourseOfferingItem>  Offerings   { get; set; } = new();
@@ -1029,6 +1030,7 @@ public class ReportResultsPageModel
     public Guid?  DepartmentId { get; set; }
     public Guid?  OfferingId   { get; set; }
     public Guid?  StudentId    { get; set; }
+    public int?   InstitutionType { get; set; }
     public List<LookupItem>         Semesters   { get; set; } = new();
     public List<LookupItem>         Departments { get; set; } = new();
     public List<CourseOfferingItem> Offerings   { get; set; } = new();
@@ -1063,6 +1065,7 @@ public class ReportAssignmentsPageModel
     public Guid?  DepartmentId { get; set; }
     public Guid?  OfferingId   { get; set; }
     public Guid?  StudentId    { get; set; }
+    public int?   InstitutionType { get; set; }
     public List<LookupItem>         Semesters   { get; set; } = new();
     public List<LookupItem>         Departments { get; set; } = new();
     public List<CourseOfferingItem> Offerings   { get; set; } = new();
@@ -1097,6 +1100,7 @@ public class ReportQuizzesPageModel
     public Guid?  DepartmentId { get; set; }
     public Guid?  OfferingId   { get; set; }
     public Guid?  StudentId    { get; set; }
+    public int?   InstitutionType { get; set; }
     public List<LookupItem>         Semesters   { get; set; } = new();
     public List<LookupItem>         Departments { get; set; } = new();
     public List<CourseOfferingItem> Offerings   { get; set; } = new();
@@ -1128,6 +1132,7 @@ public class ReportGpaPageModel
     public string? Message     { get; set; }
     public Guid?  DepartmentId { get; set; }
     public Guid?  ProgramId    { get; set; }
+    public int?   InstitutionType { get; set; }
     public List<LookupItem>   Departments { get; set; } = new();
     public List<LookupItem>   Programs    { get; set; } = new();
     public GpaReportWebModel? Report      { get; set; }
@@ -1156,6 +1161,7 @@ public class ReportEnrollmentPageModel
     public string? Message     { get; set; }
     public Guid?  SemesterId   { get; set; }
     public Guid?  DepartmentId { get; set; }
+    public int?   InstitutionType { get; set; }
     public List<LookupItem>          Semesters   { get; set; } = new();
     public List<LookupItem>          Departments { get; set; } = new();
     public EnrollmentSummaryWebModel? Report      { get; set; }
@@ -1195,6 +1201,7 @@ public class ReportSemesterResultsPageModel
     public string? Message     { get; set; }
     public Guid?  SemesterId   { get; set; }
     public Guid?  DepartmentId { get; set; }
+    public int?   InstitutionType { get; set; }
     public List<LookupItem> Semesters   { get; set; } = new();
     public List<LookupItem> Departments { get; set; } = new();
     public SemesterResultsWebModel? Report { get; set; }
@@ -1262,6 +1269,7 @@ public class ReportLowAttendancePageModel
     public decimal          Threshold        { get; set; } = 75m;
     public Guid?            DepartmentId     { get; set; }
     public Guid?            CourseOfferingId { get; set; }
+    public int?             InstitutionType  { get; set; }
     public LowAttendanceWebModel? Report     { get; set; }
 }
 
@@ -1289,6 +1297,7 @@ public class ReportFypStatusPageModel
     public List<LookupItem> Departments    { get; set; } = new();
     public string?          SelectedStatus { get; set; }
     public Guid?            DepartmentId   { get; set; }
+    public int?             InstitutionType { get; set; }
     public FypStatusWebModel? Report       { get; set; }
 }
 

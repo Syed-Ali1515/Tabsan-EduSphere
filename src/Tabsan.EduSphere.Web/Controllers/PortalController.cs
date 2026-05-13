@@ -2568,8 +2568,9 @@ public class PortalController : Controller
 
     [HttpGet]
     public async Task<IActionResult> ReportAttendance(
-        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct)
     {
+        var selectedInstitutionType = ResolveReportInstitutionType(institutionType);
         ViewData["Title"] = "Attendance Summary Report";
         var model = new ReportAttendancePageModel
         {
@@ -2577,7 +2578,8 @@ public class PortalController : Controller
             SemesterId   = semesterId,
             DepartmentId = departmentId,
             OfferingId   = offeringId,
-            StudentId    = studentId
+            StudentId    = studentId,
+            InstitutionType = selectedInstitutionType
         };
         if (!model.IsConnected) return View(model);
         try
@@ -2588,6 +2590,7 @@ public class PortalController : Controller
             model.Semesters    = await _api.GetSemestersAsync(ct);
             model.Departments  = await _api.GetDepartmentsAsync(ct);
             model.Offerings    = await _api.GetCourseOfferingsAsync(null, ct);
+            model.Departments  = FilterDepartmentsByInstitution(model.Departments, selectedInstitutionType);
             if (isFacultyOnly && !offeringId.HasValue && (semesterId.HasValue || departmentId.HasValue || studentId.HasValue))
             {
                 model.Message = "Faculty must select a course offering before generating report data.";
@@ -2597,7 +2600,7 @@ public class PortalController : Controller
                 model.Message = "Admin must select a department or course offering before generating report data.";
             }
             else if (semesterId.HasValue || departmentId.HasValue || offeringId.HasValue || studentId.HasValue)
-                model.Report = await _api.GetAttendanceSummaryReportAsync(semesterId, departmentId, offeringId, studentId, ct);
+                model.Report = await _api.GetAttendanceSummaryReportAsync(semesterId, departmentId, offeringId, studentId, selectedInstitutionType, ct);
         }
         catch (Exception ex) { model.Message = ex.Message; }
         return View(model);
@@ -2605,8 +2608,9 @@ public class PortalController : Controller
 
     [HttpGet]
     public async Task<IActionResult> ReportResults(
-        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct)
     {
+        var selectedInstitutionType = ResolveReportInstitutionType(institutionType);
         ViewData["Title"] = "Result Summary Report";
         var model = new ReportResultsPageModel
         {
@@ -2614,7 +2618,8 @@ public class PortalController : Controller
             SemesterId   = semesterId,
             DepartmentId = departmentId,
             OfferingId   = offeringId,
-            StudentId    = studentId
+            StudentId    = studentId,
+            InstitutionType = selectedInstitutionType
         };
         if (!model.IsConnected) return View(model);
         try
@@ -2625,6 +2630,7 @@ public class PortalController : Controller
             model.Semesters   = await _api.GetSemestersAsync(ct);
             model.Departments = await _api.GetDepartmentsAsync(ct);
             model.Offerings   = await _api.GetCourseOfferingsAsync(null, ct);
+            model.Departments = FilterDepartmentsByInstitution(model.Departments, selectedInstitutionType);
             if (isFacultyOnly && !offeringId.HasValue && (semesterId.HasValue || departmentId.HasValue || studentId.HasValue))
             {
                 model.Message = "Faculty must select a course offering before generating report data.";
@@ -2634,7 +2640,7 @@ public class PortalController : Controller
                 model.Message = "Admin must select a department or course offering before generating report data.";
             }
             else if (semesterId.HasValue || departmentId.HasValue || offeringId.HasValue || studentId.HasValue)
-                model.Report = await _api.GetResultSummaryReportAsync(semesterId, departmentId, offeringId, studentId, ct);
+                model.Report = await _api.GetResultSummaryReportAsync(semesterId, departmentId, offeringId, studentId, selectedInstitutionType, ct);
         }
         catch (Exception ex) { model.Message = ex.Message; }
         return View(model);
@@ -2642,8 +2648,9 @@ public class PortalController : Controller
 
     [HttpGet]
     public async Task<IActionResult> ReportAssignments(
-        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct)
     {
+        var selectedInstitutionType = ResolveReportInstitutionType(institutionType);
         ViewData["Title"] = "Assignment Summary Report";
         var model = new ReportAssignmentsPageModel
         {
@@ -2651,7 +2658,8 @@ public class PortalController : Controller
             SemesterId   = semesterId,
             DepartmentId = departmentId,
             OfferingId   = offeringId,
-            StudentId    = studentId
+            StudentId    = studentId,
+            InstitutionType = selectedInstitutionType
         };
         if (!model.IsConnected) return View(model);
         try
@@ -2662,6 +2670,7 @@ public class PortalController : Controller
             model.Semesters   = await _api.GetSemestersAsync(ct);
             model.Departments = await _api.GetDepartmentsAsync(ct);
             model.Offerings   = await _api.GetCourseOfferingsAsync(null, ct);
+            model.Departments = FilterDepartmentsByInstitution(model.Departments, selectedInstitutionType);
             if (isFacultyOnly && !offeringId.HasValue && (semesterId.HasValue || departmentId.HasValue || studentId.HasValue))
             {
                 model.Message = "Faculty must select a course offering before generating report data.";
@@ -2671,7 +2680,7 @@ public class PortalController : Controller
                 model.Message = "Admin must select a department or course offering before generating report data.";
             }
             else if (semesterId.HasValue || departmentId.HasValue || offeringId.HasValue || studentId.HasValue)
-                model.Report = await _api.GetAssignmentSummaryReportAsync(semesterId, departmentId, offeringId, studentId, ct);
+                model.Report = await _api.GetAssignmentSummaryReportAsync(semesterId, departmentId, offeringId, studentId, selectedInstitutionType, ct);
         }
         catch (Exception ex) { model.Message = ex.Message; }
         return View(model);
@@ -2679,8 +2688,9 @@ public class PortalController : Controller
 
     [HttpGet]
     public async Task<IActionResult> ReportQuizzes(
-        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct)
     {
+        var selectedInstitutionType = ResolveReportInstitutionType(institutionType);
         ViewData["Title"] = "Quiz Summary Report";
         var model = new ReportQuizzesPageModel
         {
@@ -2688,7 +2698,8 @@ public class PortalController : Controller
             SemesterId   = semesterId,
             DepartmentId = departmentId,
             OfferingId   = offeringId,
-            StudentId    = studentId
+            StudentId    = studentId,
+            InstitutionType = selectedInstitutionType
         };
         if (!model.IsConnected) return View(model);
         try
@@ -2699,6 +2710,7 @@ public class PortalController : Controller
             model.Semesters   = await _api.GetSemestersAsync(ct);
             model.Departments = await _api.GetDepartmentsAsync(ct);
             model.Offerings   = await _api.GetCourseOfferingsAsync(null, ct);
+            model.Departments = FilterDepartmentsByInstitution(model.Departments, selectedInstitutionType);
             if (isFacultyOnly && !offeringId.HasValue && (semesterId.HasValue || departmentId.HasValue || studentId.HasValue))
             {
                 model.Message = "Faculty must select a course offering before generating report data.";
@@ -2708,46 +2720,51 @@ public class PortalController : Controller
                 model.Message = "Admin must select a department or course offering before generating report data.";
             }
             else if (semesterId.HasValue || departmentId.HasValue || offeringId.HasValue || studentId.HasValue)
-                model.Report = await _api.GetQuizSummaryReportAsync(semesterId, departmentId, offeringId, studentId, ct);
+                model.Report = await _api.GetQuizSummaryReportAsync(semesterId, departmentId, offeringId, studentId, selectedInstitutionType, ct);
         }
         catch (Exception ex) { model.Message = ex.Message; }
         return View(model);
     }
 
     [HttpGet]
-    public async Task<IActionResult> ReportGpa(Guid? departmentId, Guid? programId, CancellationToken ct)
+    public async Task<IActionResult> ReportGpa(Guid? departmentId, Guid? programId, int? institutionType, CancellationToken ct)
     {
+        var selectedInstitutionType = ResolveReportInstitutionType(institutionType);
         ViewData["Title"] = "GPA & CGPA Report";
         var model = new ReportGpaPageModel
         {
             IsConnected  = _api.IsConnected(),
             DepartmentId = departmentId,
-            ProgramId    = programId
+            ProgramId    = programId,
+            InstitutionType = selectedInstitutionType
         };
         if (!model.IsConnected) return View(model);
         try
         {
             var isAdminOnly = _api.GetSessionIdentity() is { } id && id.IsAdmin && !id.IsSuperAdmin;
             model.Departments = await _api.GetDepartmentsAsync(ct);
+            model.Departments = FilterDepartmentsByInstitution(model.Departments, selectedInstitutionType);
             model.Programs    = await _api.GetProgramsAsync(null, ct);
             if (isAdminOnly && !departmentId.HasValue)
                 model.Message = "Admin must select a department before generating report data.";
             else if (departmentId.HasValue || programId.HasValue)
-                model.Report = await _api.GetGpaReportAsync(departmentId, programId, ct);
+                model.Report = await _api.GetGpaReportAsync(departmentId, programId, selectedInstitutionType, ct);
         }
         catch (Exception ex) { model.Message = ex.Message; }
         return View(model);
     }
 
     [HttpGet]
-    public async Task<IActionResult> ReportEnrollment(Guid? semesterId, Guid? departmentId, CancellationToken ct)
+    public async Task<IActionResult> ReportEnrollment(Guid? semesterId, Guid? departmentId, int? institutionType, CancellationToken ct)
     {
+        var selectedInstitutionType = ResolveReportInstitutionType(institutionType);
         ViewData["Title"] = "Enrollment Summary Report";
         var model = new ReportEnrollmentPageModel
         {
             IsConnected  = _api.IsConnected(),
             SemesterId   = semesterId,
-            DepartmentId = departmentId
+            DepartmentId = departmentId,
+            InstitutionType = selectedInstitutionType
         };
         if (!model.IsConnected) return View(model);
         try
@@ -2755,24 +2772,27 @@ public class PortalController : Controller
             var isAdminOnly = _api.GetSessionIdentity() is { } id && id.IsAdmin && !id.IsSuperAdmin;
             model.Semesters   = await _api.GetSemestersAsync(ct);
             model.Departments = await _api.GetDepartmentsAsync(ct);
+            model.Departments = FilterDepartmentsByInstitution(model.Departments, selectedInstitutionType);
             if (isAdminOnly && !departmentId.HasValue)
                 model.Message = "Admin must select a department before generating report data.";
             else
-                model.Report = await _api.GetEnrollmentSummaryReportAsync(semesterId, departmentId, ct);
+                model.Report = await _api.GetEnrollmentSummaryReportAsync(semesterId, departmentId, selectedInstitutionType, ct);
         }
         catch (Exception ex) { model.Message = ex.Message; }
         return View(model);
     }
 
     [HttpGet]
-    public async Task<IActionResult> ReportSemesterResults(Guid? semesterId, Guid? departmentId, CancellationToken ct)
+    public async Task<IActionResult> ReportSemesterResults(Guid? semesterId, Guid? departmentId, int? institutionType, CancellationToken ct)
     {
+        var selectedInstitutionType = ResolveReportInstitutionType(institutionType);
         ViewData["Title"] = "Semester Results Report";
         var model = new ReportSemesterResultsPageModel
         {
             IsConnected  = _api.IsConnected(),
             SemesterId   = semesterId,
-            DepartmentId = departmentId
+            DepartmentId = departmentId,
+            InstitutionType = selectedInstitutionType
         };
         if (!model.IsConnected) return View(model);
         try
@@ -2780,6 +2800,7 @@ public class PortalController : Controller
             var isAdminOnly = _api.GetSessionIdentity() is { } id && id.IsAdmin && !id.IsSuperAdmin;
             model.Semesters   = await _api.GetSemestersAsync(ct);
             model.Departments = await _api.GetDepartmentsAsync(ct);
+            model.Departments = FilterDepartmentsByInstitution(model.Departments, selectedInstitutionType);
 
             // API requires a non-empty semesterId; do not query until one is selected.
             if (semesterId.HasValue)
@@ -2787,7 +2808,7 @@ public class PortalController : Controller
                 if (isAdminOnly && !departmentId.HasValue)
                     model.Message = "Admin must select a department before generating report data.";
                 else
-                    model.Report = await _api.GetSemesterResultsReportAsync(semesterId.Value, departmentId, ct);
+                    model.Report = await _api.GetSemesterResultsReportAsync(semesterId.Value, departmentId, selectedInstitutionType, ct);
             }
         }
         catch (Exception ex) { model.Message = ex.Message; }
@@ -2801,183 +2822,183 @@ public class PortalController : Controller
 
     [HttpGet]
     public async Task<IActionResult> ExportAttendanceSummary(
-        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct)
     {
         if (!_api.IsConnected()) return RedirectToAction(nameof(ReportAttendance));
         try
         {
-            var bytes = await _api.ExportAttendanceSummaryAsync(semesterId, departmentId, offeringId, studentId, ct);
+            var bytes = await _api.ExportAttendanceSummaryAsync(semesterId, departmentId, offeringId, studentId, ResolveReportInstitutionType(institutionType), ct);
             return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "attendance-summary.xlsx");
         }
         catch (Exception ex) { TempData["PortalMessage"] = $"Export failed: {ex.Message}"; }
-        return RedirectToAction(nameof(ReportAttendance), new { semesterId, departmentId, offeringId, studentId });
+        return RedirectToAction(nameof(ReportAttendance), new { semesterId, departmentId, offeringId, studentId, institutionType = ResolveReportInstitutionType(institutionType) });
     }
 
     [HttpGet]
     public async Task<IActionResult> ExportAttendanceSummaryCsv(
-        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct)
     {
         if (!_api.IsConnected()) return RedirectToAction(nameof(ReportAttendance));
         try
         {
-            var bytes = await _api.ExportAttendanceSummaryCsvAsync(semesterId, departmentId, offeringId, studentId, ct);
+            var bytes = await _api.ExportAttendanceSummaryCsvAsync(semesterId, departmentId, offeringId, studentId, ResolveReportInstitutionType(institutionType), ct);
             return File(bytes, "text/csv", "attendance-summary.csv");
         }
         catch (Exception ex) { TempData["PortalMessage"] = $"Export CSV failed: {ex.Message}"; }
-        return RedirectToAction(nameof(ReportAttendance), new { semesterId, departmentId, offeringId, studentId });
+        return RedirectToAction(nameof(ReportAttendance), new { semesterId, departmentId, offeringId, studentId, institutionType = ResolveReportInstitutionType(institutionType) });
     }
 
     [HttpGet]
     public async Task<IActionResult> ExportAttendanceSummaryPdf(
-        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct)
     {
         if (!_api.IsConnected()) return RedirectToAction(nameof(ReportAttendance));
         try
         {
-            var bytes = await _api.ExportAttendanceSummaryPdfAsync(semesterId, departmentId, offeringId, studentId, ct);
+            var bytes = await _api.ExportAttendanceSummaryPdfAsync(semesterId, departmentId, offeringId, studentId, ResolveReportInstitutionType(institutionType), ct);
             return File(bytes, "application/pdf", "attendance-summary.pdf");
         }
         catch (Exception ex) { TempData["PortalMessage"] = $"Export PDF failed: {ex.Message}"; }
-        return RedirectToAction(nameof(ReportAttendance), new { semesterId, departmentId, offeringId, studentId });
+        return RedirectToAction(nameof(ReportAttendance), new { semesterId, departmentId, offeringId, studentId, institutionType = ResolveReportInstitutionType(institutionType) });
     }
 
     [HttpGet]
     public async Task<IActionResult> ExportResultSummary(
-        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct)
     {
         if (!_api.IsConnected()) return RedirectToAction(nameof(ReportResults));
         try
         {
-            var bytes = await _api.ExportResultSummaryAsync(semesterId, departmentId, offeringId, studentId, ct);
+            var bytes = await _api.ExportResultSummaryAsync(semesterId, departmentId, offeringId, studentId, ResolveReportInstitutionType(institutionType), ct);
             return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "result-summary.xlsx");
         }
         catch (Exception ex) { TempData["PortalMessage"] = $"Export failed: {ex.Message}"; }
-        return RedirectToAction(nameof(ReportResults), new { semesterId, departmentId, offeringId, studentId });
+        return RedirectToAction(nameof(ReportResults), new { semesterId, departmentId, offeringId, studentId, institutionType = ResolveReportInstitutionType(institutionType) });
     }
 
     [HttpGet]
     public async Task<IActionResult> ExportResultSummaryCsv(
-        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct)
     {
         if (!_api.IsConnected()) return RedirectToAction(nameof(ReportResults));
         try
         {
-            var bytes = await _api.ExportResultSummaryCsvAsync(semesterId, departmentId, offeringId, studentId, ct);
+            var bytes = await _api.ExportResultSummaryCsvAsync(semesterId, departmentId, offeringId, studentId, ResolveReportInstitutionType(institutionType), ct);
             return File(bytes, "text/csv", "result-summary.csv");
         }
         catch (Exception ex) { TempData["PortalMessage"] = $"Export CSV failed: {ex.Message}"; }
-        return RedirectToAction(nameof(ReportResults), new { semesterId, departmentId, offeringId, studentId });
+        return RedirectToAction(nameof(ReportResults), new { semesterId, departmentId, offeringId, studentId, institutionType = ResolveReportInstitutionType(institutionType) });
     }
 
     [HttpGet]
     public async Task<IActionResult> ExportResultSummaryPdf(
-        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct)
     {
         if (!_api.IsConnected()) return RedirectToAction(nameof(ReportResults));
         try
         {
-            var bytes = await _api.ExportResultSummaryPdfAsync(semesterId, departmentId, offeringId, studentId, ct);
+            var bytes = await _api.ExportResultSummaryPdfAsync(semesterId, departmentId, offeringId, studentId, ResolveReportInstitutionType(institutionType), ct);
             return File(bytes, "application/pdf", "result-summary.pdf");
         }
         catch (Exception ex) { TempData["PortalMessage"] = $"Export PDF failed: {ex.Message}"; }
-        return RedirectToAction(nameof(ReportResults), new { semesterId, departmentId, offeringId, studentId });
+        return RedirectToAction(nameof(ReportResults), new { semesterId, departmentId, offeringId, studentId, institutionType = ResolveReportInstitutionType(institutionType) });
     }
 
     [HttpGet]
     public async Task<IActionResult> ExportAssignmentSummary(
-        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct)
     {
         if (!_api.IsConnected()) return RedirectToAction(nameof(ReportAssignments));
         try
         {
-            var bytes = await _api.ExportAssignmentSummaryAsync(semesterId, departmentId, offeringId, studentId, ct);
+            var bytes = await _api.ExportAssignmentSummaryAsync(semesterId, departmentId, offeringId, studentId, ResolveReportInstitutionType(institutionType), ct);
             return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "assignment-summary.xlsx");
         }
         catch (Exception ex) { TempData["PortalMessage"] = $"Export failed: {ex.Message}"; }
-        return RedirectToAction(nameof(ReportAssignments), new { semesterId, departmentId, offeringId, studentId });
+        return RedirectToAction(nameof(ReportAssignments), new { semesterId, departmentId, offeringId, studentId, institutionType = ResolveReportInstitutionType(institutionType) });
     }
 
     [HttpGet]
     public async Task<IActionResult> ExportAssignmentSummaryCsv(
-        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct)
     {
         if (!_api.IsConnected()) return RedirectToAction(nameof(ReportAssignments));
         try
         {
-            var bytes = await _api.ExportAssignmentSummaryCsvAsync(semesterId, departmentId, offeringId, studentId, ct);
+            var bytes = await _api.ExportAssignmentSummaryCsvAsync(semesterId, departmentId, offeringId, studentId, ResolveReportInstitutionType(institutionType), ct);
             return File(bytes, "text/csv", "assignment-summary.csv");
         }
         catch (Exception ex) { TempData["PortalMessage"] = $"Export CSV failed: {ex.Message}"; }
-        return RedirectToAction(nameof(ReportAssignments), new { semesterId, departmentId, offeringId, studentId });
+        return RedirectToAction(nameof(ReportAssignments), new { semesterId, departmentId, offeringId, studentId, institutionType = ResolveReportInstitutionType(institutionType) });
     }
 
     [HttpGet]
     public async Task<IActionResult> ExportAssignmentSummaryPdf(
-        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct)
     {
         if (!_api.IsConnected()) return RedirectToAction(nameof(ReportAssignments));
         try
         {
-            var bytes = await _api.ExportAssignmentSummaryPdfAsync(semesterId, departmentId, offeringId, studentId, ct);
+            var bytes = await _api.ExportAssignmentSummaryPdfAsync(semesterId, departmentId, offeringId, studentId, ResolveReportInstitutionType(institutionType), ct);
             return File(bytes, "application/pdf", "assignment-summary.pdf");
         }
         catch (Exception ex) { TempData["PortalMessage"] = $"Export PDF failed: {ex.Message}"; }
-        return RedirectToAction(nameof(ReportAssignments), new { semesterId, departmentId, offeringId, studentId });
+        return RedirectToAction(nameof(ReportAssignments), new { semesterId, departmentId, offeringId, studentId, institutionType = ResolveReportInstitutionType(institutionType) });
     }
 
     [HttpGet]
     public async Task<IActionResult> ExportQuizSummary(
-        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct)
     {
         if (!_api.IsConnected()) return RedirectToAction(nameof(ReportQuizzes));
         try
         {
-            var bytes = await _api.ExportQuizSummaryAsync(semesterId, departmentId, offeringId, studentId, ct);
+            var bytes = await _api.ExportQuizSummaryAsync(semesterId, departmentId, offeringId, studentId, ResolveReportInstitutionType(institutionType), ct);
             return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "quiz-summary.xlsx");
         }
         catch (Exception ex) { TempData["PortalMessage"] = $"Export failed: {ex.Message}"; }
-        return RedirectToAction(nameof(ReportQuizzes), new { semesterId, departmentId, offeringId, studentId });
+        return RedirectToAction(nameof(ReportQuizzes), new { semesterId, departmentId, offeringId, studentId, institutionType = ResolveReportInstitutionType(institutionType) });
     }
 
     [HttpGet]
     public async Task<IActionResult> ExportQuizSummaryCsv(
-        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct)
     {
         if (!_api.IsConnected()) return RedirectToAction(nameof(ReportQuizzes));
         try
         {
-            var bytes = await _api.ExportQuizSummaryCsvAsync(semesterId, departmentId, offeringId, studentId, ct);
+            var bytes = await _api.ExportQuizSummaryCsvAsync(semesterId, departmentId, offeringId, studentId, ResolveReportInstitutionType(institutionType), ct);
             return File(bytes, "text/csv", "quiz-summary.csv");
         }
         catch (Exception ex) { TempData["PortalMessage"] = $"Export CSV failed: {ex.Message}"; }
-        return RedirectToAction(nameof(ReportQuizzes), new { semesterId, departmentId, offeringId, studentId });
+        return RedirectToAction(nameof(ReportQuizzes), new { semesterId, departmentId, offeringId, studentId, institutionType = ResolveReportInstitutionType(institutionType) });
     }
 
     [HttpGet]
     public async Task<IActionResult> ExportQuizSummaryPdf(
-        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct)
     {
         if (!_api.IsConnected()) return RedirectToAction(nameof(ReportQuizzes));
         try
         {
-            var bytes = await _api.ExportQuizSummaryPdfAsync(semesterId, departmentId, offeringId, studentId, ct);
+            var bytes = await _api.ExportQuizSummaryPdfAsync(semesterId, departmentId, offeringId, studentId, ResolveReportInstitutionType(institutionType), ct);
             return File(bytes, "application/pdf", "quiz-summary.pdf");
         }
         catch (Exception ex) { TempData["PortalMessage"] = $"Export PDF failed: {ex.Message}"; }
-        return RedirectToAction(nameof(ReportQuizzes), new { semesterId, departmentId, offeringId, studentId });
+        return RedirectToAction(nameof(ReportQuizzes), new { semesterId, departmentId, offeringId, studentId, institutionType = ResolveReportInstitutionType(institutionType) });
     }
 
     [HttpGet]
-    public async Task<IActionResult> ExportGpaReport(Guid? departmentId, Guid? programId, CancellationToken ct)
+    public async Task<IActionResult> ExportGpaReport(Guid? departmentId, Guid? programId, int? institutionType, CancellationToken ct)
     {
         if (!_api.IsConnected()) return RedirectToAction(nameof(ReportGpa));
         try
         {
-            var bytes = await _api.ExportGpaReportAsync(departmentId, programId, ct);
+            var bytes = await _api.ExportGpaReportAsync(departmentId, programId, ResolveReportInstitutionType(institutionType), ct);
             return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "gpa-report.xlsx");
         }
         catch (Exception ex) { TempData["PortalMessage"] = $"Export failed: {ex.Message}"; }
-        return RedirectToAction(nameof(ReportGpa), new { departmentId, programId });
+        return RedirectToAction(nameof(ReportGpa), new { departmentId, programId, institutionType = ResolveReportInstitutionType(institutionType) });
     }
 
     // ── Stage 4.2: Additional Reports ─────────────────────────────────────────
@@ -3018,26 +3039,29 @@ public class PortalController : Controller
 
     [HttpGet]
     public async Task<IActionResult> ReportLowAttendance(
-        decimal threshold = 75m, Guid? departmentId = null, Guid? courseOfferingId = null, CancellationToken ct = default)
+        decimal threshold = 75m, Guid? departmentId = null, Guid? courseOfferingId = null, int? institutionType = null, CancellationToken ct = default)
     {
+        var selectedInstitutionType = ResolveReportInstitutionType(institutionType);
         ViewData["Title"] = "Low Attendance Warning";
         var model = new ReportLowAttendancePageModel
         {
             IsConnected      = _api.IsConnected(),
             Threshold        = threshold,
             DepartmentId     = departmentId,
-            CourseOfferingId = courseOfferingId
+            CourseOfferingId = courseOfferingId,
+            InstitutionType  = selectedInstitutionType
         };
         if (!model.IsConnected) return View(model);
         try
         {
             var isAdminOnly = _api.GetSessionIdentity() is { } id && id.IsAdmin && !id.IsSuperAdmin;
             model.Departments     = await _api.GetDepartmentsAsync(ct);
+            model.Departments     = FilterDepartmentsByInstitution(model.Departments, selectedInstitutionType);
             model.CourseOfferings = await _api.GetCoursesAsync(departmentId, ct);
             if (isAdminOnly && !departmentId.HasValue && !courseOfferingId.HasValue)
                 model.Message = "Admin must select a department or course offering before generating report data.";
             else
-                model.Report = await _api.GetLowAttendanceReportAsync(threshold, departmentId, courseOfferingId, ct);
+                model.Report = await _api.GetLowAttendanceReportAsync(threshold, departmentId, courseOfferingId, selectedInstitutionType, ct);
         }
         catch (Exception ex) { model.Message = ex.Message; }
         return View(model);
@@ -3045,27 +3069,49 @@ public class PortalController : Controller
 
     [HttpGet]
     public async Task<IActionResult> ReportFypStatus(
-        Guid? departmentId = null, string? status = null, CancellationToken ct = default)
+        Guid? departmentId = null, string? status = null, int? institutionType = null, CancellationToken ct = default)
     {
+        var selectedInstitutionType = ResolveReportInstitutionType(institutionType);
         ViewData["Title"] = "FYP Status Report";
         var model = new ReportFypStatusPageModel
         {
             IsConnected    = _api.IsConnected(),
             DepartmentId   = departmentId,
-            SelectedStatus = status
+            SelectedStatus = status,
+            InstitutionType = selectedInstitutionType
         };
         if (!model.IsConnected) return View(model);
         try
         {
             var isAdminOnly = _api.GetSessionIdentity() is { } id && id.IsAdmin && !id.IsSuperAdmin;
             model.Departments = await _api.GetDepartmentsAsync(ct);
+            model.Departments = FilterDepartmentsByInstitution(model.Departments, selectedInstitutionType);
             if (isAdminOnly && !departmentId.HasValue)
                 model.Message = "Admin must select a department before generating report data.";
             else
-                model.Report = await _api.GetFypStatusReportAsync(departmentId, status, ct);
+                model.Report = await _api.GetFypStatusReportAsync(departmentId, status, selectedInstitutionType, ct);
         }
         catch (Exception ex) { model.Message = ex.Message; }
         return View(model);
+    }
+
+    private int? ResolveReportInstitutionType(int? requestedInstitutionType)
+    {
+        var identity = _api.GetSessionIdentity();
+        if (identity is { IsSuperAdmin: false, InstitutionType: not null })
+            return identity.InstitutionType.Value;
+
+        return requestedInstitutionType;
+    }
+
+    private static List<LookupItem> FilterDepartmentsByInstitution(List<LookupItem> departments, int? institutionType)
+    {
+        if (!institutionType.HasValue)
+            return departments;
+
+        return departments
+            .Where(d => !d.InstitutionType.HasValue || d.InstitutionType.Value == institutionType.Value)
+            .ToList();
     }
 
     // ── Dashboard Settings ────────────────────────────────────────────────────

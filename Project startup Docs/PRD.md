@@ -18,6 +18,22 @@ Each stage log entry must clearly describe behavior impact for School/College/Un
 
 ## 0. Implementation Update Log
 
+### 2026-05-13 - Institute Parity Stage 4.2 (Execution Snapshot)
+- Completed reports filter expansion for School/College/University parity behavior.
+- Implementation Summary:
+  - report endpoints and report exports now support institution filtering,
+  - constrained-role report requests now auto-default to caller claim institute and reject explicit mismatches,
+  - report dashboard pages now include institution + department filters aligned with report API query scope,
+  - report repository queries now apply institution-aware filtering for attendance/result/assignment/quiz/GPA/enrollment/semester/low-attendance/FYP report paths.
+- Validation Summary:
+  - solution build passed,
+  - focused parity integration suites passed (`43/43`) including expanded report parity tests,
+  - no regressions detected in Stage 2/3/4 guard suites included in the run.
+- Behavior impact:
+  - report dashboard and report API/export queries are institute-aware and role-scoped by default for constrained users,
+  - cross-institute report filter drift is denied for constrained roles,
+  - no schema migration introduced in this stage.
+
 ### 2026-05-13 - Institute Parity Stage 4.1 (Execution Snapshot)
 - Completed analytics filter expansion for School/College/University parity behavior.
 - Implementation Summary:

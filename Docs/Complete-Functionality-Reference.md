@@ -233,6 +233,36 @@ After each completed stage, this document must be updated to reflect any net fun
     - constrained-role analytics requests are auto-scoped and protected against cross-institute filter drift,
     - no schema or migration update required for Stage 4.1.
 
+## 2026-05-13 Update - Institute Parity Stage 4.2 Reports Filter Expansion Snapshot
+
+- Completed report filter expansion across report APIs, report exports, and report portal controls.
+- Report API behavior now enforces:
+    - optional `institutionType` filter support across report generation and export endpoints,
+    - role-aware default institution scope for constrained roles using JWT `institutionType`,
+    - forbidden responses on explicit report institution mismatch requests,
+    - report request scope propagation to queued result-summary export jobs.
+- Report query behavior now supports institution-aware filtering for:
+    - attendance summary,
+    - result summary,
+    - assignment summary,
+    - quiz summary,
+    - GPA,
+    - enrollment summary,
+    - semester results,
+    - low attendance warning,
+    - FYP status report.
+- Portal report behavior now includes:
+    - institution filter controls on report forms,
+    - institution-aware department dropdown narrowing,
+    - report export links that preserve institution filter state.
+- Validation evidence:
+    - solution build pass,
+    - focused parity integration suites pass (`43/43`) including expanded report institute parity tests.
+- Behavior impact:
+    - report dashboards and report API queries/exports are institute-aware for School/College/University contexts,
+    - constrained-role report requests are auto-scoped and protected against cross-institute filter drift,
+    - no schema or migration update required for Stage 4.2.
+
 ---
 
 ## Table of Contents

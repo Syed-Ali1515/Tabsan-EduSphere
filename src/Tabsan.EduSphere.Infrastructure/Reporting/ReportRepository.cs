@@ -46,6 +46,7 @@ public sealed class ReportRepository : IReportRepository
         Guid? semesterId,
         Guid? courseOfferingId,
         Guid? studentProfileId,
+        int? institutionType,
         CancellationToken ct = default)
     {
         var query =
@@ -59,6 +60,7 @@ public sealed class ReportRepository : IReportRepository
             where (semesterId        == null || co.SemesterId       == semesterId)
                && (courseOfferingId  == null || ar.CourseOfferingId == courseOfferingId)
                && (studentProfileId  == null || ar.StudentProfileId == studentProfileId)
+                    && (institutionType   == null || (int)dep.InstitutionType == institutionType)
             select new
             {
                 ar.StudentProfileId,
@@ -100,9 +102,10 @@ public sealed class ReportRepository : IReportRepository
         Guid? semesterId,
         Guid? courseOfferingId,
         Guid? studentProfileId,
+        int? institutionType,
         CancellationToken ct = default)
     {
-        return await BuildResultQuery(semesterId, courseOfferingId, studentProfileId, null)
+        return await BuildResultQuery(semesterId, courseOfferingId, studentProfileId, null, institutionType)
             .ToListAsync(ct);
     }
 
@@ -110,6 +113,7 @@ public sealed class ReportRepository : IReportRepository
         Guid? semesterId,
         Guid? courseOfferingId,
         Guid? studentProfileId,
+        int? institutionType,
         CancellationToken ct = default)
     {
         return await (
@@ -123,6 +127,7 @@ public sealed class ReportRepository : IReportRepository
             where (semesterId       == null || co.SemesterId      == semesterId)
                && (courseOfferingId == null || a.CourseOfferingId == courseOfferingId)
                && (studentProfileId == null || s.StudentProfileId == studentProfileId)
+                    && (institutionType  == null || (int)dep.InstitutionType == institutionType)
             orderby s.SubmittedAt descending
             select new AssignmentReportRow(
                 s.StudentProfileId,
@@ -145,6 +150,7 @@ public sealed class ReportRepository : IReportRepository
         Guid? semesterId,
         Guid? courseOfferingId,
         Guid? studentProfileId,
+        int? institutionType,
         CancellationToken ct = default)
     {
         return await (
@@ -158,6 +164,7 @@ public sealed class ReportRepository : IReportRepository
             where (semesterId       == null || co.SemesterId      == semesterId)
                && (courseOfferingId == null || q.CourseOfferingId == courseOfferingId)
                && (studentProfileId == null || a.StudentProfileId == studentProfileId)
+                    && (institutionType  == null || (int)dep.InstitutionType == institutionType)
             orderby a.StartedAt descending
             select new QuizReportRow(
                 a.StudentProfileId,
@@ -179,9 +186,10 @@ public sealed class ReportRepository : IReportRepository
     public async Task<IList<ResultReportRow>> GetSemesterResultDataAsync(
         Guid semesterId,
         Guid? departmentId,
+        int? institutionType,
         CancellationToken ct = default)
     {
-        var query = BuildResultQuery(semesterId, null, null, departmentId);
+        var query = BuildResultQuery(semesterId, null, null, departmentId, institutionType);
         return await query.ToListAsync(ct);
     }
 
@@ -189,7 +197,8 @@ public sealed class ReportRepository : IReportRepository
         Guid? semesterId,
         Guid? courseOfferingId,
         Guid? studentProfileId,
-        Guid? departmentId)
+        Guid? departmentId,
+        int? institutionType)
     {
         return
             from r   in _db.Results
@@ -203,6 +212,7 @@ public sealed class ReportRepository : IReportRepository
                && (courseOfferingId == null || r.CourseOfferingId  == courseOfferingId)
                && (studentProfileId == null || r.StudentProfileId  == studentProfileId)
                && (departmentId     == null || c.DepartmentId      == departmentId)
+                    && (institutionType  == null || (int)dep.InstitutionType == institutionType)
             orderby u.Username, c.Code
             select new ResultReportRow(
                 r.StudentProfileId,
@@ -224,6 +234,7 @@ public sealed class ReportRepository : IReportRepository
     public async Task<IList<GpaReportRow>> GetGpaDataAsync(
         Guid? departmentId,
         Guid? programId,
+        int? institutionType,
         CancellationToken ct = default)
     {
         return await (
@@ -233,6 +244,7 @@ public sealed class ReportRepository : IReportRepository
             join dep in _db.Departments      on sp.DepartmentId equals dep.Id
             where (departmentId == null || sp.DepartmentId == departmentId)
                && (programId    == null || sp.ProgramId    == programId)
+                    && (institutionType == null || (int)dep.InstitutionType == institutionType)
             orderby u.Username
             select new GpaReportRow(
                 sp.Id,
@@ -251,6 +263,7 @@ public sealed class ReportRepository : IReportRepository
     public async Task<IList<EnrollmentReportRow>> GetEnrollmentDataAsync(
         Guid? semesterId,
         Guid? departmentId,
+        int? institutionType,
         CancellationToken ct = default)
     {
         return await (
@@ -260,6 +273,7 @@ public sealed class ReportRepository : IReportRepository
             join dep in _db.Departments  on c.DepartmentId equals dep.Id
             where (semesterId   == null || co.SemesterId   == semesterId)
                && (departmentId == null || c.DepartmentId  == departmentId)
+                    && (institutionType == null || (int)dep.InstitutionType == institutionType)
             orderby c.Code
             select new EnrollmentReportRow(
                 co.Id,
@@ -332,6 +346,7 @@ public sealed class ReportRepository : IReportRepository
         decimal thresholdPercent,
         Guid? departmentId,
         Guid? courseOfferingId,
+        int? institutionType,
         CancellationToken ct = default)
     {
         var query =
@@ -344,6 +359,7 @@ public sealed class ReportRepository : IReportRepository
             join dep in _db.Departments      on c.DepartmentId       equals dep.Id
             where (courseOfferingId == null || ar.CourseOfferingId == courseOfferingId)
                && (departmentId     == null || c.DepartmentId      == departmentId)
+                    && (institutionType  == null || (int)dep.InstitutionType == institutionType)
             select new
             {
                 ar.StudentProfileId,
@@ -387,6 +403,7 @@ public sealed class ReportRepository : IReportRepository
     public async Task<IList<FypStatusReportRow>> GetFypStatusDataAsync(
         Guid? departmentId,
         string? status,
+        int? institutionType,
         CancellationToken ct = default)
     {
         FypProjectStatus? statusFilter = string.IsNullOrWhiteSpace(status)
@@ -404,6 +421,7 @@ public sealed class ReportRepository : IReportRepository
             from sup in supGroup.DefaultIfEmpty()
             where (departmentId  == null || p.DepartmentId == departmentId)
                && (statusFilter  == null || p.Status       == statusFilter)
+                    && (institutionType == null || (int)dep.InstitutionType == institutionType)
             orderby p.CreatedAt descending
             select new FypStatusReportRow(
                 p.Id,

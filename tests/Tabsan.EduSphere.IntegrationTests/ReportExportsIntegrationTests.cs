@@ -68,6 +68,103 @@ public class ReportExportsIntegrationTests
     }
 
     [Fact]
+    public async Task EnrollmentSummary_WithInstitutionFilter_ReturnsScopedInstituteRows()
+    {
+        var suffix = Guid.NewGuid().ToString("N")[..6];
+        const int universityType = (int)InstitutionType.University;
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+            var universityDepartment = new Department($"Report Uni {suffix}", $"RU{suffix}", InstitutionType.University);
+            var collegeDepartment = new Department($"Report Col {suffix}", $"RC{suffix}", InstitutionType.College);
+            db.Departments.AddRange(universityDepartment, collegeDepartment);
+
+            var semester = new Semester($"Report Sem {suffix}", DateTime.UtcNow.AddDays(-5), DateTime.UtcNow.AddDays(45));
+            db.Semesters.Add(semester);
+
+            var uniCourse = new Course($"Report Uni Course {suffix}", $"RUC{suffix}", 3, universityDepartment.Id);
+            var colCourse = new Course($"Report Col Course {suffix}", $"RCC{suffix}", 3, collegeDepartment.Id);
+            db.Courses.AddRange(uniCourse, colCourse);
+
+            db.CourseOfferings.Add(new CourseOffering(uniCourse.Id, semester.Id, 30));
+            db.CourseOfferings.Add(new CourseOffering(colCourse.Id, semester.Id, 30));
+
+            await db.SaveChangesAsync();
+        }
+
+        using var client = CreateClient("SuperAdmin", "00000000-0000-0000-0000-000000000199");
+        var response = await client.GetAsync($"api/v1/reports/enrollment-summary?institutionType={universityType}");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        using var doc = System.Text.Json.JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var rows = doc.RootElement.GetProperty("rows").EnumerateArray().ToList();
+
+        Assert.Contains(rows, r => (r.GetProperty("courseCode").GetString() ?? string.Empty).StartsWith("RUC", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(rows, r => (r.GetProperty("courseCode").GetString() ?? string.Empty).StartsWith("RCC", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task EnrollmentSummary_WithAdminClaimAndMismatchedInstitutionQuery_ReturnsForbidden()
+    {
+        Guid adminUserId;
+        Guid departmentId;
+        int adminInstitutionType;
+        int mismatchedInstitutionType;
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+            var adminRole = db.Roles.First(r => r.Name == "Admin");
+            var department = db.Departments.FirstOrDefault(d => d.InstitutionType == InstitutionType.College);
+            if (department is null)
+            {
+                var suffix = Guid.NewGuid().ToString("N")[..6];
+                department = new Department($"Report Scope College {suffix}", $"RSC{suffix}", InstitutionType.College);
+                db.Departments.Add(department);
+                await db.SaveChangesAsync();
+            }
+
+            departmentId = department.Id;
+            adminInstitutionType = (int)department.InstitutionType;
+            mismatchedInstitutionType = adminInstitutionType == (int)InstitutionType.University
+                ? (int)InstitutionType.College
+                : (int)InstitutionType.University;
+
+            var admin = new User(
+                username: $"report_admin_mismatch_{Guid.NewGuid():N}",
+                passwordHash: "integration-hash",
+                roleId: adminRole.Id,
+                email: $"report_admin_mismatch_{Guid.NewGuid():N}@tabsan.local",
+                departmentId: null,
+                mustChangePassword: false,
+                institutionType: (InstitutionType)adminInstitutionType);
+
+            db.Users.Add(admin);
+            await db.SaveChangesAsync();
+
+            db.AdminDepartmentAssignments.Add(new AdminDepartmentAssignment(admin.Id, departmentId));
+            await db.SaveChangesAsync();
+
+            adminUserId = admin.Id;
+        }
+
+        using var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", JwtTestHelper.GenerateToken(
+                role: "Admin",
+                userId: adminUserId.ToString(),
+                institutionType: adminInstitutionType));
+
+        var response = await client.GetAsync($"api/v1/reports/enrollment-summary?departmentId={departmentId}&institutionType={mismatchedInstitutionType}");
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
     public async Task EnrollmentSummary_WithAdminInstitutionMismatch_ReturnsForbidden()
     {
         Guid adminUserId;

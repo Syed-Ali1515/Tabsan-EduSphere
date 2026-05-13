@@ -203,6 +203,17 @@ After every completed stage in `Docs/Institute-Parity-Issue-Fix-Phases.md`:
 - Schema impact: `No schema mutation`.
 - EF migration impact: none.
 
+## 2026-05-13 Update - Institute Parity Stage 4.2 (Execution Snapshot)
+
+- Stage 4.2 completed reports filter expansion for institute-aware report reads/exports and report-center filters.
+- API/web contract updates applied:
+	- report API and web client now accept optional `institutionType` filter on report generation/export paths,
+	- report portal page models/views now carry selected institution filter state.
+- Query/runtime update applied:
+	- report repository queries now apply institution-type scope filtering across report datasets.
+- Schema impact: `No schema mutation`.
+- EF migration impact: none.
+
 ## 2026-05-12 Update — Institution License Validation Phase 7 (Execution Snapshot)
 
 - Completed SuperAdmin permission matrix against existing management and policy tables.

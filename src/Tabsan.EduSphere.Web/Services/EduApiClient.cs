@@ -82,31 +82,31 @@ public interface IEduApiClient
 
     // Phase 12: Reports
     Task<List<ReportCatalogItem>> GetReportCatalogAsync(CancellationToken ct);
-    Task<AttendanceSummaryWebModel?> GetAttendanceSummaryReportAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
-    Task<ResultSummaryWebModel?> GetResultSummaryReportAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
-    Task<AssignmentSummaryWebModel?> GetAssignmentSummaryReportAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
-    Task<QuizSummaryWebModel?> GetQuizSummaryReportAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
-    Task<GpaReportWebModel?> GetGpaReportAsync(Guid? departmentId, Guid? programId, CancellationToken ct);
-    Task<EnrollmentSummaryWebModel?> GetEnrollmentSummaryReportAsync(Guid? semesterId, Guid? departmentId, CancellationToken ct);
-    Task<SemesterResultsWebModel?> GetSemesterResultsReportAsync(Guid semesterId, Guid? departmentId, CancellationToken ct);
-    Task<byte[]> ExportAttendanceSummaryAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
-    Task<byte[]> ExportResultSummaryAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
-    Task<byte[]> ExportAttendanceSummaryCsvAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
-    Task<byte[]> ExportAttendanceSummaryPdfAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
-    Task<byte[]> ExportResultSummaryCsvAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
-    Task<byte[]> ExportResultSummaryPdfAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
-    Task<byte[]> ExportAssignmentSummaryAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
-    Task<byte[]> ExportQuizSummaryAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
-    Task<byte[]> ExportAssignmentSummaryCsvAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
-    Task<byte[]> ExportAssignmentSummaryPdfAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
-    Task<byte[]> ExportQuizSummaryCsvAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
-    Task<byte[]> ExportQuizSummaryPdfAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct);
-    Task<byte[]> ExportGpaReportAsync(Guid? departmentId, Guid? programId, CancellationToken ct);
+    Task<AttendanceSummaryWebModel?> GetAttendanceSummaryReportAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct);
+    Task<ResultSummaryWebModel?> GetResultSummaryReportAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct);
+    Task<AssignmentSummaryWebModel?> GetAssignmentSummaryReportAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct);
+    Task<QuizSummaryWebModel?> GetQuizSummaryReportAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct);
+    Task<GpaReportWebModel?> GetGpaReportAsync(Guid? departmentId, Guid? programId, int? institutionType, CancellationToken ct);
+    Task<EnrollmentSummaryWebModel?> GetEnrollmentSummaryReportAsync(Guid? semesterId, Guid? departmentId, int? institutionType, CancellationToken ct);
+    Task<SemesterResultsWebModel?> GetSemesterResultsReportAsync(Guid semesterId, Guid? departmentId, int? institutionType, CancellationToken ct);
+    Task<byte[]> ExportAttendanceSummaryAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct);
+    Task<byte[]> ExportResultSummaryAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct);
+    Task<byte[]> ExportAttendanceSummaryCsvAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct);
+    Task<byte[]> ExportAttendanceSummaryPdfAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct);
+    Task<byte[]> ExportResultSummaryCsvAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct);
+    Task<byte[]> ExportResultSummaryPdfAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct);
+    Task<byte[]> ExportAssignmentSummaryAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct);
+    Task<byte[]> ExportQuizSummaryAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct);
+    Task<byte[]> ExportAssignmentSummaryCsvAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct);
+    Task<byte[]> ExportAssignmentSummaryPdfAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct);
+    Task<byte[]> ExportQuizSummaryCsvAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct);
+    Task<byte[]> ExportQuizSummaryPdfAsync(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct);
+    Task<byte[]> ExportGpaReportAsync(Guid? departmentId, Guid? programId, int? institutionType, CancellationToken ct);
 
     // Stage 4.2: Additional Reports
     Task<TranscriptWebModel?> GetStudentTranscriptReportAsync(Guid studentProfileId, CancellationToken ct);
-    Task<LowAttendanceWebModel?> GetLowAttendanceReportAsync(decimal threshold, Guid? departmentId, Guid? courseOfferingId, CancellationToken ct);
-    Task<FypStatusWebModel?> GetFypStatusReportAsync(Guid? departmentId, string? status, CancellationToken ct);
+    Task<LowAttendanceWebModel?> GetLowAttendanceReportAsync(decimal threshold, Guid? departmentId, Guid? courseOfferingId, int? institutionType, CancellationToken ct);
+    Task<FypStatusWebModel?> GetFypStatusReportAsync(Guid? departmentId, string? status, int? institutionType, CancellationToken ct);
     Task<byte[]> ExportStudentTranscriptAsync(Guid studentProfileId, CancellationToken ct);
 
     // Notifications
@@ -2515,9 +2515,9 @@ public class EduApiClient : IEduApiClient
     }
 
     public async Task<AttendanceSummaryWebModel?> GetAttendanceSummaryReportAsync(
-        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct)
     {
-        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId);
+        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId, institutionType);
         var raw = await GetAsync<AttendanceSummaryApiDto>($"api/v1/reports/attendance-summary{qs}", ct);
         if (raw is null) return null;
         return new AttendanceSummaryWebModel
@@ -2538,9 +2538,9 @@ public class EduApiClient : IEduApiClient
     }
 
     public async Task<ResultSummaryWebModel?> GetResultSummaryReportAsync(
-        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct)
     {
-        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId);
+        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId, institutionType);
         var raw = await GetAsync<ResultSummaryApiDto>($"api/v1/reports/result-summary{qs}", ct);
         if (raw is null) return null;
         return new ResultSummaryWebModel
@@ -2563,9 +2563,9 @@ public class EduApiClient : IEduApiClient
     }
 
     public async Task<AssignmentSummaryWebModel?> GetAssignmentSummaryReportAsync(
-        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct)
     {
-        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId);
+        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId, institutionType);
         var raw = await GetAsync<AssignmentSummaryApiDto>($"api/v1/reports/assignment-summary{qs}", ct);
         if (raw is null) return null;
         return new AssignmentSummaryWebModel
@@ -2588,9 +2588,9 @@ public class EduApiClient : IEduApiClient
     }
 
     public async Task<QuizSummaryWebModel?> GetQuizSummaryReportAsync(
-        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct)
     {
-        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId);
+        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId, institutionType);
         var raw = await GetAsync<QuizSummaryApiDto>($"api/v1/reports/quiz-summary{qs}", ct);
         if (raw is null) return null;
         return new QuizSummaryWebModel
@@ -2613,11 +2613,12 @@ public class EduApiClient : IEduApiClient
     }
 
     public async Task<GpaReportWebModel?> GetGpaReportAsync(
-        Guid? departmentId, Guid? programId, CancellationToken ct)
+        Guid? departmentId, Guid? programId, int? institutionType, CancellationToken ct)
     {
         var parts = new List<string>();
         if (departmentId.HasValue) parts.Add($"departmentId={departmentId.Value}");
         if (programId.HasValue)    parts.Add($"programId={programId.Value}");
+        if (institutionType.HasValue) parts.Add($"institutionType={institutionType.Value}");
         var qs = parts.Any() ? "?" + string.Join("&", parts) : "";
         var raw = await GetAsync<GpaReportApiDto>($"api/v1/reports/gpa-report{qs}", ct);
         if (raw is null) return null;
@@ -2640,11 +2641,12 @@ public class EduApiClient : IEduApiClient
     }
 
     public async Task<EnrollmentSummaryWebModel?> GetEnrollmentSummaryReportAsync(
-        Guid? semesterId, Guid? departmentId, CancellationToken ct)
+        Guid? semesterId, Guid? departmentId, int? institutionType, CancellationToken ct)
     {
         var parts = new List<string>();
         if (semesterId.HasValue)   parts.Add($"semesterId={semesterId.Value}");
         if (departmentId.HasValue) parts.Add($"departmentId={departmentId.Value}");
+        if (institutionType.HasValue) parts.Add($"institutionType={institutionType.Value}");
         var qs = parts.Any() ? "?" + string.Join("&", parts) : "";
         var raw = await GetAsync<EnrollmentSummaryApiDto>($"api/v1/reports/enrollment-summary{qs}", ct);
         if (raw is null) return null;
@@ -2664,23 +2666,25 @@ public class EduApiClient : IEduApiClient
         };
     }
 
-    private static string BuildReportQuery(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId)
+    private static string BuildReportQuery(Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType)
     {
         var parts = new List<string>();
         if (semesterId.HasValue)   parts.Add($"semesterId={semesterId.Value}");
         if (departmentId.HasValue) parts.Add($"departmentId={departmentId.Value}");
         if (offeringId.HasValue)   parts.Add($"courseOfferingId={offeringId.Value}");
         if (studentId.HasValue)    parts.Add($"studentProfileId={studentId.Value}");
+        if (institutionType.HasValue) parts.Add($"institutionType={institutionType.Value}");
         return parts.Any() ? "?" + string.Join("&", parts) : "";
     }
 
     // semesterId is required by the API; departmentId is optional and narrows the result set
     // to a single department when provided.
     public async Task<SemesterResultsWebModel?> GetSemesterResultsReportAsync(
-        Guid semesterId, Guid? departmentId, CancellationToken ct)
+        Guid semesterId, Guid? departmentId, int? institutionType, CancellationToken ct)
     {
         var parts = new List<string> { $"semesterId={semesterId}" };
         if (departmentId.HasValue) parts.Add($"departmentId={departmentId.Value}");
+        if (institutionType.HasValue) parts.Add($"institutionType={institutionType.Value}");
         var raw = await GetAsync<SemesterResultsApiDto>($"api/v1/reports/semester-results?{string.Join("&", parts)}", ct);
         if (raw is null) return null;
         return new SemesterResultsWebModel
@@ -2705,95 +2709,96 @@ public class EduApiClient : IEduApiClient
     // binary .xlsx file, not JSON. BuildReportQuery assembles the shared filter params.
 
     public Task<byte[]> ExportAttendanceSummaryAsync(
-        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct)
     {
-        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId);
+        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId, institutionType);
         return GetBytesAsync($"api/v1/reports/attendance-summary/export{qs}", ct);
     }
 
     public Task<byte[]> ExportAttendanceSummaryCsvAsync(
-        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct)
     {
-        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId);
+        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId, institutionType);
         return GetBytesAsync($"api/v1/reports/attendance-summary/export/csv{qs}", ct);
     }
 
     public Task<byte[]> ExportAttendanceSummaryPdfAsync(
-        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct)
     {
-        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId);
+        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId, institutionType);
         return GetBytesAsync($"api/v1/reports/attendance-summary/export/pdf{qs}", ct);
     }
 
     public Task<byte[]> ExportResultSummaryAsync(
-        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct)
     {
-        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId);
+        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId, institutionType);
         return GetBytesAsync($"api/v1/reports/result-summary/export{qs}", ct);
     }
 
     public Task<byte[]> ExportResultSummaryCsvAsync(
-        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct)
     {
-        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId);
+        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId, institutionType);
         return GetBytesAsync($"api/v1/reports/result-summary/export/csv{qs}", ct);
     }
 
     public Task<byte[]> ExportResultSummaryPdfAsync(
-        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct)
     {
-        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId);
+        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId, institutionType);
         return GetBytesAsync($"api/v1/reports/result-summary/export/pdf{qs}", ct);
     }
 
     public Task<byte[]> ExportAssignmentSummaryAsync(
-        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct)
     {
-        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId);
+        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId, institutionType);
         return GetBytesAsync($"api/v1/reports/assignment-summary/export{qs}", ct);
     }
 
     public Task<byte[]> ExportAssignmentSummaryCsvAsync(
-        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct)
     {
-        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId);
+        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId, institutionType);
         return GetBytesAsync($"api/v1/reports/assignment-summary/export/csv{qs}", ct);
     }
 
     public Task<byte[]> ExportAssignmentSummaryPdfAsync(
-        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct)
     {
-        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId);
+        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId, institutionType);
         return GetBytesAsync($"api/v1/reports/assignment-summary/export/pdf{qs}", ct);
     }
 
     public Task<byte[]> ExportQuizSummaryAsync(
-        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct)
     {
-        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId);
+        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId, institutionType);
         return GetBytesAsync($"api/v1/reports/quiz-summary/export{qs}", ct);
     }
 
     public Task<byte[]> ExportQuizSummaryCsvAsync(
-        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct)
     {
-        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId);
+        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId, institutionType);
         return GetBytesAsync($"api/v1/reports/quiz-summary/export/csv{qs}", ct);
     }
 
     public Task<byte[]> ExportQuizSummaryPdfAsync(
-        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, CancellationToken ct)
+        Guid? semesterId, Guid? departmentId, Guid? offeringId, Guid? studentId, int? institutionType, CancellationToken ct)
     {
-        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId);
+        var qs = BuildReportQuery(semesterId, departmentId, offeringId, studentId, institutionType);
         return GetBytesAsync($"api/v1/reports/quiz-summary/export/pdf{qs}", ct);
     }
 
     // GPA report uses department + program filters only (no per-offering or per-student scope).
-    public Task<byte[]> ExportGpaReportAsync(Guid? departmentId, Guid? programId, CancellationToken ct)
+    public Task<byte[]> ExportGpaReportAsync(Guid? departmentId, Guid? programId, int? institutionType, CancellationToken ct)
     {
         var parts = new List<string>();
         if (departmentId.HasValue) parts.Add($"departmentId={departmentId.Value}");
         if (programId.HasValue)    parts.Add($"programId={programId.Value}");
+        if (institutionType.HasValue) parts.Add($"institutionType={institutionType.Value}");
         var qs = parts.Any() ? "?" + string.Join("&", parts) : "";
         return GetBytesAsync($"api/v1/reports/gpa-report/export{qs}", ct);
     }
@@ -2831,11 +2836,12 @@ public class EduApiClient : IEduApiClient
     }
 
     public async Task<LowAttendanceWebModel?> GetLowAttendanceReportAsync(
-        decimal threshold, Guid? departmentId, Guid? courseOfferingId, CancellationToken ct)
+        decimal threshold, Guid? departmentId, Guid? courseOfferingId, int? institutionType, CancellationToken ct)
     {
         var parts = new List<string> { $"threshold={threshold}" };
         if (departmentId.HasValue)     parts.Add($"departmentId={departmentId.Value}");
         if (courseOfferingId.HasValue) parts.Add($"courseOfferingId={courseOfferingId.Value}");
+        if (institutionType.HasValue)  parts.Add($"institutionType={institutionType.Value}");
         var raw = await GetAsync<LowAttendanceApiDto>(
             $"api/v1/reports/low-attendance?{string.Join("&", parts)}", ct);
         if (raw is null) return null;
@@ -2860,11 +2866,12 @@ public class EduApiClient : IEduApiClient
     }
 
     public async Task<FypStatusWebModel?> GetFypStatusReportAsync(
-        Guid? departmentId, string? status, CancellationToken ct)
+        Guid? departmentId, string? status, int? institutionType, CancellationToken ct)
     {
         var parts = new List<string>();
         if (departmentId.HasValue)         parts.Add($"departmentId={departmentId.Value}");
         if (!string.IsNullOrEmpty(status)) parts.Add($"status={Uri.EscapeDataString(status)}");
+        if (institutionType.HasValue)      parts.Add($"institutionType={institutionType.Value}");
         var qs = parts.Any() ? "?" + string.Join("&", parts) : "";
         var raw = await GetAsync<FypStatusApiDto>($"api/v1/reports/fyp-status{qs}", ct);
         if (raw is null) return null;

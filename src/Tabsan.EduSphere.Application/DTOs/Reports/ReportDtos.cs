@@ -18,7 +18,8 @@ public record AttendanceSummaryRequest(
     Guid? SemesterId,
     Guid? DepartmentId,
     Guid? CourseOfferingId,
-    Guid? StudentProfileId);
+    Guid? StudentProfileId,
+    int? InstitutionType);
 
 public record AttendanceSummaryRow(
     Guid StudentProfileId,
@@ -42,7 +43,8 @@ public record ResultSummaryRequest(
     Guid? SemesterId,
     Guid? DepartmentId,
     Guid? CourseOfferingId,
-    Guid? StudentProfileId);
+    Guid? StudentProfileId,
+    int? InstitutionType);
 
 public record ResultSummaryRow(
     Guid StudentProfileId,
@@ -67,7 +69,8 @@ public record AssignmentSummaryRequest(
     Guid? SemesterId,
     Guid? DepartmentId,
     Guid? CourseOfferingId,
-    Guid? StudentProfileId);
+    Guid? StudentProfileId,
+    int? InstitutionType);
 
 public record AssignmentSummaryRow(
     Guid StudentProfileId,
@@ -92,7 +95,8 @@ public record QuizSummaryRequest(
     Guid? SemesterId,
     Guid? DepartmentId,
     Guid? CourseOfferingId,
-    Guid? StudentProfileId);
+    Guid? StudentProfileId,
+    int? InstitutionType);
 
 public record QuizSummaryRow(
     Guid StudentProfileId,
@@ -113,7 +117,7 @@ public record QuizSummaryReportResponse(
 
 // ── GPA Report ─────────────────────────────────────────────────────────────────
 
-public record GpaReportRequest(Guid? DepartmentId, Guid? ProgramId);
+public record GpaReportRequest(Guid? DepartmentId, Guid? ProgramId, int? InstitutionType);
 
 public record GpaReportRow(
     Guid StudentProfileId,
@@ -133,7 +137,7 @@ public record GpaReportResponse(
 
 // ── Enrollment Summary ─────────────────────────────────────────────────────────
 
-public record EnrollmentSummaryRequest(Guid? SemesterId, Guid? DepartmentId);
+public record EnrollmentSummaryRequest(Guid? SemesterId, Guid? DepartmentId, int? InstitutionType);
 
 public record EnrollmentSummaryRow(
     Guid CourseOfferingId,
@@ -151,7 +155,7 @@ public record EnrollmentSummaryReportResponse(
 
 // ── Semester Results ───────────────────────────────────────────────────────────
 
-public record SemesterResultsRequest(Guid SemesterId, Guid? DepartmentId);
+public record SemesterResultsRequest(Guid SemesterId, Guid? DepartmentId, int? InstitutionType);
 
 public record SemesterResultsRow(
     Guid StudentProfileId,
@@ -199,7 +203,8 @@ public record TranscriptReportResponse(
 public record LowAttendanceRequest(
     decimal ThresholdPercent,
     Guid? DepartmentId,
-    Guid? CourseOfferingId);
+    Guid? CourseOfferingId,
+    int? InstitutionType);
 
 public record LowAttendanceRow(
     Guid StudentProfileId,
@@ -221,7 +226,7 @@ public record LowAttendanceReportResponse(
 
 // ── FYP Status Report ──────────────────────────────────────────────────────────
 
-public record FypStatusRequest(Guid? DepartmentId, string? Status);
+public record FypStatusRequest(Guid? DepartmentId, string? Status, int? InstitutionType);
 
 public record FypStatusRow(
     Guid ProjectId,

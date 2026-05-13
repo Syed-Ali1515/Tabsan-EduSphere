@@ -37,6 +37,43 @@
                             }
                         </select>
                     </div>
+                    <div class="col-md-2">
+                        <label class="form-label small mb-1">Institution</label>
+                        <select name="institutionType" class="form-select form-select-sm">
+                            @if (!Model.InstitutionType.HasValue)
+                            {
+                                <option value="" selected>All</option>
+                            }
+                            else
+                            {
+                                <option value="">All</option>
+                            }
+                            @if (Model.InstitutionType == 0)
+                            {
+                                <option value="0" selected>University</option>
+                            }
+                            else
+                            {
+                                <option value="0">University</option>
+                            }
+                            @if (Model.InstitutionType == 1)
+                            {
+                                <option value="1" selected>College</option>
+                            }
+                            else
+                            {
+                                <option value="1">College</option>
+                            }
+                            @if (Model.InstitutionType == 2)
+                            {
+                                <option value="2" selected>School</option>
+                            }
+                            else
+                            {
+                                <option value="2">School</option>
+                            }
+                        </select>
+                    </div>
                     <div class="col-md-3">
                         <label class="form-label small mb-1">Department</label>
                         <select name="departmentId" class="form-select form-select-sm">
@@ -63,15 +100,15 @@
                     @if (Model.Report is not null)
                     {
                         <div class="col-md-1">
-                            <a href="@Url.Action("ExportAssignmentSummary", "Portal", new { semesterId = Model.SemesterId, departmentId = Model.DepartmentId, offeringId = Model.OfferingId, studentId = Model.StudentId })"
+                            <a href="@Url.Action("ExportAssignmentSummary", "Portal", new { semesterId = Model.SemesterId, departmentId = Model.DepartmentId, offeringId = Model.OfferingId, studentId = Model.StudentId, institutionType = Model.InstitutionType })"
                                class="btn btn-success btn-sm w-100" title="Export Excel"><i class="bi bi-file-earmark-excel"></i></a>
                         </div>
                         <div class="col-md-1">
-                            <a href="@Url.Action("ExportAssignmentSummaryCsv", "Portal", new { semesterId = Model.SemesterId, departmentId = Model.DepartmentId, offeringId = Model.OfferingId, studentId = Model.StudentId })"
+                            <a href="@Url.Action("ExportAssignmentSummaryCsv", "Portal", new { semesterId = Model.SemesterId, departmentId = Model.DepartmentId, offeringId = Model.OfferingId, studentId = Model.StudentId, institutionType = Model.InstitutionType })"
                                class="btn btn-outline-success btn-sm w-100" title="Export CSV"><i class="bi bi-filetype-csv"></i></a>
                         </div>
                         <div class="col-md-1">
-                            <a href="@Url.Action("ExportAssignmentSummaryPdf", "Portal", new { semesterId = Model.SemesterId, departmentId = Model.DepartmentId, offeringId = Model.OfferingId, studentId = Model.StudentId })"
+                            <a href="@Url.Action("ExportAssignmentSummaryPdf", "Portal", new { semesterId = Model.SemesterId, departmentId = Model.DepartmentId, offeringId = Model.OfferingId, studentId = Model.StudentId, institutionType = Model.InstitutionType })"
                                class="btn btn-outline-danger btn-sm w-100" title="Export PDF"><i class="bi bi-filetype-pdf"></i></a>
                         </div>
                     }

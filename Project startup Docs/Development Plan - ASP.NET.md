@@ -19,6 +19,20 @@ Validation summaries must include at minimum:
 
 ## Execution Updates
 
+### 2026-05-13 - Institute Parity Stage 4.2 (Execution Snapshot)
+- Completed Phase 4 Stage 4.2 reports filter expansion.
+- Implementation Summary:
+  - added institution filter support to report APIs, export endpoints, and queued result-summary export requests,
+  - added role-aware institute defaulting and mismatch-deny behavior in report controller for constrained roles,
+  - added portal report institution filter controls and institution-aware department narrowing across report pages,
+  - expanded report integration tests for institute-filter scoping and explicit mismatch denial.
+- Validation Summary:
+  - `dotnet build Tabsan.EduSphere.sln -v minimal` passed,
+  - `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~AnalyticsInstituteParityIntegrationTests|FullyQualifiedName~ReportExportsIntegrationTests|FullyQualifiedName~SidebarMenuIntegrationTests|FullyQualifiedName~StudentSubmenuParityIntegrationTests|FullyQualifiedName~StudentLifecycleIntegrationTests|FullyQualifiedName~AdminUserManagementIntegrationTests" -v minimal` passed (`43/43`),
+  - verified report endpoints honor institute filter scoping and deny explicit claim mismatch filters for constrained roles.
+- Stage status: Stage 4.2 completed.
+- Phase status: Phase 4 in progress (next: Stage 4.3).
+
 ### 2026-05-13 - Institute Parity Stage 4.1 (Execution Snapshot)
 - Completed Phase 4 Stage 4.1 analytics filter expansion.
 - Implementation Summary:

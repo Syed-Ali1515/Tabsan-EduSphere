@@ -669,3 +669,32 @@ Validation Summary
   - verified report/sidebar/student-lifecycle/student-submenu parity suites remained green with analytics filter expansion in place.
 - Regression checks: no failures in selected Stage 2/3/4 parity guard suites.
 - Residual risks: report-definition/report-export institute filter breadth is handled in Stage 4.2; broken report reliability items remain staged for Stage 4.3.
+
+### Stage 4.2 - Reports Filter Expansion (Completed: 2026-05-13)
+
+Implementation Summary
+- Backend/API/service/repository updates:
+  - added optional `institutionType` query support across report generation endpoints and export endpoints in `ReportController`,
+  - added role-aware report-scope resolver to auto-default constrained roles to JWT claim institution and deny explicit mismatch institution filters,
+  - extended report DTO contracts and repository query signatures to carry institution filter through attendance/result/assignment/quiz/GPA/enrollment/semester-results/low-attendance/FYP report paths,
+  - extended background queued result-summary export request payload to preserve institution filter scope.
+- Frontend/menu/filter updates:
+  - expanded report-center pages with institution filter controls on report forms,
+  - updated portal report actions and export links to persist and forward `institutionType` in report navigation,
+  - updated web API client report query builders and method signatures to include institution filter propagation.
+- Authorization/policy updates:
+  - constrained-role report calls now enforce mismatch-deny behavior when explicit `institutionType` conflicts with caller claim,
+  - constrained-role report calls now auto-scope to claim institution when explicit institution filter is omitted.
+- DB/schema/script updates: none.
+- Repository/test updates:
+  - added report integration coverage for institute-scoped report filtering and explicit mismatch-deny checks.
+
+Validation Summary
+- Automated tests: `dotnet build Tabsan.EduSphere.sln -v minimal` -> passed.
+- Automated tests: `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~AnalyticsInstituteParityIntegrationTests|FullyQualifiedName~ReportExportsIntegrationTests|FullyQualifiedName~SidebarMenuIntegrationTests|FullyQualifiedName~StudentSubmenuParityIntegrationTests|FullyQualifiedName~StudentLifecycleIntegrationTests|FullyQualifiedName~AdminUserManagementIntegrationTests" -v minimal` -> passed (`43/43`).
+- Role/Institute checks:
+  - verified report enrollment endpoint respects explicit institution filters for super-admin scoped report reads,
+  - verified admin report requests with explicit mismatched institution filter return `403`,
+  - verified report export/report parity suites remained green under expanded report filter contract.
+- Regression checks: no failures in selected Stage 2/3/4 parity guard suites.
+- Residual risks: broken-report reliability fixes remain staged for Stage 4.3.

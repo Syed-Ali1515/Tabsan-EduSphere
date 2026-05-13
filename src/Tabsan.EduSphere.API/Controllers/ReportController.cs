@@ -63,15 +63,19 @@ public sealed class ReportController : ControllerBase
         [FromQuery] Guid? departmentId,
         [FromQuery] Guid? courseOfferingId,
         [FromQuery] Guid? studentProfileId,
+        [FromQuery] int? institutionType,
         CancellationToken ct)
     {
+        var scope = await ResolveEffectiveReportScopeAsync(institutionType, departmentId, courseOfferingId, ct);
+        if (scope.ErrorResult is not null) return scope.ErrorResult;
+
         var scoped = await EnforceAdminDepartmentScopeAsync(departmentId, courseOfferingId, ct);
         if (scoped is not null) return scoped;
 
         scoped = await EnforceFacultyOfferingScopeAsync(courseOfferingId, ct);
         if (scoped is not null) return scoped;
 
-        var request = new AttendanceSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
+        var request = new AttendanceSummaryRequest(semesterId, scope.DepartmentId, courseOfferingId, studentProfileId, scope.InstitutionType);
         var result = await _reports.GetAttendanceSummaryAsync(request, ct);
         return Ok(result);
     }
@@ -84,15 +88,19 @@ public sealed class ReportController : ControllerBase
         [FromQuery] Guid? departmentId,
         [FromQuery] Guid? courseOfferingId,
         [FromQuery] Guid? studentProfileId,
+        [FromQuery] int? institutionType,
         CancellationToken ct)
     {
+        var scope = await ResolveEffectiveReportScopeAsync(institutionType, departmentId, courseOfferingId, ct);
+        if (scope.ErrorResult is not null) return scope.ErrorResult;
+
         var scoped = await EnforceAdminDepartmentScopeAsync(departmentId, courseOfferingId, ct);
         if (scoped is not null) return scoped;
 
         scoped = await EnforceFacultyOfferingScopeAsync(courseOfferingId, ct);
         if (scoped is not null) return scoped;
 
-        var request = new AttendanceSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
+        var request = new AttendanceSummaryRequest(semesterId, scope.DepartmentId, courseOfferingId, studentProfileId, scope.InstitutionType);
         var bytes = await _reports.ExportAttendanceSummaryExcelAsync(request, ct);
         return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "attendance-summary.xlsx");
     }
@@ -105,15 +113,19 @@ public sealed class ReportController : ControllerBase
         [FromQuery] Guid? departmentId,
         [FromQuery] Guid? courseOfferingId,
         [FromQuery] Guid? studentProfileId,
+        [FromQuery] int? institutionType,
         CancellationToken ct)
     {
+        var scope = await ResolveEffectiveReportScopeAsync(institutionType, departmentId, courseOfferingId, ct);
+        if (scope.ErrorResult is not null) return scope.ErrorResult;
+
         var scoped = await EnforceAdminDepartmentScopeAsync(departmentId, courseOfferingId, ct);
         if (scoped is not null) return scoped;
 
         scoped = await EnforceFacultyOfferingScopeAsync(courseOfferingId, ct);
         if (scoped is not null) return scoped;
 
-        var request = new AttendanceSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
+        var request = new AttendanceSummaryRequest(semesterId, scope.DepartmentId, courseOfferingId, studentProfileId, scope.InstitutionType);
         var bytes = await _reports.ExportAttendanceSummaryCsvAsync(request, ct);
         return File(bytes, "text/csv", "attendance-summary.csv");
     }
@@ -126,15 +138,19 @@ public sealed class ReportController : ControllerBase
         [FromQuery] Guid? departmentId,
         [FromQuery] Guid? courseOfferingId,
         [FromQuery] Guid? studentProfileId,
+        [FromQuery] int? institutionType,
         CancellationToken ct)
     {
+        var scope = await ResolveEffectiveReportScopeAsync(institutionType, departmentId, courseOfferingId, ct);
+        if (scope.ErrorResult is not null) return scope.ErrorResult;
+
         var scoped = await EnforceAdminDepartmentScopeAsync(departmentId, courseOfferingId, ct);
         if (scoped is not null) return scoped;
 
         scoped = await EnforceFacultyOfferingScopeAsync(courseOfferingId, ct);
         if (scoped is not null) return scoped;
 
-        var request = new AttendanceSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
+        var request = new AttendanceSummaryRequest(semesterId, scope.DepartmentId, courseOfferingId, studentProfileId, scope.InstitutionType);
         var bytes = await _reports.ExportAttendanceSummaryPdfAsync(request, ct);
         return File(bytes, "application/pdf", "attendance-summary.pdf");
     }
@@ -149,15 +165,19 @@ public sealed class ReportController : ControllerBase
         [FromQuery] Guid? departmentId,
         [FromQuery] Guid? courseOfferingId,
         [FromQuery] Guid? studentProfileId,
+        [FromQuery] int? institutionType,
         CancellationToken ct)
     {
+        var scope = await ResolveEffectiveReportScopeAsync(institutionType, departmentId, courseOfferingId, ct);
+        if (scope.ErrorResult is not null) return scope.ErrorResult;
+
         var scoped = await EnforceAdminDepartmentScopeAsync(departmentId, courseOfferingId, ct);
         if (scoped is not null) return scoped;
 
         scoped = await EnforceFacultyOfferingScopeAsync(courseOfferingId, ct);
         if (scoped is not null) return scoped;
 
-        var request = new ResultSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
+        var request = new ResultSummaryRequest(semesterId, scope.DepartmentId, courseOfferingId, studentProfileId, scope.InstitutionType);
         var result = await _reports.GetResultSummaryAsync(request, ct);
         return Ok(result);
     }
@@ -170,15 +190,19 @@ public sealed class ReportController : ControllerBase
         [FromQuery] Guid? departmentId,
         [FromQuery] Guid? courseOfferingId,
         [FromQuery] Guid? studentProfileId,
+        [FromQuery] int? institutionType,
         CancellationToken ct)
     {
+        var scope = await ResolveEffectiveReportScopeAsync(institutionType, departmentId, courseOfferingId, ct);
+        if (scope.ErrorResult is not null) return scope.ErrorResult;
+
         var scoped = await EnforceAdminDepartmentScopeAsync(departmentId, courseOfferingId, ct);
         if (scoped is not null) return scoped;
 
         scoped = await EnforceFacultyOfferingScopeAsync(courseOfferingId, ct);
         if (scoped is not null) return scoped;
 
-        var request = new ResultSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
+        var request = new ResultSummaryRequest(semesterId, scope.DepartmentId, courseOfferingId, studentProfileId, scope.InstitutionType);
         var bytes = await _reports.ExportResultSummaryExcelAsync(request, ct);
         return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "result-summary.xlsx");
     }
@@ -191,15 +215,19 @@ public sealed class ReportController : ControllerBase
         [FromQuery] Guid? departmentId,
         [FromQuery] Guid? courseOfferingId,
         [FromQuery] Guid? studentProfileId,
+        [FromQuery] int? institutionType,
         CancellationToken ct)
     {
+        var scope = await ResolveEffectiveReportScopeAsync(institutionType, departmentId, courseOfferingId, ct);
+        if (scope.ErrorResult is not null) return scope.ErrorResult;
+
         var scoped = await EnforceAdminDepartmentScopeAsync(departmentId, courseOfferingId, ct);
         if (scoped is not null) return scoped;
 
         scoped = await EnforceFacultyOfferingScopeAsync(courseOfferingId, ct);
         if (scoped is not null) return scoped;
 
-        var request = new ResultSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
+        var request = new ResultSummaryRequest(semesterId, scope.DepartmentId, courseOfferingId, studentProfileId, scope.InstitutionType);
         var bytes = await _reports.ExportResultSummaryCsvAsync(request, ct);
         return File(bytes, "text/csv", "result-summary.csv");
     }
@@ -212,15 +240,19 @@ public sealed class ReportController : ControllerBase
         [FromQuery] Guid? departmentId,
         [FromQuery] Guid? courseOfferingId,
         [FromQuery] Guid? studentProfileId,
+        [FromQuery] int? institutionType,
         CancellationToken ct)
     {
+        var scope = await ResolveEffectiveReportScopeAsync(institutionType, departmentId, courseOfferingId, ct);
+        if (scope.ErrorResult is not null) return scope.ErrorResult;
+
         var scoped = await EnforceAdminDepartmentScopeAsync(departmentId, courseOfferingId, ct);
         if (scoped is not null) return scoped;
 
         scoped = await EnforceFacultyOfferingScopeAsync(courseOfferingId, ct);
         if (scoped is not null) return scoped;
 
-        var request = new ResultSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
+        var request = new ResultSummaryRequest(semesterId, scope.DepartmentId, courseOfferingId, studentProfileId, scope.InstitutionType);
         var bytes = await _reports.ExportResultSummaryPdfAsync(request, ct);
         return File(bytes, "application/pdf", "result-summary.pdf");
     }
@@ -236,9 +268,13 @@ public sealed class ReportController : ControllerBase
         [FromQuery] Guid? departmentId,
         [FromQuery] Guid? courseOfferingId,
         [FromQuery] Guid? studentProfileId,
+        [FromQuery] int? institutionType,
         [FromQuery] string format = "excel",
         CancellationToken ct = default)
     {
+        var scope = await ResolveEffectiveReportScopeAsync(institutionType, departmentId, courseOfferingId, ct);
+        if (scope.ErrorResult is not null) return scope.ErrorResult;
+
         var scoped = await EnforceAdminDepartmentScopeAsync(departmentId, courseOfferingId, ct);
         if (scoped is not null) return scoped;
 
@@ -263,9 +299,10 @@ public sealed class ReportController : ControllerBase
             jobId,
             requestedByUserId,
             semesterId,
-            departmentId,
+            scope.DepartmentId,
             courseOfferingId,
             studentProfileId,
+            scope.InstitutionType,
             exportFormat));
 
         return Accepted(new
@@ -327,15 +364,19 @@ public sealed class ReportController : ControllerBase
         [FromQuery] Guid? departmentId,
         [FromQuery] Guid? courseOfferingId,
         [FromQuery] Guid? studentProfileId,
+        [FromQuery] int? institutionType,
         CancellationToken ct)
     {
+        var scope = await ResolveEffectiveReportScopeAsync(institutionType, departmentId, courseOfferingId, ct);
+        if (scope.ErrorResult is not null) return scope.ErrorResult;
+
         var scoped = await EnforceAdminDepartmentScopeAsync(departmentId, courseOfferingId, ct);
         if (scoped is not null) return scoped;
 
         scoped = await EnforceFacultyOfferingScopeAsync(courseOfferingId, ct);
         if (scoped is not null) return scoped;
 
-        var request = new AssignmentSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
+        var request = new AssignmentSummaryRequest(semesterId, scope.DepartmentId, courseOfferingId, studentProfileId, scope.InstitutionType);
         var result = await _reports.GetAssignmentSummaryAsync(request, ct);
         return Ok(result);
     }
@@ -348,15 +389,19 @@ public sealed class ReportController : ControllerBase
         [FromQuery] Guid? departmentId,
         [FromQuery] Guid? courseOfferingId,
         [FromQuery] Guid? studentProfileId,
+        [FromQuery] int? institutionType,
         CancellationToken ct)
     {
+        var scope = await ResolveEffectiveReportScopeAsync(institutionType, departmentId, courseOfferingId, ct);
+        if (scope.ErrorResult is not null) return scope.ErrorResult;
+
         var scoped = await EnforceAdminDepartmentScopeAsync(departmentId, courseOfferingId, ct);
         if (scoped is not null) return scoped;
 
         scoped = await EnforceFacultyOfferingScopeAsync(courseOfferingId, ct);
         if (scoped is not null) return scoped;
 
-        var request = new AssignmentSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
+        var request = new AssignmentSummaryRequest(semesterId, scope.DepartmentId, courseOfferingId, studentProfileId, scope.InstitutionType);
         var bytes = await _reports.ExportAssignmentSummaryExcelAsync(request, ct);
         return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "assignment-summary.xlsx");
     }
@@ -369,15 +414,19 @@ public sealed class ReportController : ControllerBase
         [FromQuery] Guid? departmentId,
         [FromQuery] Guid? courseOfferingId,
         [FromQuery] Guid? studentProfileId,
+        [FromQuery] int? institutionType,
         CancellationToken ct)
     {
+        var scope = await ResolveEffectiveReportScopeAsync(institutionType, departmentId, courseOfferingId, ct);
+        if (scope.ErrorResult is not null) return scope.ErrorResult;
+
         var scoped = await EnforceAdminDepartmentScopeAsync(departmentId, courseOfferingId, ct);
         if (scoped is not null) return scoped;
 
         scoped = await EnforceFacultyOfferingScopeAsync(courseOfferingId, ct);
         if (scoped is not null) return scoped;
 
-        var request = new AssignmentSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
+        var request = new AssignmentSummaryRequest(semesterId, scope.DepartmentId, courseOfferingId, studentProfileId, scope.InstitutionType);
         var bytes = await _reports.ExportAssignmentSummaryCsvAsync(request, ct);
         return File(bytes, "text/csv", "assignment-summary.csv");
     }
@@ -390,15 +439,19 @@ public sealed class ReportController : ControllerBase
         [FromQuery] Guid? departmentId,
         [FromQuery] Guid? courseOfferingId,
         [FromQuery] Guid? studentProfileId,
+        [FromQuery] int? institutionType,
         CancellationToken ct)
     {
+        var scope = await ResolveEffectiveReportScopeAsync(institutionType, departmentId, courseOfferingId, ct);
+        if (scope.ErrorResult is not null) return scope.ErrorResult;
+
         var scoped = await EnforceAdminDepartmentScopeAsync(departmentId, courseOfferingId, ct);
         if (scoped is not null) return scoped;
 
         scoped = await EnforceFacultyOfferingScopeAsync(courseOfferingId, ct);
         if (scoped is not null) return scoped;
 
-        var request = new AssignmentSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
+        var request = new AssignmentSummaryRequest(semesterId, scope.DepartmentId, courseOfferingId, studentProfileId, scope.InstitutionType);
         var bytes = await _reports.ExportAssignmentSummaryPdfAsync(request, ct);
         return File(bytes, "application/pdf", "assignment-summary.pdf");
     }
@@ -413,15 +466,19 @@ public sealed class ReportController : ControllerBase
         [FromQuery] Guid? departmentId,
         [FromQuery] Guid? courseOfferingId,
         [FromQuery] Guid? studentProfileId,
+        [FromQuery] int? institutionType,
         CancellationToken ct)
     {
+        var scope = await ResolveEffectiveReportScopeAsync(institutionType, departmentId, courseOfferingId, ct);
+        if (scope.ErrorResult is not null) return scope.ErrorResult;
+
         var scoped = await EnforceAdminDepartmentScopeAsync(departmentId, courseOfferingId, ct);
         if (scoped is not null) return scoped;
 
         scoped = await EnforceFacultyOfferingScopeAsync(courseOfferingId, ct);
         if (scoped is not null) return scoped;
 
-        var request = new QuizSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
+        var request = new QuizSummaryRequest(semesterId, scope.DepartmentId, courseOfferingId, studentProfileId, scope.InstitutionType);
         var result = await _reports.GetQuizSummaryAsync(request, ct);
         return Ok(result);
     }
@@ -434,15 +491,19 @@ public sealed class ReportController : ControllerBase
         [FromQuery] Guid? departmentId,
         [FromQuery] Guid? courseOfferingId,
         [FromQuery] Guid? studentProfileId,
+        [FromQuery] int? institutionType,
         CancellationToken ct)
     {
+        var scope = await ResolveEffectiveReportScopeAsync(institutionType, departmentId, courseOfferingId, ct);
+        if (scope.ErrorResult is not null) return scope.ErrorResult;
+
         var scoped = await EnforceAdminDepartmentScopeAsync(departmentId, courseOfferingId, ct);
         if (scoped is not null) return scoped;
 
         scoped = await EnforceFacultyOfferingScopeAsync(courseOfferingId, ct);
         if (scoped is not null) return scoped;
 
-        var request = new QuizSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
+        var request = new QuizSummaryRequest(semesterId, scope.DepartmentId, courseOfferingId, studentProfileId, scope.InstitutionType);
         var bytes = await _reports.ExportQuizSummaryExcelAsync(request, ct);
         return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "quiz-summary.xlsx");
     }
@@ -455,15 +516,19 @@ public sealed class ReportController : ControllerBase
         [FromQuery] Guid? departmentId,
         [FromQuery] Guid? courseOfferingId,
         [FromQuery] Guid? studentProfileId,
+        [FromQuery] int? institutionType,
         CancellationToken ct)
     {
+        var scope = await ResolveEffectiveReportScopeAsync(institutionType, departmentId, courseOfferingId, ct);
+        if (scope.ErrorResult is not null) return scope.ErrorResult;
+
         var scoped = await EnforceAdminDepartmentScopeAsync(departmentId, courseOfferingId, ct);
         if (scoped is not null) return scoped;
 
         scoped = await EnforceFacultyOfferingScopeAsync(courseOfferingId, ct);
         if (scoped is not null) return scoped;
 
-        var request = new QuizSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
+        var request = new QuizSummaryRequest(semesterId, scope.DepartmentId, courseOfferingId, studentProfileId, scope.InstitutionType);
         var bytes = await _reports.ExportQuizSummaryCsvAsync(request, ct);
         return File(bytes, "text/csv", "quiz-summary.csv");
     }
@@ -476,15 +541,19 @@ public sealed class ReportController : ControllerBase
         [FromQuery] Guid? departmentId,
         [FromQuery] Guid? courseOfferingId,
         [FromQuery] Guid? studentProfileId,
+        [FromQuery] int? institutionType,
         CancellationToken ct)
     {
+        var scope = await ResolveEffectiveReportScopeAsync(institutionType, departmentId, courseOfferingId, ct);
+        if (scope.ErrorResult is not null) return scope.ErrorResult;
+
         var scoped = await EnforceAdminDepartmentScopeAsync(departmentId, courseOfferingId, ct);
         if (scoped is not null) return scoped;
 
         scoped = await EnforceFacultyOfferingScopeAsync(courseOfferingId, ct);
         if (scoped is not null) return scoped;
 
-        var request = new QuizSummaryRequest(semesterId, departmentId, courseOfferingId, studentProfileId);
+        var request = new QuizSummaryRequest(semesterId, scope.DepartmentId, courseOfferingId, studentProfileId, scope.InstitutionType);
         var bytes = await _reports.ExportQuizSummaryPdfAsync(request, ct);
         return File(bytes, "application/pdf", "quiz-summary.pdf");
     }
@@ -497,12 +566,16 @@ public sealed class ReportController : ControllerBase
     public async Task<IActionResult> GetGpaReport(
         [FromQuery] Guid? departmentId,
         [FromQuery] Guid? programId,
+        [FromQuery] int? institutionType,
         CancellationToken ct)
     {
+        var scope = await ResolveEffectiveReportScopeAsync(institutionType, departmentId, null, ct);
+        if (scope.ErrorResult is not null) return scope.ErrorResult;
+
         var scoped = await EnforceAdminDepartmentScopeAsync(departmentId, null, ct);
         if (scoped is not null) return scoped;
 
-        var request = new GpaReportRequest(departmentId, programId);
+        var request = new GpaReportRequest(scope.DepartmentId, programId, scope.InstitutionType);
         var result = await _reports.GetGpaReportAsync(request, ct);
         return Ok(result);
     }
@@ -513,12 +586,16 @@ public sealed class ReportController : ControllerBase
     public async Task<IActionResult> ExportGpaReport(
         [FromQuery] Guid? departmentId,
         [FromQuery] Guid? programId,
+        [FromQuery] int? institutionType,
         CancellationToken ct)
     {
+        var scope = await ResolveEffectiveReportScopeAsync(institutionType, departmentId, null, ct);
+        if (scope.ErrorResult is not null) return scope.ErrorResult;
+
         var scoped = await EnforceAdminDepartmentScopeAsync(departmentId, null, ct);
         if (scoped is not null) return scoped;
 
-        var request = new GpaReportRequest(departmentId, programId);
+        var request = new GpaReportRequest(scope.DepartmentId, programId, scope.InstitutionType);
         var bytes = await _reports.ExportGpaReportExcelAsync(request, ct);
         return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "gpa-report.xlsx");
     }
@@ -531,12 +608,16 @@ public sealed class ReportController : ControllerBase
     public async Task<IActionResult> GetEnrollmentSummary(
         [FromQuery] Guid? semesterId,
         [FromQuery] Guid? departmentId,
+        [FromQuery] int? institutionType,
         CancellationToken ct)
     {
+        var scope = await ResolveEffectiveReportScopeAsync(institutionType, departmentId, null, ct);
+        if (scope.ErrorResult is not null) return scope.ErrorResult;
+
         var scoped = await EnforceAdminDepartmentScopeAsync(departmentId, null, ct);
         if (scoped is not null) return scoped;
 
-        var request = new EnrollmentSummaryRequest(semesterId, departmentId);
+        var request = new EnrollmentSummaryRequest(semesterId, scope.DepartmentId, scope.InstitutionType);
         var result = await _reports.GetEnrollmentSummaryAsync(request, ct);
         return Ok(result);
     }
@@ -549,15 +630,19 @@ public sealed class ReportController : ControllerBase
     public async Task<IActionResult> GetSemesterResults(
         [FromQuery] Guid semesterId,
         [FromQuery] Guid? departmentId,
+        [FromQuery] int? institutionType,
         CancellationToken ct)
     {
         if (semesterId == Guid.Empty)
             return BadRequest("semesterId is required.");
 
+        var scope = await ResolveEffectiveReportScopeAsync(institutionType, departmentId, null, ct);
+        if (scope.ErrorResult is not null) return scope.ErrorResult;
+
         var scoped = await EnforceAdminDepartmentScopeAsync(departmentId, null, ct);
         if (scoped is not null) return scoped;
 
-        var request = new SemesterResultsRequest(semesterId, departmentId);
+        var request = new SemesterResultsRequest(semesterId, scope.DepartmentId, scope.InstitutionType);
         var result = await _reports.GetSemesterResultsAsync(request, ct);
         return Ok(result);
     }
@@ -604,12 +689,16 @@ public sealed class ReportController : ControllerBase
         [FromQuery] decimal threshold = 75m,
         [FromQuery] Guid? departmentId = null,
         [FromQuery] Guid? courseOfferingId = null,
+        [FromQuery] int? institutionType = null,
         CancellationToken ct = default)
     {
+        var scope = await ResolveEffectiveReportScopeAsync(institutionType, departmentId, courseOfferingId, ct);
+        if (scope.ErrorResult is not null) return scope.ErrorResult;
+
         var scoped = await EnforceAdminDepartmentScopeAsync(departmentId, courseOfferingId, ct);
         if (scoped is not null) return scoped;
 
-        var request = new LowAttendanceRequest(threshold, departmentId, courseOfferingId);
+        var request = new LowAttendanceRequest(threshold, scope.DepartmentId, courseOfferingId, scope.InstitutionType);
         var result = await _reports.GetLowAttendanceWarningAsync(request, ct);
         return Ok(result);
     }
@@ -622,12 +711,16 @@ public sealed class ReportController : ControllerBase
     public async Task<IActionResult> GetFypStatusReport(
         [FromQuery] Guid? departmentId,
         [FromQuery] string? status,
+        [FromQuery] int? institutionType,
         CancellationToken ct)
     {
+        var scope = await ResolveEffectiveReportScopeAsync(institutionType, departmentId, null, ct);
+        if (scope.ErrorResult is not null) return scope.ErrorResult;
+
         var scoped = await EnforceAdminDepartmentScopeAsync(departmentId, null, ct);
         if (scoped is not null) return scoped;
 
-        var request = new FypStatusRequest(departmentId, status);
+        var request = new FypStatusRequest(scope.DepartmentId, status, scope.InstitutionType);
         var result = await _reports.GetFypStatusReportAsync(request, ct);
         return Ok(result);
     }
@@ -663,6 +756,59 @@ public sealed class ReportController : ControllerBase
             return NotFound("Department not found.");
 
         return (int)department.InstitutionType == callerInstitutionType.Value ? null : Forbid();
+    }
+
+    private async Task<(Guid? DepartmentId, int? InstitutionType, IActionResult? ErrorResult)> ResolveEffectiveReportScopeAsync(
+        int? requestedInstitutionType,
+        Guid? requestedDepartmentId,
+        Guid? requestedCourseOfferingId,
+        CancellationToken ct)
+    {
+        var effectiveInstitutionType = requestedInstitutionType;
+
+        if (!User.IsInRole("SuperAdmin"))
+        {
+            var callerInstitutionType = GetCurrentInstitutionType();
+            if (callerInstitutionType.HasValue)
+            {
+                if (requestedInstitutionType.HasValue && requestedInstitutionType.Value != callerInstitutionType.Value)
+                    return (requestedDepartmentId, null, Forbid());
+
+                effectiveInstitutionType = callerInstitutionType.Value;
+            }
+        }
+
+        if (requestedDepartmentId.HasValue)
+        {
+            var department = await _departments.GetByIdAsync(requestedDepartmentId.Value, ct);
+            if (department is null)
+                return (requestedDepartmentId, effectiveInstitutionType, NotFound("Department not found."));
+
+            if (effectiveInstitutionType.HasValue && (int)department.InstitutionType != effectiveInstitutionType.Value)
+                return (requestedDepartmentId, effectiveInstitutionType, Forbid());
+        }
+
+        if (requestedCourseOfferingId.HasValue && requestedCourseOfferingId.Value != Guid.Empty)
+        {
+            var offering = await _courses.GetOfferingByIdAsync(requestedCourseOfferingId.Value, ct);
+            if (offering is null)
+                return (requestedDepartmentId, effectiveInstitutionType, NotFound("Course offering not found."));
+
+            if (requestedDepartmentId.HasValue && requestedDepartmentId.Value != offering.Course.DepartmentId)
+                return (requestedDepartmentId, effectiveInstitutionType, BadRequest("departmentId does not match the selected course offering."));
+
+            if (effectiveInstitutionType.HasValue)
+            {
+                var offeringDepartment = await _departments.GetByIdAsync(offering.Course.DepartmentId, ct);
+                if (offeringDepartment is null)
+                    return (requestedDepartmentId, effectiveInstitutionType, NotFound("Department not found."));
+
+                if ((int)offeringDepartment.InstitutionType != effectiveInstitutionType.Value)
+                    return (requestedDepartmentId, effectiveInstitutionType, Forbid());
+            }
+        }
+
+        return (requestedDepartmentId, effectiveInstitutionType, null);
     }
 
     private static bool TryParseFormat(string? format, out ReportExportFormat exportFormat)
