@@ -110,6 +110,91 @@ SELECT 'MigrationExists_Stage11_DepartmentInstitutionType' AS [CheckName],
 SELECT 'MigrationExists_Stage12_ReferentialIntegrityAndIndexes' AS [CheckName],
 	CASE WHEN EXISTS (SELECT 1 FROM __EFMigrationsHistory WHERE MigrationId = '20260513124500_Phase1Stage12ReferentialIntegrityAndIndexes') THEN 1 ELSE 0 END AS [Value];
 
+SELECT 'DepartmentInstitutionType_InvalidCount' AS [CheckName],
+	COUNT(1) AS [Value]
+FROM departments
+WHERE InstitutionType NOT IN (0, 1, 2);
+
+SELECT 'DepartmentInstitutionType_CoverageCount' AS [CheckName],
+	COUNT(DISTINCT InstitutionType) AS [Value]
+FROM departments
+WHERE InstitutionType IN (0, 1, 2);
+
+SELECT 'DepartmentInstitutionType_0_School_Count' AS [CheckName],
+	COUNT(1) AS [Value]
+FROM departments
+WHERE InstitutionType = 0;
+
+SELECT 'DepartmentInstitutionType_1_College_Count' AS [CheckName],
+	COUNT(1) AS [Value]
+FROM departments
+WHERE InstitutionType = 1;
+
+SELECT 'DepartmentInstitutionType_2_University_Count' AS [CheckName],
+	COUNT(1) AS [Value]
+FROM departments
+WHERE InstitutionType = 2;
+
+SELECT 'OrphanCount_AcademicPrograms_Department' AS [CheckName],
+	COUNT(1) AS [Value]
+FROM academic_programs ap
+LEFT JOIN departments d ON d.Id = ap.DepartmentId
+WHERE d.Id IS NULL;
+
+SELECT 'OrphanCount_Courses_Department' AS [CheckName],
+	COUNT(1) AS [Value]
+FROM courses c
+LEFT JOIN departments d ON d.Id = c.DepartmentId
+WHERE d.Id IS NULL;
+
+SELECT 'OrphanCount_StudentProfiles_Department' AS [CheckName],
+	COUNT(1) AS [Value]
+FROM student_profiles sp
+LEFT JOIN departments d ON d.Id = sp.DepartmentId
+WHERE d.Id IS NULL;
+
+SELECT 'OrphanCount_StudentProfiles_Program' AS [CheckName],
+	COUNT(1) AS [Value]
+FROM student_profiles sp
+LEFT JOIN academic_programs ap ON ap.Id = sp.ProgramId
+WHERE ap.Id IS NULL;
+
+SELECT 'OrphanCount_CourseOfferings_Course' AS [CheckName],
+	COUNT(1) AS [Value]
+FROM course_offerings co
+LEFT JOIN courses c ON c.Id = co.CourseId
+WHERE c.Id IS NULL;
+
+SELECT 'OrphanCount_CourseOfferings_Semester' AS [CheckName],
+	COUNT(1) AS [Value]
+FROM course_offerings co
+LEFT JOIN semesters s ON s.Id = co.SemesterId
+WHERE s.Id IS NULL;
+
+SELECT 'OrphanCount_Enrollments_StudentProfile' AS [CheckName],
+	COUNT(1) AS [Value]
+FROM enrollments e
+LEFT JOIN student_profiles sp ON sp.Id = e.StudentProfileId
+WHERE sp.Id IS NULL;
+
+SELECT 'OrphanCount_Enrollments_CourseOffering' AS [CheckName],
+	COUNT(1) AS [Value]
+FROM enrollments e
+LEFT JOIN course_offerings co ON co.Id = e.CourseOfferingId
+WHERE co.Id IS NULL;
+
+SELECT 'OrphanCount_FacultyAssignments_Department' AS [CheckName],
+	COUNT(1) AS [Value]
+FROM faculty_department_assignments fda
+LEFT JOIN departments d ON d.Id = fda.DepartmentId
+WHERE d.Id IS NULL;
+
+SELECT 'OrphanCount_AdminAssignments_Department' AS [CheckName],
+	COUNT(1) AS [Value]
+FROM admin_department_assignments ada
+LEFT JOIN departments d ON d.Id = ada.DepartmentId
+WHERE d.Id IS NULL;
+
 SELECT TOP 20 [MigrationId], [ProductVersion]
 FROM __EFMigrationsHistory
 ORDER BY [MigrationId] DESC;

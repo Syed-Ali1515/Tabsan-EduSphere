@@ -434,3 +434,27 @@ Validation Summary
 - Idempotency checks: all new DDL operations are guarded by `COL_LENGTH`, `sys.indexes`, and migration-history existence checks.
 - Regression checks: application code/tests remained unchanged by Stage 1.3 script-only hardening; no runtime behavior change expected until scripts are executed.
 - Residual risks: Stage 1.4 remains for formal exit verification after script execution in target environments.
+
+### Stage 1.4 - Exit Criteria (Completed: 2026-05-13)
+
+Implementation Summary
+- Extended `Scripts/05-PostDeployment-Checks.sql` with explicit Phase 1 exit-criteria checks for institute representation and orphan detection across institute-linked entities.
+- Added institute-type validation checks:
+  - invalid department institution-type count,
+  - distinct department institution-type coverage count,
+  - per-type counts for School (`0`), College (`1`), University (`2`).
+- Added orphan-count checks for key institute-linked relationships:
+  - academic programs -> departments,
+  - courses -> departments,
+  - student profiles -> departments/programs,
+  - course offerings -> courses/semesters,
+  - enrollments -> student profiles/course offerings,
+  - faculty/admin department assignments -> departments.
+- No API/service/repository/front-end logic change in Stage 1.4; this stage closes Phase 1 with script-verifiable data integrity evidence.
+
+Validation Summary
+- Automated tests: `dotnet build Tabsan.EduSphere.sln -v minimal` -> passed.
+- Automated tests: `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~AdminUserManagementIntegrationTests|FullyQualifiedName~SecurityValidationTests" -v minimal` -> passed (`4/4`).
+- Role/Institute checks: verified Stage 1.4 post-deployment check markers are present for institute coverage and orphan counts.
+- Regression checks: no runtime code paths changed in Stage 1.4; build and targeted integration/security checks remained green.
+- Residual risks: final orphan/coverage numeric outcomes depend on execution against target database data; script checks are now in place for deterministic verification.

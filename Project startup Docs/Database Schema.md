@@ -103,6 +103,16 @@ After every completed stage in `Docs/Institute-Parity-Issue-Fix-Phases.md`:
 - Schema impact: `No additional model mutation beyond Stage 1.1/1.2`; this stage hardens script execution consistency.
 - EF migration impact: none (script-hardening stage only).
 
+## 2026-05-13 Update - Institute Parity Stage 1.4 (Execution Snapshot)
+
+- Stage 1.4 completed Phase 1 exit-criteria verification enablement.
+- Script updates applied:
+	- `Scripts/05-PostDeployment-Checks.sql`
+		- added department institute-type validity and coverage checks,
+		- added orphan-count checks for institute-linked entities and assignment mappings.
+- Schema impact: `No schema mutation`; verification coverage expanded for post-deployment integrity checks.
+- EF migration impact: none.
+
 ## 2026-05-12 Update — Institution License Validation Phase 7 (Execution Snapshot)
 
 - Completed SuperAdmin permission matrix against existing management and policy tables.

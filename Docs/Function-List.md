@@ -31,6 +31,7 @@
 | `Stage 1.3 schema replay hardening` | Adds idempotent Stage 1.1/1.2 parity DDL blocks and migration-history updates for script-first deployments. | `Scripts/01-Schema-Current.sql` |
 | `Stage 1.3 maintenance parity index guardrails` | Ensures critical institute/report parity indexes exist and safely replaces legacy program-code index during maintenance runs. | `Scripts/04-Maintenance-Indexes-And-Views.sql` |
 | `Stage 1.3 post-deployment parity verification` | Adds explicit checks for parity migration IDs, column shape, and critical index existence in deployment verification output. | `Scripts/05-PostDeployment-Checks.sql` |
+| `Stage 1.4 parity exit criteria checks` | Adds institute-type coverage/validity checks and orphan-count checks for institute-linked entities to close Phase 1 with measurable integrity validation. | `Scripts/05-PostDeployment-Checks.sql` |
 
 ## Institution License Validation Plan (2026-05-12)
 

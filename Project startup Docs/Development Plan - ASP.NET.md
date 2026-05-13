@@ -19,6 +19,18 @@ Validation summaries must include at minimum:
 
 ## Execution Updates
 
+### 2026-05-13 - Institute Parity Stage 1.4 (Execution Snapshot)
+- Completed Phase 1 Stage 1.4 exit criteria.
+- Implementation Summary:
+  - expanded post-deployment checks with institute-type representation and validity assertions,
+  - added orphan-count validation queries for institute-linked academic and assignment relationships.
+- Validation Summary:
+  - `dotnet build Tabsan.EduSphere.sln -v minimal` passed,
+  - targeted integration/security validation passed (`4/4`) using AdminUserManagement + SecurityValidation test filters,
+  - verified Stage 1.4 SQL check markers are present in the post-deployment check script.
+- Stage status: Stage 1.4 completed.
+- Phase status: Phase 1 completed (next: Phase 2 Stage 2.1).
+
 ### 2026-05-13 - Institute Parity Stage 1.3 (Execution Snapshot)
 - Completed Phase 1 Stage 1.3 script hardening.
 - Implementation Summary:

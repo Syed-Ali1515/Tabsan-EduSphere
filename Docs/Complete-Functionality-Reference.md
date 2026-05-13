@@ -80,6 +80,16 @@ After each completed stage, this document must be updated to reflect any net fun
 - `05-PostDeployment-Checks.sql` now emits explicit parity verification signals for migration IDs, column presence/shape, and critical index existence.
 - User-visible runtime behavior is unchanged by Stage 1.3 itself; this stage improves deployment safety and consistency across environments.
 
+## 2026-05-13 Update - Institute Parity Stage 1.4 Exit Criteria Snapshot
+
+- Completed Phase 1 exit verification enablement for institute parity schema/data integrity checks.
+- Post-deployment verification now explicitly reports:
+    - department institution-type validity and representation coverage,
+    - orphan counts across institute-linked academic relations and assignment links.
+- Runtime behavior impact:
+    - no API contract or user-flow mutation in Stage 1.4,
+    - improved operational confidence by making Phase 1 exit criteria auditable with deterministic SQL check outputs.
+
 ---
 
 ## Table of Contents
