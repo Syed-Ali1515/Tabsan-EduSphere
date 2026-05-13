@@ -174,6 +174,23 @@ After each completed stage, this document must be updated to reflect any net fun
     - lifecycle transitions cannot be invoked by Admin users outside assigned department + institution scope,
     - no schema/model migration changes were required for Stage 3.2.
 
+## 2026-05-13 Update - Institute Parity Stage 3.3 Student Submenu Snapshot
+
+- Completed student submenu parity hardening on core student-data read surface used by Students/Enrollments/Payments submenu workflows.
+- Student list endpoint behavior now enforces:
+    - Admin assignment-constrained department scope,
+    - institution-claim compatibility for explicit department filter requests,
+    - institute-compatible result shaping for unfiltered student list queries.
+- Preserved existing SuperAdmin full-scope behavior and faculty scoped behavior while extending institute parity consistency.
+- Updated student submenu table terminology to institute-neutral `Level` wording on student/enrollment list surfaces to reduce University-only language assumptions.
+- Added dedicated integration evidence covering:
+    - forbidden response on institute-mismatched student list department request,
+    - institute-compatible list output enforcement for admin callers.
+- Behavior impact:
+    - student submenu backing data now follows parity boundaries consistently with Phase 2/Stage 3.2 institute guard model,
+    - mixed-assignment/mixed-institute datasets no longer risk cross-institute student list leakage in Admin submenu reads,
+    - no schema or migration update required for Stage 3.3.
+
 ---
 
 ## Table of Contents

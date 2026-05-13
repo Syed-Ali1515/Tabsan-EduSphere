@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using Tabsan.EduSphere.Application.DTOs.Academic;
 using Tabsan.EduSphere.Application.Interfaces;
 using Tabsan.EduSphere.Domain.Academic;
@@ -20,17 +21,23 @@ public class StudentController : ControllerBase
     private readonly IStudentProfileRepository _studentRepo;
     private readonly IRegistrationWhitelistRepository _whitelistRepo;
     private readonly IFacultyAssignmentRepository _facultyAssignments;
+    private readonly IAdminAssignmentRepository _adminAssignments;
+    private readonly IDepartmentRepository _departments;
 
     public StudentController(
         IStudentRegistrationService registrationService,
         IStudentProfileRepository studentRepo,
         IRegistrationWhitelistRepository whitelistRepo,
-        IFacultyAssignmentRepository facultyAssignments)
+        IFacultyAssignmentRepository facultyAssignments,
+        IAdminAssignmentRepository adminAssignments,
+        IDepartmentRepository departments)
     {
         _registrationService = registrationService;
         _studentRepo = studentRepo;
         _whitelistRepo = whitelistRepo;
         _facultyAssignments = facultyAssignments;
+        _adminAssignments = adminAssignments;
+        _departments = departments;
     }
 
     // ── POST /api/v1/student/register (public) ────────────────────────────────
@@ -76,6 +83,18 @@ public class StudentController : ControllerBase
     [Authorize(Roles = "SuperAdmin,Admin,Faculty")]
     public async Task<IActionResult> GetAll([FromQuery] Guid? departmentId, CancellationToken ct)
     {
+        var callerInstitutionType = GetCurrentInstitutionType();
+
+        if (departmentId.HasValue && callerInstitutionType.HasValue)
+        {
+            var requestedDepartment = await _departments.GetByIdAsync(departmentId.Value, ct);
+            if (requestedDepartment is null)
+                return NotFound("Department not found.");
+
+            if ((int)requestedDepartment.InstitutionType != callerInstitutionType.Value)
+                return Forbid();
+        }
+
         var students = await _studentRepo.GetAllAsync(departmentId, ct);
 
         // Issue-Fix Phase 3 Stage 3.4 — Replace Forbid with scoped filter; faculty sees only their assigned-dept students.
@@ -84,6 +103,26 @@ public class StudentController : ControllerBase
             var allowedDepartmentIds = await _facultyAssignments.GetDepartmentIdsForFacultyAsync(GetUserId(), ct);
             // If an explicit dept is requested that's outside allowed list, scope to allowed only (no 403).
             students = students.Where(sp => allowedDepartmentIds.Contains(sp.DepartmentId)).ToList();
+        }
+
+        if (User.IsInRole("Admin") && !User.IsInRole("SuperAdmin"))
+        {
+            var adminUserId = GetUserId();
+            if (adminUserId == Guid.Empty)
+                return Forbid();
+
+            var allowedDepartmentIds = await _adminAssignments.GetDepartmentIdsForAdminAsync(adminUserId, ct);
+            if (departmentId.HasValue && !allowedDepartmentIds.Contains(departmentId.Value))
+                return Forbid();
+
+            students = students.Where(sp => allowedDepartmentIds.Contains(sp.DepartmentId)).ToList();
+        }
+
+        if (callerInstitutionType.HasValue)
+        {
+            students = students
+                .Where(sp => sp.Department is not null && (int)sp.Department.InstitutionType == callerInstitutionType.Value)
+                .ToList();
         }
 
         return Ok(students.Select(sp => new
@@ -158,5 +197,11 @@ public class StudentController : ControllerBase
     {
         var raw = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         return Guid.TryParse(raw, out var id) ? id : Guid.Empty;
+    }
+
+    private int? GetCurrentInstitutionType()
+    {
+        var raw = User.FindFirst("institutionType")?.Value;
+        return int.TryParse(raw, out var value) ? value : null;
     }
 }

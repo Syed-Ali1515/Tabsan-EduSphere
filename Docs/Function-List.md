@@ -53,6 +53,9 @@
 | `Portal Student Lifecycle institute-filtered department selector` | Filters lifecycle department options by caller institution type and prevents out-of-scope selection execution in portal lifecycle flows. | `src/Tabsan.EduSphere.Web/Controllers/PortalController.cs` |
 | `Portal Student Lifecycle action route-state preservation` | Keeps selected lifecycle department/semester state during promote/graduate actions and fixes per-row graduate posting behavior. | `src/Tabsan.EduSphere.Web/Views/Portal/StudentLifecycle.cshtml` |
 | `Stage 3.2 lifecycle institute mismatch integration checks` | Validates that Admin lifecycle graduation-candidate and promote paths return forbidden on institution mismatch despite department assignment. | `tests/Tabsan.EduSphere.IntegrationTests/StudentLifecycleIntegrationTests.cs` |
+| `StudentController admin assignment + institution submenu scope` | Enforces department-assignment and institution-claim scope on student listing endpoint used by student-related submenu data sources. | `src/Tabsan.EduSphere.API/Controllers/StudentController.cs` |
+| `Student submenu institute-neutral level labels` | Replaces University-specific semester-only wording with institute-neutral level wording in student submenu tables. | `src/Tabsan.EduSphere.Web/Views/Portal/Students.cshtml`, `src/Tabsan.EduSphere.Web/Views/Portal/Enrollments.cshtml` |
+| `Stage 3.3 student submenu institute-parity integration checks` | Validates student list endpoint denies mismatched institute department requests and returns institute-compatible students for admin scope. | `tests/Tabsan.EduSphere.IntegrationTests/StudentSubmenuParityIntegrationTests.cs` |
 
 ## Institution License Validation Plan (2026-05-12)
 

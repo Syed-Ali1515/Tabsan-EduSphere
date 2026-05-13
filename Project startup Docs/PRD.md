@@ -18,6 +18,20 @@ Each stage log entry must clearly describe behavior impact for School/College/Un
 
 ## 0. Implementation Update Log
 
+### 2026-05-13 - Institute Parity Stage 3.3 (Execution Snapshot)
+- Completed student submenu parity hardening for institute-aware student data filtering and terminology consistency.
+- Implementation Summary:
+  - enforced admin assignment + institution-claim constraints on student-list endpoint used by student submenu data reads,
+  - added deterministic forbidden behavior for institute-mismatched department-filter requests,
+  - normalized student submenu list wording from semester-centric labels to institute-neutral level labels.
+- Validation Summary:
+  - focused integration suites passed (`39/39`) including new student submenu parity tests and existing Stage 2/3 regression suites,
+  - confirmed no regression in report/sidebar/assignment/lifecycle parity checks.
+- Behavior impact:
+  - student submenu backing reads now consistently enforce institute boundaries for Admin callers,
+  - mixed-institute assignment datasets are safely filtered to caller-compatible institute scope,
+  - no schema migration introduced by this stage.
+
 ### 2026-05-13 - Institute Parity Stage 3.2 (Execution Snapshot)
 - Completed student lifecycle institute parity hardening for Phase 3.
 - Implementation Summary:

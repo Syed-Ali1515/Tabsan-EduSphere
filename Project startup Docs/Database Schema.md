@@ -175,6 +175,15 @@ After every completed stage in `Docs/Institute-Parity-Issue-Fix-Phases.md`:
 - Schema impact: `No schema mutation`.
 - EF migration impact: none.
 
+## 2026-05-13 Update - Institute Parity Stage 3.3 (Execution Snapshot)
+
+- Stage 3.3 completed student submenu parity hardening for student-list data scope and institute-neutral submenu terminology.
+- API/web contract updates applied:
+	- student-list endpoint now enforces admin assignment + institution-claim scope compatibility,
+	- student/enrollment submenu list labels use institute-neutral `Level` wording.
+- Schema impact: `No schema mutation`.
+- EF migration impact: none.
+
 ## 2026-05-12 Update — Institution License Validation Phase 7 (Execution Snapshot)
 
 - Completed SuperAdmin permission matrix against existing management and policy tables.

@@ -596,3 +596,28 @@ Validation Summary
   - verified SuperAdmin authorization behavior remains unaffected by institute-claim restrictions.
 - Regression checks: no new failures observed in Stage 2 authorization/menu/report and Stage 3.1 admin-management parity suites.
 - Residual risks: lifecycle parity for hold/withdraw/transfer/graduation reporting depth and student submenu parity breadth continues in Stage 3.3.
+
+### Stage 3.3 - Student Submenu Parity (Completed: 2026-05-13)
+
+Implementation Summary
+- Backend/API/service updates:
+  - hardened `StudentController` student-list endpoint with Admin assignment scope checks to ensure submenu data cannot include out-of-assignment departments,
+  - added institution-claim compatibility checks for student list queries, including explicit forbidden behavior when requested department institution type mismatches caller institution claim,
+  - aligned role behavior so SuperAdmin remains global while Admin/Faculty student-list reads stay constrained by assigned scope and institute compatibility.
+- Frontend/menu/filter updates:
+  - updated student submenu UI labels from `Semester` to institute-neutral `Level` in Students and Enrollments pages to remove University-only terminology assumptions,
+  - kept existing submenu routes and forms intact while ensuring displayed terminology is consistent across School/College/University contexts.
+- Authorization/policy updates:
+  - extended institute-scope enforcement from reports/lifecycle into student-submenu data endpoint surfaces that power Students/Enrollments/Payments filtering paths.
+- DB/schema/script updates: none.
+- Repository/test updates:
+  - added `StudentSubmenuParityIntegrationTests` verifying admin institution mismatch denial and institute-scoped student list filtering behavior.
+
+Validation Summary
+- Automated tests: `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~StudentSubmenuParityIntegrationTests|FullyQualifiedName~StudentLifecycleIntegrationTests|FullyQualifiedName~AdminUserManagementIntegrationTests|FullyQualifiedName~SidebarMenuIntegrationTests|FullyQualifiedName~ReportExportsIntegrationTests" -v minimal` -> passed (`39/39`).
+- Role/Institute checks:
+  - verified `GET /api/v1/student?departmentId=<dept>` returns `403` when Admin institution claim mismatches target department institution,
+  - verified `GET /api/v1/student` returns only institute-compatible students for Admin callers even when assignment rows span mixed institution departments,
+  - verified Stage 2 role/institute report/menu guards and Stage 3.2 lifecycle scope checks remain green.
+- Regression checks: no new failures in focused Stage 2+3 integration suites.
+- Residual risks: broader student-submenu parity for additional institute-adaptive terminology/widgets and cross-page filter cohesion can be expanded in Stage 3.4 closeout hardening.

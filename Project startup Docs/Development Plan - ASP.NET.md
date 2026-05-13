@@ -19,6 +19,20 @@ Validation summaries must include at minimum:
 
 ## Execution Updates
 
+### 2026-05-13 - Institute Parity Stage 3.3 (Execution Snapshot)
+- Completed Phase 3 Stage 3.3 student submenu parity.
+- Implementation Summary:
+  - added admin assignment + institution-claim scope enforcement to student list endpoint used by student-related submenu pages,
+  - added explicit forbidden response behavior for institute-mismatched department-filter requests,
+  - ensured unfiltered student list results are institute-compatible for Admin callers,
+  - updated student submenu table terminology to institute-neutral `Level` labels in Students and Enrollments views.
+- Validation Summary:
+  - `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~StudentSubmenuParityIntegrationTests|FullyQualifiedName~StudentLifecycleIntegrationTests|FullyQualifiedName~AdminUserManagementIntegrationTests|FullyQualifiedName~SidebarMenuIntegrationTests|FullyQualifiedName~ReportExportsIntegrationTests" -v minimal` passed (`39/39`),
+  - verified institute mismatch on student list department filter returns `403` for Admin caller,
+  - verified institute-compatible student list shaping for Admin caller and no regressions in Stage 2/Stage 3.2 suites.
+- Stage status: Stage 3.3 completed.
+- Phase status: Phase 3 in progress (next: Stage 3.4).
+
 ### 2026-05-13 - Institute Parity Stage 3.2 (Execution Snapshot)
 - Completed Phase 3 Stage 3.2 student lifecycle institute parity.
 - Implementation Summary:
