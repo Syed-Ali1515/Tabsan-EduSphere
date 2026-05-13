@@ -20,6 +20,7 @@ public sealed class ReportController : ControllerBase
 {
     private readonly IReportService _reports;
     private readonly ICourseRepository _courses;
+    private readonly IDepartmentRepository _departments;
     private readonly IAdminAssignmentRepository _adminAssignments;
     private readonly ReportExportJobQueue _exportQueue;
     private readonly ReportExportJobStore _exportStore;
@@ -27,12 +28,14 @@ public sealed class ReportController : ControllerBase
     public ReportController(
         IReportService reports,
         ICourseRepository courses,
+        IDepartmentRepository departments,
         IAdminAssignmentRepository adminAssignments,
         ReportExportJobQueue exportQueue,
         ReportExportJobStore exportStore)
     {
         _reports = reports;
         _courses = courses;
+        _departments = departments;
         _adminAssignments = adminAssignments;
         _exportQueue = exportQueue;
         _exportStore = exportStore;
@@ -640,6 +643,28 @@ public sealed class ReportController : ControllerBase
         return Guid.TryParse(raw, out var id) ? id : Guid.Empty;
     }
 
+    private int? GetCurrentInstitutionType()
+    {
+        var raw = User.FindFirst("institutionType")?.Value;
+        return int.TryParse(raw, out var value) ? value : null;
+    }
+
+    private async Task<IActionResult?> EnforceInstitutionTypeDepartmentScopeAsync(Guid departmentId, CancellationToken ct)
+    {
+        if (User.IsInRole("SuperAdmin"))
+            return null;
+
+        var callerInstitutionType = GetCurrentInstitutionType();
+        if (!callerInstitutionType.HasValue)
+            return null;
+
+        var department = await _departments.GetByIdAsync(departmentId, ct);
+        if (department is null)
+            return NotFound("Department not found.");
+
+        return (int)department.InstitutionType == callerInstitutionType.Value ? null : Forbid();
+    }
+
     private static bool TryParseFormat(string? format, out ReportExportFormat exportFormat)
     {
         switch (format?.Trim().ToLowerInvariant())
@@ -677,6 +702,10 @@ public sealed class ReportController : ControllerBase
         if (userId == Guid.Empty || offering.FacultyUserId != userId)
             return Forbid();
 
+        var instituteScope = await EnforceInstitutionTypeDepartmentScopeAsync(offering.Course.DepartmentId, ct);
+        if (instituteScope is not null)
+            return instituteScope;
+
         return null;
     }
 
@@ -696,6 +725,13 @@ public sealed class ReportController : ControllerBase
         if (departmentId.HasValue && !allowedDepartmentIds.Contains(departmentId.Value))
             return Forbid();
 
+        if (departmentId.HasValue)
+        {
+            var instituteScope = await EnforceInstitutionTypeDepartmentScopeAsync(departmentId.Value, ct);
+            if (instituteScope is not null)
+                return instituteScope;
+        }
+
         if (courseOfferingId.HasValue && courseOfferingId.Value != Guid.Empty)
         {
             var offering = await _courses.GetOfferingByIdAsync(courseOfferingId.Value, ct);
@@ -704,6 +740,10 @@ public sealed class ReportController : ControllerBase
 
             if (!allowedDepartmentIds.Contains(offering.Course.DepartmentId))
                 return Forbid();
+
+            var instituteScope = await EnforceInstitutionTypeDepartmentScopeAsync(offering.Course.DepartmentId, ct);
+            if (instituteScope is not null)
+                return instituteScope;
         }
 
         // Multi-department admin scope requires at least one explicit filter to avoid cross-dept aggregate leakage.

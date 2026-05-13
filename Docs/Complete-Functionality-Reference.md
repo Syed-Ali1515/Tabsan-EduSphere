@@ -100,6 +100,16 @@ After each completed stage, this document must be updated to reflect any net fun
     - cross-institute assignment mismatches now fail early with explicit validation responses,
     - existing Admin-user create/update/assignment behavior remains backward-compatible.
 
+## 2026-05-13 Update - Institute Parity Stage 2.2 Role-Scoped Institute Enforcement Snapshot
+
+- Added `institutionType` JWT claim propagation for explicitly assigned users to support runtime institute-scope checks.
+- Extended report endpoint authorization flow for Admin/Faculty to enforce institute compatibility in addition to existing role/department/offering scope checks.
+- Added integration proof that an Admin with valid department assignment is still denied when institution scope mismatches target department.
+- Behavior impact:
+    - Admin/Faculty report access is now constrained by both role scope and institute scope where explicit institution assignment exists,
+    - SuperAdmin behavior remains global and unchanged,
+    - existing report export contracts and metadata remain stable.
+
 ---
 
 ## Table of Contents

@@ -125,6 +125,16 @@ After every completed stage in `Docs/Institute-Parity-Issue-Fix-Phases.md`:
 - Schema impact: `No schema mutation`.
 - EF migration impact: none.
 
+## 2026-05-13 Update - Institute Parity Stage 2.2 (Execution Snapshot)
+
+- Stage 2.2 completed role-scoped institute enforcement hardening for report handlers.
+- API/security updates applied:
+	- `TokenService` now emits `institutionType` claim for explicitly assigned users.
+	- `ReportController` now enforces institution compatibility for Admin/Faculty report requests alongside existing role scope checks.
+	- Integration harness updated to support institution claim validation scenarios.
+- Schema impact: `No schema mutation`.
+- EF migration impact: none.
+
 ## 2026-05-12 Update — Institution License Validation Phase 7 (Execution Snapshot)
 
 - Completed SuperAdmin permission matrix against existing management and policy tables.

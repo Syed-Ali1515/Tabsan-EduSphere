@@ -1,5 +1,10 @@
 using System.Net;
 using System.Net.Http.Headers;
+using Microsoft.Extensions.DependencyInjection;
+using Tabsan.EduSphere.Domain.Academic;
+using Tabsan.EduSphere.Domain.Enums;
+using Tabsan.EduSphere.Domain.Identity;
+using Tabsan.EduSphere.Infrastructure.Persistence;
 using Tabsan.EduSphere.IntegrationTests.Infrastructure;
 
 namespace Tabsan.EduSphere.IntegrationTests;
@@ -60,5 +65,60 @@ public class ReportExportsIntegrationTests
 
         var bytes = await response.Content.ReadAsByteArrayAsync();
         Assert.NotEmpty(bytes);
+    }
+
+    [Fact]
+    public async Task EnrollmentSummary_WithAdminInstitutionMismatch_ReturnsForbidden()
+    {
+        Guid adminUserId;
+        Guid departmentId;
+        int mismatchedInstitutionType;
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+            var adminRole = db.Roles.First(r => r.Name == "Admin");
+
+            var department = db.Departments.FirstOrDefault();
+            if (department is null)
+            {
+                var suffix = Guid.NewGuid().ToString("N")[..6];
+                department = new Department($"Report Scope Dept {suffix}", $"RSD{suffix}", InstitutionType.University);
+                db.Departments.Add(department);
+                await db.SaveChangesAsync();
+            }
+
+            departmentId = department.Id;
+            mismatchedInstitutionType = (((int)department.InstitutionType) + 1) % 3;
+
+            var admin = new User(
+                username: $"report_admin_{Guid.NewGuid():N}",
+                passwordHash: "integration-hash",
+                roleId: adminRole.Id,
+                email: $"report_admin_{Guid.NewGuid():N}@tabsan.local",
+                departmentId: null,
+                mustChangePassword: false,
+                institutionType: (InstitutionType)mismatchedInstitutionType);
+
+            db.Users.Add(admin);
+            await db.SaveChangesAsync();
+
+            db.AdminDepartmentAssignments.Add(new AdminDepartmentAssignment(admin.Id, departmentId));
+            await db.SaveChangesAsync();
+
+            adminUserId = admin.Id;
+        }
+
+        using var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", JwtTestHelper.GenerateToken(
+                role: "Admin",
+                userId: adminUserId.ToString(),
+                institutionType: mismatchedInstitutionType));
+
+        var response = await client.GetAsync($"api/v1/reports/enrollment-summary?departmentId={departmentId}");
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 }

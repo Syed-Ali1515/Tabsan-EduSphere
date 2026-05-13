@@ -18,6 +18,21 @@ Each stage log entry must clearly describe behavior impact for School/College/Un
 
 ## 0. Implementation Update Log
 
+### 2026-05-13 - Institute Parity Stage 2.2 (Execution Snapshot)
+- Completed role-scoped institute enforcement hardening for report access paths.
+- Implementation Summary:
+  - added `institutionType` claim emission in access-token generation for explicitly scoped users,
+  - added report-handler institute-scope checks for Admin/Faculty callers in addition to role/assignment checks,
+  - added integration verification for department-assigned but institution-mismatched Admin denial.
+- Validation Summary:
+  - solution build passed,
+  - focused integration suites passed (`20/20`),
+  - verified deterministic `403` behavior for institute-mismatch report requests.
+- Behavior impact:
+  - Admin/Faculty report access now enforces institute scope where explicit institution assignment exists,
+  - SuperAdmin remains unrestricted,
+  - report export payload/contract behavior remains unchanged for valid callers.
+
 ### 2026-05-13 - Institute Parity Stage 2.1 (Execution Snapshot)
 - Completed SuperAdmin global-capability hardening for assignment management paths.
 - Implementation Summary:

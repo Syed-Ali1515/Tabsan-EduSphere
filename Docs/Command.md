@@ -153,6 +153,18 @@ Before starting any work, the assistant must:
   - `Docs/Command.md`
 - Next stage: Stage 2.2 (Role-Scoped Institute Enforcement).
 
+### Institute Parity Checkpoint (2026-05-13 - Stage 2.2)
+- Completed Stage 2.2 role-scoped institute enforcement in `Docs/Institute-Parity-Issue-Fix-Phases.md` with required Implementation Summary and Validation Summary.
+- Added token-level institution claim propagation and report-handler institute scope checks for Admin/Faculty callers.
+- Synchronized required tracking docs for stage closeout:
+  - `Docs/Function-List.md`
+  - `Docs/Complete-Functionality-Reference.md`
+  - `Project startup Docs/Database Schema.md`
+  - `Project startup Docs/Development Plan - ASP.NET.md`
+  - `Project startup Docs/PRD.md`
+  - `Docs/Command.md`
+- Next stage: Stage 2.3 (Menu/Action Guard Consistency).
+
 ### Institution Validation Checkpoint (2026-05-12 - Phase 1)
 - Execution evidence captured in `Docs/Institution-License-Validation-Phases.md`.
 - Authentication and policy-read checks passed.

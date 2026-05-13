@@ -20,7 +20,8 @@ public static class JwtTestHelper
         string role,
         string userId = "00000000-0000-0000-0000-000000000001",
         string email  = "test@tabsan.local",
-        string? studentProfileId = null)
+        string? studentProfileId = null,
+        int? institutionType = null)
     {
         var key   = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SecretKey));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -40,6 +41,9 @@ public static class JwtTestHelper
                     ? "00000000-0000-0000-0000-000000000123"
                     : studentProfileId));
         }
+
+        if (institutionType.HasValue)
+            claims.Add(new Claim("institutionType", institutionType.Value.ToString()));
 
         var token = new JwtSecurityToken(
             issuer:             Issuer,

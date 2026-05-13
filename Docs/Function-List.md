@@ -36,6 +36,10 @@
 | `Department assignment institute-compatibility guards` | Blocks admin/faculty department assignments when user institution type conflicts with the target department institution type. | `src/Tabsan.EduSphere.API/Controllers/DepartmentController.cs` |
 | `RemoveFacultyFromDepartmentRequest` | Adds request contract for revoking faculty department assignment through API. | `src/Tabsan.EduSphere.Application/DTOs/Academic/AcademicDtos.cs` |
 | `Stage 2.1 SuperAdmin assignment integration checks` | Validates SuperAdmin faculty assignment round-trip and admin assignment institution-mismatch rejection. | `tests/Tabsan.EduSphere.IntegrationTests/AdminUserManagementIntegrationTests.cs` |
+| `TokenService institution claim emission` | Emits `institutionType` claim for users with explicit institution assignment so handlers can enforce institute-scoped authorization without extra policy layers. | `src/Tabsan.EduSphere.Infrastructure/Auth/TokenService.cs` |
+| `ReportController institute-scope enforcement` | Composes role scope (admin assignment/faculty ownership) with institution-type scope checks on report endpoints for Admin/Faculty callers. | `src/Tabsan.EduSphere.API/Controllers/ReportController.cs` |
+| `ReportExportsIntegrationTests institute mismatch guard` | Verifies admin requests are forbidden when department access exists but institution claim mismatches target department institution. | `tests/Tabsan.EduSphere.IntegrationTests/ReportExportsIntegrationTests.cs` |
+| `JwtTestHelper institutionType claim support` | Supports emitting optional `institutionType` JWT claim for integration authorization-path validation. | `tests/Tabsan.EduSphere.IntegrationTests/Infrastructure/JwtTestHelper.cs` |
 
 ## Institution License Validation Plan (2026-05-12)
 

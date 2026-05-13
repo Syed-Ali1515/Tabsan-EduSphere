@@ -70,6 +70,9 @@ public class TokenService : ITokenService
         if (user.DepartmentId.HasValue)
             claims.Add(new Claim("department_id", user.DepartmentId.Value.ToString()));
 
+        if (user.InstitutionType.HasValue)
+            claims.Add(new Claim("institutionType", ((int)user.InstitutionType.Value).ToString()));
+
         // Student-only endpoints expect this claim. Resolve it at login so runtime
         // authorization does not depend on ad-hoc claim injection.
         var studentProfileId = _db.StudentProfiles

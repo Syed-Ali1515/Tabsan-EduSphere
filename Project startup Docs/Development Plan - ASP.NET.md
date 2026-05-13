@@ -19,6 +19,19 @@ Validation summaries must include at minimum:
 
 ## Execution Updates
 
+### 2026-05-13 - Institute Parity Stage 2.2 (Execution Snapshot)
+- Completed Phase 2 Stage 2.2 role-scoped institute enforcement.
+- Implementation Summary:
+  - added `institutionType` JWT claim emission for explicitly assigned users,
+  - added report-handler institute-scope checks for Admin/Faculty layered with existing role/department/offering enforcement,
+  - added integration test coverage for assignment-valid but institute-mismatched admin report access denial.
+- Validation Summary:
+  - `dotnet build Tabsan.EduSphere.sln -v minimal` passed,
+  - focused integration run passed (`20/20`) for report export and admin management suites,
+  - confirmed institute mismatch on report endpoint returns `403` for Admin caller.
+- Stage status: Stage 2.2 completed.
+- Phase status: Phase 2 in progress (next: Stage 2.3).
+
 ### 2026-05-13 - Institute Parity Stage 2.1 (Execution Snapshot)
 - Completed Phase 2 Stage 2.1 SuperAdmin global capability.
 - Implementation Summary:

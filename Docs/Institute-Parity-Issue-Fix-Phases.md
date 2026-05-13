@@ -482,3 +482,24 @@ Validation Summary
 - Role/Institute checks: SuperAdmin can now manage faculty department assignments directly and receives deterministic `BadRequest` responses for cross-institute mismatched assignment attempts.
 - Regression checks: existing admin user create/update/assignment integration flows remained green in the same test suite.
 - Residual risks: Stage 2.2 is still required to complete broader role-scoped institute enforcement across remaining module handlers and policies.
+
+### Stage 2.2 - Role-Scoped Institute Enforcement (Completed: 2026-05-13)
+
+Implementation Summary
+- Added token-level institution scope propagation for authenticated users with explicit institution assignment:
+  - `TokenService` now emits `institutionType` claim in JWT access tokens when the user has an assigned institution type.
+- Hardened report handler scope enforcement in `ReportController` for non-SuperAdmin roles:
+  - Admin and Faculty report requests now enforce department institution-type compatibility when `institutionType` claim is present.
+  - Existing admin department-assignment and faculty offering-ownership checks remain in place and are now composed with institute checks.
+- Added focused integration regression coverage proving role scope + institute scope composition:
+  - admin with valid department assignment but mismatched institution claim is denied (`403`) on report endpoint access.
+- Frontend/menu updates: none in this stage.
+- Authorization/policy updates: handler-level scope enforcement extended in report endpoints; no policy name changes required.
+- DB/schema/script updates: none.
+
+Validation Summary
+- Automated tests: `dotnet build Tabsan.EduSphere.sln -v minimal` -> passed.
+- Automated tests: `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~ReportExportsIntegrationTests|FullyQualifiedName~AdminUserManagementIntegrationTests" -v minimal` -> passed (`20/20`).
+- Role/Institute checks: verified Admin access is denied when department scope is valid but institute claim mismatches target department.
+- Regression checks: export endpoint metadata tests and SuperAdmin/Admin assignment management integration tests remained green.
+- Residual risks: Stage 2.3 still required to align menu/action guard consistency and remove any remaining backend/UI authorization mismatches.
