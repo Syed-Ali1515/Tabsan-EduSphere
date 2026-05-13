@@ -446,6 +446,16 @@ After each completed stage, this document must be updated to reflect any net fun
     - no runtime feature contract changes or schema mutations introduced by Stage 7.3,
     - operational support handling is now explicit for parity-scope defects.
 
+## 2026-05-13 Update - Institute Parity Stage 7.4 Release Exit Criteria Snapshot
+
+- Completed Phase 7 release exit criteria for institute parity readiness.
+- Validation evidence:
+    - Stage 7.4 completion evidence is recorded in the phase tracker and mandatory handoff docs,
+    - command execution pointer is advanced beyond the institute parity closeout.
+- Behavior impact:
+    - no runtime feature contract changes or schema mutations introduced by Stage 7.4,
+    - Phase 7 parity work is fully closed and ready for the next roadmap stage.
+
 ---
 
 ## Table of Contents

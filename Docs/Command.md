@@ -129,6 +129,19 @@ Before starting any work, the assistant must:
   - `Docs/Command.md`
 - Next stage: Stage 1.4 (Exit Criteria).
 
+### Institute Parity Checkpoint (2026-05-13 - Stage 7.4)
+- Completed Stage 7.4 release exit criteria in `Docs/Institute-Parity-Issue-Fix-Phases.md` with required Implementation Summary and Validation Summary.
+- Finalized Phase 7 release-readiness evidence and confirmed no runtime or schema changes were introduced by the closeout.
+- Synchronized required tracking docs for stage closeout:
+  - `Docs/Institute-Parity-Issue-Fix-Phases.md`
+  - `Docs/Function-List.md`
+  - `Docs/Complete-Functionality-Reference.md`
+  - `Project startup Docs/Database Schema.md`
+  - `Project startup Docs/Development Plan - ASP.NET.md`
+  - `Project startup Docs/PRD.md`
+  - `Docs/Command.md`
+- Next stage: Phase 8 (Infrastructure Tuning), starting with Stage 8.1 Auto-Scaling Policy Baseline.
+
 ### Institute Parity Checkpoint (2026-05-13 - Stage 1.4)
 - Completed Stage 1.4 exit criteria in `Docs/Institute-Parity-Issue-Fix-Phases.md` with required Implementation Summary and Validation Summary.
 - Added explicit post-deployment checks for institute-type coverage/validity and orphan-count validation across institute-linked entities.
@@ -566,13 +579,13 @@ cmd /c git -C "<repo-root>" push origin main
 ---
 
 ## Current Execution Pointer
-- Plan Source: Docs/Advance-Enhancements.md
-- Active Phase: **Institute Parity - Phase 7 (Release, Documentation, and Operational Readiness)**
-- Active Stage: **Stage 7.4 Exit Criteria (next execution target)**
-- Status: **Stage 7.3 completed and documented; monitoring/support handover guidance is synchronized.**
+- Plan Source: Docs/Functionality.md
+- Active Phase: **Infrastructure Tuning (Phase 8)**
+- Active Stage: **Stage 8.1 Auto-Scaling Policy Baseline (next execution target)**
+- Status: **Institute Parity Phase 7 completed and documented; release exit criteria are synchronized.**
 - Last Updated: 2026-05-13
-- Next: **Execute Stage 7.4 exit criteria for Phase 7 and close out with required 7-document synchronization plus commit -> pull --rebase -> push.**
-- Docs Updated: ✅ Stage 7.3 tracker and planning docs synchronized (2026-05-13).
+- Next: **Execute Phase 8 infrastructure tuning work starting with Stage 8.1.**
+- Docs Updated: ✅ Stage 7.4 tracker and planning docs synchronized (2026-05-13).
 
 ### 2026-05-11 - Phase 10 Completion
 - Stage 10.1: Added a parameterized progressive gate runner for stepwise scale validation and higher-tier execution.

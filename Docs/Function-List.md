@@ -107,6 +107,7 @@
 | `Stage 7.2 role/institute user-guide filter guidance` | Documents role-specific institute filtering behavior and expected access boundaries for Admin, Faculty, Student, and shared guide entry points. | `User Guide/README.md`, `User Guide/Admin-Guide.md`, `User Guide/Faculty-Guide.md`, `User Guide/Student-Guide.md` |
 | `Stage 7.3 institute parity monitoring guidance` | Documents report/analytics failure monitoring points and institute-scope incident triage priorities. | `Docs/Functionality.md` |
 | `Stage 7.3 support handover checklist` | Defines SuperAdmin parity-scope incident triage checklist for report/analytics and menu/route support handover. | `User Guide/SuperAdmin-Guide.md` |
+| `Stage 7.4 release exit criteria snapshot` | Consolidates Phase 7 release-readiness evidence, confirms tracker synchronization, and advances the execution pointer to the next roadmap stage. | `Docs/Institute-Parity-Issue-Fix-Phases.md`, `Docs/Command.md` |
 
 ## Institution License Validation Plan (2026-05-12)
 

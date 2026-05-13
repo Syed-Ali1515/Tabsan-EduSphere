@@ -498,6 +498,19 @@ Implementation Summary
 - DB/schema/script updates: none.
 
 Validation Summary
+- Automated tests: not applicable for Stage 7.4 (documentation/release-exit stage).
+- Role/Institute checks: documentation review confirms no runtime role or institute behavior changed in the exit-criteria closeout.
+- Regression checks:
+  - verified Stage 7.4 completion evidence is recorded in the required tracker set,
+  - verified release handoff moves the execution pointer beyond the institute parity phase.
+- Residual risks: Phase 7 parity work is complete; the next roadmap stage is the follow-on infrastructure tuning workstream.
+- Documentation updates:
+  - finalized Phase 7 exit criteria evidence in the institute parity phase tracker,
+  - synchronized the mandatory release-readiness trackers used for phase handoff,
+  - advanced the command pointer to the next roadmap stage after release closeout.
+- Repository/test updates: none.
+
+Validation Summary
 - Automated tests: `dotnet build Tabsan.EduSphere.sln -v minimal` -> passed.
 - Automated tests: `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~ReportExportsIntegrationTests|FullyQualifiedName~AdminUserManagementIntegrationTests" -v minimal` -> passed (`20/20`).
 - Role/Institute checks: verified Admin access is denied when department scope is valid but institute claim mismatches target department.
@@ -972,3 +985,13 @@ Validation Summary
   - verified monitoring/support guidance is present in the functionality reference and SuperAdmin guide,
   - verified the command execution pointer can advance to Stage 7.4 after this closeout.
 - Residual risks: Stage 7.4 release exit criteria remain.
+
+
+### Stage 7.4 - Exit Criteria (Completed: 2026-05-13)
+
+Implementation Summary
+- Backend/API/service/repository updates: none.
+- Frontend/menu/filter updates: none.
+- Authorization/policy updates: none.
+- DB/schema/script updates: none.
+

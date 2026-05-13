@@ -408,6 +408,11 @@
 - **Support Escalation Signal**: Escalate only after confirming the target user role, department/offering scope, active module status, and selected institute filter.
 - **Operational Logging**: Preserve request identifiers, endpoint name, role, institution type, and filter values when opening parity-scope incidents.
 
+### Institute Parity Release Exit Criteria (Stage 7.4)
+- **Release Readiness**: Phase 7 parity documentation, monitoring guidance, and support handoff are synchronized and complete.
+- **Regression Boundary**: Stage 7.4 performs closeout only and does not change runtime behavior, authorization rules, or schema shape.
+- **Roadmap Handoff**: Phase 7 closeout hands off to the next roadmap stage without reopening parity remediation work.
+
 ### Data Management
 - **Data Import/Export**: Multiple data formats
 - **ETL Pipelines**: Data transformation workflows
