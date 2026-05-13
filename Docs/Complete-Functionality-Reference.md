@@ -20,6 +20,26 @@ After each completed stage, this document must be updated to reflect any net fun
 - Identified remaining University-default behavior hotspots in branding/onboarding/prompt/template text and default policy assumptions, now queued into subsequent parity implementation stages.
 - No user-visible functionality was changed in this stage; this is a validated baseline mapping update.
 
+## 2026-05-14 Update - Phase 23 Stage 23.2 Dynamic Academic Labels and Context Snapshot
+
+- Completed dynamic academic vocabulary parity validation for School/College/University policy modes.
+- Functional behavior confirmed:
+    - `GET /api/v1/labels` returns policy-based vocabulary for current tenant configuration,
+    - University-enabled policy resolves University vocabulary,
+    - School-only policy resolves School vocabulary,
+    - College-only policy resolves College vocabulary,
+    - School+College policy resolves School vocabulary,
+    - mixed policy including University resolves University vocabulary.
+- Web behavior confirmed:
+    - portal API client consumes vocabulary contract via `GetVocabularyAsync`,
+    - module composition surface renders returned label set for context-aware wording without screen duplication.
+- Validation evidence:
+    - focused integration suite passed (`8/8`) for `DynamicLabelIntegrationTests`,
+    - unit label-service suite remains green (`4/4`) in `Phase24Tests` label tests.
+- Behavior impact:
+    - tenant-wide label terminology is now explicitly validated end-to-end for API and portal consumption,
+    - no schema/migration change introduced in Stage 23.2.
+
 ## 2026-05-13 Update - Institute Parity Stage 0.2 Access Matrix Snapshot
 
 - Completed role/institute access matrix baseline across core modules and operations (view/create/edit/deactivate/export).

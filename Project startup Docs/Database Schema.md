@@ -25,6 +25,19 @@ After every completed stage in `Docs/Institute-Parity-Issue-Fix-Phases.md`:
 - Schema impact: `No schema mutation`.
 - EF migration impact: none.
 
+## 2026-05-14 Update - Phase 23 Stage 23.2 (Execution Snapshot)
+
+- Stage 23.2 completed dynamic academic labels and context validation for policy-aware School/College/University terminology.
+- API/application/web updates validated:
+	- `ILabelService` and `LabelService` vocabulary resolution behavior,
+	- authenticated `GET /api/v1/labels` endpoint in `LabelController`,
+	- portal vocabulary consumption in web client and module composition surface.
+- Validation evidence:
+	- integration suite `DynamicLabelIntegrationTests` passed (`8/8`),
+	- label-service unit tests remained passing.
+- Schema impact: `No schema mutation`.
+- EF migration impact: none.
+
 ## 2026-05-13 Update - Institute Parity Stage 0.2 (Execution Snapshot)
 
 - Stage 0.2 completed as a role/institute access matrix baseline on top of existing schema.

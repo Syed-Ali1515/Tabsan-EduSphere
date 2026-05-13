@@ -154,6 +154,25 @@ Before starting any work, the assistant must:
   - `Docs/Command.md`
 - Next stage: Phase 23 Stage 23.2 (Dynamic Academic Labels and Context).
 
+### Advance Enhancements Checkpoint (2026-05-14 - Phase 23 Stage 23.2)
+- Completed Stage 23.2 dynamic academic labels and context in `Docs/Advance-Enhancements.md`.
+- Verified policy-based vocabulary behavior and integration coverage:
+  - University/School/College vocabulary mapping,
+  - mixed-mode precedence behavior,
+  - authenticated endpoint contract and unauthenticated guard behavior,
+  - portal vocabulary consumption path.
+- Validation evidence:
+  - `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~DynamicLabelIntegrationTests" -v minimal` -> passed (`8/8`).
+- Synchronized required planning trackers for closeout:
+  - `Docs/Advance-Enhancements.md`
+  - `Docs/Function-List.md`
+  - `Docs/Complete-Functionality-Reference.md`
+  - `Project startup Docs/Database Schema.md`
+  - `Project startup Docs/Development Plan - ASP.NET.md`
+  - `Project startup Docs/PRD.md`
+  - `Docs/Command.md`
+- Next stage: Phase 23 Stage 23.3 (Dashboard Context Switching).
+
 ### Institute Parity Checkpoint (2026-05-13 - Stage 1.4)
 - Completed Stage 1.4 exit criteria in `Docs/Institute-Parity-Issue-Fix-Phases.md` with required Implementation Summary and Validation Summary.
 - Added explicit post-deployment checks for institute-type coverage/validity and orphan-count validation across institute-linked entities.

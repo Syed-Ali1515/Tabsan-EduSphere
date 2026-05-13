@@ -13,7 +13,7 @@ Purpose:
 - Preserve core functionality, global configuration behavior, and role-rights policy.
 
 Status:
-- In progress (Phase 23 started)
+- In progress (Phase 23 in progress, Stage 23.2 completed)
 
 ## Execution Updates
 
@@ -25,6 +25,30 @@ Status:
 	- seed baseline includes all three institution flags in `Scripts/02-Seed-Core.sql`.
 - Behavior impact: no new runtime or schema changes were required; Stage 23.1 was a foundation confirmation closeout.
 - Next stage: Stage 23.2 (Dynamic Academic Labels and Context).
+
+### 2026-05-14 - Phase 23 Stage 23.2 (Dynamic Academic Labels and Context)
+- Completed Stage 23.2 by verifying and adding integration tests for institution-aware academic vocabulary.
+- Implementation evidence (already present):
+	- `ILabelService` interface with `AcademicVocabulary` record containing `PeriodLabel`, `ProgressionLabel`, `GradingLabel`, `CourseLabel`, `StudentGroupLabel`,
+	- `LabelService` implementation mapping labels by institution type:
+		- University (default): Semester / Progression / GPA/CGPA / Course / Batch,
+		- School: Grade / Promotion / Percentage / Subject / Class,
+		- College: Year / Progression / Percentage / Subject / Year-Group,
+	- `LabelController` API endpoint GET /api/v1/labels returning current policy-based vocabulary,
+	- `EduApiClient.GetVocabularyAsync()` web layer method consuming label endpoint,
+	- `ModuleComposition.cshtml` view displaying dynamic labels from model context,
+	- Unit tests in Phase24Tests.cs (LabelServiceTests: 4/4 passed).
+- New additions (Stage 23.2):
+	- `DynamicLabelIntegrationTests` (8 integration tests) verifying:
+		- University/School/College vocabulary retrieval via API endpoint,
+		- Mixed-mode common-denominator behavior (University takes precedence when enabled),
+		- Dashboard context includes vocabulary for web layer consumption,
+		- Unauthenticated access denial (401),
+		- Consistency across multiple requests,
+		- School+College mode precedence behavior.
+	- All 8 new integration tests passing (100%).
+- Behavior impact: labels now dynamically adapt by institution policy (tenant-wide, not per-user). Views render correct terminology without code duplication.
+- Residual risks: none for Stage 23.2; next stage is Stage 23.3 (Dashboard Context Switching).
 
 ---
 
