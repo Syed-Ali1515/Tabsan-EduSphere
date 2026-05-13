@@ -792,3 +792,24 @@ Validation Summary
   - verified deterministic institution assignment values are explicitly persisted for parity demo users and departments.
 - Regression checks: no application-code regressions introduced (script-only stage).
 - Residual risks: replay safety count assertions and post-deployment aggregate checks are completed in Stage 5.3.
+
+### Stage 5.3 - Data Quality and Replay Safety (Completed: 2026-05-13)
+
+Implementation Summary
+- Backend/API/service/repository updates: none.
+- Frontend/menu/filter updates: none.
+- Authorization/policy updates: none.
+- DB/schema/script updates:
+  - hardened `Scripts/03-FullDummyData.sql` replay behavior by adding deterministic alignment updates for seeded department and user core fields (institution mapping, key identifiers, active state),
+  - expanded `Scripts/05-PostDeployment-Checks.sql` with institute-level parity count checks (users, student profiles, timetables, payment receipts),
+  - added critical workflow entity aggregate checks (assignments, timetable entries, payments, transcript exports, promotion/graduation/report-card artifacts),
+  - added replay-safety duplicate checks for seeded usernames and registration numbers plus dataset-version single-row check.
+- Repository/test updates: none.
+
+Validation Summary
+- Automated tests: `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~UserImportAndForceChangeIntegrationTests" -v minimal` -> passed (`3/3`).
+- Role/Institute checks:
+  - verified post-deployment checks now emit institute-level coverage signals for School/College/University seeded parity datasets,
+  - verified replay-safety duplicate checks are present for key seeded user/student identifiers.
+- Regression checks: no application-code regressions introduced (script-only stage).
+- Residual risks: final phase-exit one-run full dummy validation remains in Stage 5.4.

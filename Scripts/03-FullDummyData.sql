@@ -81,11 +81,17 @@ WHERE NOT EXISTS (SELECT 1 FROM [departments] x WHERE x.[Id] = d.Id);
 IF COL_LENGTH('departments', 'InstitutionType') IS NOT NULL
 BEGIN
     UPDATE d
-    SET d.[InstitutionType] = src.[InstitutionType],
+    SET d.[Name] = src.[Name],
+        d.[Code] = src.[Code],
+        d.[IsActive] = 1,
+        d.[InstitutionType] = src.[InstitutionType],
         d.[UpdatedAt] = @Now
     FROM [departments] d
     INNER JOIN @Departments src ON src.[Id] = d.[Id]
-    WHERE d.[InstitutionType] <> src.[InstitutionType];
+    WHERE d.[Name] <> src.[Name]
+       OR d.[Code] <> src.[Code]
+       OR d.[IsActive] = 0
+       OR d.[InstitutionType] <> src.[InstitutionType];
 END;
 
 /* 2) Programs */
@@ -147,12 +153,21 @@ FROM @Users u
 WHERE NOT EXISTS (SELECT 1 FROM [users] x WHERE x.[Id] = u.Id);
 
 UPDATE u
-SET u.[InstitutionType] = src.[InstitutionType],
+SET u.[Username] = src.[Username],
+    u.[Email] = src.[Email],
+    u.[RoleId] = src.[RoleId],
+    u.[DepartmentId] = src.[DepartmentId],
+    u.[InstitutionType] = src.[InstitutionType],
+    u.[IsActive] = 1,
     u.[UpdatedAt] = @Now
 FROM [users] u
 INNER JOIN @Users src ON src.[Id] = u.[Id]
-WHERE src.[InstitutionType] IS NOT NULL
-  AND (u.[InstitutionType] IS NULL OR u.[InstitutionType] <> src.[InstitutionType]);
+WHERE u.[Username] <> src.[Username]
+   OR u.[Email] <> src.[Email]
+   OR u.[RoleId] <> src.[RoleId]
+   OR ISNULL(CAST(u.[DepartmentId] AS NVARCHAR(36)), N'') <> ISNULL(CAST(src.[DepartmentId] AS NVARCHAR(36)), N'')
+   OR ISNULL(u.[InstitutionType], -1) <> ISNULL(src.[InstitutionType], -1)
+   OR u.[IsActive] = 0;
 
 /* 4.1) Admin and faculty department assignments */
 IF OBJECT_ID(N'[admin_department_assignments]') IS NOT NULL

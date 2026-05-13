@@ -195,6 +195,131 @@ FROM admin_department_assignments ada
 LEFT JOIN departments d ON d.Id = ada.DepartmentId
 WHERE d.Id IS NULL;
 
+/* Stage 5.3 parity data-quality and replay-safety checks */
+SELECT 'DummySeed_DepartmentCoverageByInstitutionType' AS [CheckName],
+	COUNT(DISTINCT InstitutionType) AS [Value]
+FROM departments
+WHERE InstitutionType IN (0, 1, 2);
+
+SELECT 'DummySeed_UsersCount_InstitutionType_0_School' AS [CheckName], COUNT(1) AS [Value]
+FROM users
+WHERE InstitutionType = 0;
+
+SELECT 'DummySeed_UsersCount_InstitutionType_1_College' AS [CheckName], COUNT(1) AS [Value]
+FROM users
+WHERE InstitutionType = 1;
+
+SELECT 'DummySeed_UsersCount_InstitutionType_2_University' AS [CheckName], COUNT(1) AS [Value]
+FROM users
+WHERE InstitutionType = 2;
+
+SELECT 'DummySeed_StudentProfilesByInstitutionType_0_School' AS [CheckName], COUNT(1) AS [Value]
+FROM student_profiles sp
+INNER JOIN departments d ON d.Id = sp.DepartmentId
+WHERE d.InstitutionType = 0;
+
+SELECT 'DummySeed_StudentProfilesByInstitutionType_1_College' AS [CheckName], COUNT(1) AS [Value]
+FROM student_profiles sp
+INNER JOIN departments d ON d.Id = sp.DepartmentId
+WHERE d.InstitutionType = 1;
+
+SELECT 'DummySeed_StudentProfilesByInstitutionType_2_University' AS [CheckName], COUNT(1) AS [Value]
+FROM student_profiles sp
+INNER JOIN departments d ON d.Id = sp.DepartmentId
+WHERE d.InstitutionType = 2;
+
+SELECT 'DummySeed_TimetableCountByInstitutionType_0_School' AS [CheckName], COUNT(1) AS [Value]
+FROM timetables t
+INNER JOIN departments d ON d.Id = t.DepartmentId
+WHERE d.InstitutionType = 0;
+
+SELECT 'DummySeed_TimetableCountByInstitutionType_1_College' AS [CheckName], COUNT(1) AS [Value]
+FROM timetables t
+INNER JOIN departments d ON d.Id = t.DepartmentId
+WHERE d.InstitutionType = 1;
+
+SELECT 'DummySeed_TimetableCountByInstitutionType_2_University' AS [CheckName], COUNT(1) AS [Value]
+FROM timetables t
+INNER JOIN departments d ON d.Id = t.DepartmentId
+WHERE d.InstitutionType = 2;
+
+SELECT 'DummySeed_PaymentReceiptCountByInstitutionType_0_School' AS [CheckName], COUNT(1) AS [Value]
+FROM payment_receipts pr
+INNER JOIN student_profiles sp ON sp.Id = pr.StudentProfileId
+INNER JOIN departments d ON d.Id = sp.DepartmentId
+WHERE d.InstitutionType = 0;
+
+SELECT 'DummySeed_PaymentReceiptCountByInstitutionType_1_College' AS [CheckName], COUNT(1) AS [Value]
+FROM payment_receipts pr
+INNER JOIN student_profiles sp ON sp.Id = pr.StudentProfileId
+INNER JOIN departments d ON d.Id = sp.DepartmentId
+WHERE d.InstitutionType = 1;
+
+SELECT 'DummySeed_PaymentReceiptCountByInstitutionType_2_University' AS [CheckName], COUNT(1) AS [Value]
+FROM payment_receipts pr
+INNER JOIN student_profiles sp ON sp.Id = pr.StudentProfileId
+INNER JOIN departments d ON d.Id = sp.DepartmentId
+WHERE d.InstitutionType = 2;
+
+SELECT 'DummySeed_CriticalEntityCount_AdminAssignments' AS [CheckName], COUNT(1) AS [Value]
+FROM admin_department_assignments;
+
+SELECT 'DummySeed_CriticalEntityCount_FacultyAssignments' AS [CheckName], COUNT(1) AS [Value]
+FROM faculty_department_assignments;
+
+SELECT 'DummySeed_CriticalEntityCount_Buildings' AS [CheckName], COUNT(1) AS [Value]
+FROM buildings;
+
+SELECT 'DummySeed_CriticalEntityCount_Rooms' AS [CheckName], COUNT(1) AS [Value]
+FROM rooms;
+
+SELECT 'DummySeed_CriticalEntityCount_TimetableEntries' AS [CheckName], COUNT(1) AS [Value]
+FROM timetable_entries;
+
+SELECT 'DummySeed_CriticalEntityCount_TranscriptExportLogs' AS [CheckName], COUNT(1) AS [Value]
+FROM transcript_export_logs;
+
+SELECT 'DummySeed_CriticalEntityCount_BulkPromotionBatches' AS [CheckName], COUNT(1) AS [Value]
+FROM bulk_promotion_batches;
+
+SELECT 'DummySeed_CriticalEntityCount_BulkPromotionEntries' AS [CheckName], COUNT(1) AS [Value]
+FROM bulk_promotion_entries;
+
+SELECT 'DummySeed_CriticalEntityCount_GraduationApplications' AS [CheckName], COUNT(1) AS [Value]
+FROM graduation_applications;
+
+SELECT 'DummySeed_CriticalEntityCount_GraduationApprovals' AS [CheckName], COUNT(1) AS [Value]
+FROM graduation_application_approvals;
+
+SELECT 'DummySeed_CriticalEntityCount_StudentReportCards' AS [CheckName], COUNT(1) AS [Value]
+FROM student_report_cards;
+
+SELECT 'DummySeed_CriticalEntityCount_SchoolStreams' AS [CheckName], COUNT(1) AS [Value]
+FROM school_streams;
+
+SELECT 'DummySeed_CriticalEntityCount_StudentStreamAssignments' AS [CheckName], COUNT(1) AS [Value]
+FROM student_stream_assignments;
+
+SELECT 'DummySeed_RegistrationNumberDuplicates' AS [CheckName], COUNT(1) AS [Value]
+FROM (
+	SELECT RegistrationNumber
+	FROM student_profiles
+	GROUP BY RegistrationNumber
+	HAVING COUNT(1) > 1
+) dup;
+
+SELECT 'DummySeed_UsernameDuplicates' AS [CheckName], COUNT(1) AS [Value]
+FROM (
+	SELECT Username
+	FROM users
+	GROUP BY Username
+	HAVING COUNT(1) > 1
+) dup;
+
+SELECT 'DummySeed_DemoDatasetVersionRowCount' AS [CheckName], COUNT(1) AS [Value]
+FROM [Tabsan-EduSphere]
+WHERE DemoKey = N'DemoDatasetVersion';
+
 SELECT TOP 20 [MigrationId], [ProductVersion]
 FROM __EFMigrationsHistory
 ORDER BY [MigrationId] DESC;

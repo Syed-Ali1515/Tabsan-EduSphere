@@ -83,6 +83,10 @@
 | `Full dummy timetable infrastructure coverage` | Seeds buildings, rooms, timetables, and timetable entries across School/College/University representative departments. | `Scripts/03-FullDummyData.sql` |
 | `Full dummy payment + report artifact coverage` | Seeds payment receipts and transcript export logs for parity testing of finance and report-export workflows. | `Scripts/03-FullDummyData.sql` |
 | `Full dummy lifecycle parity artifacts` | Seeds bulk promotion batches/entries, graduation applications/approvals, student report cards, school streams, and stream assignments for lifecycle parity scenarios. | `Scripts/03-FullDummyData.sql` |
+| `Full dummy deterministic replay alignment` | Reconciles seeded department and user key fields on reruns to keep deterministic parity data shape stable across replay executions. | `Scripts/03-FullDummyData.sql` |
+| `Post-deployment institute parity aggregate checks` | Adds institute-level row-count outputs for users, student profiles, timetables, and payment receipts by School/College/University. | `Scripts/05-PostDeployment-Checks.sql` |
+| `Post-deployment critical workflow coverage checks` | Adds aggregate presence checks for parity-critical entities (assignments, timetable entries, payments, transcript exports, promotion/graduation/report-card artifacts). | `Scripts/05-PostDeployment-Checks.sql` |
+| `Post-deployment replay-safety duplicate checks` | Adds duplicate-detection outputs for usernames and registration numbers plus dataset-version single-row integrity check. | `Scripts/05-PostDeployment-Checks.sql` |
 
 ## Institution License Validation Plan (2026-05-12)
 

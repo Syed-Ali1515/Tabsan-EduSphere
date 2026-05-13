@@ -328,6 +328,21 @@ After each completed stage, this document must be updated to reflect any net fun
     - one-run full dummy seeding now provides broader parity validation data for reports, lifecycle, timetable, payments, and role/institute scope checks,
     - no schema/migration mutation introduced in this stage.
 
+## 2026-05-13 Update - Institute Parity Stage 5.3 Data Quality and Replay Safety Snapshot
+
+- Completed full dummy replay-safety hardening and post-deployment data-quality verification expansion.
+- Script behavior now enforces:
+    - deterministic replay alignment for seeded user/department identity and institution mapping fields,
+    - institute-level parity aggregate checks for School/College/University datasets,
+    - critical workflow coverage checks for timetable, payments, report artifacts, and lifecycle entities,
+    - duplicate and dataset-version integrity checks for replay safety.
+- Validation evidence:
+    - targeted user-import institution-assignment regression suite passed (`3/3`),
+    - script verification confirms institute-level and replay-safety check outputs are present in post-deployment script.
+- Behavior impact:
+    - replayed full dummy seeding now preserves deterministic parity shape more strictly,
+    - post-deployment verification now provides direct parity-count and duplicate-safety signals for Stage 5 quality gates.
+
 ---
 
 ## Table of Contents
