@@ -19,6 +19,17 @@ Validation summaries must include at minimum:
 
 ## Execution Updates
 
+### 2026-05-13 - Phase 23 Stage 23.1 (Execution Snapshot)
+- Completed institution-type foundation confirmation from `Docs/Advance-Enhancements.md`.
+- Implementation Summary:
+  - confirmed global institution mode support and persistence path for School, College, and University,
+  - confirmed backward-compatible University-default behavior in institution policy resolution.
+- Validation Summary:
+  - verified policy snapshot/default and save/load contracts in application service layer,
+  - verified seed baseline includes the three institution mode flags in SQL core seed script.
+- Stage status: Stage 23.1 completed.
+- Phase status: Phase 23 in progress (next: Stage 23.2).
+
 ### 2026-05-13 - Institute Parity Stage 7.3 (Execution Snapshot)
 - Completed Phase 7 Stage 7.3 monitoring and support handover.
 - Implementation Summary:

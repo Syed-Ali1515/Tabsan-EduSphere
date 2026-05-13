@@ -108,6 +108,7 @@
 | `Stage 7.3 institute parity monitoring guidance` | Documents report/analytics failure monitoring points and institute-scope incident triage priorities. | `Docs/Functionality.md` |
 | `Stage 7.3 support handover checklist` | Defines SuperAdmin parity-scope incident triage checklist for report/analytics and menu/route support handover. | `User Guide/SuperAdmin-Guide.md` |
 | `Stage 7.4 release exit criteria snapshot` | Consolidates Phase 7 release-readiness evidence, confirms tracker synchronization, and advances the execution pointer to the next roadmap stage. | `Docs/Institute-Parity-Issue-Fix-Phases.md`, `Docs/Command.md` |
+| `Phase 23 Stage 23.1 institution-mode foundation confirmation` | Confirms global School/College/University mode support, persistence, and backward-compatible University default behavior before Stage 23.2. | `Docs/Advance-Enhancements.md`, `src/Tabsan.EduSphere.Application/Interfaces/IInstitutionPolicyService.cs`, `src/Tabsan.EduSphere.Application/Services/InstitutionPolicyService.cs`, `Scripts/02-Seed-Core.sql` |
 
 ## Institution License Validation Plan (2026-05-12)
 

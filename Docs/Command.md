@@ -142,6 +142,18 @@ Before starting any work, the assistant must:
   - `Docs/Command.md`
 - Next stage: Phase 8 (Infrastructure Tuning), starting with Stage 8.1 Auto-Scaling Policy Baseline.
 
+### Advance Enhancements Checkpoint (2026-05-13 - Phase 23 Stage 23.1)
+- Completed Stage 23.1 institution-type foundation confirmation in `Docs/Advance-Enhancements.md`.
+- Verified global School/College/University mode support, mode-flag persistence, and backward-compatible University default behavior.
+- Synchronized required planning trackers for closeout:
+  - `Docs/Advance-Enhancements.md`
+  - `Docs/Function-List.md`
+  - `Project startup Docs/Database Schema.md`
+  - `Project startup Docs/Development Plan - ASP.NET.md`
+  - `Project startup Docs/PRD.md`
+  - `Docs/Command.md`
+- Next stage: Phase 23 Stage 23.2 (Dynamic Academic Labels and Context).
+
 ### Institute Parity Checkpoint (2026-05-13 - Stage 1.4)
 - Completed Stage 1.4 exit criteria in `Docs/Institute-Parity-Issue-Fix-Phases.md` with required Implementation Summary and Validation Summary.
 - Added explicit post-deployment checks for institute-type coverage/validity and orphan-count validation across institute-linked entities.
@@ -579,13 +591,13 @@ cmd /c git -C "<repo-root>" push origin main
 ---
 
 ## Current Execution Pointer
-- Plan Source: Docs/Functionality.md
-- Active Phase: **Infrastructure Tuning (Phase 8)**
-- Active Stage: **Stage 8.1 Auto-Scaling Policy Baseline (next execution target)**
-- Status: **Institute Parity Phase 7 completed and documented; release exit criteria are synchronized.**
+- Plan Source: Docs/Advance-Enhancements.md
+- Active Phase: **Phase 23 - Institution-Type Foundation**
+- Active Stage: **Stage 23.2 Dynamic Academic Labels and Context (next execution target)**
+- Status: **Stage 23.1 completed; institution-type configuration baseline is confirmed.**
 - Last Updated: 2026-05-13
-- Next: **Execute Phase 8 infrastructure tuning work starting with Stage 8.1.**
-- Docs Updated: ✅ Stage 7.4 tracker and planning docs synchronized (2026-05-13).
+- Next: **Execute Phase 23 Stage 23.2 for institution-adaptive academic labels and context presentation without cloning workflows.**
+- Docs Updated: ✅ Phase 23 Stage 23.1 tracker and planning docs synchronized (2026-05-13).
 
 ### 2026-05-11 - Phase 10 Completion
 - Stage 10.1: Added a parameterized progressive gate runner for stepwise scale validation and higher-tier execution.

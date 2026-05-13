@@ -13,7 +13,18 @@ Purpose:
 - Preserve core functionality, global configuration behavior, and role-rights policy.
 
 Status:
-- Planned (not started)
+- In progress (Phase 23 started)
+
+## Execution Updates
+
+### 2026-05-13 - Phase 23 Stage 23.1 (Institution Type Configuration)
+- Completed Stage 23.1 by validating existing global institution-mode support across School, College, and University.
+- Validation evidence:
+	- `InstitutionPolicySnapshot` supports `IncludeSchool`, `IncludeCollege`, and `IncludeUniversity` with backward-compatible University default,
+	- `InstitutionPolicyService` persists and resolves mode flags from `portal_settings` keys (`institution_include_school`, `institution_include_college`, `institution_include_university`),
+	- seed baseline includes all three institution flags in `Scripts/02-Seed-Core.sql`.
+- Behavior impact: no new runtime or schema changes were required; Stage 23.1 was a foundation confirmation closeout.
+- Next stage: Stage 23.2 (Dynamic Academic Labels and Context).
 
 ---
 

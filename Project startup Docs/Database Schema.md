@@ -328,6 +328,15 @@ After every completed stage in `Docs/Institute-Parity-Issue-Fix-Phases.md`:
 - Schema impact: `No schema mutation`.
 - EF migration impact: none.
 
+## 2026-05-13 Update - Phase 23 Stage 23.1 (Execution Snapshot)
+
+- Stage 23.1 completed institution-type foundation confirmation from `Docs/Advance-Enhancements.md`.
+- Validation highlights:
+	- confirmed policy persistence keys for School/College/University mode toggles,
+	- confirmed University-default compatibility path remains active.
+- Schema impact: `No schema mutation`.
+- EF migration impact: none.
+
 ## 2026-05-13 Update - Institute Parity Stage 7.2 (Execution Snapshot)
 
 - Stage 7.2 completed functional documentation update for institute parity behavior.
