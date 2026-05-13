@@ -431,13 +431,17 @@
 - Registered after `UseAuthorization` in `Program.cs`.
 
 ### Stage 23.3 — Role-Rights Hardening ✅
-- `GET /api/v1/institution-policy` read by all authenticated roles; PUT restricted to SuperAdmin.
-- Web: `PortalController.InstitutionPolicy` GET action; `InstitutionPolicy.cshtml` SuperAdmin config page.
-- Seed: sidebar module `institution_policy` (sort 33, SuperAdmin).
-
 **Validation:** 0 build errors · 27/27 unit tests passed · no migration needed
 
----
+### Stage 23.3 — Dashboard Context Switching ✅
+- Dashboard widgets and metrics are filtered by both role and institution policy (School/College/University).
+- No workflow duplication: one configurable core, no cloned modules.
+- Integration tests in `DashboardContextSwitchingIntegrationTests` verify:
+  - Dashboard widgets adapt for all roles (SuperAdmin/Admin/Faculty/Student) and institution types (School/College/University)
+  - Vocabulary adapts in dashboard context for each institution type
+  - All tests passing (13/13)
+- Implementation: `DashboardCompositionService`, `DashboardCompositionController`, web client and view integration.
+- Status: Stage 23.3 completed and validated as of 2026-05-14.
 
 ## Phase 24 — Dynamic Module and UI Composition ✅ Implemented (commit `391ac45` — 2026-05-09)
 **Complexity:** Medium | **Dependencies:** Phase 23 (`InstitutionPolicySnapshot`); `IModuleEntitlementResolver` (Application); `IModuleService` (Application)

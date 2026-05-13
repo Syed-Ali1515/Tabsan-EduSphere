@@ -42,10 +42,17 @@
 	- mixed policy precedence remains deterministic: University, then School, then College.
 - **API contract**: Authenticated callers use `GET /api/v1/labels` to retrieve current tenant vocabulary.
 - **Portal context behavior**: Dashboard module composition uses this vocabulary to keep one workflow surface while presenting institution-appropriate labels.
-- **Validation status**: Stage 23.2 integration verification passed (`8/8`) in `DynamicLabelIntegrationTests`.
+**Validation status**: Stage 23.2 integration verification passed (`8/8`) in `DynamicLabelIntegrationTests`.
 
----
-
+### Stage 23.3 - Dashboard Context Switching
+- Dashboard widgets and metrics are filtered by both role and institution policy (School/College/University).
+- No workflow duplication: one configurable core, no cloned modules.
+- Integration tests in `DashboardContextSwitchingIntegrationTests` verify:
+	- Dashboard widgets adapt for all roles (SuperAdmin/Admin/Faculty/Student) and institution types (School/College/University)
+	- Vocabulary adapts in dashboard context for each institution type
+	- All tests passing (13/13)
+- Implementation: `DashboardCompositionService`, `DashboardCompositionController`, web client and view integration.
+- Status: Stage 23.3 completed and validated as of 2026-05-14.
 ## Authentication & Authorization
 
 ### User Authentication

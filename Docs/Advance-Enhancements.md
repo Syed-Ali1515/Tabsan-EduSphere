@@ -126,12 +126,21 @@ Complexity: High
 - GPA/Percentage presentation adapts without duplicating core workflow screens.
 
 ### Stage 23.3 - Dashboard Context Switching
+
 - Student/faculty/admin dashboards show only relevant metrics for selected institution type.
+- Dashboard widgets and metrics are filtered by both role and institution policy (School/College/University).
+- No workflow duplication: one configurable core, no cloned modules.
 
-Deliverable goal:
-- One configurable core, no cloned modules.
+**Validation:**
+- Integration tests in `DashboardContextSwitchingIntegrationTests` verify:
+	- Dashboard widgets adapt for all roles (SuperAdmin/Admin/Faculty/Student) and institution types (School/College/University)
+	- Vocabulary adapts in dashboard context for each institution type
+	- All tests passing (13/13)
+- Implementation: `DashboardCompositionService`, `DashboardCompositionController`, web client and view integration.
 
----
+**Status:** Stage 23.3 completed and validated as of 2026-05-14. Documentation and repo synchronized.
+
+----
 
 ## Phase 24 - License-Driven Module Enforcement
 Complexity: High
