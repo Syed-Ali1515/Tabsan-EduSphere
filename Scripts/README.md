@@ -24,6 +24,27 @@ sqlcmd -S "localhost" -E -d "master" -i "Scripts\04-Maintenance-Indexes-And-View
 sqlcmd -S "localhost" -E -d "master" -i "Scripts\05-PostDeployment-Checks.sql"
 ```
 
+Environment notes:
+
+- Run `01-Schema-Current.sql` from `master`; it creates and switches to `[Tabsan-EduSphere]` automatically.
+- Run scripts with an account that can create databases, alter schema, and create indexes/views.
+- Execute in the exact order `01 -> 02 -> 03 -> 04 -> 05` for full deployment + validation.
+- If legacy EduSphere objects exist in `master`, run `00-Cleanup-Master-Mistake.sql` once before `01`.
+
+Rollback and verification checklist:
+
+1. Pre-deployment backup:
+	- take a full backup/snapshot of target SQL Server database state.
+2. Deployment execution:
+	- run `01 -> 05` in sequence and capture command output.
+3. Verification gate:
+	- require `05-PostDeployment-Checks.sql` to complete without `RAISERROR` failures.
+4. Failure handling:
+	- if schema/seed execution fails, restore pre-deployment backup and stop rollout.
+	- if accidental `master` pollution is detected, run `00-Cleanup-Master-Mistake.sql` then re-run from `01`.
+5. Sign-off evidence:
+	- archive script logs and post-deployment check output with timestamp/environment label.
+
 ## Notes
 
 - `01-Schema-Current.sql` is generated from the current migration chain and can be safely rerun.

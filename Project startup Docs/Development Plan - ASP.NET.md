@@ -19,6 +19,17 @@ Validation summaries must include at minimum:
 
 ## Execution Updates
 
+### 2026-05-13 - Institute Parity Stage 7.1 (Execution Snapshot)
+- Completed Phase 7 Stage 7.1 deployment runbook finalization.
+- Implementation Summary:
+  - finalized script deployment run-order and environment notes in `Scripts/README.md`,
+  - added rollback/verification checklist covering backup, failure handling, and sign-off evidence requirements.
+- Validation Summary:
+  - verified required deployment scripts (`01` to `05`) exist and are mapped in run-order guidance,
+  - verified schema creation/context switch and post-deployment fail-fast checks are present in scripts.
+- Stage status: Stage 7.1 completed.
+- Phase status: Phase 7 in progress (next: Stage 7.2).
+
 ### 2026-05-13 - Institute Parity Stage 6.4 (Execution Snapshot)
 - Completed Phase 6 Stage 6.4 exit criteria.
 - Implementation Summary:

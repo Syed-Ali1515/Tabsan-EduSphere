@@ -910,3 +910,24 @@ Validation Summary
   - confirmed no authorization regressions on validated allow/deny matrix paths.
 - Regression checks: Phase 6 parity scenarios completed with zero critical/blocker defects.
 - Residual risks: none for Phase 6 exit scope; Phase 7 operational readiness tasks remain.
+
+### Stage 7.1 - Deployment Runbook (Completed: 2026-05-13)
+
+Implementation Summary
+- Backend/API/service/repository updates: none.
+- Frontend/menu/filter updates: none.
+- Authorization/policy updates: none.
+- DB/schema/script updates:
+  - finalized deployment runbook in `Scripts/README.md` with explicit environment notes,
+  - documented deterministic execution order `01 -> 02 -> 03 -> 04 -> 05`,
+  - documented rollback and verification checklist including backup, failure handling, and sign-off evidence capture.
+- Repository/test updates: none.
+
+Validation Summary
+- Automated tests: not applicable for Stage 7.1 (documentation/runbook finalization stage).
+- Role/Institute checks: not applicable for Stage 7.1 (no runtime behavior change).
+- Regression checks:
+  - verified required deployment scripts exist (`01-Schema-Current.sql`, `02-Seed-Core.sql`, `03-FullDummyData.sql`, `04-Maintenance-Indexes-And-Views.sql`, `05-PostDeployment-Checks.sql`),
+  - verified schema script contains DB create/context switch guards and post-check script contains fail-fast verification gates,
+  - verified cleanup fallback script for accidental `master` pollution remains available.
+- Residual risks: Stage 7.2/7.3 documentation + operational handover tasks remain.

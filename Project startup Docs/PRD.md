@@ -18,6 +18,18 @@ Each stage log entry must clearly describe behavior impact for School/College/Un
 
 ## 0. Implementation Update Log
 
+### 2026-05-13 - Institute Parity Stage 7.1 (Execution Snapshot)
+- Completed deployment runbook finalization for Phase 7 operational readiness.
+- Implementation Summary:
+  - finalized deterministic DB script execution order (`01 -> 02 -> 03 -> 04 -> 05`) and operator environment notes,
+  - added rollback + verification checklist for backup, fail-fast checks, cleanup fallback, and evidence archiving.
+- Validation Summary:
+  - verified deployment script set existence and run-order mapping,
+  - verified schema bootstrap and post-deployment verification fail-fast script guards are present.
+- Behavior impact:
+  - no runtime behavior or schema-shape changes introduced in Stage 7.1,
+  - deployment process is now documented with explicit rollback and verification controls.
+
 ### 2026-05-13 - Institute Parity Stage 6.4 (Execution Snapshot)
 - Completed Phase 6 exit criteria sign-off for institute parity.
 - Implementation Summary:

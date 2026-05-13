@@ -318,6 +318,16 @@ After every completed stage in `Docs/Institute-Parity-Issue-Fix-Phases.md`:
 - Schema impact: `No schema mutation`.
 - EF migration impact: none.
 
+## 2026-05-13 Update - Institute Parity Stage 7.1 (Execution Snapshot)
+
+- Stage 7.1 completed deployment runbook finalization for parity release readiness.
+- Deployment/script updates applied:
+	- updated `Scripts/README.md` with deterministic execution order (`01 -> 02 -> 03 -> 04 -> 05`),
+	- added environment notes for DB create/context switching, permissions, and cleanup fallback,
+	- added rollback/verification checklist for backup, failure handling, and evidence capture.
+- Schema impact: `No schema mutation`.
+- EF migration impact: none.
+
 ## 2026-05-12 Update — Institution License Validation Phase 7 (Execution Snapshot)
 
 - Completed SuperAdmin permission matrix against existing management and policy tables.

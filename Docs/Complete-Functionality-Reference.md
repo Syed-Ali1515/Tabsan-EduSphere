@@ -408,6 +408,18 @@ After each completed stage, this document must be updated to reflect any net fun
     - Phase 6 parity scenarios are fully regression-certified with no critical/blocker defects,
     - no runtime feature contract changes or schema mutations introduced by Stage 6.4.
 
+## 2026-05-13 Update - Institute Parity Stage 7.1 Deployment Runbook Snapshot
+
+- Completed deployment runbook finalization for institute parity operational readiness.
+- Added explicit rollout guidance for SQL execution order (`01 -> 02 -> 03 -> 04 -> 05`) and environment prerequisites.
+- Added rollback + verification checklist covering backup, fail-fast verification via post-deployment checks, cleanup fallback, and evidence archiving.
+- Validation evidence:
+    - required deployment scripts existence verified,
+    - schema/create-context and post-check fail-fast guards verified from script content.
+- Behavior impact:
+    - no runtime feature contract changes or schema mutations introduced by Stage 7.1,
+    - operational deployment guidance is now explicit and reproducible for Phase 7 rollout.
+
 ---
 
 ## Table of Contents
