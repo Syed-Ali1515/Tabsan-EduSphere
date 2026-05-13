@@ -427,6 +427,19 @@ Before starting any work, the assistant must:
   - `Docs/Command.md`
 - Next stage: Stage 7.3 (Monitoring and Support Handover).
 
+### Institute Parity Checkpoint (2026-05-13 - Stage 7.3)
+- Completed Stage 7.3 monitoring and support handover in `Docs/Institute-Parity-Issue-Fix-Phases.md` with required Implementation Summary and Validation Summary.
+- Added parity monitoring points for report/analytics failures and a SuperAdmin institute-scope incident triage checklist.
+- Synchronized required tracking docs for stage closeout:
+  - `Docs/Institute-Parity-Issue-Fix-Phases.md`
+  - `Docs/Function-List.md`
+  - `Docs/Complete-Functionality-Reference.md`
+  - `Project startup Docs/Database Schema.md`
+  - `Project startup Docs/Development Plan - ASP.NET.md`
+  - `Project startup Docs/PRD.md`
+  - `Docs/Command.md`
+- Next stage: Stage 7.4 (Exit Criteria).
+
 ### Institution Validation Checkpoint (2026-05-12 - Phase 1)
 - Execution evidence captured in `Docs/Institution-License-Validation-Phases.md`.
 - Authentication and policy-read checks passed.
@@ -555,11 +568,11 @@ cmd /c git -C "<repo-root>" push origin main
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
 - Active Phase: **Institute Parity - Phase 7 (Release, Documentation, and Operational Readiness)**
-- Active Stage: **Stage 7.3 Monitoring and Support Handover (next execution target)**
-- Status: **Stage 7.2 completed and documented; functional and user-guide parity behavior documentation is synchronized.**
+- Active Stage: **Stage 7.4 Exit Criteria (next execution target)**
+- Status: **Stage 7.3 completed and documented; monitoring/support handover guidance is synchronized.**
 - Last Updated: 2026-05-13
-- Next: **Execute Stage 7.3 monitoring and support handover for parity scope (report/analytics monitoring points + institute-scope triage checklist) and close out with required 7-document synchronization plus commit -> pull --rebase -> push.**
-- Docs Updated: ✅ Stage 7.2 tracker and planning docs synchronized (2026-05-13).
+- Next: **Execute Stage 7.4 exit criteria for Phase 7 and close out with required 7-document synchronization plus commit -> pull --rebase -> push.**
+- Docs Updated: ✅ Stage 7.3 tracker and planning docs synchronized (2026-05-13).
 
 ### 2026-05-11 - Phase 10 Completion
 - Stage 10.1: Added a parameterized progressive gate runner for stepwise scale validation and higher-tier execution.

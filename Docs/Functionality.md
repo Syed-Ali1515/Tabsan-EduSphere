@@ -401,6 +401,13 @@
 - **Backup & Recovery**: Data backup and restore
 - **Disaster Recovery**: Business continuity planning
 
+### Institute Parity Monitoring and Support (Stage 7.3)
+- **Report Failure Monitoring**: Watch for spikes in report endpoint `400/403/500` responses on analytics, report catalog, and export flows.
+- **Analytics Health Checks**: Validate that institute-filtered analytics queries return data for the selected School, College, or University context.
+- **Scope Mismatch Triage**: Distinguish expected authorization denials from true defects by checking role assignment, department assignment, and institution claim alignment first.
+- **Support Escalation Signal**: Escalate only after confirming the target user role, department/offering scope, active module status, and selected institute filter.
+- **Operational Logging**: Preserve request identifiers, endpoint name, role, institution type, and filter values when opening parity-scope incidents.
+
 ### Data Management
 - **Data Import/Export**: Multiple data formats
 - **ETL Pipelines**: Data transformation workflows

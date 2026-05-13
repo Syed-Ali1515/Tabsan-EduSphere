@@ -165,3 +165,19 @@ If Advanced Audit module is active:
 - Review module utilization and disable unused optional modules
 - Validate backup and recovery readiness
 - Review security findings and remediation progress
+
+## 14. Institute Parity Support Handover Checklist
+
+When reviewing School, College, or University parity incidents:
+1. Confirm the caller role, institution type, and active department/offering scope.
+2. Verify whether the issue is an expected authorization denial or a true defect.
+3. Check the selected report or analytics filter values and reproduce the request with the same context.
+4. Confirm the target module is active and the visible menu matches the requested route.
+5. Capture endpoint name, request time, status code, and any correlation/request identifiers.
+6. Escalate only after confirming assignment, institute compatibility, and module availability.
+
+Common parity-scope signals to record:
+- report endpoint returns `400/403/500`
+- analytics data appears empty only under one institute context
+- direct URL access differs from sidebar visibility
+- Student can see an operational route that should be restricted

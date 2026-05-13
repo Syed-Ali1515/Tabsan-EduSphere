@@ -105,6 +105,8 @@
 | `Stage 7.1 rollback and verification checklist` | Defines backup, failure handling, cleanup fallback, and post-deployment evidence checklist for operational readiness. | `Scripts/README.md` |
 | `Stage 7.2 institute parity functionality guidance` | Documents role/institute parity behavior and scoped access model in functionality reference content. | `Docs/Functionality.md` |
 | `Stage 7.2 role/institute user-guide filter guidance` | Documents role-specific institute filtering behavior and expected access boundaries for Admin, Faculty, Student, and shared guide entry points. | `User Guide/README.md`, `User Guide/Admin-Guide.md`, `User Guide/Faculty-Guide.md`, `User Guide/Student-Guide.md` |
+| `Stage 7.3 institute parity monitoring guidance` | Documents report/analytics failure monitoring points and institute-scope incident triage priorities. | `Docs/Functionality.md` |
+| `Stage 7.3 support handover checklist` | Defines SuperAdmin parity-scope incident triage checklist for report/analytics and menu/route support handover. | `User Guide/SuperAdmin-Guide.md` |
 
 ## Institution License Validation Plan (2026-05-12)
 
