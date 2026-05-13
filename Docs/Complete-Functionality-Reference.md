@@ -370,6 +370,19 @@ After each completed stage, this document must be updated to reflect any net fun
     - institute parity guard model now has both deny-path and allow-path automated coverage on key Phase 5-expanded surfaces,
     - no runtime feature contract changes or schema mutations introduced by Stage 6.1.
 
+## 2026-05-13 Update - Institute Parity Stage 6.2 Cross-Role UAT Matrix Snapshot
+
+- Completed cross-role UAT matrix automation across School/College/University institution contexts.
+- Added matrix validation coverage for SuperAdmin/Admin/Faculty/Student on stable parity-sensitive endpoints:
+    - report catalog role visibility,
+    - account-security locked-account access boundaries,
+    - attendance-by-offering authorization boundaries.
+- Validation evidence:
+    - focused Stage 6.2 UAT integration run passed (`100/100`) across `CrossRoleUatMatrixIntegrationTests`, `ReportCatalogIntegrationTests`, `AccountSecurityIntegrationTests`, and `AuthorizationRegressionTests`.
+- Behavior impact:
+    - role-boundary expectations are now explicitly regression-protected across all three institution claim contexts,
+    - no runtime feature contract changes or schema mutations introduced by Stage 6.2.
+
 ---
 
 ## Table of Contents

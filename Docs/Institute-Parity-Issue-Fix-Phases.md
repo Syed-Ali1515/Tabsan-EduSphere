@@ -854,3 +854,23 @@ Validation Summary
   - confirmed explicit department-filter student list behavior remains department-bounded under institute-compatible admin scope.
 - Regression checks: focused Stage 6.1 parity suite completed with zero failures.
 - Residual risks: broader cross-role UAT matrix remains in Stage 6.2.
+
+### Stage 6.2 - Cross-Role UAT Matrix (Completed: 2026-05-13)
+
+Implementation Summary
+- Backend/API/service/repository updates: none.
+- Frontend/menu/filter updates: none.
+- Authorization/policy updates: none.
+- DB/schema/script updates: none.
+- Repository/test updates:
+  - added `CrossRoleUatMatrixIntegrationTests` to execute a School/College/University x SuperAdmin/Admin/Faculty/Student matrix on report-catalog visibility behavior,
+  - added matrix checks for account-security locked-account access boundaries (Admin/SuperAdmin allow; Faculty/Student deny) across all institution contexts,
+  - added matrix checks for attendance-by-offering access expectations (privileged roles allowed past authz gate; Student forbidden) across all institution contexts.
+
+Validation Summary
+- Automated tests: `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~CrossRoleUatMatrixIntegrationTests|FullyQualifiedName~ReportCatalogIntegrationTests|FullyQualifiedName~AccountSecurityIntegrationTests|FullyQualifiedName~AuthorizationRegressionTests" -v minimal` -> passed (`100/100`).
+- Role/Institute checks:
+  - confirmed role-boundary outcomes remain stable for SuperAdmin/Admin/Faculty/Student under institution claims `0/1/2`,
+  - confirmed report catalog remains role-scoped while account-security and attendance endpoints preserve expected permission boundaries across institution contexts.
+- Regression checks: Stage 6.2 focused UAT matrix completed with zero failures.
+- Residual risks: performance/query validation remains in Stage 6.3.

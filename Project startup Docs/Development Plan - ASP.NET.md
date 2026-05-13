@@ -19,6 +19,18 @@ Validation summaries must include at minimum:
 
 ## Execution Updates
 
+### 2026-05-13 - Institute Parity Stage 6.2 (Execution Snapshot)
+- Completed Phase 6 Stage 6.2 cross-role UAT matrix.
+- Implementation Summary:
+  - added cross-role UAT matrix integration tests for report catalog role visibility across institution claims `0/1/2`,
+  - added matrix checks for account-security locked endpoint role boundaries across institution claims `0/1/2`,
+  - added matrix checks for attendance-by-offering privileged-role and student-forbidden outcomes across institution claims `0/1/2`.
+- Validation Summary:
+  - `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~CrossRoleUatMatrixIntegrationTests|FullyQualifiedName~ReportCatalogIntegrationTests|FullyQualifiedName~AccountSecurityIntegrationTests|FullyQualifiedName~AuthorizationRegressionTests" -v minimal` passed (`100/100`),
+  - verified role-boundary outcomes remain stable for SuperAdmin/Admin/Faculty/Student across School/College/University institution contexts.
+- Stage status: Stage 6.2 completed.
+- Phase status: Phase 6 in progress (next: Stage 6.3).
+
 ### 2026-05-13 - Institute Parity Stage 6.1 (Execution Snapshot)
 - Completed Phase 6 Stage 6.1 automated test expansion.
 - Implementation Summary:

@@ -287,6 +287,16 @@ After every completed stage in `Docs/Institute-Parity-Issue-Fix-Phases.md`:
 - Schema impact: `No schema mutation`.
 - EF migration impact: none.
 
+## 2026-05-13 Update - Institute Parity Stage 6.2 (Execution Snapshot)
+
+- Stage 6.2 completed cross-role UAT matrix automation for institute parity.
+- API/web contract updates applied:
+	- no runtime API/Web contract changes (test-only stage).
+- Query/runtime update applied:
+	- expanded integration-test coverage for cross-role authorization and report-visibility behavior across institution claims `0/1/2`.
+- Schema impact: `No schema mutation`.
+- EF migration impact: none.
+
 ## 2026-05-12 Update — Institution License Validation Phase 7 (Execution Snapshot)
 
 - Completed SuperAdmin permission matrix against existing management and policy tables.

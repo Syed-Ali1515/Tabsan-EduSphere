@@ -93,6 +93,10 @@
 | `Stage 6.1 student submenu explicit department scope check` | Verifies Admin student-list requests with explicit department filter return only students from the requested in-scope department. | `tests/Tabsan.EduSphere.IntegrationTests/StudentSubmenuParityIntegrationTests.cs` |
 | `Stage 6.1 report enrollment-summary matched-institution check` | Verifies Admin enrollment-summary report access succeeds when institution query matches caller institution claim and assigned department scope. | `tests/Tabsan.EduSphere.IntegrationTests/ReportExportsIntegrationTests.cs` |
 | `Stage 6.1 focused parity regression gate` | Executes targeted lifecycle, submenu, and report institute-parity integration suites as automated regression evidence. | `tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj` |
+| `Stage 6.2 cross-role report catalog matrix` | Validates report-catalog role visibility behavior for SuperAdmin/Admin/Faculty/Student across School/College/University institution claims. | `tests/Tabsan.EduSphere.IntegrationTests/CrossRoleUatMatrixIntegrationTests.cs` |
+| `Stage 6.2 cross-role account-security matrix` | Validates locked-account endpoint role boundaries across School/College/University institution claim contexts. | `tests/Tabsan.EduSphere.IntegrationTests/CrossRoleUatMatrixIntegrationTests.cs` |
+| `Stage 6.2 cross-role attendance authorization matrix` | Validates attendance-by-offering authorization outcomes for privileged roles vs Student across School/College/University institution claims. | `tests/Tabsan.EduSphere.IntegrationTests/CrossRoleUatMatrixIntegrationTests.cs` |
+| `Stage 6.2 focused cross-role UAT regression gate` | Executes cross-role UAT matrix plus authorization/report baseline suites as Stage 6.2 evidence. | `tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj` |
 
 ## Institution License Validation Plan (2026-05-12)
 
