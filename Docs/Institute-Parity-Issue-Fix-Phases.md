@@ -813,3 +813,24 @@ Validation Summary
   - verified replay-safety duplicate checks are present for key seeded user/student identifiers.
 - Regression checks: no application-code regressions introduced (script-only stage).
 - Residual risks: final phase-exit one-run full dummy validation remains in Stage 5.4.
+
+### Stage 5.4 - Exit Criteria (Completed: 2026-05-13)
+
+Implementation Summary
+- Backend/API/service/repository updates: none.
+- Frontend/menu/filter updates: none.
+- Authorization/policy updates: none.
+- DB/schema/script updates:
+  - completed phase-exit one-run script execution gate using full deployment order (`01` -> `02` -> `03` -> `05`) against local SQL Server,
+  - hardened full dummy replay compatibility by resolving superadmin identity reuse in `Scripts/03-FullDummyData.sql` to prevent duplicate-email conflicts in environments with preexisting baseline superadmin rows,
+  - confirmed post-deployment parity/quality checks produce institute-distributed counts and critical entity coverage signals.
+- Repository/test updates: none.
+
+Validation Summary
+- Automated tests: `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~UserImportAndForceChangeIntegrationTests" -v minimal` -> passed (`3/3`).
+- Role/Institute checks:
+  - script-chain execution completed successfully with `Full dummy demo data seeding completed` and post-deployment checks reporting School/College/University coverage,
+  - post-checks reported non-zero parity coverage across institute-typed users, student profiles, timetables, payment receipts, and lifecycle/report artifacts,
+  - duplicate-safety checks remained clean (`DummySeed_RegistrationNumberDuplicates=0`, `DummySeed_UsernameDuplicates=0`).
+- Regression checks: no application-code regressions introduced (script-only phase exit).
+- Residual risks: none within Phase 5 scope.

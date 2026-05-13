@@ -19,6 +19,18 @@ Validation summaries must include at minimum:
 
 ## Execution Updates
 
+### 2026-05-13 - Institute Parity Stage 5.4 (Execution Snapshot)
+- Completed Phase 5 Stage 5.4 exit criteria.
+- Implementation Summary:
+  - executed the full script deployment chain (`01` -> `02` -> `03` -> `05`) as one-run readiness gate,
+  - fixed replay collision behavior in full dummy script by reusing existing superadmin identity when present,
+  - confirmed post-deployment checks report institute-level parity aggregates and duplicate-safety signals.
+- Validation Summary:
+  - `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~UserImportAndForceChangeIntegrationTests" -v minimal` passed (`3/3`),
+  - one-run sqlcmd execution completed with successful full dummy seed completion and post-check parity metrics.
+- Stage status: Stage 5.4 completed.
+- Phase status: Phase 5 completed (next: Phase 6 Stage 6.1).
+
 ### 2026-05-13 - Institute Parity Stage 5.3 (Execution Snapshot)
 - Completed Phase 5 Stage 5.3 data quality and replay safety.
 - Implementation Summary:

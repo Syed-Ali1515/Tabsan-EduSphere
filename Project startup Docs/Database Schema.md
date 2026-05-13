@@ -266,6 +266,17 @@ After every completed stage in `Docs/Institute-Parity-Issue-Fix-Phases.md`:
 - Schema impact: `No schema mutation`.
 - EF migration impact: none.
 
+## 2026-05-13 Update - Institute Parity Stage 5.4 (Execution Snapshot)
+
+- Stage 5.4 completed Phase 5 exit criteria for one-run script-chain readiness.
+- API/web contract updates applied:
+	- no runtime API/Web contract changes (script-only stage).
+- Query/runtime update applied:
+	- executed full script order (`01` -> `02` -> `03` -> `05`) successfully,
+	- added superadmin identity reuse in full dummy script to avoid replay collisions with preexisting baseline accounts.
+- Schema impact: `No schema mutation`.
+- EF migration impact: none.
+
 ## 2026-05-12 Update — Institution License Validation Phase 7 (Execution Snapshot)
 
 - Completed SuperAdmin permission matrix against existing management and policy tables.

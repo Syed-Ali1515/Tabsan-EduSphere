@@ -343,6 +343,20 @@ After each completed stage, this document must be updated to reflect any net fun
     - replayed full dummy seeding now preserves deterministic parity shape more strictly,
     - post-deployment verification now provides direct parity-count and duplicate-safety signals for Stage 5 quality gates.
 
+## 2026-05-13 Update - Institute Parity Stage 5.4 Exit Criteria Snapshot
+
+- Completed Phase 5 exit-criteria validation for script-chain readiness.
+- Exit validation behavior now confirms:
+    - full script deployment order (`01` -> `02` -> `03` -> `05`) succeeds in one run,
+    - dummy seed replay avoids superadmin duplicate-email collisions by reusing preexisting superadmin identity when available,
+    - post-deployment checks emit non-zero institute-distributed parity coverage and zero duplicate key-identifier signals.
+- Validation evidence:
+    - targeted user-import institution-assignment regression suite passed (`3/3`),
+    - one-run SQL execution reported successful full dummy completion and post-check parity metrics across School/College/University.
+- Behavior impact:
+    - Phase 5 database script parity scope is now closed with executable one-run readiness evidence,
+    - execution can proceed to Phase 6 QA/UAT/regression protection expansion.
+
 ---
 
 ## Table of Contents

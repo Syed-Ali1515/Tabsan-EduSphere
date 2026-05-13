@@ -332,6 +332,19 @@ Before starting any work, the assistant must:
   - `Docs/Command.md`
 - Next stage: Stage 5.4 (Exit Criteria).
 
+### Institute Parity Checkpoint (2026-05-13 - Stage 5.4)
+- Completed Stage 5.4 phase-exit validation in `Docs/Institute-Parity-Issue-Fix-Phases.md` with required Implementation Summary and Validation Summary.
+- Validated one-run script readiness with full execution order (`01` -> `02` -> `03` -> `05`) and successful post-deployment parity quality outputs.
+- Synchronized required tracking docs for stage closeout:
+  - `Docs/Institute-Parity-Issue-Fix-Phases.md`
+  - `Docs/Function-List.md`
+  - `Docs/Complete-Functionality-Reference.md`
+  - `Project startup Docs/Database Schema.md`
+  - `Project startup Docs/Development Plan - ASP.NET.md`
+  - `Project startup Docs/PRD.md`
+  - `Docs/Command.md`
+- Next stage: Phase 6 Stage 6.1 (Automated Test Expansion).
+
 ### Institution Validation Checkpoint (2026-05-12 - Phase 1)
 - Execution evidence captured in `Docs/Institution-License-Validation-Phases.md`.
 - Authentication and policy-read checks passed.
@@ -459,12 +472,12 @@ cmd /c git -C "<repo-root>" push origin main
 
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
-- Active Phase: **Institute Parity - Phase 5 (Database Scripts and Full Dummy Data Completion)**
-- Active Stage: **Stage 5.4 Exit Criteria (next execution target)**
-- Status: **Stage 5.3 completed and documented with validation evidence.**
+- Active Phase: **Institute Parity - Phase 6 (QA, UAT, and Regression Protection)**
+- Active Stage: **Stage 6.1 Automated Test Expansion (next execution target)**
+- Status: **Stage 5.4 completed and documented with validation evidence; Phase 5 closed.**
 - Last Updated: 2026-05-13
-- Next: **Execute Stage 5.4 phase-exit validation for full dummy one-run readiness and close out with required 7-document synchronization plus commit -> pull --rebase -> push.**
-- Docs Updated: ✅ Stage 5.3 tracker and planning docs synchronized (2026-05-13).
+- Next: **Execute Stage 6.1 automated test expansion for institute parity API/service/repository/permission layers and close out with required 7-document synchronization plus commit -> pull --rebase -> push.**
+- Docs Updated: ✅ Stage 5.4 tracker and planning docs synchronized (2026-05-13).
 
 ### 2026-05-11 - Phase 10 Completion
 - Stage 10.1: Added a parameterized progressive gate runner for stepwise scale validation and higher-tier execution.

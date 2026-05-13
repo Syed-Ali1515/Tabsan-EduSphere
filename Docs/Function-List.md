@@ -87,6 +87,8 @@
 | `Post-deployment institute parity aggregate checks` | Adds institute-level row-count outputs for users, student profiles, timetables, and payment receipts by School/College/University. | `Scripts/05-PostDeployment-Checks.sql` |
 | `Post-deployment critical workflow coverage checks` | Adds aggregate presence checks for parity-critical entities (assignments, timetable entries, payments, transcript exports, promotion/graduation/report-card artifacts). | `Scripts/05-PostDeployment-Checks.sql` |
 | `Post-deployment replay-safety duplicate checks` | Adds duplicate-detection outputs for usernames and registration numbers plus dataset-version single-row integrity check. | `Scripts/05-PostDeployment-Checks.sql` |
+| `Full dummy superadmin identity reuse` | Reuses existing superadmin identity when present to keep replay runs deterministic and prevent duplicate-email failures across mixed baseline environments. | `Scripts/03-FullDummyData.sql` |
+| `Phase 5 one-run deployment chain gate` | Validates end-to-end script readiness by executing schema, core seed, full dummy seed, and post-deployment checks in the required deployment order. | `Scripts/01-Schema-Current.sql`, `Scripts/02-Seed-Core.sql`, `Scripts/03-FullDummyData.sql`, `Scripts/05-PostDeployment-Checks.sql` |
 
 ## Institution License Validation Plan (2026-05-12)
 

@@ -42,6 +42,17 @@ DECLARE @RoleSuperAdmin INT = (SELECT TOP 1 [Id] FROM [roles] WHERE [Name] = N'S
 DECLARE @RoleAdmin INT = (SELECT TOP 1 [Id] FROM [roles] WHERE [Name] = N'Admin');
 DECLARE @RoleFaculty INT = (SELECT TOP 1 [Id] FROM [roles] WHERE [Name] = N'Faculty');
 DECLARE @RoleStudent INT = (SELECT TOP 1 [Id] FROM [roles] WHERE [Name] = N'Student');
+DECLARE @SuperAdminUserId UNIQUEIDENTIFIER = (
+    SELECT TOP 1 [Id]
+    FROM [users]
+    WHERE [Username] = N'superadmin' OR [Email] = N'superadmin@demo.local'
+    ORDER BY CASE WHEN [Username] = N'superadmin' THEN 0 ELSE 1 END
+);
+
+IF @SuperAdminUserId IS NULL
+BEGIN
+    SET @SuperAdminUserId = '66666666-6666-6666-6666-666666666601';
+END;
 
 IF @RoleSuperAdmin IS NULL OR @RoleAdmin IS NULL OR @RoleFaculty IS NULL OR @RoleStudent IS NULL
 BEGIN
@@ -134,7 +145,7 @@ DECLARE @Users TABLE (
 );
 
 INSERT INTO @Users VALUES
-('66666666-6666-6666-6666-666666666601', N'superadmin', N'superadmin@demo.local', @RoleSuperAdmin, NULL, NULL),
+(@SuperAdminUserId, N'superadmin', N'superadmin@demo.local', @RoleSuperAdmin, NULL, NULL),
 ('66666666-6666-6666-6666-666666666611', N'admin.it', N'admin.it@demo.local', @RoleAdmin, '11111111-1111-1111-1111-111111111111', 2),
 ('66666666-6666-6666-6666-666666666612', N'admin.bus', N'admin.bus@demo.local', @RoleAdmin, '11111111-1111-1111-1111-111111111112', 1),
 ('66666666-6666-6666-6666-666666666613', N'admin.lang', N'admin.lang@demo.local', @RoleAdmin, '11111111-1111-1111-1111-111111111113', 0),
@@ -511,7 +522,7 @@ IF OBJECT_ID(N'[bulk_promotion_batches]') IS NOT NULL
 BEGIN
     DECLARE @PromotionBatches TABLE (Id UNIQUEIDENTIFIER, Title NVARCHAR(180), [Status] INT, CreatedByUserId UNIQUEIDENTIFIER, ApprovedByUserId UNIQUEIDENTIFIER NULL, ReviewedAt DATETIME2 NULL, AppliedAt DATETIME2 NULL, ReviewNote NVARCHAR(1000) NULL);
     INSERT INTO @PromotionBatches VALUES
-    ('29292929-2929-2929-2929-292929292901', N'Institute Parity Cycle 2026', 2, '66666666-6666-6666-6666-666666666601', '66666666-6666-6666-6666-666666666601', DATEADD(day, -2, @Now), DATEADD(day, -1, @Now), N'Applied for school, college, and university demo students.');
+    ('29292929-2929-2929-2929-292929292901', N'Institute Parity Cycle 2026', 2, @SuperAdminUserId, @SuperAdminUserId, DATEADD(day, -2, @Now), DATEADD(day, -1, @Now), N'Applied for school, college, and university demo students.');
 
     INSERT INTO [bulk_promotion_batches] ([Id], [Title], [Status], [CreatedByUserId], [ApprovedByUserId], [ReviewedAt], [AppliedAt], [ReviewNote], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt])
     SELECT b.[Id], b.[Title], b.[Status], b.[CreatedByUserId], b.[ApprovedByUserId], b.[ReviewedAt], b.[AppliedAt], b.[ReviewNote], @Now, NULL, 0, NULL
@@ -550,7 +561,7 @@ BEGIN
     DECLARE @GraduationApprovals TABLE (Id UNIQUEIDENTIFIER, GraduationApplicationId UNIQUEIDENTIFIER, Stage INT, ApproverUserId UNIQUEIDENTIFIER, IsApproved BIT, Note NVARCHAR(1000), ActedAt DATETIME2);
     INSERT INTO @GraduationApprovals VALUES
     ('32323232-3232-3232-3232-323232323201', '31313131-3131-3131-3131-313131313101', 0, '66666666-6666-6666-6666-666666666611', 1, N'Department verification approved.', DATEADD(day, -10, @Now)),
-    ('32323232-3232-3232-3232-323232323202', '31313131-3131-3131-3131-313131313101', 1, '66666666-6666-6666-6666-666666666601', 1, N'Final approval granted.', DATEADD(day, -2, @Now));
+    ('32323232-3232-3232-3232-323232323202', '31313131-3131-3131-3131-313131313101', 1, @SuperAdminUserId, 1, N'Final approval granted.', DATEADD(day, -2, @Now));
 
     INSERT INTO [graduation_application_approvals] ([Id], [GraduationApplicationId], [Stage], [ApproverUserId], [IsApproved], [Note], [ActedAt], [CreatedAt], [UpdatedAt])
     SELECT a.[Id], a.[GraduationApplicationId], a.[Stage], a.[ApproverUserId], a.[IsApproved], a.[Note], a.[ActedAt], @Now, NULL
