@@ -113,6 +113,7 @@
 | `Phase 23 Stage 23.2 label vocabulary API endpoint` | Exposes authenticated vocabulary retrieval endpoint for current institution policy context via `GET /api/v1/labels`. | `src/Tabsan.EduSphere.API/Controllers/LabelController.cs` |
 | `Phase 23 Stage 23.2 portal vocabulary consumption` | Provides web client contract and portal module composition rendering for dynamic policy-aware labels without duplicating workflow views. | `src/Tabsan.EduSphere.Web/Services/EduApiClient.cs`, `src/Tabsan.EduSphere.Web/Views/Portal/ModuleComposition.cshtml`, `src/Tabsan.EduSphere.Web/Controllers/PortalController.cs` |
 | `Phase 23 Stage 23.2 integration parity test suite` | Validates dynamic label API behavior across University/School/College and mixed-mode precedence, authentication boundary, consistency, and web-layer context readiness. | `tests/Tabsan.EduSphere.IntegrationTests/DynamicLabelIntegrationTests.cs`, `tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj` |
+| `Phase 23 Stage 23.2 tracker synchronization` | Confirms Stage 23.2 completion details are synchronized in planning/hand-off docs including functionality reference updates. | `Docs/Advance-Enhancements.md`, `Docs/Functionality.md`, `Docs/Command.md`, `Project startup Docs/PRD.md`, `Project startup Docs/Database Schema.md`, `Project startup Docs/Development Plan - ASP.NET.md` |
 
 ## Institution License Validation Plan (2026-05-12)
 

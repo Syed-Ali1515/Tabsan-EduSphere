@@ -35,6 +35,7 @@ After every completed stage in `Docs/Institute-Parity-Issue-Fix-Phases.md`:
 - Validation evidence:
 	- integration suite `DynamicLabelIntegrationTests` passed (`8/8`),
 	- label-service unit tests remained passing.
+- Documentation synchronization: Stage 23.2 schema-impact outcome is reflected in planning/command/functionality trackers.
 - Schema impact: `No schema mutation`.
 - EF migration impact: none.
 

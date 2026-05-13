@@ -32,6 +32,18 @@
 - **Student scope model**: Students keep access to student-safe surfaces (for example transcript and dashboard context) while operational admin/faculty report endpoints remain restricted.
 - **SuperAdmin scope model**: SuperAdmin retains global visibility and management capability across all licensed institution contexts.
 
+## Advance Enhancements Behavior (Phase 23 Stage 23.2)
+
+- **Dynamic academic vocabulary**: Institution policy now drives shared academic wording for Period, Progression, Grading, Course, and Student Group terms.
+- **Vocabulary mapping behavior**:
+	- University policy resolves to Semester / Progression / GPA-CGPA / Course / Batch,
+	- School policy resolves to Grade / Promotion / Percentage / Subject / Class,
+	- College policy resolves to Year / Progression / Percentage / Subject / Year-Group,
+	- mixed policy precedence remains deterministic: University, then School, then College.
+- **API contract**: Authenticated callers use `GET /api/v1/labels` to retrieve current tenant vocabulary.
+- **Portal context behavior**: Dashboard module composition uses this vocabulary to keep one workflow surface while presenting institution-appropriate labels.
+- **Validation status**: Stage 23.2 integration verification passed (`8/8`) in `DynamicLabelIntegrationTests`.
+
 ---
 
 ## Authentication & Authorization

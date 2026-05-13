@@ -30,6 +30,7 @@ Validation summaries must include at minimum:
   - `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~DynamicLabelIntegrationTests" -v minimal` passed (`8/8`),
   - label-service unit validation in `Phase24Tests` remains green (`4/4`),
   - unauthenticated access guard and request consistency checks validated in integration suite.
+- Documentation synchronization: Stage 23.2 closeout details are propagated to Function List, Functionality, Schema, PRD, and Command trackers.
 - Stage status: Stage 23.2 completed.
 - Phase status: Phase 23 in progress (next: Stage 23.3 Dashboard Context Switching).
 

@@ -166,6 +166,7 @@ Before starting any work, the assistant must:
 - Synchronized required planning trackers for closeout:
   - `Docs/Advance-Enhancements.md`
   - `Docs/Function-List.md`
+  - `Docs/Functionality.md`
   - `Docs/Complete-Functionality-Reference.md`
   - `Project startup Docs/Database Schema.md`
   - `Project startup Docs/Development Plan - ASP.NET.md`
@@ -612,11 +613,11 @@ cmd /c git -C "<repo-root>" push origin main
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
 - Active Phase: **Phase 23 - Institution-Type Foundation**
-- Active Stage: **Stage 23.2 Dynamic Academic Labels and Context (next execution target)**
-- Status: **Stage 23.1 completed; institution-type configuration baseline is confirmed.**
-- Last Updated: 2026-05-13
-- Next: **Execute Phase 23 Stage 23.2 for institution-adaptive academic labels and context presentation without cloning workflows.**
-- Docs Updated: ✅ Phase 23 Stage 23.1 tracker and planning docs synchronized (2026-05-13).
+- Active Stage: **Stage 23.3 Dashboard Context Switching (next execution target)**
+- Status: **Stage 23.2 completed; dynamic academic labels and context validation is closed.**
+- Last Updated: 2026-05-14
+- Next: **Execute Phase 23 Stage 23.3 for role-relevant dashboard metrics by institution mode.**
+- Docs Updated: ✅ Phase 23 Stage 23.2 tracker and planning docs synchronized (2026-05-14).
 
 ### 2026-05-11 - Phase 10 Completion
 - Stage 10.1: Added a parameterized progressive gate runner for stepwise scale validation and higher-tier execution.
