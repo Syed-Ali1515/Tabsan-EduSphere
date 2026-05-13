@@ -90,6 +90,20 @@
 - Validation status: Stage 24.3 sidebar integration verification passed (`17/17` for the suite).
 - Status: Stage 24.3 completed and validated as of 2026-05-14.
 
+### Stage 25.1 - Grade/Class Structure
+- Student lifecycle progression surfaces now support academic-level terminology instead of fixed semester-only wording.
+- API contract:
+	- Added `GET /api/v1/student-lifecycle/academic-level-students/{departmentId}/{levelNumber}` for academic-level retrieval,
+	- Existing `semester-students` route remains available as backward-compatible alias.
+- Service contract:
+	- Added `GetStudentsByAcademicLevelAsync(...)` in lifecycle service interface and implementation.
+- Portal behavior:
+	- Student Lifecycle page loads institution vocabulary from labels API and uses dynamic `PeriodLabel` (Semester/Grade/Year) in controls, tabs, and table headers,
+	- Promotion confirmation message updated to "next academic level" wording.
+- Integration tests in `StudentLifecycleIntegrationTests` verify academic-level endpoint availability for scoped Admin flows.
+- Validation status: Stage 25.1 lifecycle integration verification passed (`4/4` for suite).
+- Status: Stage 25.1 completed and validated as of 2026-05-14.
+
 ## Authentication & Authorization
 
 ### User Authentication

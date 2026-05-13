@@ -236,6 +236,7 @@ public interface IEduApiClient
     Task<List<GraduationCandidateItem>> GetGraduationCandidatesAsync(Guid departmentId, CancellationToken ct);
     Task GraduateStudentAsync(Guid studentId, CancellationToken ct);
     Task GraduateStudentsBatchAsync(List<Guid> studentIds, CancellationToken ct);
+    Task<List<StudentItem>> GetStudentsByAcademicLevelAsync(Guid departmentId, int levelNumber, CancellationToken ct);
     Task<List<StudentItem>> GetStudentsBySemesterAsync(Guid departmentId, int semesterNumber, CancellationToken ct);
     Task PromoteStudentAsync(Guid studentId, CancellationToken ct);
 
@@ -2334,11 +2335,14 @@ public class EduApiClient : IEduApiClient
     public Task GraduateStudentsBatchAsync(List<Guid> studentIds, CancellationToken ct)
         => PostAsync<object, object>("api/v1/student-lifecycle/graduate/batch", new { studentProfileIds = studentIds }, ct);
 
-    public async Task<List<StudentItem>> GetStudentsBySemesterAsync(Guid departmentId, int semesterNumber, CancellationToken ct)
+    public async Task<List<StudentItem>> GetStudentsByAcademicLevelAsync(Guid departmentId, int levelNumber, CancellationToken ct)
     {
-        var raw = await GetAsync<List<StudentApiDto>>($"api/v1/student-lifecycle/semester-students/{departmentId}/{semesterNumber}", ct) ?? new();
+        var raw = await GetAsync<List<StudentApiDto>>($"api/v1/student-lifecycle/academic-level-students/{departmentId}/{levelNumber}", ct) ?? new();
         return raw.Select(MapStudent).ToList();
     }
+
+    public Task<List<StudentItem>> GetStudentsBySemesterAsync(Guid departmentId, int semesterNumber, CancellationToken ct)
+        => GetStudentsByAcademicLevelAsync(departmentId, semesterNumber, ct);
 
     public Task PromoteStudentAsync(Guid studentId, CancellationToken ct)
         => PostAsync<object, object>($"api/v1/student-lifecycle/{studentId}/promote", new { }, ct);

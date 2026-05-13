@@ -2301,11 +2301,14 @@ public class PortalController : Controller
             IsConnected         = _api.IsConnected(),
             SelectedDepartmentId = departmentId,
             SelectedSemester    = semester,
+            PeriodLabel         = "Semester",
             Message             = TempData["PortalMessage"]?.ToString()
         };
         if (!model.IsConnected) return View(model);
         try
         {
+            var vocabulary = await _api.GetVocabularyAsync(ct);
+            model.PeriodLabel = vocabulary?.PeriodLabel ?? "Semester";
             model.Departments = await _api.GetDepartmentsAsync(ct);
 
             if (identity is { IsSuperAdmin: false, InstitutionType: not null })
@@ -2326,7 +2329,7 @@ public class PortalController : Controller
                 if (model.Departments.Any(d => d.Id == departmentId.Value))
                 {
                     model.GraduationCandidates = await _api.GetGraduationCandidatesAsync(departmentId.Value, ct);
-                    model.StudentsBySemester   = await _api.GetStudentsBySemesterAsync(departmentId.Value, semester, ct);
+                    model.StudentsBySemester   = await _api.GetStudentsByAcademicLevelAsync(departmentId.Value, semester, ct);
                 }
             }
         }
@@ -2350,7 +2353,7 @@ public class PortalController : Controller
     {
         if (_api.IsConnected())
         {
-            try { await _api.PromoteStudentAsync(studentId, ct); TempData["PortalMessage"] = "Student promoted."; }
+            try { await _api.PromoteStudentAsync(studentId, ct); TempData["PortalMessage"] = "Student promoted to the next academic level."; }
             catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
         }
         return RedirectToAction(nameof(StudentLifecycle), new { departmentId, semester });

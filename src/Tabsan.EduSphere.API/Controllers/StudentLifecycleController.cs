@@ -130,22 +130,28 @@ public class StudentLifecycleController : ControllerBase
         }
     }
 
-    // ── GET /api/v1/student-lifecycle/semester-students/{departmentId}/{semester} ──
+    // ── GET /api/v1/student-lifecycle/academic-level-students/{departmentId}/{level} ──
 
-    /// <summary>Returns all Active students in a department currently in the given semester number.</summary>
-    [HttpGet("semester-students/{departmentId:guid}/{semesterNumber:int}")]
-    public async Task<IActionResult> GetStudentsBySemester(
+    /// <summary>Returns all Active students in a department currently in the given academic level number.</summary>
+    [HttpGet("academic-level-students/{departmentId:guid}/{levelNumber:int}")]
+    public async Task<IActionResult> GetStudentsByAcademicLevel(
         Guid departmentId,
-        int semesterNumber,
+        int levelNumber,
         CancellationToken ct)
     {
         var scope = await EnforceDepartmentScopeAsync(departmentId, ct);
         if (scope is not null)
             return scope;
 
-        var students = await _service.GetStudentsBySemesterAsync(departmentId, semesterNumber, ct);
+        var students = await _service.GetStudentsByAcademicLevelAsync(departmentId, levelNumber, ct);
         return Ok(students);
     }
+
+    // ── GET /api/v1/student-lifecycle/semester-students/{departmentId}/{semester} ──
+    // Backward-compatible alias for legacy portal/API clients.
+    [HttpGet("semester-students/{departmentId:guid}/{semesterNumber:int}")]
+    public Task<IActionResult> GetStudentsBySemester(Guid departmentId, int semesterNumber, CancellationToken ct)
+        => GetStudentsByAcademicLevel(departmentId, semesterNumber, ct);
 
     // ── POST /api/v1/student-lifecycle/{id}/promote ───────────────────────────
 

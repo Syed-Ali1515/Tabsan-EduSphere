@@ -856,6 +856,7 @@ public class StudentLifecyclePageModel
 {
     public bool   IsConnected          { get; set; }
     public string? Message             { get; set; }
+    public string PeriodLabel          { get; set; } = "Semester";
     public List<GraduationCandidateItem> GraduationCandidates { get; set; } = new();
     public List<StudentItem>             StudentsBySemester   { get; set; } = new();
     public List<LookupItem>              Departments          { get; set; } = new();

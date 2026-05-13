@@ -26,7 +26,7 @@ else
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">Semester</label>
+                    <label class="form-label">@Model.PeriodLabel</label>
                     <select name="semester" class="form-select" onchange="this.form.submit()">
                         @for (int i = 1; i <= 8; i++)
                         {
@@ -47,7 +47,7 @@ else
         </li>
         <li class="nav-item">
             <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabSem">
-                Semester Students
+                @Model.PeriodLabel Students
                 <span class="badge bg-secondary ms-1">@Model.StudentsBySemester.Count</span>
             </button>
         </li>
@@ -101,14 +101,14 @@ else
         <div class="tab-pane fade" id="tabSem">
             @if (Model.StudentsBySemester.Count == 0)
             {
-                <p class="text-muted">No students in selected department / semester.</p>
+                <p class="text-muted">No students in selected department / @Model.PeriodLabel.ToLowerInvariant().</p>
             }
             else
             {
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead class="table-light">
-                            <tr><th>Reg. No.</th><th>Name</th><th>Semester</th><th>Action</th></tr>
+                            <tr><th>Reg. No.</th><th>Name</th><th>@Model.PeriodLabel</th><th>Action</th></tr>
                         </thead>
                         <tbody>
                             @foreach (var s in Model.StudentsBySemester)

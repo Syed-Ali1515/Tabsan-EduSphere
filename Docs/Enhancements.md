@@ -10,6 +10,11 @@
 - Disabled module areas are hidden from menu output, keeping navigation aligned with Stage 24.2 backend module enforcement.
 - Validation: `SidebarMenuIntegrationTests` passed (`17/17`) including module disable/restore visibility checks.
 
+### 2026-05-14 — Phase 25 Stage 25.1 Complete
+- Added academic-level lifecycle route `GET /api/v1/student-lifecycle/academic-level-students/{departmentId}/{levelNumber}` with backward-compatible semester-route aliasing.
+- Student Lifecycle portal now uses institution-aware period vocabulary (`Semester`/`Grade`/`Year`) from labels API for filter labels and student-level table headings.
+- Validation: `StudentLifecycleIntegrationTests` passed (`4/4`) including academic-level route coverage.
+
 ### 2026-05-09 — Phase 28 Stage 28.1 Complete
 - Phase 28 is now **In Progress** with **Stage 28.1 — API and App Tier Scaling** completed.
 - API and Web now enable Brotli/Gzip response compression for lower payload cost under higher concurrent traffic.

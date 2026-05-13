@@ -69,7 +69,13 @@ public class StudentLifecycleService : IStudentLifecycleService
         }
     }
 
-    // ── Semester Completion & Promotion ───────────────────────────────────
+    // ── Academic-Level Progression & Promotion ────────────────────────────
+    public Task<IList<SemesterPromotionSummaryDto>> GetStudentsByAcademicLevelAsync(
+        Guid departmentId,
+        int levelNumber,
+        CancellationToken ct = default)
+        => GetStudentsBySemesterAsync(departmentId, levelNumber, ct);
+
     public async Task<IList<SemesterPromotionSummaryDto>> GetStudentsBySemesterAsync(
         Guid departmentId,
         int semesterNumber,

@@ -13,7 +13,7 @@ Purpose:
 - Preserve core functionality, global configuration behavior, and role-rights policy.
 
 Status:
-- In progress (Phase 24 completed, Stage 24.3 completed)
+- In progress (Phase 25 in progress, Stage 25.1 completed)
 
 ## Execution Updates
 
@@ -98,6 +98,20 @@ Status:
 - Behavior impact: disabled modules are no longer shown in navigation surfaces and users are less likely to attempt unavailable module flows.
 - Residual risks: low; portal route-level behavior remains sidebar-key driven and therefore inherits the filtered visibility contract.
 - Documentation synchronization completed for Stage 24.3 across planning and tracker docs.
+
+### 2026-05-14 - Phase 25 Stage 25.1 (Grade/Class Structure)
+- Completed Stage 25.1 by introducing an academic-level lifecycle API path and institution-aware period wording in lifecycle navigation.
+- Implementation evidence:
+	- added `GET /api/v1/student-lifecycle/academic-level-students/{departmentId}/{levelNumber}`,
+	- existing semester endpoint preserved as backward-compatible alias,
+	- `IStudentLifecycleService` now exposes `GetStudentsByAcademicLevelAsync(...)` with compatibility mapping to existing semester-backed data,
+	- portal lifecycle page now resolves dynamic `PeriodLabel` from `GET /api/v1/labels` and renders level controls/headings as Semester/Grade/Year based on institution policy.
+- Validation evidence:
+	- extended `StudentLifecycleIntegrationTests` with academic-level endpoint coverage,
+	- focused lifecycle integration suite passing (`4/4`).
+- Behavior impact: lifecycle screens are no longer semester-first in wording, enabling grade/class-oriented flow for School mode while preserving existing contracts.
+- Residual risks: low; numeric storage remains `CurrentSemesterNumber` internally, with presentation and routing now academic-level oriented.
+- Documentation synchronization completed for Stage 25.1 across planning and tracker docs.
 
 ---
 

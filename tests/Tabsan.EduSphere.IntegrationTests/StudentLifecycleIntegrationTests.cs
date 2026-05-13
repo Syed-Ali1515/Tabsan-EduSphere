@@ -55,6 +55,18 @@ public class StudentLifecycleIntegrationTests
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
+    [Fact]
+    public async Task AcademicLevelStudents_WithAdminMatchingInstitution_ReturnsOk()
+    {
+        var seeded = await SeedLifecycleScopeDataAsync(InstitutionType.School, InstitutionType.School);
+
+        using var client = CreateAdminClient(seeded.AdminUserId, seeded.AdminInstitutionType);
+
+        var response = await client.GetAsync($"api/v1/student-lifecycle/academic-level-students/{seeded.DepartmentId}/1");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
     private HttpClient CreateAdminClient(Guid adminUserId, int institutionType)
     {
         var client = _factory.CreateClient();

@@ -20,7 +20,13 @@ public interface IStudentLifecycleService
     /// <summary>Marks multiple students as Graduated in batch.</summary>
     Task GraduateStudentsBatchAsync(IList<Guid> studentProfileIds, CancellationToken ct = default);
 
-    // ── Semester Completion & Promotion ───────────────────────────────────
+    // ── Academic-Level Progression & Promotion ────────────────────────────
+    /// <summary>Gets all Active students in a department currently in the given academic level number.</summary>
+    Task<IList<SemesterPromotionSummaryDto>> GetStudentsByAcademicLevelAsync(
+        Guid departmentId,
+        int levelNumber,
+        CancellationToken ct = default);
+
     /// <summary>Gets all Active students in a department currently in the given semester number.</summary>
     Task<IList<SemesterPromotionSummaryDto>> GetStudentsBySemesterAsync(
         Guid departmentId,
