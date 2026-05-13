@@ -28,6 +28,15 @@ Dashboard highlights typically include:
 
 Recommended routine: review dashboard at the start and end of each teaching day.
 
+## 3.1 Role and Institute Filter Behavior
+
+Faculty scope is filtered by role, offering assignment, and institution context:
+- Visible operational menus and data are constrained to assigned offerings and institute-compatible departments.
+- Report and analytics surfaces enforce assignment + institution compatibility.
+- Requests outside authorized scope can return access-denied responses by design.
+
+If expected data is missing, confirm offering assignment and selected filters with your Admin.
+
 ## 4. Course Offerings and Enrollment View
 
 Path: Sidebar > Courses / Enrollments

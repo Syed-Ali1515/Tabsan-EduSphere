@@ -420,6 +420,20 @@ After each completed stage, this document must be updated to reflect any net fun
     - no runtime feature contract changes or schema mutations introduced by Stage 7.1,
     - operational deployment guidance is now explicit and reproducible for Phase 7 rollout.
 
+## 2026-05-13 Update - Institute Parity Stage 7.2 Functional Documentation Snapshot
+
+- Completed functional documentation alignment for institute parity behavior across shared functionality and user-facing role guides.
+- Added explicit role/institute scope guidance for:
+    - Admin department/institute scope boundaries,
+    - Faculty assignment + institute scoped access,
+    - Student safe-surface access and restricted operational endpoints.
+- Validation evidence:
+    - Stage 7.2 documentation updates synchronized across required tracking docs and user guides,
+    - command execution pointer advanced to Stage 7.3.
+- Behavior impact:
+    - no runtime feature contract changes or schema mutations introduced by Stage 7.2,
+    - institute parity behavior is now explicitly documented for operational users.
+
 ---
 
 ## Table of Contents

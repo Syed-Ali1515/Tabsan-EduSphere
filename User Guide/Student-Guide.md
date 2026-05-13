@@ -27,6 +27,15 @@ The student dashboard usually shows:
 
 Use this page daily to avoid missing deadlines.
 
+## 3.1 Role and Institute Filter Behavior
+
+Student access is intentionally scoped for safety and parity:
+- You can access student-safe surfaces like dashboard context, transcript/results views, assignments, quizzes, and notifications.
+- Operational admin/faculty report endpoints are restricted for Student role.
+- Visible terms and filter behavior can vary depending on institution context (School/College/University).
+
+If you cannot access expected learning data, contact faculty/admin with course, semester, and current filter details.
+
 ## 4. Academic Record and Semester History
 
 Path: Sidebar > My Academic Record

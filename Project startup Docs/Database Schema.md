@@ -328,6 +328,15 @@ After every completed stage in `Docs/Institute-Parity-Issue-Fix-Phases.md`:
 - Schema impact: `No schema mutation`.
 - EF migration impact: none.
 
+## 2026-05-13 Update - Institute Parity Stage 7.2 (Execution Snapshot)
+
+- Stage 7.2 completed functional documentation update for institute parity behavior.
+- Documentation updates applied:
+	- added role/institute parity behavior guidance in `Docs/Functionality.md`,
+	- added role/institute filter behavior guidance across user guides (`User Guide/README.md`, `Admin-Guide.md`, `Faculty-Guide.md`, `Student-Guide.md`).
+- Schema impact: `No schema mutation`.
+- EF migration impact: none.
+
 ## 2026-05-12 Update — Institution License Validation Phase 7 (Execution Snapshot)
 
 - Completed SuperAdmin permission matrix against existing management and policy tables.

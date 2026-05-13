@@ -23,6 +23,17 @@
 
 ---
 
+## Institute Parity Behavior (Stage 7.2)
+
+- **Institution-aware scope**: School, College, and University behavior is governed by license policy and explicit user institution assignment when present.
+- **Role + institute guardrails**: Role authorization is combined with institute and assignment scope checks on report, analytics, and lifecycle-sensitive operations.
+- **Menu and route consistency**: Hidden sidebar sections are enforced at portal route level, so direct URL navigation cannot bypass role/institute visibility restrictions.
+- **Admin/Faculty operational scope**: Department and offering access must align with assignment and institute compatibility for parity-sensitive data surfaces.
+- **Student scope model**: Students keep access to student-safe surfaces (for example transcript and dashboard context) while operational admin/faculty report endpoints remain restricted.
+- **SuperAdmin scope model**: SuperAdmin retains global visibility and management capability across all licensed institution contexts.
+
+---
+
 ## Authentication & Authorization
 
 ### User Authentication

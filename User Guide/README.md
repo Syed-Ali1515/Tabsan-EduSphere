@@ -23,5 +23,6 @@ Version: 1.1 — updated 05 May 2026
 ## Notes
 
 - Features shown in each guide depend on activated modules and current license state.
+- Role and institute filters are enforced together: visible menus, data scope, and report behavior can differ between School, College, and University contexts.
 - Some screens can look slightly different depending on theme and deployment settings.
 - Audit-sensitive actions such as publishing results and system-level changes are logged.

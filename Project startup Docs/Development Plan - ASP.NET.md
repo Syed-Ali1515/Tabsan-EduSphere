@@ -19,6 +19,17 @@ Validation summaries must include at minimum:
 
 ## Execution Updates
 
+### 2026-05-13 - Institute Parity Stage 7.2 (Execution Snapshot)
+- Completed Phase 7 Stage 7.2 functional documentation update.
+- Implementation Summary:
+  - updated functionality reference with institute parity role/scope behavior guidance,
+  - updated user-facing guides with explicit role/institute filter behavior instructions for Admin, Faculty, and Student flows.
+- Validation Summary:
+  - verified Stage 7.2 snapshots/checkpoints are synchronized across mandatory tracking docs,
+  - verified command pointer progression to Stage 7.3.
+- Stage status: Stage 7.2 completed.
+- Phase status: Phase 7 in progress (next: Stage 7.3).
+
 ### 2026-05-13 - Institute Parity Stage 7.1 (Execution Snapshot)
 - Completed Phase 7 Stage 7.1 deployment runbook finalization.
 - Implementation Summary:

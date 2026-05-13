@@ -931,3 +931,24 @@ Validation Summary
   - verified schema script contains DB create/context switch guards and post-check script contains fail-fast verification gates,
   - verified cleanup fallback script for accidental `master` pollution remains available.
 - Residual risks: Stage 7.2/7.3 documentation + operational handover tasks remain.
+
+### Stage 7.2 - Functional Documentation Update (Completed: 2026-05-13)
+
+Implementation Summary
+- Backend/API/service/repository updates: none.
+- Frontend/menu/filter updates: none.
+- Authorization/policy updates: none.
+- DB/schema/script updates: none.
+- Documentation updates:
+  - updated `Docs/Functionality.md` with institute parity behavior guidance (role + institute scope model),
+  - updated user guides (`User Guide/README.md`, `Admin-Guide.md`, `Faculty-Guide.md`, `Student-Guide.md`) with role/institute filter behavior instructions,
+  - synchronized Stage 7.2 snapshots/checkpoints across mandatory tracking docs.
+- Repository/test updates: none.
+
+Validation Summary
+- Automated tests: not applicable for Stage 7.2 (documentation update stage).
+- Role/Institute checks: documentation review confirms role/institute filter behavior is now explicitly documented for Admin, Faculty, Student, and platform-level guidance.
+- Regression checks:
+  - verified Stage 7.2 entries are present in required tracking docs,
+  - verified Current Execution Pointer is advanced to Stage 7.3.
+- Residual risks: Stage 7.3 monitoring/support handover and Stage 7.4 release exit criteria remain.

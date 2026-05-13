@@ -414,6 +414,19 @@ Before starting any work, the assistant must:
   - `Docs/Command.md`
 - Next stage: Stage 7.2 (Functional Documentation Update).
 
+### Institute Parity Checkpoint (2026-05-13 - Stage 7.2)
+- Completed Stage 7.2 functional documentation update in `Docs/Institute-Parity-Issue-Fix-Phases.md` with required Implementation Summary and Validation Summary.
+- Updated functionality and user-facing guides with explicit role/institute filter behavior guidance for parity operations.
+- Synchronized required tracking docs for stage closeout:
+  - `Docs/Institute-Parity-Issue-Fix-Phases.md`
+  - `Docs/Function-List.md`
+  - `Docs/Complete-Functionality-Reference.md`
+  - `Project startup Docs/Database Schema.md`
+  - `Project startup Docs/Development Plan - ASP.NET.md`
+  - `Project startup Docs/PRD.md`
+  - `Docs/Command.md`
+- Next stage: Stage 7.3 (Monitoring and Support Handover).
+
 ### Institution Validation Checkpoint (2026-05-12 - Phase 1)
 - Execution evidence captured in `Docs/Institution-License-Validation-Phases.md`.
 - Authentication and policy-read checks passed.
@@ -542,11 +555,11 @@ cmd /c git -C "<repo-root>" push origin main
 ## Current Execution Pointer
 - Plan Source: Docs/Advance-Enhancements.md
 - Active Phase: **Institute Parity - Phase 7 (Release, Documentation, and Operational Readiness)**
-- Active Stage: **Stage 7.2 Functional Documentation Update (next execution target)**
-- Status: **Stage 7.1 completed and documented; deployment runbook finalized with execution, rollback, and verification guidance.**
+- Active Stage: **Stage 7.3 Monitoring and Support Handover (next execution target)**
+- Status: **Stage 7.2 completed and documented; functional and user-guide parity behavior documentation is synchronized.**
 - Last Updated: 2026-05-13
-- Next: **Execute Stage 7.2 functional documentation update for institute parity behavior (functionality + command + user-facing role/institute filtering guidance) and close out with required 7-document synchronization plus commit -> pull --rebase -> push.**
-- Docs Updated: ✅ Stage 7.1 tracker and planning docs synchronized (2026-05-13).
+- Next: **Execute Stage 7.3 monitoring and support handover for parity scope (report/analytics monitoring points + institute-scope triage checklist) and close out with required 7-document synchronization plus commit -> pull --rebase -> push.**
+- Docs Updated: ✅ Stage 7.2 tracker and planning docs synchronized (2026-05-13).
 
 ### 2026-05-11 - Phase 10 Completion
 - Stage 10.1: Added a parameterized progressive gate runner for stepwise scale validation and higher-tier execution.

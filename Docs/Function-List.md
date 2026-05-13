@@ -103,6 +103,8 @@
 | `Stage 6.4 consolidated parity exit gate` | Executes combined Stage 6.1/6.2/6.3 regression suites as Phase 6 exit certification evidence across role and institution matrices. | `tests/Tabsan.EduSphere.IntegrationTests` |
 | `Stage 7.1 deployment run-order finalization` | Finalizes deterministic database deployment order, environment notes, and operator prerequisites for parity rollout. | `Scripts/README.md` |
 | `Stage 7.1 rollback and verification checklist` | Defines backup, failure handling, cleanup fallback, and post-deployment evidence checklist for operational readiness. | `Scripts/README.md` |
+| `Stage 7.2 institute parity functionality guidance` | Documents role/institute parity behavior and scoped access model in functionality reference content. | `Docs/Functionality.md` |
+| `Stage 7.2 role/institute user-guide filter guidance` | Documents role-specific institute filtering behavior and expected access boundaries for Admin, Faculty, Student, and shared guide entry points. | `User Guide/README.md`, `User Guide/Admin-Guide.md`, `User Guide/Faculty-Guide.md`, `User Guide/Student-Guide.md` |
 
 ## Institution License Validation Plan (2026-05-12)
 

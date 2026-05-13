@@ -30,6 +30,16 @@ Daily routine recommendation:
 - Check unresolved alerts
 - Confirm key academic workflows are progressing
 
+## 3.1 Role and Institute Filter Behavior
+
+Admin visibility and actions are controlled by both role and institute scope:
+- Menus and data listings can differ by active institution context (School/College/University).
+- Department-scoped operations remain limited to assigned and institute-compatible departments.
+- Report and analytics requests may be denied when institution context mismatches requested scope.
+
+Operational recommendation:
+- If data appears missing, verify selected department/institution filters and assignment scope before raising incident tickets.
+
 ## 4. User Management (Department)
 
 Path: Sidebar > Users or Department Management
