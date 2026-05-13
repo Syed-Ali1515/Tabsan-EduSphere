@@ -95,33 +95,38 @@ public class ProgressionService : IProgressionService
     private static ProgressionDecision BuildSchoolDecision(
         Domain.Academic.StudentProfile student, decimal passThreshold)
     {
-        var semGpa = student.CurrentSemesterGpa; // treated as % proxy for school
-        var canProgress = semGpa >= passThreshold;
+        var percentage = NormalizeToPercentage(student.CurrentSemesterGpa);
+        var canProgress = percentage >= passThreshold;
         var currentLabel = $"Grade {student.CurrentSemesterNumber}";
         var nextLabel    = $"Grade {student.CurrentSemesterNumber + 1}";
         var remarks = canProgress
-            ? $"Percentage {semGpa:F2}% ≥ {passThreshold:F2}% — eligible for grade promotion."
-            : $"Percentage {semGpa:F2}% < {passThreshold:F2}% — does not meet the pass requirement.";
+            ? $"Percentage {percentage:F2}% ≥ {passThreshold:F2}% — eligible for grade promotion."
+            : $"Percentage {percentage:F2}% < {passThreshold:F2}% — does not meet the pass requirement.";
 
         return new ProgressionDecision(student.Id, InstitutionType.School,
-            canProgress, currentLabel, nextLabel, semGpa, passThreshold, remarks);
+            canProgress, currentLabel, nextLabel, percentage, passThreshold, remarks);
     }
 
     private static ProgressionDecision BuildCollegeDecision(
         Domain.Academic.StudentProfile student, decimal passThreshold)
     {
-        var semGpa = student.CurrentSemesterGpa; // treated as % proxy for college
+        var percentage = NormalizeToPercentage(student.CurrentSemesterGpa);
         var year = (student.CurrentSemesterNumber + 1) / 2; // semesters → years
-        var canProgress = semGpa >= passThreshold;
+        var canProgress = percentage >= passThreshold;
         var currentLabel = $"Year {year}";
         var nextLabel    = $"Year {year + 1}";
         var remarks = canProgress
-            ? $"Percentage {semGpa:F2}% ≥ {passThreshold:F2}% — eligible for year promotion."
-            : $"Percentage {semGpa:F2}% < {passThreshold:F2}% — does not meet the pass requirement.";
+            ? $"Percentage {percentage:F2}% ≥ {passThreshold:F2}% — eligible for year promotion."
+            : $"Percentage {percentage:F2}% < {passThreshold:F2}% — does not meet the pass requirement.";
 
         return new ProgressionDecision(student.Id, InstitutionType.College,
-            canProgress, currentLabel, nextLabel, semGpa, passThreshold, remarks);
+            canProgress, currentLabel, nextLabel, percentage, passThreshold, remarks);
     }
+
+    // Legacy academic standing stores GPA-scale values (0-4); School/College progression
+    // needs percentage semantics, so normalize when values are in GPA range.
+    private static decimal NormalizeToPercentage(decimal score)
+        => score <= 4.0m ? score * 25m : score;
 
     private static decimal DefaultPassThreshold(InstitutionType type)
         => type == InstitutionType.University ? 2.0m : 40m;

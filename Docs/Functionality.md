@@ -116,6 +116,14 @@
 - Validation status: Stage 25.2 unit verification passed in `Phase26Tests` (stream constraint scenarios covered).
 - Status: Stage 25.2 completed and validated as of 2026-05-14.
 
+### Stage 25.3 - School Grading and Promotion
+- School-mode lifecycle promotion now enforces pass-rule checks through progression evaluation before advancing grade level.
+- School/College progression score handling now normalizes legacy GPA-scale values (0.0-4.0) into percentage-equivalent values for threshold comparison.
+- Student self-progression endpoint now supports current token claim naming (`studentProfileId`) with fallback compatibility (`student_profile_id`).
+- Integration tests in `StudentLifecycleIntegrationTests` verify school promotion denial when pass criteria are not met.
+- Validation status: Stage 25.3 focused lifecycle integration verification passed.
+- Status: Stage 25.3 completed and validated as of 2026-05-14.
+
 ## Authentication & Authorization
 
 ### User Authentication

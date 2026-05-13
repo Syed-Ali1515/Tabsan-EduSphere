@@ -85,7 +85,8 @@ public class ProgressionController : ControllerBase
     [Authorize(Policy = "Student")]
     public async Task<IActionResult> GetMyProgression(InstitutionType type, CancellationToken ct)
     {
-        var studentProfileIdClaim = User.FindFirstValue("student_profile_id");
+        var studentProfileIdClaim = User.FindFirstValue("studentProfileId")
+            ?? User.FindFirstValue("student_profile_id");
         if (!Guid.TryParse(studentProfileIdClaim, out var profileId))
             return Forbid();
 

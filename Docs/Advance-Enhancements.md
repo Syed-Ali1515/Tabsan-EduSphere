@@ -13,7 +13,7 @@ Purpose:
 - Preserve core functionality, global configuration behavior, and role-rights policy.
 
 Status:
-- In progress (Phase 25 in progress, Stage 25.2 completed)
+- In progress (Phase 25 in progress, Stage 25.3 completed)
 
 ## Execution Updates
 
@@ -130,6 +130,19 @@ Status:
 - Behavior impact: School grade-band stream governance is now enforced server-side, and student subject visibility aligns with assigned stream without schema churn.
 - Residual risks: low; keyword filtering is naming-dependent and intentionally keeps fallback behavior for legacy datasets until explicit stream-to-subject mapping is introduced.
 - Documentation synchronization completed for Stage 25.2 across planning and tracker docs.
+
+### 2026-05-14 - Phase 25 Stage 25.3 (School Grading and Promotion)
+- Completed Stage 25.3 by enforcing School pass-rule promotion logic in lifecycle promotion flows.
+- Implementation evidence:
+	- `StudentLifecycleService.PromoteStudentAsync(...)` now routes School institution promotions through progression evaluation/promotion rules,
+	- `ProgressionService` now normalizes School/College progression score interpretation to percentage semantics when legacy GPA-scale values are present,
+	- `ProgressionController.GetMyProgression(...)` now accepts `studentProfileId` claim naming with fallback support.
+- Validation evidence:
+	- extended `StudentLifecycleIntegrationTests` with School promotion failure-path coverage when pass criteria are not met,
+	- focused lifecycle integration suite passed after Stage 25.3 updates.
+- Behavior impact: School grade promotion now requires pass-threshold eligibility instead of unconditional level increment.
+- Residual risks: medium-low; percentage inference still relies on current academic standing fields until full school-native percentage storage is introduced.
+- Documentation synchronization completed for Stage 25.3 across planning and tracker docs.
 
 ---
 

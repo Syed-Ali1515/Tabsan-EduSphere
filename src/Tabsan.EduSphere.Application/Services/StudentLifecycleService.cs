@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Tabsan.EduSphere.Application.DTOs.Academic;
 using Tabsan.EduSphere.Application.Dtos;
 using Tabsan.EduSphere.Application.Interfaces;
 using Tabsan.EduSphere.Domain.Academic;
@@ -17,15 +18,18 @@ namespace Tabsan.EduSphere.Application.Services;
 public class StudentLifecycleService : IStudentLifecycleService
 {
     private readonly IStudentLifecycleRepository _repository;
+    private readonly IProgressionService _progression;
     private readonly INotificationService _notifications;
     private readonly IUserRepository _users;
 
     public StudentLifecycleService(
         IStudentLifecycleRepository repository,
+        IProgressionService progression,
         INotificationService notifications,
         IUserRepository users)
     {
         _repository    = repository;
+        _progression   = progression;
         _notifications = notifications;
         _users         = users;
     }
@@ -98,6 +102,14 @@ public class StudentLifecycleService : IStudentLifecycleService
 
         if (student.Status != Domain.Enums.StudentStatus.Active)
             throw new InvalidOperationException($"Only Active students can be promoted. Student {studentProfileId} has status {student.Status}.");
+
+        if (student.Department?.InstitutionType == InstitutionType.School)
+        {
+            await _progression.PromoteAsync(
+                new ProgressionEvaluationRequest(studentProfileId, InstitutionType.School),
+                ct);
+            return;
+        }
 
         student.AdvanceSemester();
         await _repository.UpdateAsync(student, ct);

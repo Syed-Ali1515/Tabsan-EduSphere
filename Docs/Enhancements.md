@@ -21,6 +21,12 @@
 - Preserved compatibility by falling back to unfiltered offerings when legacy course naming does not include stream-specific subject markers.
 - Validation: `Phase26Tests` stream-assignment unit coverage passed with new School/grade-band constraint scenarios.
 
+### 2026-05-14 — Phase 25 Stage 25.3 Complete
+- School-mode lifecycle promotion now enforces progression pass rules before grade advancement.
+- Progression scoring for School/College now converts legacy GPA-scale values (0-4) into percentage-equivalent values for threshold checks.
+- Student self-progression endpoint now supports `studentProfileId` claim naming used by current JWT payloads.
+- Validation: `StudentLifecycleIntegrationTests` includes School promotion pass-rule denial coverage and passed in focused run.
+
 ### 2026-05-09 — Phase 28 Stage 28.1 Complete
 - Phase 28 is now **In Progress** with **Stage 28.1 — API and App Tier Scaling** completed.
 - API and Web now enable Brotli/Gzip response compression for lower payload cost under higher concurrent traffic.

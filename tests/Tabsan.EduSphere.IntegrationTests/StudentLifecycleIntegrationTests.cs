@@ -67,6 +67,18 @@ public class StudentLifecycleIntegrationTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
+    [Fact]
+    public async Task PromoteStudent_SchoolWithoutPassingScore_ReturnsBadRequest()
+    {
+        var seeded = await SeedLifecycleScopeDataAsync(InstitutionType.School, InstitutionType.School);
+
+        using var client = CreateAdminClient(seeded.AdminUserId, seeded.AdminInstitutionType);
+
+        var response = await client.PostAsync($"api/v1/student-lifecycle/{seeded.StudentProfileId}/promote", content: null);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
     private HttpClient CreateAdminClient(Guid adminUserId, int institutionType)
     {
         var client = _factory.CreateClient();
