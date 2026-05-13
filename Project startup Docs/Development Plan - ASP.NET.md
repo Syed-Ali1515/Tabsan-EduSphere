@@ -19,6 +19,18 @@ Validation summaries must include at minimum:
 
 ## Execution Updates
 
+### 2026-05-13 - Institute Parity Stage 0.3 (Execution Snapshot)
+- Completed report failure inventory baseline with required root-cause tagging.
+- Implementation Summary:
+  - inventoried historical and current report failures across result/report center/analytics surfaces,
+  - classified outcomes into query logic, filter/join gaps, scoping mismatch, and dummy-data absence,
+  - mapped each item to remediation stage ownership.
+- Validation Summary:
+  - validated evidence against issue docs, report controller guards, report repository query paths, and report integration tests,
+  - confirmed historical critical failures are resolved,
+  - confirmed remaining parity risks are filter-propagation and data completeness oriented.
+- Stage status: Stage 0.3 completed.
+
 ### 2026-05-13 - Institute Parity Stage 0.2 (Execution Snapshot)
 - Completed role and institute access matrix baseline for parity-scope modules.
 - Implementation Summary:

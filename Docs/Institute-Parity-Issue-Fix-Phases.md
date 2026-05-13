@@ -324,3 +324,29 @@ Validation Summary
 - Confirmed SuperAdmin global capability is largely present, Admin/Faculty scoping is mostly department/offering bounded, and Student actions are limited to self-service flows.
 - Confirmed institute parity is currently enforced via mixed mechanisms (policy flags and indirect scope proxies), creating inconsistent behavior risk across modules.
 - Residual risks: missing explicit institute checks in selected module mutation paths and incomplete School/College filter propagation in reports/analytics.
+
+### Stage 0.3 - Report Failure Inventory (Completed: 2026-05-13)
+
+Implementation Summary
+- Created baseline report failure inventory from historical issue logs, current report controller guards, report repository/query patterns, and integration-test coverage.
+- Classified each report issue with root-cause tags required by this stage: query logic, missing joins/filters, incorrect institute scoping, data absence, and authorization/policy mismatch.
+- Mapped current resolution status (historically fixed vs parity risk still open) to drive Phase 4 remediation prioritization.
+
+Report Failure Inventory (Baseline)
+
+| Report / Surface | Symptom | Root-Cause Tag(s) | Current Status | Follow-up Stage |
+|---|---|---|---|---|
+| Result Summary (`/api/v1/reports/result-summary`) | Historical `System.InvalidOperationException` during summary load | Query logic | Resolved historically (query/order and safe projection updates) | Stage 4.3 regression verification |
+| Report Center catalog visibility | Historical missing report items for privileged roles | Authorization/policy mismatch; data absence in role mapping rows | Resolved historically (SuperAdmin active-report bypass + visibility fixes) | Stage 4.3 regression verification |
+| Report exports (job + direct) | Runtime 400/403/404 outcomes when filters/scope are invalid | Authorization/policy mismatch | By design for invalid scope; inventory retained to avoid false-positive defect reports | Stage 4.2 documentation + UX hints |
+| Analytics/report institute filters | School/College/University parity filters not consistently explicit across all report paths | Incorrect institute scoping; missing joins/filters | Open parity risk | Stage 4.1 + Stage 4.2 |
+| Faculty report generation | Fails without `courseOfferingId` for faculty role | Authorization/policy mismatch | Expected guardrail, but operational friction risk | Stage 4.2 UX + API contract clarity |
+| Admin report generation | Fails without explicit department/offering filter in multi-dept admin scope | Authorization/policy mismatch | Expected guardrail, but operational friction risk | Stage 4.2 UX + API contract clarity |
+| Transcript report (`/api/v1/reports/student-transcript`) | NotFound when student profile is absent | Data absence in dummy seed | Expected behavior; demo data completeness dependency | Stage 5.2 + Stage 5.3 |
+| Low-attendance / semester reports | Potential empty outputs under sparse seed distributions | Data absence in dummy seed | Open demo data quality risk | Stage 5.2 + Stage 5.3 |
+
+Validation Summary
+- Evidence sources validated: `Docs/Observed-Issues.md`, report API guard conditions, report repository query builders, and integration tests for catalog and export metadata routes.
+- Confirmed historical critical failures (Result Summary exception and Report Center visibility) are documented as resolved with regression safeguards present.
+- Confirmed remaining report parity risks are primarily institute filter propagation and seeded-data completeness, not unresolved core runtime crashes.
+- Residual risks: parity regressions may still appear where institute-specific constraints are inferred indirectly via department/offering scope rather than explicit institute filters.

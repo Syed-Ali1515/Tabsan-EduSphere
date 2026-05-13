@@ -35,6 +35,16 @@ After every completed stage in `Docs/Institute-Parity-Issue-Fix-Phases.md`:
 - Schema impact: `No schema mutation`.
 - EF migration impact: none.
 
+## 2026-05-13 Update - Institute Parity Stage 0.3 (Execution Snapshot)
+
+- Stage 0.3 completed as report-failure inventory and root-cause classification.
+- Schema/dependency touchpoints reviewed for report behavior:
+	- report definition and role assignment entities,
+	- course/department/offering joins used by report repository queries,
+	- student-profile dependent transcript/report paths.
+- Schema impact: `No schema mutation`.
+- EF migration impact: none.
+
 ## 2026-05-12 Update — Institution License Validation Phase 7 (Execution Snapshot)
 
 - Completed SuperAdmin permission matrix against existing management and policy tables.

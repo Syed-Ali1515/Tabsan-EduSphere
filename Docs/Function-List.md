@@ -15,6 +15,8 @@
 | `University-Default Hotspot Inventory` | Tracks University-centric defaults/labels/templates discovered during Stage 0.1 for Phase 1-4 remediation. | `Docs/Institute-Parity-Issue-Fix-Phases.md` |
 | `Stage 0.2 Role-Institute Access Matrix` | Defines baseline role x institute x module x action coverage and identifies scope-enforcement gaps for parity fixes. | `Docs/Institute-Parity-Issue-Fix-Phases.md` |
 | `Scope Guard Baseline (Dept/Offering/Ownership)` | Documents current enforcement basis used by major module endpoints before institute-specific hardening. | `Docs/Institute-Parity-Issue-Fix-Phases.md` |
+| `Stage 0.3 Report Failure Inventory` | Tracks report/analytics failures by root-cause tag and maps each to remediation stages. | `Docs/Institute-Parity-Issue-Fix-Phases.md` |
+| `Report Guardrail Outcome Classification` | Distinguishes expected scope-guard failures (400/403/404) from true report defects to reduce false-positive bug triage. | `Docs/Institute-Parity-Issue-Fix-Phases.md` |
 
 ## Institution License Validation Plan (2026-05-12)
 

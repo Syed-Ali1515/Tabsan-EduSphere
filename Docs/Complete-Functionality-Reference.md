@@ -31,6 +31,18 @@ After each completed stage, this document must be updated to reflect any net fun
     - School/College filter coverage still incomplete on selected analytics/report surfaces.
 - No runtime behavior changes were introduced in Stage 0.2; this is baseline authorization/scope mapping evidence for upcoming remediation stages.
 
+## 2026-05-13 Update - Institute Parity Stage 0.3 Report Failure Snapshot
+
+- Completed baseline inventory of report failures and report-adjacent operational failure modes.
+- Confirmed previously observed critical failures are resolved:
+    - Result Summary runtime exception,
+    - Report Center visibility gaps for privileged roles.
+- Classified remaining report parity risks:
+    - incomplete explicit School/College/University filter propagation,
+    - expected scope-guard failures that require UX/API clarity,
+    - sparse dummy data causing empty outputs in some report scenarios.
+- This stage introduced no runtime code change; it establishes a tagged failure backlog for Phase 4 and Phase 5 execution.
+
 ---
 
 ## Table of Contents
