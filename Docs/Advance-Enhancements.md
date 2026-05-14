@@ -13,7 +13,7 @@ Purpose:
 - Preserve core functionality, global configuration behavior, and role-rights policy.
 
 Status:
-- In progress (Phase 30 queued, Phase 29 completed)
+- In progress (Phase 30 in progress, Stage 30.1 completed)
 
 ## Execution Updates
 
@@ -395,7 +395,11 @@ Complexity: High
 Depends on: Phase 29
 
 ### Stage 30.1 - Redis Caching
-- Cache dashboard summaries, report summaries, common profile reads.
+- Status: Completed (2026-05-14).
+- Added distributed-cache layer for dashboard context summaries (`/api/v1/dashboard/context`) with short TTL for role/policy scoped payload reuse.
+- Added distributed-cache layer for report summary reads (attendance, result, assignment, quiz, GPA, enrollment, semester results) using parameterized cache keys.
+- Added distributed-cache layer for common tenant profile reads (onboarding template, subscription plan, tenant profile) with write-path cache invalidation.
+- Validation: solution build and unit tests passed after cache integration changes.
 
 ### Stage 30.2 - Background Job Offloading
 - Move heavy operations out of request cycle:

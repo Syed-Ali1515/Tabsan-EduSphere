@@ -1,4 +1,7 @@
 using FluentAssertions;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using Tabsan.EduSphere.Application.Dtos;
 using Tabsan.EduSphere.Application.Services;
 using Tabsan.EduSphere.Domain.Interfaces;
@@ -14,7 +17,7 @@ public class Phase30Stage2Tests
     public async Task GetSubscriptionPlanAsync_ReturnsDefaults_WhenSettingsAreMissing()
     {
         var repo = new InMemorySettingsRepository();
-        var sut = new TenantOperationsService(repo);
+        var sut = new TenantOperationsService(repo, CreateDistributedCache());
 
         var plan = await sut.GetSubscriptionPlanAsync();
 
@@ -28,7 +31,7 @@ public class Phase30Stage2Tests
     public async Task SaveSubscriptionPlanAsync_PersistsValues_InPortalSettingsStore()
     {
         var repo = new InMemorySettingsRepository();
-        var sut = new TenantOperationsService(repo);
+        var sut = new TenantOperationsService(repo, CreateDistributedCache());
 
         await sut.SaveSubscriptionPlanAsync(new SaveTenantSubscriptionPlanCommand(
             PlanKey: "enterprise",
@@ -51,7 +54,7 @@ public class Phase30Stage2Tests
     public async Task SaveAndGetTenantProfileAsync_RoundTripsValues()
     {
         var repo = new InMemorySettingsRepository();
-        var sut = new TenantOperationsService(repo);
+        var sut = new TenantOperationsService(repo, CreateDistributedCache());
 
         await sut.SaveTenantProfileAsync(new SaveTenantProfileSettingsCommand(
             TenantCode: "north-campus",
@@ -69,6 +72,9 @@ public class Phase30Stage2Tests
         profile.CurrencyCode.Should().Be("PKR");
         profile.BrandingTheme.Should().Be("north-theme");
     }
+
+    private static IDistributedCache CreateDistributedCache()
+        => new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
 }
 
 file sealed class InMemorySettingsRepository : ISettingsRepository

@@ -1,4 +1,7 @@
 using FluentAssertions;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using Tabsan.EduSphere.Application.Dtos;
 using Tabsan.EduSphere.Application.Interfaces;
 using Tabsan.EduSphere.Application.Modules;
@@ -75,8 +78,8 @@ public class Phase31Stage1RegressionMatrixTests
         var tenantARepo = new MatrixSettingsRepository();
         var tenantBRepo = new MatrixSettingsRepository();
 
-        var tenantA = new TenantOperationsService(tenantARepo);
-        var tenantB = new TenantOperationsService(tenantBRepo);
+        var tenantA = new TenantOperationsService(tenantARepo, CreateDistributedCache());
+        var tenantB = new TenantOperationsService(tenantBRepo, CreateDistributedCache());
 
         await tenantA.SaveTenantProfileAsync(new SaveTenantProfileSettingsCommand(
             TenantCode: "tenant-a",
@@ -105,6 +108,9 @@ public class Phase31Stage1RegressionMatrixTests
         profileB.TenantCode.Should().Be("tenant-b");
         profileA.TenantCode.Should().NotBe(profileB.TenantCode);
     }
+
+    private static IDistributedCache CreateDistributedCache()
+        => new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
 }
 
 file sealed class MatrixEntitlementResolver : IModuleEntitlementResolver

@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
+using System.Text.Json;
 using Tabsan.EduSphere.API.Middleware;
 using Tabsan.EduSphere.Application.Interfaces;
 
@@ -16,15 +18,20 @@ public sealed class DashboardCompositionController : ControllerBase
     private readonly IDashboardCompositionService _composer;
     private readonly IModuleRegistryService _moduleRegistry;
     private readonly ILabelService _labelService;
+    private readonly IDistributedCache _distributedCache;
+
+    private static readonly TimeSpan ContextCacheTtl = TimeSpan.FromSeconds(30);
 
     public DashboardCompositionController(
         IDashboardCompositionService composer,
         IModuleRegistryService moduleRegistry,
-        ILabelService labelService)
+        ILabelService labelService,
+        IDistributedCache distributedCache)
     {
         _composer = composer;
         _moduleRegistry = moduleRegistry;
         _labelService = labelService;
+        _distributedCache = distributedCache;
     }
 
     /// <summary>Returns widget descriptors for the current user's role and institution context.</summary>
@@ -56,13 +63,24 @@ public sealed class DashboardCompositionController : ControllerBase
                    ?? User.FindFirst("role")?.Value ?? "";
         var policy = HttpContext.GetInstitutionPolicy();
 
+        var cacheKey = $"dashboard:context:{role.ToLowerInvariant()}:{policy.IncludeSchool}:{policy.IncludeCollege}:{policy.IncludeUniversity}";
+        var cached = await _distributedCache.GetStringAsync(cacheKey, ct);
+        if (!string.IsNullOrWhiteSpace(cached))
+        {
+            var cachedPayload = JsonSerializer.Deserialize<object>(cached);
+            if (cachedPayload is not null)
+            {
+                return Ok(cachedPayload);
+            }
+        }
+
         var modulesTask = _moduleRegistry.GetVisibleModulesAsync(role, policy, ct);
         var widgets = _composer.GetWidgets(role, policy);
         var vocabulary = _labelService.GetVocabulary(policy);
 
         var modules = await modulesTask;
 
-        return Ok(new
+        var payload = new
         {
             Modules = modules.Select(m => new
             {
@@ -86,6 +104,17 @@ public sealed class DashboardCompositionController : ControllerBase
                 w.Icon,
                 w.Order
             }).ToList()
-        });
+        };
+
+        await _distributedCache.SetStringAsync(
+            cacheKey,
+            JsonSerializer.Serialize(payload),
+            new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = ContextCacheTtl
+            },
+            ct);
+
+        return Ok(payload);
     }
 }

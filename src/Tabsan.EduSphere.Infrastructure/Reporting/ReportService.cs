@@ -21,6 +21,7 @@ public sealed class ReportService : IReportService
     private readonly IDistributedCache _distributedCache;
 
     private static readonly TimeSpan CatalogCacheTtl = TimeSpan.FromMinutes(5);
+    private static readonly TimeSpan SummaryCacheTtl = TimeSpan.FromSeconds(45);
 
     public ReportService(IReportRepository repo, IDistributedCache distributedCache)
     {
@@ -64,18 +65,30 @@ public sealed class ReportService : IReportService
     public async Task<AttendanceSummaryReportResponse> GetAttendanceSummaryAsync(
         AttendanceSummaryRequest request, CancellationToken ct = default)
     {
-        var raw = await _repo.GetAttendanceDataAsync(
-            request.SemesterId, request.CourseOfferingId, request.StudentProfileId, request.InstitutionType, ct);
+        var cacheKey = BuildSummaryCacheKey(
+            "attendance",
+            request.SemesterId,
+            request.CourseOfferingId,
+            request.StudentProfileId,
+            request.InstitutionType,
+            null,
+            null);
 
-        var rows = raw.Select(r => new AttendanceSummaryRow(
-            r.StudentProfileId, r.RegistrationNumber, r.StudentName,
-            r.CourseOfferingId, r.CourseCode, r.CourseTitle,
-            r.TotalSessions, r.AttendedSessions, r.AttendancePercentage)).ToList();
+        return await GetOrSetCachedSummaryAsync(cacheKey, async () =>
+        {
+            var raw = await _repo.GetAttendanceDataAsync(
+                request.SemesterId, request.CourseOfferingId, request.StudentProfileId, request.InstitutionType, ct);
 
-        return new AttendanceSummaryReportResponse(
-            rows,
-            rows.Select(r => r.StudentProfileId).Distinct().Count(),
-            DateTime.UtcNow);
+            var rows = raw.Select(r => new AttendanceSummaryRow(
+                r.StudentProfileId, r.RegistrationNumber, r.StudentName,
+                r.CourseOfferingId, r.CourseCode, r.CourseTitle,
+                r.TotalSessions, r.AttendedSessions, r.AttendancePercentage)).ToList();
+
+            return new AttendanceSummaryReportResponse(
+                rows,
+                rows.Select(r => r.StudentProfileId).Distinct().Count(),
+                DateTime.UtcNow);
+        }, ct);
     }
 
     // ── Result Summary ─────────────────────────────────────────────────────────
@@ -83,15 +96,27 @@ public sealed class ReportService : IReportService
     public async Task<ResultSummaryReportResponse> GetResultSummaryAsync(
         ResultSummaryRequest request, CancellationToken ct = default)
     {
-        var raw = await _repo.GetResultDataAsync(
-            request.SemesterId, request.CourseOfferingId, request.StudentProfileId, request.InstitutionType, ct);
+        var cacheKey = BuildSummaryCacheKey(
+            "result",
+            request.SemesterId,
+            request.CourseOfferingId,
+            request.StudentProfileId,
+            request.InstitutionType,
+            null,
+            null);
 
-        var rows = raw.Select(r => new ResultSummaryRow(
-            r.StudentProfileId, r.RegistrationNumber, r.StudentName,
-            r.CourseCode, r.CourseTitle, r.ResultType,
-            r.MarksObtained, r.MaxMarks, r.Percentage, r.PublishedAt)).ToList();
+        return await GetOrSetCachedSummaryAsync(cacheKey, async () =>
+        {
+            var raw = await _repo.GetResultDataAsync(
+                request.SemesterId, request.CourseOfferingId, request.StudentProfileId, request.InstitutionType, ct);
 
-        return new ResultSummaryReportResponse(rows, rows.Count, DateTime.UtcNow);
+            var rows = raw.Select(r => new ResultSummaryRow(
+                r.StudentProfileId, r.RegistrationNumber, r.StudentName,
+                r.CourseCode, r.CourseTitle, r.ResultType,
+                r.MarksObtained, r.MaxMarks, r.Percentage, r.PublishedAt)).ToList();
+
+            return new ResultSummaryReportResponse(rows, rows.Count, DateTime.UtcNow);
+        }, ct);
     }
 
     // ── Assignment Summary ───────────────────────────────────────────────────
@@ -99,21 +124,33 @@ public sealed class ReportService : IReportService
     public async Task<AssignmentSummaryReportResponse> GetAssignmentSummaryAsync(
         AssignmentSummaryRequest request, CancellationToken ct = default)
     {
-        var raw = await _repo.GetAssignmentDataAsync(
-            request.SemesterId, request.CourseOfferingId, request.StudentProfileId, request.InstitutionType, ct);
+        var cacheKey = BuildSummaryCacheKey(
+            "assignment",
+            request.SemesterId,
+            request.CourseOfferingId,
+            request.StudentProfileId,
+            request.InstitutionType,
+            request.DepartmentId,
+            null);
 
-        if (request.DepartmentId.HasValue)
+        return await GetOrSetCachedSummaryAsync(cacheKey, async () =>
         {
-            raw = raw.Where(r => r.DepartmentId == request.DepartmentId.Value)
-                     .ToList();
-        }
+            var raw = await _repo.GetAssignmentDataAsync(
+                request.SemesterId, request.CourseOfferingId, request.StudentProfileId, request.InstitutionType, ct);
 
-        var rows = raw.Select(r => new AssignmentSummaryRow(
-            r.StudentProfileId, r.RegistrationNumber, r.StudentName,
-            r.CourseCode, r.CourseTitle, r.AssignmentTitle,
-            r.DueDate, r.SubmittedAt, r.Status, r.MarksAwarded)).ToList();
+            if (request.DepartmentId.HasValue)
+            {
+                raw = raw.Where(r => r.DepartmentId == request.DepartmentId.Value)
+                         .ToList();
+            }
 
-        return new AssignmentSummaryReportResponse(rows, rows.Count, DateTime.UtcNow);
+            var rows = raw.Select(r => new AssignmentSummaryRow(
+                r.StudentProfileId, r.RegistrationNumber, r.StudentName,
+                r.CourseCode, r.CourseTitle, r.AssignmentTitle,
+                r.DueDate, r.SubmittedAt, r.Status, r.MarksAwarded)).ToList();
+
+            return new AssignmentSummaryReportResponse(rows, rows.Count, DateTime.UtcNow);
+        }, ct);
     }
 
     // ── Quiz Summary ─────────────────────────────────────────────────────────
@@ -121,21 +158,33 @@ public sealed class ReportService : IReportService
     public async Task<QuizSummaryReportResponse> GetQuizSummaryAsync(
         QuizSummaryRequest request, CancellationToken ct = default)
     {
-        var raw = await _repo.GetQuizDataAsync(
-            request.SemesterId, request.CourseOfferingId, request.StudentProfileId, request.InstitutionType, ct);
+        var cacheKey = BuildSummaryCacheKey(
+            "quiz",
+            request.SemesterId,
+            request.CourseOfferingId,
+            request.StudentProfileId,
+            request.InstitutionType,
+            request.DepartmentId,
+            null);
 
-        if (request.DepartmentId.HasValue)
+        return await GetOrSetCachedSummaryAsync(cacheKey, async () =>
         {
-            raw = raw.Where(r => r.DepartmentId == request.DepartmentId.Value)
-                     .ToList();
-        }
+            var raw = await _repo.GetQuizDataAsync(
+                request.SemesterId, request.CourseOfferingId, request.StudentProfileId, request.InstitutionType, ct);
 
-        var rows = raw.Select(r => new QuizSummaryRow(
-            r.StudentProfileId, r.RegistrationNumber, r.StudentName,
-            r.CourseCode, r.CourseTitle, r.QuizTitle,
-            r.StartedAt, r.FinishedAt, r.AttemptStatus, r.TotalScore)).ToList();
+            if (request.DepartmentId.HasValue)
+            {
+                raw = raw.Where(r => r.DepartmentId == request.DepartmentId.Value)
+                         .ToList();
+            }
 
-        return new QuizSummaryReportResponse(rows, rows.Count, DateTime.UtcNow);
+            var rows = raw.Select(r => new QuizSummaryRow(
+                r.StudentProfileId, r.RegistrationNumber, r.StudentName,
+                r.CourseCode, r.CourseTitle, r.QuizTitle,
+                r.StartedAt, r.FinishedAt, r.AttemptStatus, r.TotalScore)).ToList();
+
+            return new QuizSummaryReportResponse(rows, rows.Count, DateTime.UtcNow);
+        }, ct);
     }
 
     // ── GPA Report ─────────────────────────────────────────────────────────────
@@ -143,15 +192,27 @@ public sealed class ReportService : IReportService
     public async Task<GpaReportResponse> GetGpaReportAsync(
         GpaReportRequest request, CancellationToken ct = default)
     {
-        var raw = await _repo.GetGpaDataAsync(request.DepartmentId, request.ProgramId, request.InstitutionType, ct);
+        var cacheKey = BuildSummaryCacheKey(
+            "gpa",
+            null,
+            null,
+            null,
+            request.InstitutionType,
+            request.DepartmentId,
+            request.ProgramId);
 
-        var rows = raw.Select(r => new Tabsan.EduSphere.Application.DTOs.Reports.GpaReportRow(
-            r.StudentProfileId, r.RegistrationNumber, r.StudentName,
-            r.ProgramName, r.DepartmentName,
-            r.CurrentSemesterNumber, r.Cgpa, r.CurrentSemesterGpa)).ToList();
+        return await GetOrSetCachedSummaryAsync(cacheKey, async () =>
+        {
+            var raw = await _repo.GetGpaDataAsync(request.DepartmentId, request.ProgramId, request.InstitutionType, ct);
 
-        var avgCgpa = rows.Any() ? Math.Round(rows.Average(r => r.Cgpa), 2) : 0m;
-        return new GpaReportResponse(rows, avgCgpa, rows.Count, DateTime.UtcNow);
+            var rows = raw.Select(r => new Tabsan.EduSphere.Application.DTOs.Reports.GpaReportRow(
+                r.StudentProfileId, r.RegistrationNumber, r.StudentName,
+                r.ProgramName, r.DepartmentName,
+                r.CurrentSemesterNumber, r.Cgpa, r.CurrentSemesterGpa)).ToList();
+
+            var avgCgpa = rows.Any() ? Math.Round(rows.Average(r => r.Cgpa), 2) : 0m;
+            return new GpaReportResponse(rows, avgCgpa, rows.Count, DateTime.UtcNow);
+        }, ct);
     }
 
     // ── Enrollment Summary ─────────────────────────────────────────────────────
@@ -159,14 +220,26 @@ public sealed class ReportService : IReportService
     public async Task<EnrollmentSummaryReportResponse> GetEnrollmentSummaryAsync(
         EnrollmentSummaryRequest request, CancellationToken ct = default)
     {
-        var raw = await _repo.GetEnrollmentDataAsync(request.SemesterId, request.DepartmentId, request.InstitutionType, ct);
+        var cacheKey = BuildSummaryCacheKey(
+            "enrollment",
+            request.SemesterId,
+            null,
+            null,
+            request.InstitutionType,
+            request.DepartmentId,
+            null);
 
-        var rows = raw.Select(r => new EnrollmentSummaryRow(
-            r.CourseOfferingId, r.CourseCode, r.CourseTitle, r.SemesterName,
-            r.MaxEnrollment, r.EnrolledCount,
-            r.MaxEnrollment - r.EnrolledCount)).ToList();
+        return await GetOrSetCachedSummaryAsync(cacheKey, async () =>
+        {
+            var raw = await _repo.GetEnrollmentDataAsync(request.SemesterId, request.DepartmentId, request.InstitutionType, ct);
 
-        return new EnrollmentSummaryReportResponse(rows, rows.Count, DateTime.UtcNow);
+            var rows = raw.Select(r => new EnrollmentSummaryRow(
+                r.CourseOfferingId, r.CourseCode, r.CourseTitle, r.SemesterName,
+                r.MaxEnrollment, r.EnrolledCount,
+                r.MaxEnrollment - r.EnrolledCount)).ToList();
+
+            return new EnrollmentSummaryReportResponse(rows, rows.Count, DateTime.UtcNow);
+        }, ct);
     }
 
     // ── Semester Results ───────────────────────────────────────────────────────
@@ -174,18 +247,77 @@ public sealed class ReportService : IReportService
     public async Task<SemesterResultsReportResponse> GetSemesterResultsAsync(
         SemesterResultsRequest request, CancellationToken ct = default)
     {
-        var raw = await _repo.GetSemesterResultDataAsync(request.SemesterId, request.DepartmentId, request.InstitutionType, ct);
+        var cacheKey = BuildSummaryCacheKey(
+            "semester-results",
+            request.SemesterId,
+            null,
+            null,
+            request.InstitutionType,
+            request.DepartmentId,
+            null);
 
-        var rows = raw.Select(r => new SemesterResultsRow(
-            r.StudentProfileId, r.RegistrationNumber, r.StudentName,
-            r.CourseCode, r.CourseTitle, r.ResultType,
-            r.MarksObtained, r.MaxMarks, r.Percentage)).ToList();
+        return await GetOrSetCachedSummaryAsync(cacheKey, async () =>
+        {
+            var raw = await _repo.GetSemesterResultDataAsync(request.SemesterId, request.DepartmentId, request.InstitutionType, ct);
 
-        return new SemesterResultsReportResponse(
-            rows,
-            rows.Select(r => r.StudentProfileId).Distinct().Count(),
-            DateTime.UtcNow);
+            var rows = raw.Select(r => new SemesterResultsRow(
+                r.StudentProfileId, r.RegistrationNumber, r.StudentName,
+                r.CourseCode, r.CourseTitle, r.ResultType,
+                r.MarksObtained, r.MaxMarks, r.Percentage)).ToList();
+
+            return new SemesterResultsReportResponse(
+                rows,
+                rows.Select(r => r.StudentProfileId).Distinct().Count(),
+                DateTime.UtcNow);
+        }, ct);
     }
+
+    private async Task<T> GetOrSetCachedSummaryAsync<T>(
+        string cacheKey,
+        Func<Task<T>> factory,
+        CancellationToken ct) where T : class
+    {
+        var cached = await _distributedCache.GetStringAsync(cacheKey, ct);
+        if (!string.IsNullOrWhiteSpace(cached))
+        {
+            var cachedResponse = JsonSerializer.Deserialize<T>(cached);
+            if (cachedResponse is not null)
+            {
+                return cachedResponse;
+            }
+        }
+
+        var response = await factory();
+        await _distributedCache.SetStringAsync(
+            cacheKey,
+            JsonSerializer.Serialize(response),
+            new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = SummaryCacheTtl
+            },
+            ct);
+
+        return response;
+    }
+
+    private static string BuildSummaryCacheKey(
+        string reportType,
+        Guid? semesterId,
+        Guid? courseOfferingId,
+        Guid? studentProfileId,
+        int? institutionType,
+        Guid? departmentId,
+        Guid? programId)
+        => string.Join(
+            ":",
+            "report_summary",
+            reportType,
+            semesterId?.ToString("N") ?? "none",
+            courseOfferingId?.ToString("N") ?? "none",
+            studentProfileId?.ToString("N") ?? "none",
+            institutionType?.ToString() ?? "none",
+            departmentId?.ToString("N") ?? "none",
+            programId?.ToString("N") ?? "none");
 
     // ── Excel Exports ──────────────────────────────────────────────────────────
 

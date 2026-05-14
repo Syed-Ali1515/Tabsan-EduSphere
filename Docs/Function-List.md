@@ -945,6 +945,25 @@
 | `5-Phase29-CapacityGrowthDashboard.sql` | Provides table-size capacity snapshots and recent growth telemetry for high-volume tables. | `Scripts/5-Phase29-CapacityGrowthDashboard.sql` |
 | `Scripts/README.md` Phase 29 section | Documents operational run commands for archive policy, index maintenance, and growth dashboards. | `Scripts/README.md` |
 
+### API/Application/Infrastructure — Phase 30 Stage 30.1 (Redis Caching)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `DashboardCompositionController.GetContext(ct)` | Adds distributed cache-backed dashboard context payload reuse for role + institution-policy scoped dashboard summaries. | `API/Controllers/DashboardCompositionController.cs` |
+| `ReportService.GetAttendanceSummaryAsync(request, ct)` | Adds distributed cache for attendance summary report reads keyed by report filter parameters. | `Infrastructure/Reporting/ReportService.cs` |
+| `ReportService.GetResultSummaryAsync(request, ct)` | Adds distributed cache for result summary report reads keyed by report filter parameters. | `Infrastructure/Reporting/ReportService.cs` |
+| `ReportService.GetAssignmentSummaryAsync(request, ct)` | Adds distributed cache for assignment summary report reads keyed by report filter parameters. | `Infrastructure/Reporting/ReportService.cs` |
+| `ReportService.GetQuizSummaryAsync(request, ct)` | Adds distributed cache for quiz summary report reads keyed by report filter parameters. | `Infrastructure/Reporting/ReportService.cs` |
+| `ReportService.GetGpaReportAsync(request, ct)` | Adds distributed cache for GPA report summary reads keyed by report filter parameters. | `Infrastructure/Reporting/ReportService.cs` |
+| `ReportService.GetEnrollmentSummaryAsync(request, ct)` | Adds distributed cache for enrollment summary report reads keyed by report filter parameters. | `Infrastructure/Reporting/ReportService.cs` |
+| `ReportService.GetSemesterResultsAsync(request, ct)` | Adds distributed cache for semester-results summary reads keyed by report filter parameters. | `Infrastructure/Reporting/ReportService.cs` |
+| `TenantOperationsService.GetOnboardingTemplateAsync(ct)` | Adds distributed cache for onboarding-template profile reads. | `Application/Services/SettingsServices.cs` |
+| `TenantOperationsService.GetSubscriptionPlanAsync(ct)` | Adds distributed cache for subscription-plan profile reads. | `Application/Services/SettingsServices.cs` |
+| `TenantOperationsService.GetTenantProfileAsync(ct)` | Adds distributed cache for tenant-profile reads. | `Application/Services/SettingsServices.cs` |
+| `TenantOperationsService.SaveOnboardingTemplateAsync(cmd, ct)` | Invalidates onboarding-template cache key on profile updates. | `Application/Services/SettingsServices.cs` |
+| `TenantOperationsService.SaveSubscriptionPlanAsync(cmd, ct)` | Invalidates subscription-plan cache key on profile updates. | `Application/Services/SettingsServices.cs` |
+| `TenantOperationsService.SaveTenantProfileAsync(cmd, ct)` | Invalidates tenant-profile cache key on profile updates. | `Application/Services/SettingsServices.cs` |
+
 ### API — Phase 28 Stage 28.2 Completion
 
 | Function Name | Purpose | Location |

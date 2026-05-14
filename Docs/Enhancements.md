@@ -189,6 +189,13 @@
 - Updated `Scripts/README.md` with Stage 29.3 runbook commands and safety notes.
 - No database migration or schema change was required for Stage 29.3.
 
+### 2026-05-14 — Phase 30 Stage 30.1 (Redis Caching)
+- Added distributed cache for dashboard composition context (`GET /api/v1/dashboard/context`) using role and institution-policy scoped cache keys.
+- Added distributed cache for report summary reads in `ReportService` across attendance, result, assignment, quiz, GPA, enrollment, and semester-results summary paths.
+- Added distributed cache for common tenant profile reads in `TenantOperationsService` with cache invalidation on onboarding/subscription/tenant-profile write operations.
+- No database migration or schema change was required for Stage 30.1.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; unit tests passed **144/144**.
+
 ---
 
 ## Phase 12 — Academic Calendar System ✅ Implemented
