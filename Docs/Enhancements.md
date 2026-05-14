@@ -527,6 +527,16 @@
 
 **Validation:** 0 build errors · 144/144 unit tests passed (29 new Phase 25 tests: strategy, resolver, entity, progression service)
 
+### Stage 26.1 — Year-Based Academic Model (College) ✅
+- `StudentLifecycleService.GetStudentsByAcademicLevelAsync` now supports College year mapping by resolving `Year N` to semester range `[2N-1, 2N]`.
+- `IStudentLifecycleRepository` / `StudentLifecycleRepository` now include `GetActiveStudentsBySemesterRangeAsync(...)` for efficient year-level retrieval without schema changes.
+- `StudentLifecycleService.PromoteStudentAsync` now routes College promotions through progression rules (same guard model as School).
+- `ProgressionService.PromoteAsync` now advances College students by two semesters on successful promotion (one academic year step).
+- Validation:
+  - Unit: `ProgressionServiceTests` now covers college year-step promotion and GPA-scale normalization to percentage.
+  - Integration: `StudentLifecycleIntegrationTests` now covers College year-one academic-level retrieval and two-semester promotion behavior.
+  - Focused runs passed: 9/9 unit, 7/7 integration.
+
 ---
 
 ## Phase 26 — School and College Functional Expansion ✅ (commit `4c0904c`, 2026-05-09)

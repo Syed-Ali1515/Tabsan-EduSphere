@@ -365,6 +365,37 @@ public class ProgressionServiceTests
     }
 
     [Fact]
+    public async Task College_Promote_WhenEligible_AdvancesByAcademicYear()
+    {
+        var student = MakeStudent(cgpa: 0m, semGpa: 65m, semesterNum: 1);
+        var gradingProfile = new InstitutionGradingProfile(InstitutionType.College, 40m, null);
+        var svc = new ProgressionService(
+            new StubStudentProfileRepository(student),
+            new StubGradingProfileRepository(gradingProfile));
+
+        var decision = await svc.PromoteAsync(
+            new ProgressionEvaluationRequest(student.Id, InstitutionType.College));
+
+        decision.CurrentPeriodLabel.Should().Be("Year 2");
+    }
+
+    [Fact]
+    public async Task College_GpaScaleStanding_IsNormalizedToPercentage()
+    {
+        var student = MakeStudent(cgpa: 0m, semGpa: 2.0m, semesterNum: 1);
+        var gradingProfile = new InstitutionGradingProfile(InstitutionType.College, 40m, null);
+        var svc = new ProgressionService(
+            new StubStudentProfileRepository(student),
+            new StubGradingProfileRepository(gradingProfile));
+
+        var decision = await svc.EvaluateAsync(
+            new ProgressionEvaluationRequest(student.Id, InstitutionType.College));
+
+        decision.AchievedScore.Should().Be(50m);
+        decision.CanProgress.Should().BeTrue();
+    }
+
+    [Fact]
     public async Task Promote_WhenNotEligible_ThrowsInvalidOperationException()
     {
         var student = MakeStudent(cgpa: 1.0m, semGpa: 1.0m);

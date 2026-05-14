@@ -4806,6 +4806,27 @@ New themes added to site.css and ThemeSettingsPageModel: `neon_mint`, `sakura_pi
 | `ProgressionDecision` (record) | Output: studentId, institutionType, canProgress, period labels, achieved/required scores, remarks. | `Application/DTOs/Academic/ProgressionDtos.cs` |
 | `ProgressionEvaluationRequest` (record) | Input: studentProfileId + institutionType. | `Application/DTOs/Academic/ProgressionDtos.cs` |
 
+### Application — Student Lifecycle Year Mapping (Stage 26.1)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `IStudentLifecycleService.GetStudentsByAcademicLevelAsync(departmentId, levelNumber, ct)` | Returns students by academic level; for College, maps Year N to semesters `2N-1` and `2N`. | `Application/Interfaces/IStudentLifecycleService.cs` |
+| `StudentLifecycleService.GetStudentsByAcademicLevelAsync(...)` | Implements institution-aware academic-level retrieval while preserving existing semester behavior for non-College institutions. | `Application/Services/StudentLifecycleService.cs` |
+| `StudentLifecycleService.PromoteStudentAsync(studentProfileId, ct)` | Routes School and College promotions through progression service eligibility checks. | `Application/Services/StudentLifecycleService.cs` |
+
+### Domain/Infrastructure — Lifecycle Repository Year Range Query (Stage 26.1)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `IStudentLifecycleRepository.GetActiveStudentsBySemesterRangeAsync(departmentId, startSemesterNumber, endSemesterNumber, ct)` | Contract for active-student retrieval across an inclusive semester range (used for College year mapping). | `Domain/Interfaces/IStudentLifecycleRepository.cs` |
+| `StudentLifecycleRepository.GetActiveStudentsBySemesterRangeAsync(...)` | EF implementation for inclusive semester range query with program projection ordering. | `Infrastructure/Repositories/StudentLifecycleRepository.cs` |
+
+### Application — College Promotion Year Step (Stage 26.1)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `ProgressionService.PromoteAsync(request, ct)` | For College promotion, advances two semesters to represent a full year progression after eligibility passes. | `Application/Academic/ProgressionService.cs` |
+
 ### API — InstitutionGradingProfileController (Stage 25.2)
 
 | Function Name | Purpose | Location |

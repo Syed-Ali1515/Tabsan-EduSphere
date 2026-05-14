@@ -68,6 +68,24 @@ public class StudentLifecycleRepository : IStudentLifecycleRepository
             .ToListAsync(ct);
     }
 
+    public async Task<IList<StudentProfile>> GetActiveStudentsBySemesterRangeAsync(
+        Guid departmentId,
+        int startSemesterNumber,
+        int endSemesterNumber,
+        CancellationToken ct = default)
+    {
+        return await _db.StudentProfiles
+            .AsNoTracking()
+            .Where(sp => sp.DepartmentId == departmentId
+                      && sp.Status == StudentStatus.Active
+                      && sp.CurrentSemesterNumber >= startSemesterNumber
+                      && sp.CurrentSemesterNumber <= endSemesterNumber)
+            .Include(sp => sp.Program)
+            .OrderBy(sp => sp.CurrentSemesterNumber)
+            .ThenBy(sp => sp.RegistrationNumber)
+            .ToListAsync(ct);
+    }
+
     public async Task UpdateAsync(StudentProfile student, CancellationToken ct = default)
     {
         _db.StudentProfiles.Update(student);

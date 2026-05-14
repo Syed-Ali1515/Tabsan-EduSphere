@@ -21,6 +21,16 @@ public interface IStudentLifecycleRepository
     /// <summary>Gets all Active students in a department currently in the given semester number.</summary>
     Task<IList<StudentProfile>> GetActiveStudentsBySemesterAsync(Guid departmentId, int semesterNumber, CancellationToken ct = default);
 
+    /// <summary>
+    /// Gets all Active students in a department whose current semester falls within the
+    /// inclusive [startSemesterNumber, endSemesterNumber] range.
+    /// </summary>
+    Task<IList<StudentProfile>> GetActiveStudentsBySemesterRangeAsync(
+        Guid departmentId,
+        int startSemesterNumber,
+        int endSemesterNumber,
+        CancellationToken ct = default);
+
     /// <summary>Gets a student by ID with Program and Department loaded.</summary>
     Task<StudentProfile?> GetByIdAsync(Guid studentProfileId, CancellationToken ct = default);
 

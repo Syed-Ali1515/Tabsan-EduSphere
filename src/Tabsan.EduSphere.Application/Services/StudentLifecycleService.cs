@@ -78,7 +78,39 @@ public class StudentLifecycleService : IStudentLifecycleService
         Guid departmentId,
         int levelNumber,
         CancellationToken ct = default)
-        => GetStudentsBySemesterAsync(departmentId, levelNumber, ct);
+        => GetStudentsByAcademicLevelInternalAsync(departmentId, levelNumber, ct);
+
+    private async Task<IList<SemesterPromotionSummaryDto>> GetStudentsByAcademicLevelInternalAsync(
+        Guid departmentId,
+        int levelNumber,
+        CancellationToken ct)
+    {
+        if (levelNumber <= 0)
+            return [];
+
+        var activeStudents = await _repository.GetStudentsByStatusAsync(departmentId, StudentStatus.Active, ct);
+        var institutionType = activeStudents.FirstOrDefault()?.Department?.InstitutionType;
+
+        IList<StudentProfile> students;
+
+        if (institutionType == InstitutionType.College)
+        {
+            var startSemester = ((levelNumber - 1) * 2) + 1;
+            var endSemester = startSemester + 1;
+            students = await _repository.GetActiveStudentsBySemesterRangeAsync(departmentId, startSemester, endSemester, ct);
+        }
+        else
+        {
+            students = await _repository.GetActiveStudentsBySemesterAsync(departmentId, levelNumber, ct);
+        }
+
+        return students.Select(s => new SemesterPromotionSummaryDto(
+            s.Id,
+            s.RegistrationNumber,
+            s.Program?.Name ?? string.Empty,
+            s.CurrentSemesterNumber
+        )).ToList();
+    }
 
     public async Task<IList<SemesterPromotionSummaryDto>> GetStudentsBySemesterAsync(
         Guid departmentId,
@@ -103,10 +135,10 @@ public class StudentLifecycleService : IStudentLifecycleService
         if (student.Status != Domain.Enums.StudentStatus.Active)
             throw new InvalidOperationException($"Only Active students can be promoted. Student {studentProfileId} has status {student.Status}.");
 
-        if (student.Department?.InstitutionType == InstitutionType.School)
+        if (student.Department?.InstitutionType is InstitutionType.School or InstitutionType.College)
         {
             await _progression.PromoteAsync(
-                new ProgressionEvaluationRequest(studentProfileId, InstitutionType.School),
+                new ProgressionEvaluationRequest(studentProfileId, student.Department.InstitutionType),
                 ct);
             return;
         }

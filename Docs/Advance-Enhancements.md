@@ -282,8 +282,11 @@ Complexity: Medium
 Depends on: Phase 24
 
 ### Stage 26.1 - Year-Based Academic Model
-- Year-based progression support.
-- Reuse existing structures where possible (minimize schema churn).
+- Status: Completed (2026-05-14).
+- Year-based progression support for College now reuses `CurrentSemesterNumber` with year mapping (`Year N` == semesters `2N-1` and `2N`).
+- Academic-level student retrieval for College now resolves by semester range while preserving semester-based retrieval for School/University.
+- Lifecycle promotion for College now routes through progression checks and advances by one academic year (two semesters) when eligible.
+- Validation: focused unit and integration coverage added and passing.
 
 ### Stage 26.2 - College Result and Promotion
 - Percentage-based grading model.

@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Tabsan.EduSphere.Domain.Academic;
 using Tabsan.EduSphere.Domain.Enums;
@@ -79,6 +80,47 @@ public class StudentLifecycleIntegrationTests
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
+    [Fact]
+    public async Task AcademicLevelStudents_CollegeYearOne_IncludesSemesterOneAndTwoStudents()
+    {
+        var seeded = await SeedLifecycleScopeDataAsync(
+            InstitutionType.College,
+            InstitutionType.College,
+            includeSemesterTwoStudent: true,
+            primaryStudentPassingStanding: true);
+
+        using var client = CreateAdminClient(seeded.AdminUserId, seeded.AdminInstitutionType);
+
+        var response = await client.GetAsync($"api/v1/student-lifecycle/academic-level-students/{seeded.DepartmentId}/1");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var students = await response.Content.ReadFromJsonAsync<List<SemesterPromotionSummary>>();
+        Assert.NotNull(students);
+        Assert.True(students!.Count >= 2);
+    }
+
+    [Fact]
+    public async Task PromoteStudent_CollegePassingStudent_AdvancesByTwoSemesters()
+    {
+        var seeded = await SeedLifecycleScopeDataAsync(
+            InstitutionType.College,
+            InstitutionType.College,
+            includeSemesterTwoStudent: false,
+            primaryStudentPassingStanding: true);
+
+        using var client = CreateAdminClient(seeded.AdminUserId, seeded.AdminInstitutionType);
+
+        var response = await client.PostAsync($"api/v1/student-lifecycle/{seeded.StudentProfileId}/promote", content: null);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var student = await db.StudentProfiles.FindAsync(seeded.StudentProfileId);
+        Assert.NotNull(student);
+        Assert.Equal(3, student!.CurrentSemesterNumber);
+    }
+
     private HttpClient CreateAdminClient(Guid adminUserId, int institutionType)
     {
         var client = _factory.CreateClient();
@@ -93,7 +135,9 @@ public class StudentLifecycleIntegrationTests
 
     private async Task<(Guid DepartmentId, Guid StudentProfileId, Guid AdminUserId, int AdminInstitutionType)> SeedLifecycleScopeDataAsync(
         InstitutionType departmentInstitutionType,
-        InstitutionType adminInstitutionType)
+        InstitutionType adminInstitutionType,
+        bool includeSemesterTwoStudent = false,
+        bool primaryStudentPassingStanding = false)
     {
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -129,7 +173,31 @@ public class StudentLifecycleIntegrationTests
             program.Id,
             department.Id,
             DateTime.UtcNow.Date);
+
+        if (primaryStudentPassingStanding)
+            studentProfile.UpdateAcademicStanding(2.0m, 2.0m);
+
         db.StudentProfiles.Add(studentProfile);
+
+        if (includeSemesterTwoStudent)
+        {
+            var studentUser2 = new User(
+                username: $"lifecycle_student2_{suffix}",
+                passwordHash: "integration-hash",
+                roleId: studentRole.Id,
+                email: $"lifecycle_student2_{suffix}@tabsan.local");
+            db.Users.Add(studentUser2);
+
+            var studentProfile2 = new StudentProfile(
+                studentUser2.Id,
+                $"LIFE2-{suffix}",
+                program.Id,
+                department.Id,
+                DateTime.UtcNow.Date);
+            studentProfile2.AdvanceSemester();
+            studentProfile2.UpdateAcademicStanding(2.0m, 2.0m);
+            db.StudentProfiles.Add(studentProfile2);
+        }
 
         db.AdminDepartmentAssignments.Add(new AdminDepartmentAssignment(admin.Id, department.Id));
 
@@ -137,4 +205,10 @@ public class StudentLifecycleIntegrationTests
 
         return (department.Id, studentProfile.Id, admin.Id, (int)adminInstitutionType);
     }
+
+    private sealed record SemesterPromotionSummary(
+        Guid StudentProfileId,
+        string RegistrationNumber,
+        string ProgramName,
+        int CurrentSemesterNumber);
 }

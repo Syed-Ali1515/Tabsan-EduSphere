@@ -124,6 +124,15 @@
 - Validation status: Stage 25.3 focused lifecycle integration verification passed.
 - Status: Stage 25.3 completed and validated as of 2026-05-14.
 
+### Stage 26.1 - Year-Based Academic Model (College)
+- College academic-level retrieval now maps `Year N` to semester range `[2N-1, 2N]` while reusing existing `CurrentSemesterNumber` storage.
+- Added lifecycle repository semester-range query support to avoid schema churn.
+- College promotions in lifecycle flow now use progression guard checks and advance by two semesters (one academic year) when eligible.
+- Unit coverage in `ProgressionServiceTests` verifies college year-step promotion and GPA-to-percentage normalization behavior.
+- Integration coverage in `StudentLifecycleIntegrationTests` verifies year-one academic-level retrieval and two-semester advancement on promotion.
+- Validation status: focused verification passed (9/9 unit, 7/7 integration).
+- Status: Stage 26.1 completed and validated as of 2026-05-14.
+
 ## Authentication & Authorization
 
 ### User Authentication
