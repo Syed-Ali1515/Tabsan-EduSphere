@@ -347,6 +347,9 @@ builder.Services.AddScoped<IFypService, FypService>();
 builder.Services.AddScoped<IAiChatRepository, AiChatRepository>();
 builder.Services.AddScoped<IAiChatService, AiChatService>();
 builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
+builder.Services.AddSingleton<AnalyticsExportJobQueue>();
+builder.Services.AddSingleton<AnalyticsExportJobStore>();
+builder.Services.AddHostedService<AnalyticsExportJobWorker>();
 // LLM HTTP client — base URL and API key from AiChat:BaseUrl / AiChat:ApiKey in config.
 builder.Services.AddHttpClient<ILlmClient, OpenAiLlmClient>((sp, client) =>
 {

@@ -13,7 +13,7 @@ Purpose:
 - Preserve core functionality, global configuration behavior, and role-rights policy.
 
 Status:
-- In progress (Phase 30 in progress, Stage 30.1 completed)
+- In progress (Phase 30 in progress, Stage 30.2 completed)
 
 ## Execution Updates
 
@@ -402,10 +402,11 @@ Depends on: Phase 29
 - Validation: solution build and unit tests passed after cache integration changes.
 
 ### Stage 30.2 - Background Job Offloading
-- Move heavy operations out of request cycle:
-- Report generation
-- Large notification fan-out
-- Expensive aggregation tasks
+- Status: Completed (2026-05-14).
+- Expanded background offloading for heavy analytics exports by adding queued job APIs and a hosted worker for performance/attendance PDF/Excel generation.
+- Existing offloading coverage remains active for large notification fan-out and report export workflows.
+- Added async analytics export lifecycle endpoints (`queue`, `status`, `download`) so request threads return quickly under load while heavy generation executes in background.
+- Validation: solution build and unit tests passed after queue + worker integration changes.
 
 ### Stage 30.3 - Reliability Controls
 - Retry strategy for transient failures.

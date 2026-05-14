@@ -964,6 +964,21 @@
 | `TenantOperationsService.SaveSubscriptionPlanAsync(cmd, ct)` | Invalidates subscription-plan cache key on profile updates. | `Application/Services/SettingsServices.cs` |
 | `TenantOperationsService.SaveTenantProfileAsync(cmd, ct)` | Invalidates tenant-profile cache key on profile updates. | `Application/Services/SettingsServices.cs` |
 
+### API/Infrastructure — Phase 30 Stage 30.2 (Background Job Offloading)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `AnalyticsController.QueueExportJob(...)` | Queues heavy analytics export generation for background processing (performance/attendance, PDF/Excel). | `API/Controllers/AnalyticsController.cs` |
+| `AnalyticsController.GetExportJob(jobId, ct)` | Returns status for queued analytics export jobs. | `API/Controllers/AnalyticsController.cs` |
+| `AnalyticsController.DownloadExportJob(jobId, ct)` | Downloads completed queued analytics export payloads. | `API/Controllers/AnalyticsController.cs` |
+| `AnalyticsExportJobQueue.Enqueue(workItem)` | Enqueues analytics export work items for background execution. | `API/Services/AnalyticsExportJobQueue.cs` |
+| `AnalyticsExportJobQueue.DequeueAllAsync(ct)` | Streams queued analytics export work items to hosted workers. | `API/Services/AnalyticsExportJobQueue.cs` |
+| `AnalyticsExportJobStore.SetStateAsync(state, ct)` | Persists queued/running/completed/failed analytics export job state in distributed cache. | `API/Services/AnalyticsExportJobStore.cs` |
+| `AnalyticsExportJobStore.GetStateAsync(jobId, ct)` | Reads analytics export job status for status endpoint responses. | `API/Services/AnalyticsExportJobStore.cs` |
+| `AnalyticsExportJobStore.SetPayloadAsync(jobId, bytes, ct)` | Stores generated analytics export payload for deferred download. | `API/Services/AnalyticsExportJobStore.cs` |
+| `AnalyticsExportJobStore.GetPayloadAsync(jobId, ct)` | Retrieves generated analytics export payload for download endpoint. | `API/Services/AnalyticsExportJobStore.cs` |
+| `AnalyticsExportJobWorker.ExecuteAsync(stoppingToken)` | Executes queued analytics export jobs and writes final payload/state results. | `API/Services/AnalyticsExportJobWorker.cs` |
+
 ### API — Phase 28 Stage 28.2 Completion
 
 | Function Name | Purpose | Location |

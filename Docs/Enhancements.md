@@ -196,6 +196,16 @@
 - No database migration or schema change was required for Stage 30.1.
 - Validation: `dotnet build Tabsan.EduSphere.sln` passed; unit tests passed **144/144**.
 
+### 2026-05-14 — Phase 30 Stage 30.2 (Background Job Offloading)
+- Added analytics export queue pipeline (`AnalyticsExportJobQueue`, `AnalyticsExportJobStore`, `AnalyticsExportJobWorker`) for heavy performance/attendance export workloads.
+- Added async analytics export endpoints in `AnalyticsController`:
+  - `POST /api/analytics/export-jobs` (queue)
+  - `GET /api/analytics/export-jobs/{jobId}` (status)
+  - `GET /api/analytics/export-jobs/{jobId}/download` (payload)
+- Registered analytics export queue/store/worker in API startup (`Program.cs`) so queued jobs execute outside request threads.
+- No database migration or schema change was required for Stage 30.2.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; unit tests passed **144/144**.
+
 ---
 
 ## Phase 12 — Academic Calendar System ✅ Implemented

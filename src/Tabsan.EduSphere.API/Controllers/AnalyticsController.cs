@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Tabsan.EduSphere.API.Services;
 using Tabsan.EduSphere.Application.Interfaces;
 using Tabsan.EduSphere.Domain.Interfaces;
 
@@ -17,12 +18,20 @@ public sealed class AnalyticsController : ControllerBase
 {
     private readonly IAnalyticsService _analytics;
     private readonly IDepartmentRepository _departments;
+    private readonly AnalyticsExportJobQueue _exportQueue;
+    private readonly AnalyticsExportJobStore _exportStore;
 
     /// <summary>Initialises the controller with the analytics service.</summary>
-    public AnalyticsController(IAnalyticsService analytics, IDepartmentRepository departments)
+    public AnalyticsController(
+        IAnalyticsService analytics,
+        IDepartmentRepository departments,
+        AnalyticsExportJobQueue exportQueue,
+        AnalyticsExportJobStore exportStore)
     {
         _analytics = analytics;
         _departments = departments;
+        _exportQueue = exportQueue;
+        _exportStore = exportStore;
     }
 
     // ── Report endpoints ──────────────────────────────────────────────────────
@@ -152,12 +161,142 @@ public sealed class AnalyticsController : ControllerBase
             "attendance-report.xlsx");
     }
 
+    /// <summary>
+    /// Queues analytics export generation for background processing.
+    /// Supported reportType: performance, attendance. Supported format: pdf, excel.
+    /// </summary>
+    [HttpPost("export-jobs")]
+    [Authorize(Policy = "Admin")]
+    public async Task<IActionResult> QueueExportJob(
+        [FromQuery] Guid? departmentId,
+        [FromQuery] int? institutionType,
+        [FromQuery] string reportType = "performance",
+        [FromQuery] string format = "pdf",
+        CancellationToken ct = default)
+    {
+        var scope = await ResolveEffectiveScopeAsync(departmentId, institutionType, ct);
+        if (scope.Error is not null) return scope.Error;
+
+        if (!TryParseReportType(reportType, out var parsedReportType))
+            return BadRequest("reportType must be one of: performance, attendance.");
+
+        if (!TryParseExportFormat(format, out var parsedFormat))
+            return BadRequest("format must be one of: pdf, excel.");
+
+        var requestedByUserId = GetCurrentUserId();
+        if (requestedByUserId == Guid.Empty) return Unauthorized();
+
+        var jobId = Guid.NewGuid();
+        await _exportStore.SetStateAsync(new AnalyticsExportJobState
+        {
+            JobId = jobId,
+            RequestedByUserId = requestedByUserId,
+            ReportType = parsedReportType,
+            Format = parsedFormat,
+            Status = "queued"
+        }, ct);
+
+        _exportQueue.Enqueue(new AnalyticsExportJobRequest(
+            jobId,
+            requestedByUserId,
+            scope.DepartmentId,
+            scope.InstitutionType,
+            parsedReportType,
+            parsedFormat));
+
+        return Accepted(new
+        {
+            jobId,
+            status = "queued",
+            statusUrl = $"/api/analytics/export-jobs/{jobId}",
+            downloadUrl = $"/api/analytics/export-jobs/{jobId}/download"
+        });
+    }
+
+    /// <summary>Returns status for a queued analytics export job.</summary>
+    [HttpGet("export-jobs/{jobId:guid}")]
+    [Authorize(Policy = "Admin")]
+    public async Task<IActionResult> GetExportJob(Guid jobId, CancellationToken ct)
+    {
+        var requestedByUserId = GetCurrentUserId();
+        if (requestedByUserId == Guid.Empty) return Unauthorized();
+
+        var state = await _exportStore.GetStateAsync(jobId, ct);
+        if (state is null) return NotFound();
+
+        if (state.RequestedByUserId != requestedByUserId && !User.IsInRole("SuperAdmin") && !User.IsInRole("Admin"))
+            return Forbid();
+
+        return Ok(state);
+    }
+
+    /// <summary>Downloads the completed payload for a queued analytics export job.</summary>
+    [HttpGet("export-jobs/{jobId:guid}/download")]
+    [Authorize(Policy = "Admin")]
+    public async Task<IActionResult> DownloadExportJob(Guid jobId, CancellationToken ct)
+    {
+        var requestedByUserId = GetCurrentUserId();
+        if (requestedByUserId == Guid.Empty) return Unauthorized();
+
+        var state = await _exportStore.GetStateAsync(jobId, ct);
+        if (state is null) return NotFound();
+
+        if (state.RequestedByUserId != requestedByUserId && !User.IsInRole("SuperAdmin") && !User.IsInRole("Admin"))
+            return Forbid();
+
+        if (!string.Equals(state.Status, "completed", StringComparison.OrdinalIgnoreCase))
+            return Conflict(new { message = $"Job status is '{state.Status}'." });
+
+        var payload = await _exportStore.GetPayloadAsync(jobId, ct);
+        if (payload is null) return NotFound("Export payload not found or expired.");
+
+        return File(payload, state.ContentType ?? "application/octet-stream", state.FileName ?? $"analytics-{jobId:N}.bin");
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private int? GetCurrentInstitutionType()
     {
         var raw = User.FindFirst("institutionType")?.Value;
         return int.TryParse(raw, out var value) ? value : null;
+    }
+
+    private Guid GetCurrentUserId()
+    {
+        var raw = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return Guid.TryParse(raw, out var userId) ? userId : Guid.Empty;
+    }
+
+    private static bool TryParseReportType(string value, out AnalyticsExportReportType reportType)
+    {
+        switch ((value ?? string.Empty).Trim().ToLowerInvariant())
+        {
+            case "performance":
+                reportType = AnalyticsExportReportType.Performance;
+                return true;
+            case "attendance":
+                reportType = AnalyticsExportReportType.Attendance;
+                return true;
+            default:
+                reportType = default;
+                return false;
+        }
+    }
+
+    private static bool TryParseExportFormat(string value, out AnalyticsExportFormat format)
+    {
+        switch ((value ?? string.Empty).Trim().ToLowerInvariant())
+        {
+            case "pdf":
+                format = AnalyticsExportFormat.Pdf;
+                return true;
+            case "excel":
+                format = AnalyticsExportFormat.Excel;
+                return true;
+            default:
+                format = default;
+                return false;
+        }
     }
 
     /// <summary>
