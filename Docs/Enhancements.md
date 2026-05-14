@@ -33,6 +33,12 @@
 - College promote entries that pass now advance by an academic year step (two semesters) through progression orchestration.
 - Validation: focused unit runs passed for `BulkPromotionServiceTests` and `ProgressionServiceTests` (`14/14`).
 
+### 2026-05-14 — Advanced Track Phase 27 Stage 27.1 Complete
+- Added explicit SuperAdmin grading setup sections in portal UI for School, College, and University.
+- Added web API client methods for institution grading profile retrieval and upsert against `api/v1/institution-grading-profiles`.
+- Grading configuration page now supports per-section pass-threshold, optional grade-ranges JSON, and active-state save operations.
+- Validation: `Tabsan.EduSphere.Web` build passed after portal/controller/service updates.
+
 ### 2026-05-09 — Phase 28 Stage 28.1 Complete
 - Phase 28 is now **In Progress** with **Stage 28.1 — API and App Tier Scaling** completed.
 - API and Web now enable Brotli/Gzip response compression for lower payload cost under higher concurrent traffic.
@@ -549,6 +555,15 @@
 - For College, failed promotion reasons now explicitly include supplementary-required guidance.
 - For College, successful promote entries advance using progression service orchestration so year-step advancement remains consistent.
 - Validation: `BulkPromotionServiceTests` includes coverage for college supplementary hold conversion and college year-step promotion.
+
+### Stage 27.1 — SuperAdmin Grading Setup Sections (Advanced Track) ✅
+- Portal `GradingConfig` page now renders three institution-specific setup sections for SuperAdmin:
+  - School Grading
+  - College Grading
+  - University Grading
+- Added `SaveInstitutionGradingProfile` portal post flow that persists section changes via institution-type upsert API.
+- Added section-aware web models and API client contracts to load/update institution grading profiles.
+- Validation: `dotnet build src/Tabsan.EduSphere.Web/Tabsan.EduSphere.Web.csproj` succeeded.
 
 ---
 

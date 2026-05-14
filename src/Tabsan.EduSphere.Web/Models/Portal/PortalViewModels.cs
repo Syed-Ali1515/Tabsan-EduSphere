@@ -1918,9 +1918,22 @@ public class GradingConfigPageModel
     public decimal              PassThreshold     { get; set; } = 50;
     public string               GradingType       { get; set; } = "GPA";
     public List<GradeRangeItem> GradeRanges       { get; set; } = new();
+    public List<InstitutionGradingSectionItem> InstitutionSections { get; set; } = new();
+    public bool                 CanManageInstitutionSections { get; set; }
     public string?              SuccessMessage     { get; set; }
     public string?              ErrorMessage       { get; set; }
     public bool                 IsConnected        { get; set; }
+}
+
+public class InstitutionGradingSectionItem
+{
+    public int      InstitutionType { get; set; }
+    public string   Title           { get; set; } = string.Empty;
+    public decimal  PassThreshold   { get; set; }
+    public decimal  MinThreshold    { get; set; }
+    public decimal  MaxThreshold    { get; set; }
+    public bool     IsActive        { get; set; }
+    public string?  GradeRangesJson { get; set; }
 }
 
 // ── Phase 20: Learning Management System (LMS) ─────────────────────────────────────────────

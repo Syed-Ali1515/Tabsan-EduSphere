@@ -141,6 +141,16 @@
 - Validation status: focused unit verification passed together with progression checks (14/14).
 - Status: Stage 26.2 completed and validated as of 2026-05-14.
 
+### Stage 27.1 - SuperAdmin Grading Setup Sections (Advanced Track)
+- Portal grading configuration now exposes explicit institution-specific setup sections for SuperAdmin:
+	- School Grading,
+	- College Grading,
+	- University Grading.
+- Each section supports pass-threshold update, optional grade-ranges JSON input, and active/inactive profile state.
+- Section saves are routed to institution-type grading profile upsert API endpoints.
+- Validation status: web project build verification passed after UI/controller/api-client updates.
+- Status: Stage 27.1 completed and validated as of 2026-05-14.
+
 ## Authentication & Authorization
 
 ### User Authentication

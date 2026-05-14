@@ -145,6 +145,8 @@ public interface IEduApiClient
     // Final-Touches Phase 19 Stage 19.4 — per-course grading config
     Task<GradingConfigApiModel?> GetCourseGradingConfigAsync(Guid courseId, CancellationToken ct);
     Task<GradingConfigApiModel?> SaveCourseGradingConfigAsync(Guid courseId, decimal passThreshold, string gradingType, string? gradeRangesJson, CancellationToken ct);
+    Task<List<InstitutionGradingProfileApiModel>> GetInstitutionGradingProfilesAsync(CancellationToken ct);
+    Task<InstitutionGradingProfileApiModel?> SaveInstitutionGradingProfileAsync(int institutionType, decimal passThreshold, string? gradeRangesJson, bool isActive, CancellationToken ct);
 
     // Final-Touches Phase 20 Stage 20.1/20.2 — LMS content modules and videos
     Task<List<LmsModuleApiModel>> GetLmsModulesAsync(Guid offeringId, bool publishedOnly, CancellationToken ct);
@@ -1475,6 +1477,20 @@ public class EduApiClient : IEduApiClient
         await PutAsync<object, object>($"api/v1/grading-config/{courseId}", new { passThreshold, gradingType, gradeRangesJson }, ct);
         return await GetCourseGradingConfigAsync(courseId, ct);
     }
+
+    public async Task<List<InstitutionGradingProfileApiModel>> GetInstitutionGradingProfilesAsync(CancellationToken ct)
+        => await GetAsync<List<InstitutionGradingProfileApiModel>>("api/v1/institution-grading-profiles", ct) ?? new();
+
+    public Task<InstitutionGradingProfileApiModel?> SaveInstitutionGradingProfileAsync(
+        int institutionType,
+        decimal passThreshold,
+        string? gradeRangesJson,
+        bool isActive,
+        CancellationToken ct)
+        => PutAsync<object, InstitutionGradingProfileApiModel>(
+            $"api/v1/institution-grading-profiles/{institutionType}",
+            new { passThreshold, gradeRangesJson, isActive },
+            ct);
 
     // ── Phase 20: LMS content modules ──────────────────────────────────────────
 
@@ -3919,6 +3935,15 @@ public sealed class GradingConfigApiModel
     public decimal PassThreshold   { get; set; }
     public string? GradingType     { get; set; }
     public string? GradeRangesJson { get; set; }
+}
+
+public sealed class InstitutionGradingProfileApiModel
+{
+    public Guid    Id              { get; set; }
+    public int     InstitutionType { get; set; }
+    public decimal PassThreshold   { get; set; }
+    public string? GradeRangesJson { get; set; }
+    public bool    IsActive        { get; set; }
 }
 
 // ── Phase 20: LMS API models ───────────────────────────────────────────────────

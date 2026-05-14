@@ -1423,6 +1423,15 @@ public class PortalController : Controller
         var model = new GradingConfigPageModel { IsConnected = _api.IsConnected() };
         if (model.IsConnected)
         {
+            var session = _api.GetSessionIdentity();
+            model.CanManageInstitutionSections = session?.IsSuperAdmin == true;
+
+            if (model.CanManageInstitutionSections)
+            {
+                var profiles = await _api.GetInstitutionGradingProfilesAsync(ct);
+                model.InstitutionSections = BuildInstitutionGradingSections(profiles);
+            }
+
             var courses = await _api.GetCourseDetailsAsync(null, ct);
             model.Courses = courses;
             model.SelectedCourseId = courseId;
@@ -1442,6 +1451,38 @@ public class PortalController : Controller
         return View(model);
     }
 
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> SaveInstitutionGradingProfile(
+        int institutionType,
+        decimal passThreshold,
+        string? gradeRangesJson,
+        bool isActive,
+        Guid? courseId,
+        CancellationToken ct)
+    {
+        if (!_api.IsConnected())
+            return RedirectToAction(nameof(GradingConfig), new { courseId });
+
+        var session = _api.GetSessionIdentity();
+        if (session?.IsSuperAdmin != true)
+        {
+            TempData["PortalMessage"] = "Only SuperAdmin can update institution grading sections.";
+            return RedirectToAction(nameof(GradingConfig), new { courseId });
+        }
+
+        try
+        {
+            await _api.SaveInstitutionGradingProfileAsync(institutionType, passThreshold, gradeRangesJson, isActive, ct);
+            TempData["PortalMessage"] = "Institution grading section saved.";
+        }
+        catch (Exception ex)
+        {
+            TempData["PortalMessage"] = $"Error: {ex.Message}";
+        }
+
+        return RedirectToAction(nameof(GradingConfig), new { courseId });
+    }
+
     // Final-Touches Phase 19 Stage 19.4 — GradingConfig save (POST)
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> SaveGradingConfig(Guid courseId, decimal passThreshold, string gradingType, string? gradeRangesJson, CancellationToken ct)
@@ -1456,6 +1497,38 @@ public class PortalController : Controller
             catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
         }
         return RedirectToAction(nameof(GradingConfig), new { courseId });
+    }
+
+    private static List<InstitutionGradingSectionItem> BuildInstitutionGradingSections(
+        IReadOnlyCollection<InstitutionGradingProfileApiModel> profiles)
+    {
+        return
+        [
+            BuildInstitutionSection(1, "School Grading", 40m, 0m, 100m, profiles),
+            BuildInstitutionSection(2, "College Grading", 40m, 0m, 100m, profiles),
+            BuildInstitutionSection(3, "University Grading", 2m, 0m, 4m, profiles)
+        ];
+    }
+
+    private static InstitutionGradingSectionItem BuildInstitutionSection(
+        int institutionType,
+        string title,
+        decimal defaultThreshold,
+        decimal min,
+        decimal max,
+        IReadOnlyCollection<InstitutionGradingProfileApiModel> profiles)
+    {
+        var existing = profiles.FirstOrDefault(p => p.InstitutionType == institutionType);
+        return new InstitutionGradingSectionItem
+        {
+            InstitutionType = institutionType,
+            Title = title,
+            PassThreshold = existing?.PassThreshold ?? defaultThreshold,
+            MinThreshold = min,
+            MaxThreshold = max,
+            IsActive = existing?.IsActive ?? true,
+            GradeRangesJson = existing?.GradeRangesJson
+        };
     }
 
     [HttpPost, ValidateAntiForgeryToken]

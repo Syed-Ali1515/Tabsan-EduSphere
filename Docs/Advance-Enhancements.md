@@ -304,10 +304,12 @@ Complexity: Medium
 Depends on: Phases 25-26
 
 ### Stage 27.1 - SuperAdmin Grading Setup Sections
-- Separate grading setup sections:
-- School Grading
-- College Grading
-- University Grading
+- Status: Completed (2026-05-14).
+- SuperAdmin grading setup now includes explicit institution sections:
+	- School Grading
+	- College Grading
+	- University Grading
+- Implemented through portal section cards with per-section threshold, grade-ranges JSON, and active-state controls backed by institution-grading-profile APIs.
 
 ### Stage 27.2 - Rule Application Engine
 - Result calculation automatically picks grading profile by institution type.

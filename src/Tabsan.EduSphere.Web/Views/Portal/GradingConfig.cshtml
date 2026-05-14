@@ -53,6 +53,71 @@
     </div>
 </div>
 
+@if (Model.CanManageInstitutionSections)
+{
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-transparent">
+            <strong>Institution Grading Setup</strong>
+            <div class="small text-muted">Separate SuperAdmin sections for School, College, and University grading policy.</div>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                @foreach (var section in Model.InstitutionSections)
+                {
+                    <div class="col-lg-4">
+                        <div class="border rounded p-3 h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="mb-0">@(section.Title)</h6>
+                            </div>
+                            <form asp-action="SaveInstitutionGradingProfile" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="institutionType" value="@(section.InstitutionType)" />
+                                <input type="hidden" name="courseId" value="@Model.SelectedCourseId" />
+
+                                <div class="mb-2">
+                                    <label class="form-label">Pass Threshold</label>
+                                    <input type="number"
+                                           class="form-control"
+                                           name="passThreshold"
+                                           step="0.01"
+                                         min="@(section.MinThreshold)"
+                                         max="@(section.MaxThreshold)"
+                                         value="@(section.PassThreshold)"
+                                           required />
+                                     <small class="text-muted">Range: @(section.MinThreshold) to @(section.MaxThreshold)</small>
+                                </div>
+
+                                <div class="mb-2">
+                                    <label class="form-label">Grade Ranges JSON (optional)</label>
+                                    <textarea class="form-control"
+                                              name="gradeRangesJson"
+                                              rows="5"
+                                              placeholder='[{"From":90,"To":100,"Label":"A+"}]'>@(section.GradeRangesJson)</textarea>
+                                </div>
+
+                                <div class="form-check mb-3">
+                                    @if (section.IsActive)
+                                    {
+                                        <input class="form-check-input" type="checkbox" name="isActive" value="true" checked />
+                                    }
+                                    else
+                                    {
+                                        <input class="form-check-input" type="checkbox" name="isActive" value="true" />
+                                    }
+                                    <input type="hidden" name="isActive" value="false" />
+                                    <label class="form-check-label">Active</label>
+                                </div>
+
+                                <button type="submit" class="btn btn-sm btn-primary">Save @(section.Title)</button>
+                            </form>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
 @if (Model.SelectedCourseId.HasValue)
 {
     var selectedCourse = Model.Courses.FirstOrDefault(c => c.Id == Model.SelectedCourseId);

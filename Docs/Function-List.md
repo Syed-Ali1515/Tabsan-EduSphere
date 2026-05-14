@@ -4835,6 +4835,17 @@ New themes added to site.css and ThemeSettingsPageModel: `neon_mint`, `sakura_pi
 | `BulkPromotionService.ApplyAsync(request, ct)` (College path) | Adds supplementary-required reason when a College promote entry fails threshold checks. | `Application/Academic/BulkPromotionService.cs` |
 | `BulkPromotionService.ApplyAsync(request, ct)` (College success path) | Uses progression orchestration so successful College promote entries preserve year-step advancement semantics. | `Application/Academic/BulkPromotionService.cs` |
 
+### Web — SuperAdmin Grading Setup Sections (Advanced Stage 27.1)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `PortalController.GradingConfig(courseId, ct)` | Loads sectioned institution grading setup for SuperAdmin (School/College/University) alongside existing course grading configuration. | `Web/Controllers/PortalController.cs` |
+| `PortalController.SaveInstitutionGradingProfile(...)` | Saves institution-specific grading section updates (threshold, JSON bands, active state) through upsert API calls. | `Web/Controllers/PortalController.cs` |
+| `PortalController.BuildInstitutionGradingSections(...)` | Builds deterministic section view-model state per institution type with defaults and profile overlays. | `Web/Controllers/PortalController.cs` |
+| `IEduApiClient.GetInstitutionGradingProfilesAsync(ct)` | Fetches institution grading profiles for section rendering. | `Web/Services/EduApiClient.cs` |
+| `IEduApiClient.SaveInstitutionGradingProfileAsync(...)` | Persists a single institution grading section by institution type. | `Web/Services/EduApiClient.cs` |
+| `InstitutionGradingSectionItem` | View model backing section cards (threshold bounds, JSON ranges, active state). | `Web/Models/Portal/PortalViewModels.cs` |
+
 ### API — InstitutionGradingProfileController (Stage 25.2)
 
 | Function Name | Purpose | Location |
