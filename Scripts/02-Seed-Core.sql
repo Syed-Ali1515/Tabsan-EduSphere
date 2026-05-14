@@ -1,6 +1,24 @@
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
 
+/*
+  Seed core data script for Tabsan EduSphere.
+  
+  PREREQUISITES - MUST RUN FIRST IN THIS ORDER:
+  1. 01-Schema-Current.sql      - Creates all tables and schema (RUN THIS FIRST)
+  2. 02-Seed-Core.sql           - This script: seeds core data (roles, institutions, departments, users)
+  3. 03-FullDummyData.sql       - Adds comprehensive test data
+  
+  After all three scripts complete successfully:
+  4. 04-Maintenance-Indexes-And-Views.sql - Creates indexes and views
+  5. 05-PostDeployment-Checks.sql         - Validates data integrity
+
+  NOTE:
+  - This script must run AFTER 01-Schema-Current.sql
+  - This script must run BEFORE 03-FullDummyData.sql
+  - Includes comprehensive error handling with TRY-CATCH
+*/
+
 IF DB_ID(N'Tabsan-EduSphere') IS NULL
 BEGIN
     RAISERROR('Database [Tabsan-EduSphere] does not exist. Run 01-Schema-Current.sql first.', 16, 1);
@@ -18,6 +36,7 @@ BEGIN
 END;
 GO
 
+BEGIN TRY
 BEGIN TRANSACTION;
 
 DECLARE @Now DATETIME2 = SYSUTCDATETIME();
@@ -220,4 +239,16 @@ WHERE NOT EXISTS (
 );
 
 COMMIT TRANSACTION;
-PRINT 'Core seed completed.';
+PRINT 'Core seed data completed successfully.';
+
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0
+        ROLLBACK TRANSACTION;
+    
+    DECLARE @ErrorMessage NVARCHAR(MAX) = ERROR_MESSAGE();
+    DECLARE @ErrorSeverity INT = ERROR_SEVERITY();
+    DECLARE @ErrorState INT = ERROR_STATE();
+    
+    RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);
+END CATCH;

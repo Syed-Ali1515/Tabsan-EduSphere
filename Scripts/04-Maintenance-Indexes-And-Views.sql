@@ -19,9 +19,21 @@ END;
 GO
 
 /*
-  Lightweight maintenance script aligned with current hierarchy.
-  Safe to run repeatedly.
-  Run this script after major upgrades or bulk imports to ensure all indexes and views are current.
+  Maintenance script: Create indexes and views for Tabsan EduSphere.
+  
+  PREREQUISITE SCRIPTS - MUST RUN FIRST IN THIS ORDER:
+  1. 01-Schema-Current.sql      - Creates all tables and schema
+  2. 02-Seed-Core.sql           - Seeds core data (roles, institutions, departments, users)
+  3. 03-FullDummyData.sql       - Adds comprehensive test data
+  4. 04-Maintenance-Indexes-And-Views.sql - This script: creates indexes and views
+  5. 05-PostDeployment-Checks.sql         - Validates data integrity (optional)
+
+  NOTE:
+  - This script is safe to run repeatedly
+  - It creates indexes to improve query performance
+  - It creates views for common queries
+  - No data is modified; only schema-level operations
+  - Use after major upgrades or bulk data imports
 */
 
 /* 1) Missing supportive indexes */

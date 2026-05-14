@@ -1,5 +1,27 @@
 SET NOCOUNT ON;
 
+/*
+  Post-deployment validation script for Tabsan EduSphere.
+  
+  PREREQUISITE SCRIPTS - MUST RUN FIRST IN THIS ORDER:
+  1. 01-Schema-Current.sql      - Creates all tables and schema
+  2. 02-Seed-Core.sql           - Seeds core data (roles, institutions, departments, users)
+  3. 03-FullDummyData.sql       - Adds comprehensive test data
+  4. 04-Maintenance-Indexes-And-Views.sql - Creates indexes and views (optional)
+  5. 05-PostDeployment-Checks.sql - This script: validates data integrity
+
+  PURPOSE:
+  - Verify database schema is complete
+  - Validate core data has been seeded correctly
+  - Check that all prerequisite scripts ran successfully
+  - Provide summary statistics for verification
+
+  NOTE:
+  - This script is read-only; it only performs SELECT queries
+  - It's safe to run repeatedly
+  - Use this to verify deployment success
+*/
+
 IF DB_ID(N'Tabsan-EduSphere') IS NULL
 BEGIN
 	RAISERROR('Database [Tabsan-EduSphere] does not exist. Run 01-Schema-Current.sql first.', 16, 1);

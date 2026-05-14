@@ -1,4 +1,25 @@
-﻿SET ANSI_NULLS ON;
+﻿/*
+  Schema creation script for Tabsan EduSphere.
+  
+  SCRIPT EXECUTION ORDER (IMPORTANT):
+  1. 01-Schema-Current.sql      - This script: creates all tables and schema (RUN THIS FIRST)
+  2. 02-Seed-Core.sql           - Seeds core data (roles, institutions, departments, users)
+  3. 03-FullDummyData.sql       - Adds comprehensive test data
+  4. 04-Maintenance-Indexes-And-Views.sql - Creates indexes and views (optional)
+  5. 05-PostDeployment-Checks.sql - Validates data integrity (optional)
+
+  PURPOSE:
+  - Creates the complete database schema
+  - Creates all tables with proper relationships
+  - Defines all foreign keys and constraints
+  - Establishes indexes for performance
+
+  NOTE:
+  - Must run FIRST before any other scripts
+  - This script is safe to run repeatedly (uses IF NOT EXISTS checks)
+*/
+
+SET ANSI_NULLS ON;
 GO
 
 SET QUOTED_IDENTIFIER ON;
