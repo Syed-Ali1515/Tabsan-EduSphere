@@ -26,13 +26,24 @@ SET XACT_ABORT ON;
 
 /*
   Full dummy data script for demos.
-  Prerequisite: run 01-Schema-Current.sql and 02-Seed-Core.sql first.
+  
+  PREREQUISITES - MUST RUN FIRST IN THIS ORDER:
+  1. 01-Schema-Current.sql      - Creates all tables and schema
+  2. 02-Seed-Core.sql           - Seeds core data (roles, institutions, departments, users)
+  3. 03-FullDummyData.sql       - This script: adds comprehensive test data
+  
+  After all three scripts complete successfully:
+  4. 04-Maintenance-Indexes-And-Views.sql - Creates indexes and views
+  5. 05-PostDeployment-Checks.sql         - Validates data integrity
 
   NOTE:
   - Replace @PwdHash with a valid hash produced by your app hasher.
   - This script is idempotent (NOT EXISTS checks + stable GUID keys).
+  - Requires database [Tabsan-EduSphere] to exist and schema to be created.
+  - Requires core seed data (roles, institutions, etc.) to be inserted first.
 */
 
+BEGIN TRY
 BEGIN TRANSACTION;
 
 DECLARE @Now DATETIME2 = SYSUTCDATETIME();
@@ -57,8 +68,6 @@ END;
 IF @RoleSuperAdmin IS NULL OR @RoleAdmin IS NULL OR @RoleFaculty IS NULL OR @RoleStudent IS NULL
 BEGIN
     RAISERROR('Roles not found. Run 02-Seed-Core.sql first.', 16, 1);
-    ROLLBACK TRANSACTION;
-    RETURN;
 END;
 
 /* 0) Demo metadata table (custom object requested for demos) */
@@ -1055,3 +1064,15 @@ WHERE NOT EXISTS (SELECT 1 FROM [notification_recipients] x WHERE x.[Id] = r.Id)
 COMMIT TRANSACTION;
 
 PRINT 'Full dummy demo data seeding completed.';
+
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0
+        ROLLBACK TRANSACTION;
+    
+    DECLARE @ErrorMessage NVARCHAR(MAX) = ERROR_MESSAGE();
+    DECLARE @ErrorSeverity INT = ERROR_SEVERITY();
+    DECLARE @ErrorState INT = ERROR_STATE();
+    
+    RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);
+END CATCH;
