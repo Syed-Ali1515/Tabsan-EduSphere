@@ -33,6 +33,9 @@ public interface INotificationRepository
     /// <summary>Returns the delivery record for a specific user+notification pair, or null.</summary>
     Task<NotificationRecipient?> GetRecipientAsync(Guid notificationId, Guid userId, CancellationToken ct = default);
 
+    /// <summary>Returns active recipient email addresses for the provided user IDs.</summary>
+    Task<IReadOnlyList<string>> GetActiveUserEmailsAsync(IReadOnlyList<Guid> userIds, CancellationToken ct = default);
+
     /// <summary>Queues multiple recipient rows for bulk insertion (fan-out).</summary>
     Task AddRecipientsAsync(IEnumerable<NotificationRecipient> recipients, CancellationToken ct = default);
 

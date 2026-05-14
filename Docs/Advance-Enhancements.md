@@ -13,7 +13,7 @@ Purpose:
 - Preserve core functionality, global configuration behavior, and role-rights policy.
 
 Status:
-- In progress (Phase 32 Stage 32.1 completed, ready to proceed with Stage 32.2)
+- In progress (Phase 32 Stage 32.2 completed, ready to proceed with Stage 32.3)
 
 ## Execution Updates
 
@@ -535,7 +535,19 @@ Stage planning addendum (2026-05-14):
 	- modern interaction pattern parity with contemporary web applications.
 
 ### Stage 32.2 - Email Integration
-- Event-driven email notifications.
+- Status: Completed (2026-05-14).
+- Implemented event-triggered notification email dispatch on top of existing in-app notification flows.
+- Delivery behavior:
+	- every in-app notification send path now optionally dispatches recipient email notifications,
+	- recipient email list is resolved from active user accounts with non-empty email addresses,
+	- dispatch uses template-based HTML rendering (`notification-alert`) and resilient outbound email provider execution.
+- Configuration and free-service alignment:
+	- added `NotificationEmail` settings section for enable/disable, subject prefix, and portal notification URL,
+	- production/default SMTP host aligned to Brevo free-tier-compatible relay (`smtp-relay.brevo.com`) with credential placeholders,
+	- development/default `NotificationEmail:Enabled` remains `false` to avoid local test breakage without SMTP credentials.
+- Validation:
+	- focused notification unit tests passed,
+	- full solution build passed.
 
 ### Stage 32.3 - SMS Integration
 - High-priority SMS alerts.

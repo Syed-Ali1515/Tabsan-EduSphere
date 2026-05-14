@@ -1,4 +1,6 @@
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Tabsan.EduSphere.Application.DTOs.Notifications;
 using Tabsan.EduSphere.Application.Interfaces;
 using Tabsan.EduSphere.Domain.Interfaces;
@@ -18,17 +20,29 @@ public class NotificationService : INotificationService
     private readonly INotificationRepository _repo;
     private readonly INotificationFanoutQueue? _fanoutQueue;
     private readonly IMemoryCache _cache;
+    private readonly IEmailDeliveryProvider? _emailDeliveryProvider;
+    private readonly ILogger<NotificationService> _logger;
+    private readonly NotificationEmailOptions _emailOptions;
 
     private const int DeferredFanoutThreshold = 250;
     private static readonly TimeSpan InboxCacheTtl = TimeSpan.FromSeconds(10);
     private static readonly TimeSpan BadgeCacheTtl = TimeSpan.FromSeconds(8);
     private static int _cacheVersion;
 
-    public NotificationService(INotificationRepository repo, INotificationFanoutQueue? fanoutQueue = null, IMemoryCache? cache = null)
+    public NotificationService(
+        INotificationRepository repo,
+        INotificationFanoutQueue? fanoutQueue = null,
+        IMemoryCache? cache = null,
+        IEmailDeliveryProvider? emailDeliveryProvider = null,
+        ILogger<NotificationService>? logger = null,
+        IOptions<NotificationEmailOptions>? emailOptions = null)
     {
         _repo = repo;
         _fanoutQueue = fanoutQueue;
         _cache = cache ?? new MemoryCache(new MemoryCacheOptions());
+        _emailDeliveryProvider = emailDeliveryProvider;
+        _logger = logger ?? Microsoft.Extensions.Logging.Abstractions.NullLogger<NotificationService>.Instance;
+        _emailOptions = emailOptions?.Value ?? new NotificationEmailOptions();
     }
 
     /// <summary>
@@ -42,6 +56,7 @@ public class NotificationService : INotificationService
         await _repo.SaveChangesAsync(ct);
 
         await FanOutRecipientsAsync(notification.Id, request.RecipientUserIds, ct);
+        await DispatchEmailsAsync(notification.Title, notification.Body, notification.Type, request.RecipientUserIds, ct);
         BumpCacheVersion();
 
         return notification.Id;
@@ -60,6 +75,7 @@ public class NotificationService : INotificationService
         await _repo.SaveChangesAsync(ct);
 
         await FanOutRecipientsAsync(notification.Id, recipientUserIds, ct);
+        await DispatchEmailsAsync(notification.Title, notification.Body, notification.Type, recipientUserIds, ct);
         BumpCacheVersion();
 
         return notification.Id;
@@ -176,6 +192,53 @@ public class NotificationService : INotificationService
 
         await _repo.AddRecipientsAsync(recipients, ct);
         await _repo.SaveChangesAsync(ct);
+    }
+
+    private async Task DispatchEmailsAsync(
+        string title,
+        string body,
+        NotificationType type,
+        IReadOnlyList<Guid> recipientUserIds,
+        CancellationToken ct)
+    {
+        if (!_emailOptions.Enabled || _emailDeliveryProvider is null)
+            return;
+
+        var emails = await _repo.GetActiveUserEmailsAsync(recipientUserIds, ct);
+        if (emails.Count == 0)
+            return;
+
+        var subjectPrefix = _emailOptions.SubjectPrefix?.Trim() ?? string.Empty;
+        var subject = string.IsNullOrWhiteSpace(subjectPrefix)
+            ? title
+            : $"{subjectPrefix} {title}";
+
+        foreach (var email in emails)
+        {
+            try
+            {
+                await _emailDeliveryProvider.SendTemplateAsync(
+                    email,
+                    subject,
+                    "notification-alert",
+                    new Dictionary<string, string>
+                    {
+                        ["TITLE"] = title,
+                        ["BODY"] = body,
+                        ["TYPE"] = type.ToString(),
+                        ["CREATED_AT_UTC"] = DateTime.UtcNow.ToString("u"),
+                        ["PORTAL_URL"] = _emailOptions.PortalUrl
+                    },
+                    ct);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex,
+                    "Failed to send notification email to {RecipientEmail} for notification '{Title}'.",
+                    email,
+                    title);
+            }
+        }
     }
 
     private static void BumpCacheVersion() => Interlocked.Increment(ref _cacheVersion);

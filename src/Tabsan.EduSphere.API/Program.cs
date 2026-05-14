@@ -66,6 +66,7 @@ Console.WriteLine($"[Startup] ScaleOut InstanceId: {runtimeInstanceId} | ExposeI
 // Final-Touches Phase 9 Stage 9.1 — shared observability state for Prometheus metrics and latency SLO snapshots.
 builder.Services.AddSingleton(new ObservabilityMetrics(processStartUtc));
 builder.Services.Configure<BackgroundJobReliabilityOptions>(builder.Configuration.GetSection(BackgroundJobReliabilityOptions.SectionName));
+builder.Services.Configure<NotificationEmailOptions>(builder.Configuration.GetSection(NotificationEmailOptions.SectionName));
 builder.Services.AddSingleton<BackgroundJobHealthTracker>();
 
 // Final-Touches Phase 8 Stage 8.1 — auto-scaling policy metadata and startup guardrails.

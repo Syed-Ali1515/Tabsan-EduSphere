@@ -61,6 +61,21 @@ public class NotificationRepository : INotificationRepository
         => _db.NotificationRecipients.FirstOrDefaultAsync(
             r => r.NotificationId == notificationId && r.RecipientUserId == userId, ct);
 
+    /// <summary>Returns active recipient email addresses for the provided user IDs.</summary>
+    public async Task<IReadOnlyList<string>> GetActiveUserEmailsAsync(IReadOnlyList<Guid> userIds, CancellationToken ct = default)
+    {
+        if (userIds.Count == 0)
+            return Array.Empty<string>();
+
+        var normalizedIds = userIds.Distinct().ToList();
+        return await _db.Users
+            .AsNoTracking()
+            .Where(u => normalizedIds.Contains(u.Id) && u.IsActive && !string.IsNullOrWhiteSpace(u.Email))
+            .Select(u => u.Email!)
+            .Distinct()
+            .ToListAsync(ct);
+    }
+
     /// <summary>Queues multiple recipient rows for bulk insertion (fan-out on dispatch).</summary>
     public async Task AddRecipientsAsync(IEnumerable<NotificationRecipient> recipients, CancellationToken ct = default)
         => await _db.NotificationRecipients.AddRangeAsync(recipients, ct);

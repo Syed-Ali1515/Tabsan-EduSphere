@@ -265,6 +265,16 @@
 - No database migration or schema change was required for Stage 32.1.
 - Validation: `dotnet build src/Tabsan.EduSphere.Web/Tabsan.EduSphere.Web.csproj` passed.
 
+### 2026-05-14 — Phase 32 Stage 32.2 (Email Integration)
+- Added notification email integration to dispatch HTML email copies for in-app notifications to active recipients with valid email addresses.
+- Extended notification repository contract/implementation with active recipient-email resolution for fan-out sets.
+- Added template-based notification email payload rendering (`notification-alert.html`) and wired delivery through the existing resilient email provider path.
+- Added `NotificationEmail` configuration section (`Enabled`, `SubjectPrefix`, `PortalUrl`) to control runtime behavior without code edits.
+- Updated SMTP defaults to a free-service-compatible relay baseline (`smtp-relay.brevo.com`) with environment-secret credential placeholders.
+- Development/default notification email dispatch remains disabled to preserve local/test reliability when SMTP credentials are absent.
+- No database migration or schema change was required for Stage 32.2.
+- Validation: focused unit tests for Stage 28.2 notification service behavior passed (`2/2`); `dotnet build Tabsan.EduSphere.sln` passed.
+
 ## New Phase: AI Chatbot UI Improvement
 
 ### Goal

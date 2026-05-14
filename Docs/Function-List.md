@@ -150,6 +150,12 @@
 | `Phase 32.1 AI chat floating launcher visibility guard` | Computes launcher visibility from connection state and sidebar visibility contract so floating chat access remains role/module-safe. | `src/Tabsan.EduSphere.Web/Views/Shared/_Layout.cshtml` |
 | `Phase 32.1 AI chat floating launcher UI component` | Renders a persistent bottom-right floating launcher that opens the AI chat portal action from any app page. | `src/Tabsan.EduSphere.Web/Views/Shared/_Layout.cshtml` |
 | `Phase 32.1 AI chat floating launcher responsive styling` | Adds desktop/mobile fixed-position, overlap-safe, animated launcher styling with reduced-motion fallback. | `src/Tabsan.EduSphere.Web/Views/Shared/_Layout.cshtml.css` |
+| `Phase 32.2 notification email delivery options` | Defines runtime controls for notification-email dispatch enablement, subject prefix, and portal deep-link URL. | `src/Tabsan.EduSphere.Application/Notifications/NotificationEmailOptions.cs` |
+| `Phase 32.2 notification email fan-out dispatch` | Extends notification send flows to dispatch template-based notification emails to active recipients after in-app fan-out. | `src/Tabsan.EduSphere.Application/Notifications/NotificationService.cs` |
+| `Phase 32.2 active recipient email resolution` | Resolves active user email addresses for notification recipient sets in repository layer for email fan-out. | `src/Tabsan.EduSphere.Domain/Interfaces/INotificationRepository.cs`, `src/Tabsan.EduSphere.Infrastructure/Repositories/NotificationAttendanceRepositories.cs` |
+| `Phase 32.2 notification alert email template` | Provides HTML notification email template rendering with title/body/type/timestamp and portal action link. | `src/Tabsan.EduSphere.Infrastructure/Email/Templates/notification-alert.html` |
+| `Phase 32.2 notification email configuration binding` | Binds notification-email runtime options from API configuration into DI for application notification service consumption. | `src/Tabsan.EduSphere.API/Program.cs` |
+| `Phase 32.2 free SMTP relay baseline configuration` | Sets SMTP relay defaults and notification-email toggles for Brevo free-tier-compatible email dispatch posture across environments. | `src/Tabsan.EduSphere.API/appsettings.json`, `src/Tabsan.EduSphere.API/appsettings.Development.json`, `src/Tabsan.EduSphere.API/appsettings.Production.json` |
 
 ## Institution License Validation Plan (2026-05-12)
 

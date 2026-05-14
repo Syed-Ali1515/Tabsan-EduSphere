@@ -85,6 +85,9 @@ file sealed class StubNotificationRepository : INotificationRepository
     public Task<NotificationRecipient?> GetRecipientAsync(Guid notificationId, Guid userId, CancellationToken ct = default)
         => Task.FromResult<NotificationRecipient?>(null);
 
+    public Task<IReadOnlyList<string>> GetActiveUserEmailsAsync(IReadOnlyList<Guid> userIds, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<string>>(Array.Empty<string>());
+
     public Task AddRecipientsAsync(IEnumerable<NotificationRecipient> recipients, CancellationToken ct = default)
     {
         AddRecipientsCalls++;
