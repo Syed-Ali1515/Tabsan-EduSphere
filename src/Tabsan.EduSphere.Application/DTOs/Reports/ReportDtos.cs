@@ -12,6 +12,21 @@ public record ReportCatalogItemResponse(
 
 public record ReportCatalogResponse(IReadOnlyList<ReportCatalogItemResponse> Reports);
 
+public record ReportSectionItemResponse(
+    string Key,
+    string Name,
+    string Purpose);
+
+public record ReportSectionResponse(
+    string SectionKey,
+    string SectionName,
+    IReadOnlyList<ReportSectionItemResponse> Reports);
+
+public record InstitutionReportSectionsResponse(
+    int EffectiveInstitutionType,
+    string InstitutionModel,
+    IReadOnlyList<ReportSectionResponse> Sections);
+
 // ── Attendance Summary ─────────────────────────────────────────────────────────
 
 public record AttendanceSummaryRequest(

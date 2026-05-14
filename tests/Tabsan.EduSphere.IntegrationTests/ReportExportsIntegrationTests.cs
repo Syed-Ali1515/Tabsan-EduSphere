@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
+using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Tabsan.EduSphere.Domain.Academic;
 using Tabsan.EduSphere.Domain.Enums;
@@ -25,6 +26,21 @@ public class ReportExportsIntegrationTests
         client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", JwtTestHelper.GenerateToken(role, userId));
         return client;
+    }
+
+    private async Task EnsureReportsModuleActiveAsync(CancellationToken ct = default)
+    {
+        using var superClient = CreateClient("SuperAdmin", "00000000-0000-0000-0000-000000000991");
+
+        var statusResponse = await superClient.GetAsync("api/v1/module/reports/status", ct);
+        statusResponse.EnsureSuccessStatusCode();
+
+        using var statusDoc = JsonDocument.Parse(await statusResponse.Content.ReadAsStringAsync(ct));
+        if (statusDoc.RootElement.GetProperty("isActive").GetBoolean())
+            return;
+
+        var activateResponse = await superClient.PostAsync("api/v1/module/reports/activate", content: null, ct);
+        activateResponse.EnsureSuccessStatusCode();
     }
 
     [Fact]
@@ -104,6 +120,63 @@ public class ReportExportsIntegrationTests
 
         Assert.Contains(rows, r => (r.GetProperty("courseCode").GetString() ?? string.Empty).StartsWith("RUC", StringComparison.OrdinalIgnoreCase));
         Assert.DoesNotContain(rows, r => (r.GetProperty("courseCode").GetString() ?? string.Empty).StartsWith("RCC", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task ReportSections_WithSuperAdminSchoolOverride_ReturnsSchoolSectionsWithoutUniversitySpecificReports()
+    {
+        await EnsureReportsModuleActiveAsync();
+        using var client = CreateClient("SuperAdmin", "00000000-0000-0000-0000-000000000299");
+
+        var response = await client.GetAsync($"api/v1/reports/sections?institutionType={(int)InstitutionType.School}");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        Assert.Equal((int)InstitutionType.School, doc.RootElement.GetProperty("effectiveInstitutionType").GetInt32());
+        Assert.Equal(nameof(InstitutionType.School), doc.RootElement.GetProperty("institutionModel").GetString());
+
+        var sections = doc.RootElement.GetProperty("sections").EnumerateArray().ToList();
+        Assert.Contains(sections, s => s.GetProperty("sectionKey").GetString() == "school_outcomes");
+
+        var allReportKeys = sections
+            .SelectMany(s => s.GetProperty("reports").EnumerateArray())
+            .Select(r => r.GetProperty("key").GetString())
+            .Where(k => !string.IsNullOrWhiteSpace(k))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        Assert.DoesNotContain("gpa_report", allReportKeys);
+        Assert.DoesNotContain("fyp_status", allReportKeys);
+    }
+
+    [Fact]
+    public async Task ReportSections_WithAdminInstitutionClaim_UsesClaimScopeWithoutQueryOverride()
+    {
+        await EnsureReportsModuleActiveAsync();
+        using var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", JwtTestHelper.GenerateToken(
+                role: "Admin",
+                userId: "00000000-0000-0000-0000-000000000399",
+                institutionType: (int)InstitutionType.College));
+
+        var response = await client.GetAsync("api/v1/reports/sections");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        Assert.Equal((int)InstitutionType.College, doc.RootElement.GetProperty("effectiveInstitutionType").GetInt32());
+        Assert.Equal(nameof(InstitutionType.College), doc.RootElement.GetProperty("institutionModel").GetString());
+
+        var sectionKeys = doc.RootElement
+            .GetProperty("sections")
+            .EnumerateArray()
+            .Select(s => s.GetProperty("sectionKey").GetString())
+            .Where(k => !string.IsNullOrWhiteSpace(k))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        Assert.Contains("college_progression", sectionKeys);
+        Assert.DoesNotContain("university_academics", sectionKeys);
     }
 
     [Fact]

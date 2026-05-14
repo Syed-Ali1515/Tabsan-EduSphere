@@ -13,7 +13,7 @@ Purpose:
 - Preserve core functionality, global configuration behavior, and role-rights policy.
 
 Status:
-- In progress (Phase 30 completed, ready to proceed with Phase 31)
+- In progress (Phase 31 Stage 31.1 completed, ready to proceed with Stage 31.2)
 
 ## Execution Updates
 
@@ -143,6 +143,24 @@ Status:
 - Behavior impact: School grade promotion now requires pass-threshold eligibility instead of unconditional level increment.
 - Residual risks: medium-low; percentage inference still relies on current academic standing fields until full school-native percentage storage is introduced.
 - Documentation synchronization completed for Stage 25.3 across planning and tracker docs.
+
+### 2026-05-14 - Phase 31 Stage 31.1 (Institution-Specific Report Sections)
+- Completed Stage 31.1 by adding institution-aware report section composition for School, College, and University contexts.
+- Implementation evidence:
+	- added `GET /api/v1/reports/sections` in `ReportController` with claim-based institution scoping and optional SuperAdmin override,
+	- added sectioned response contracts (`InstitutionReportSectionsResponse`, `ReportSectionResponse`, `ReportSectionItemResponse`) for report partition metadata,
+	- implemented institution-specific section maps:
+		- School: `school_outcomes`,
+		- College: `college_progression`,
+		- University: `university_academics`.
+- Validation evidence:
+	- added integration coverage in `ReportExportsIntegrationTests` for:
+		- SuperAdmin School override section behavior,
+		- Admin claim-based College section behavior without query override.
+	- validation run passed for solution build and focused report integration tests.
+- Behavior impact: report surfaces can now consume a deterministic institution-partitioned section model while preserving role-based catalog filtering.
+- Residual risks: low; endpoint depends on seeded report keys and will omit sections with no role-allowed reports by design.
+- Documentation synchronization completed for Stage 31.1 across planning and tracker docs.
 
 ---
 
@@ -425,7 +443,11 @@ Complexity: Medium
 Depends on: Phases 27, 29, 30
 
 ### Stage 31.1 - Institution-Specific Report Sections
-- School, College, University report partitions.
+- Status: Completed (2026-05-14).
+- Added `GET /api/v1/reports/sections` for institution-aware report section composition.
+- Added section contracts for institution model + grouped report items in reporting DTOs.
+- Added School/College/University section partition behavior with role-filtered report inclusion.
+- Validation: focused report integration tests passed for School override and College claim scope behavior.
 
 ### Stage 31.2 - Advanced Analytics
 - Top performers, trends, and comparative summaries.

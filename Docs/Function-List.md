@@ -130,6 +130,9 @@
 | `Phase 25 Stage 25.3 school promotion integration validation` | Verifies School-mode lifecycle promotion returns `400 BadRequest` when pass criteria are not met. | `tests/Tabsan.EduSphere.IntegrationTests/StudentLifecycleIntegrationTests.cs` |
 | `Phase 23 Stage 23.2 integration parity test suite` | Validates dynamic label API behavior across University/School/College and mixed-mode precedence, authentication boundary, consistency, and web-layer context readiness. | `tests/Tabsan.EduSphere.IntegrationTests/DynamicLabelIntegrationTests.cs`, `tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj` |
 | `Phase 23 Stage 23.2 tracker synchronization` | Confirms Stage 23.2 completion details are synchronized in planning/hand-off docs including functionality reference updates. | `Docs/Advance-Enhancements.md`, `Docs/Functionality.md`, `Docs/Command.md`, `Project startup Docs/PRD.md`, `Project startup Docs/Database Schema.md`, `Project startup Docs/Development Plan - ASP.NET.md` |
+| `Phase 31 Stage 31.1 institution report sections endpoint` | Exposes institution-aware report section partitions with claim-scoped institution resolution and optional SuperAdmin override via `GET /api/v1/reports/sections`. | `src/Tabsan.EduSphere.API/Controllers/ReportController.cs` |
+| `Phase 31 Stage 31.1 report section response contracts` | Defines reporting DTO contracts for institution model metadata, section envelopes, and report items consumed by report-section clients. | `src/Tabsan.EduSphere.Application/DTOs/Reports/ReportDtos.cs` |
+| `Phase 31 Stage 31.1 report sections integration validation` | Verifies School override behavior and claim-scoped College section selection for the report sections API. | `tests/Tabsan.EduSphere.IntegrationTests/ReportExportsIntegrationTests.cs` |
 
 ## Institution License Validation Plan (2026-05-12)
 

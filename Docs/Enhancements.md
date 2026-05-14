@@ -213,6 +213,17 @@
 - No database migration or schema change was required for Stage 30.3.
 - Validation: `dotnet build Tabsan.EduSphere.sln` passed; unit tests passed **144/144**.
 
+### 2026-05-14 — Phase 31 Stage 31.1 (Institution-Specific Report Sections)
+- Added `GET /api/v1/reports/sections` endpoint returning institution-aware report section groupings for School, College, and University models.
+- Added reporting DTO contracts (`InstitutionReportSectionsResponse`, `ReportSectionResponse`, `ReportSectionItemResponse`) so portal/API consumers can render sectioned report partitions consistently.
+- Added role-filtered section composition that preserves existing report catalog authorization while projecting institution-specific section keys:
+  - `school_outcomes`
+  - `college_progression`
+  - `university_academics`
+- Added integration tests validating SuperAdmin institution override behavior and Admin claim-based institution section selection.
+- No database migration or schema change was required for Stage 31.1.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; focused integration tests for report sections passed.
+
 ---
 
 ## Phase 12 — Academic Calendar System ✅ Implemented

@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using Tabsan.EduSphere.API.Services;
 using Tabsan.EduSphere.Application.DTOs.Reports;
 using Tabsan.EduSphere.Application.Interfaces;
+using Tabsan.EduSphere.Domain.Enums;
 using Tabsan.EduSphere.Domain.Interfaces;
+using Tabsan.EduSphere.Domain.Settings;
 
 namespace Tabsan.EduSphere.API.Controllers;
 
@@ -54,6 +56,27 @@ public sealed class ReportController : ControllerBase
         if (role is null) return Unauthorized();
         var result = await _reports.GetCatalogAsync(role, ct);
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Returns institution-specific report sections for the caller.
+    /// SuperAdmin may override the institution context via query.
+    /// </summary>
+    [HttpGet("sections")]
+    public async Task<IActionResult> GetInstitutionReportSections(
+        [FromQuery] int? institutionType,
+        CancellationToken ct)
+    {
+        var role = GetCurrentUserRole();
+        if (role is null) return Unauthorized();
+
+        var scope = await ResolveEffectiveReportScopeAsync(institutionType, null, null, ct);
+        if (scope.ErrorResult is not null) return scope.ErrorResult;
+
+        var effectiveInstitutionType = scope.InstitutionType ?? (int)InstitutionType.University;
+        var catalog = await _reports.GetCatalogAsync(role, ct);
+        var response = BuildInstitutionSections(catalog, effectiveInstitutionType);
+        return Ok(response);
     }
 
     // ── Attendance Summary ─────────────────────────────────────────────────────
@@ -997,5 +1020,91 @@ public sealed class ReportController : ControllerBase
         }
 
         return null;
+    }
+
+    private static InstitutionReportSectionsResponse BuildInstitutionSections(
+        ReportCatalogResponse catalog,
+        int effectiveInstitutionType)
+    {
+        var reportLookup = catalog.Reports.ToDictionary(r => r.Key, StringComparer.OrdinalIgnoreCase);
+
+        static ReportSectionResponse BuildSection(
+            string sectionKey,
+            string sectionName,
+            IReadOnlyCollection<string> reportKeys,
+            IDictionary<string, ReportCatalogItemResponse> lookup)
+        {
+            var reports = reportKeys
+                .Where(lookup.ContainsKey)
+                .Select(k => lookup[k])
+                .Select(r => new ReportSectionItemResponse(r.Key, r.Name, r.Purpose))
+                .ToList();
+
+            return new ReportSectionResponse(sectionKey, sectionName, reports);
+        }
+
+        var operationalKeys = new[]
+        {
+            ReportKeys.AttendanceSummary,
+            ReportKeys.ResultSummary,
+            "assignment_summary",
+            "quiz_summary",
+            ReportKeys.EnrollmentSummary
+        };
+
+        var complianceKeys = new[]
+        {
+            ReportKeys.LowAttendanceWarning,
+            ReportKeys.SemesterResults
+        };
+
+        var institutionSpecific = (InstitutionType)effectiveInstitutionType switch
+        {
+            InstitutionType.School => BuildSection(
+                "school_outcomes",
+                "School Outcomes",
+                new[]
+                {
+                    ReportKeys.ResultSummary,
+                    ReportKeys.LowAttendanceWarning,
+                    ReportKeys.StudentTranscript
+                },
+                reportLookup),
+
+            InstitutionType.College => BuildSection(
+                "college_progression",
+                "College Progression",
+                new[]
+                {
+                    ReportKeys.ResultSummary,
+                    ReportKeys.SemesterResults,
+                    ReportKeys.StudentTranscript
+                },
+                reportLookup),
+
+            _ => BuildSection(
+                "university_academics",
+                "University Academics",
+                new[]
+                {
+                    ReportKeys.GpaReport,
+                    ReportKeys.SemesterResults,
+                    ReportKeys.FypStatus,
+                    ReportKeys.StudentTranscript
+                },
+                reportLookup)
+        };
+
+        var sections = new List<ReportSectionResponse>
+        {
+            BuildSection("operational", "Operational Reports", operationalKeys, reportLookup),
+            BuildSection("compliance", "Compliance Reports", complianceKeys, reportLookup),
+            institutionSpecific
+        };
+
+        return new InstitutionReportSectionsResponse(
+            effectiveInstitutionType,
+            Enum.GetName(typeof(InstitutionType), (InstitutionType)effectiveInstitutionType) ?? InstitutionType.University.ToString(),
+            sections);
     }
 }
