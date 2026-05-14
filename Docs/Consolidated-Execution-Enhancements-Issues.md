@@ -2494,7 +2494,7 @@ These rules are mandatory across all phases:
 
 To avoid editing the same core pieces repeatedly, implement in this exact order:
 
-Phase 23 -> Phase 24 -> Phase 25 -> Phase 26 -> Phase 27 -> Phase 28 -> Phase 29 -> Phase 30 -> Phase 31 -> Phase 32 -> Phase 33 -> Phase 34 -> Phase 35
+Phase 23 -> Phase 24 -> Phase 25 -> Phase 26 -> Phase 27 -> Phase 28 -> Phase 29 -> Phase 30 -> Phase 31 -> Phase 32 -> Phase 33 -> Phase 34 -> Phase 35 -> Phase 36
 
 Reason:
 - Institution model first.
@@ -2502,6 +2502,72 @@ Reason:
 - School/college feature modules next.
 - Performance/scalability after data and workflow shape is stable.
 - SaaS hardening before final onboarding UX flow.
+
+---
+
+## Phase 36 - Deployment Readiness and Production Go-Live
+Complexity: High
+Depends on: Phase 35 completed and validated
+
+### Stage 36.1 - Release Candidate Baseline Freeze
+- Freeze scope to bug fixes and production blockers only.
+- Tag release candidate (`rc`) build and capture exact commit SHA for API, Web, and BackgroundJobs deployment units.
+- Produce final release manifest with versions, runtime prerequisites, feature/module flags, and required environment variables.
+
+### Stage 36.2 - Environment and Secret Readiness
+- Validate environment parity across Development, Staging/UAT, and Production for appsettings, queue providers, cache providers, and storage providers.
+- Validate secrets and keys are provisioned and non-placeholder in target environments:
+  - JWT signing keys,
+  - SMTP credentials,
+  - optional Twilio credentials,
+  - signed URL secret,
+  - Redis and database credentials.
+- Run startup safety checks in Production-like configuration and fail if unsafe placeholders are detected.
+
+### Stage 36.3 - Data and Migration Deployment Rehearsal
+- Execute full script chain in rehearsal mode using the standardized order (`01 -> 02 -> 03 -> 04 -> 05`).
+- Run pre-deployment backup and rollback-safe deployment scripts against rehearsal targets:
+  - `Scripts/Phase34-BackupRestore-Drill.ps1`,
+  - `Scripts/Phase34-Rollback-Safe-Deployment.ps1`.
+- Validate migration history, critical indexes, and post-deployment checks are green with no manual SQL intervention.
+
+### Stage 36.4 - Security, Reliability, and Performance Gates
+- Re-run mandatory hardening gates:
+  - MFA privileged-role enforcement,
+  - audit search endpoint access and logging correctness,
+  - module-license gating on sensitive routes,
+  - backup/restore drill evidence.
+- Execute focused performance smoke suite for critical portal/API paths and verify no regression against Phase 34/35 baseline.
+- Confirm health endpoints (`/health/*`, `/metrics`, background-job health) are operational and dashboard-visible.
+
+### Stage 36.5 - UAT/SAT, Runbook, and Operational Sign-Off
+- Complete UAT/SAT final pass for SuperAdmin/Admin/Faculty/Student core flows.
+- Update and sign off deployment + rollback runbook with named ownership and on-call escalation paths.
+- Prepare deployment-day checklist including:
+  - maintenance window,
+  - communications plan,
+  - rollback decision thresholds,
+  - post-deploy validation script set.
+
+### Stage 36.6 - Go-Live Execution and Hypercare Plan
+- Execute production deployment using rollback-safe flow only.
+- Run immediate post-deploy smoke validation on authentication, dashboard, student lifecycle, reporting exports, user import, and notifications.
+- Enable hypercare window (24-72h) with incident triage board, SLO/error-rate monitoring, and checkpoint reviews.
+
+### Phase 36 Exit Criteria (Deployment Go/No-Go)
+- Build and targeted integration/unit suites pass from the release candidate commit.
+- Rehearsal deployment and rollback complete successfully with evidence retained.
+- Security hardening checks pass with no critical/high severity open items.
+- UAT/SAT documents marked approved and signed.
+- Operational runbook, rollback plan, and on-call ownership confirmed.
+
+Required evidence artifacts:
+- UAT/SAT approval pack in `UAT-SAT docs/`.
+- Deployment and rollback execution logs under `Artifacts/`.
+- Final release manifest and validation summary in `Docs/`.
+
+Deliverable goal:
+- Completion of Phase 36 means the system is fully deployment-ready and can proceed to production go-live with controlled risk.
 
 ---
 
@@ -3071,6 +3137,7 @@ Use this table to schedule work without revisiting phase design decisions.
 | 33 | P3 | Platform SaaS Team | 3-5 weeks | High | Phases 23-24 complete + security review |
 | 34 | P1 | Security Team | 1-2 weeks | Medium | Auth and audit baselines confirmed |
 | 35 | P1 | Platform + Web Team | 1 week | Medium | Phase 34 controls confirmed + CSV import endpoint healthy |
+| 36 | P0 | Platform + DevOps + QA | 1 week | High | Phase 35 complete + release candidate freeze approved |
 
 ### Suggested Delivery Waves
 
@@ -3078,6 +3145,7 @@ Use this table to schedule work without revisiting phase design decisions.
 2. Wave B (institution feature layer): 25, 26, 27, 28
 3. Wave C (scale + insights): 30, 31, 32
 4. Wave D (platform maturity): 33, 34, 35
+5. Wave E (deployment readiness): 36
 
 ### Definition of Done for Each Phase
 
