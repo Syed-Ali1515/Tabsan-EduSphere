@@ -788,6 +788,20 @@
 | `NotificationService.FanOutRecipientsAsync(...)` | Chooses between inline recipient persistence and deferred background fan-out based on recipient count. | `Application/Notifications/NotificationService.cs` |
 | `ReportService.GetCatalogAsync(roleName, ct)` | Reads/writes report catalog results through distributed cache for shared hot-read reuse across nodes. | `Infrastructure/Reporting/ReportService.cs` |
 
+### API / Application — Advanced Track Phase 28 Stage 28.2 (Parent Read-Only Views)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `GetLinkedStudentResults(studentProfileId, ct)` | Returns published results for a linked student under the authenticated parent/admin/superadmin context. | `API/Controllers/ParentPortalController.cs` |
+| `GetLinkedStudentAttendance(studentProfileId, courseOfferingId, ct)` | Returns attendance rows for a linked student with optional offering filter. | `API/Controllers/ParentPortalController.cs` |
+| `GetLinkedStudentAnnouncements(studentProfileId, courseOfferingId, ct)` | Returns announcements scoped to the linked student's active enrollments. | `API/Controllers/ParentPortalController.cs` |
+| `GetLinkedStudentTimetable(studentProfileId, timetableId, ct)` | Returns the linked student's published timetable view, optionally by timetable id. | `API/Controllers/ParentPortalController.cs` |
+| `GetLinkedStudentResultsAsync(parentUserId, studentProfileId, ct)` | Service-layer linked-student authorization + published result retrieval orchestration. | `Application/Academic/ParentPortalService.cs` |
+| `GetLinkedStudentAttendanceAsync(parentUserId, studentProfileId, courseOfferingId, ct)` | Service-layer linked-student authorization + attendance retrieval orchestration. | `Application/Academic/ParentPortalService.cs` |
+| `GetLinkedStudentAnnouncementsAsync(parentUserId, studentProfileId, courseOfferingId, ct)` | Service-layer linked-student authorization + active-enrollment announcement aggregation. | `Application/Academic/ParentPortalService.cs` |
+| `GetLinkedStudentTimetableAsync(parentUserId, studentProfileId, timetableId, ct)` | Service-layer linked-student authorization + published department timetable resolution. | `Application/Academic/ParentPortalService.cs` |
+| `GetLinkedStudentAsync(parentUserId, studentProfileId, ct)` | Internal active-link guard and student profile resolution used by parent read-only views. | `Application/Academic/ParentPortalService.cs` |
+
 ### API — Phase 28 Stage 28.3 Slice 5 (Portal Branding Logo Storage)
 
 | Function Name | Purpose | Location |

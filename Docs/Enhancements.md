@@ -51,6 +51,12 @@
 - Added explicit link deactivation operation while preserving read-only parent self-view behavior.
 - Validation: focused parent portal unit tests passed (`5/5`) and solution build succeeded.
 
+### 2026-05-14 — Advanced Track Phase 28 Stage 28.2 Complete
+- Added parent read-only linked-student views for results, attendance, announcements, and timetable.
+- Added active-link authorization enforcement so parent/student-linked reads are denied when no active relationship exists.
+- Added integration coverage for parent-portal role/auth behavior and linked-student success paths.
+- Validation: parent-portal focused integration tests passed (`10/10`) and unit tests passed (`144/144`).
+
 ### 2026-05-09 — Phase 28 Stage 28.1 Complete
 - Phase 28 is now **In Progress** with **Stage 28.1 — API and App Tier Scaling** completed.
 - API and Web now enable Brotli/Gzip response compression for lower payload cost under higher concurrent traffic.

@@ -333,8 +333,11 @@ Depends on: Phase 25
 - Parent self-view remains read-only and only returns active links.
 
 ### Stage 28.2 - Parent Read-Only Views
-- Results, attendance, announcements, timetable visibility for linked students.
-- No data mutation rights.
+- Status: Completed (2026-05-14).
+- Added linked-student read-only endpoints for results, attendance, announcements, and timetable.
+- Enforced active parent-student link checks before returning student-scoped data.
+- Preserved non-mutation behavior by exposing GET-only parent self-view routes.
+- Validation: focused unit tests passed (`16/16`) and parent-portal integration tests passed (`10/10`).
 
 ### Stage 28.3 - Parent Notifications
 - Result published, attendance warning, key academic updates.

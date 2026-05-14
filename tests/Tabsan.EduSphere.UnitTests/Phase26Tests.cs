@@ -3,6 +3,11 @@ using System.Runtime.CompilerServices;
 using FluentAssertions;
 using Tabsan.EduSphere.Application.Academic;
 using Tabsan.EduSphere.Application.DTOs.Academic;
+using Tabsan.EduSphere.Application.DTOs.Assignments;
+using Tabsan.EduSphere.Application.DTOs.Attendance;
+using Tabsan.EduSphere.Application.DTOs.Lms;
+using Tabsan.EduSphere.Application.Dtos;
+using Tabsan.EduSphere.Application.Interfaces;
 using Tabsan.EduSphere.Domain.Academic;
 using Tabsan.EduSphere.Domain.Enums;
 using Tabsan.EduSphere.Domain.Identity;
@@ -335,6 +340,127 @@ public class ParentPortalServiceTests
         link.Should().NotBeNull();
         link!.IsActive.Should().BeFalse();
     }
+
+    [Fact]
+    public async Task GetLinkedStudentResults_WhenLinked_ReturnsPublishedResults()
+    {
+        var parent = Guid.NewGuid();
+        var student = TestData.MakeStudent(semester: 5, institutionType: InstitutionType.School);
+
+        var linkRepo = new StubParentLinkRepository([new ParentStudentLink(parent, student.Id, "Guardian")]);
+        var resultRows = new List<ResultResponse>
+        {
+            new(Guid.NewGuid(), student.Id, Guid.NewGuid(), "Final", 82m, 100m, 82m, 3.28m, true, DateTime.UtcNow)
+        };
+
+        var sut = new ParentPortalService(
+            linkRepo,
+            new StubStudentProfileRepository([student]),
+            new StubPortalUserRepository(parent, "Parent"),
+            new StubResultService(resultRows));
+
+        var results = await sut.GetLinkedStudentResultsAsync(parent, student.Id);
+
+        results.Should().HaveCount(1);
+        results[0].StudentProfileId.Should().Be(student.Id);
+        results[0].ResultType.Should().Be("Final");
+    }
+
+    [Fact]
+    public async Task GetLinkedStudentAttendance_WhenLinkInactive_ThrowsUnauthorizedAccess()
+    {
+        var parent = Guid.NewGuid();
+        var student = TestData.MakeStudent(semester: 3, institutionType: InstitutionType.School);
+        var link = new ParentStudentLink(parent, student.Id, "Father");
+        link.Update(link.Relationship, false);
+
+        var sut = new ParentPortalService(
+            new StubParentLinkRepository([link]),
+            new StubStudentProfileRepository([student]),
+            new StubPortalUserRepository(parent, "Parent"),
+            attendanceService: new StubAttendanceService([]));
+
+        var act = () => sut.GetLinkedStudentAttendanceAsync(parent, student.Id);
+
+        await act.Should().ThrowAsync<UnauthorizedAccessException>();
+    }
+
+    [Fact]
+    public async Task GetLinkedStudentTimetable_ReturnsPublishedDepartmentTimetable()
+    {
+        var parent = Guid.NewGuid();
+        var student = TestData.MakeStudent(semester: 4, institutionType: InstitutionType.School);
+        var timetableId = Guid.NewGuid();
+
+        var summary = new TimetableSummaryDto(
+            timetableId,
+            student.DepartmentId,
+            "School Dept",
+            Guid.NewGuid(),
+            "SSC",
+            Guid.NewGuid(),
+            "Term 1",
+            1,
+            DateTime.UtcNow.Date,
+            "School Timetable",
+            true,
+            DateTime.UtcNow);
+
+        var detail = new TimetableDto(
+            timetableId,
+            student.DepartmentId,
+            "School Dept",
+            summary.AcademicProgramId,
+            "School Program",
+            "SSC",
+            summary.SemesterId,
+            "Term 1",
+            1,
+            DateTime.UtcNow.Date,
+            "School Timetable",
+            true,
+            DateTime.UtcNow,
+            [],
+            DateTime.UtcNow,
+            DateTime.UtcNow);
+
+        var sut = new ParentPortalService(
+            new StubParentLinkRepository([new ParentStudentLink(parent, student.Id, "Mother")]),
+            new StubStudentProfileRepository([student]),
+            new StubPortalUserRepository(parent, "Parent"),
+            timetableService: new StubTimetableService([summary], new Dictionary<Guid, TimetableDto> { [timetableId] = detail }));
+
+        var timetable = await sut.GetLinkedStudentTimetableAsync(parent, student.Id);
+
+        timetable.Should().NotBeNull();
+        timetable!.Id.Should().Be(timetableId);
+        timetable.DepartmentId.Should().Be(student.DepartmentId);
+    }
+
+    [Fact]
+    public async Task GetLinkedStudentAnnouncements_WhenOfferingNotEnrolled_ReturnsEmpty()
+    {
+        var parent = Guid.NewGuid();
+        var student = TestData.MakeStudent(semester: 4, institutionType: InstitutionType.School);
+        var enrolledOffering = Guid.NewGuid();
+        var otherOffering = Guid.NewGuid();
+
+        var enrollment = new Enrollment(student.Id, enrolledOffering);
+
+        var sut = new ParentPortalService(
+            new StubParentLinkRepository([new ParentStudentLink(parent, student.Id, "Guardian")]),
+            new StubStudentProfileRepository([student]),
+            new StubPortalUserRepository(parent, "Parent"),
+            announcementService: new StubAnnouncementService(new Dictionary<Guid, List<CourseAnnouncementDto>>
+            {
+                [enrolledOffering] = [new CourseAnnouncementDto { Id = Guid.NewGuid(), OfferingId = enrolledOffering, Title = "Exam", Body = "Tomorrow", PostedAt = DateTime.UtcNow }]
+            }),
+            enrollmentRepo: new StubEnrollmentRepository([enrollment]));
+
+        var items = await sut.GetLinkedStudentAnnouncementsAsync(parent, student.Id, otherOffering);
+
+        items.Should().BeEmpty();
+    }
 }
 
 file static class TestData
@@ -645,6 +771,191 @@ file sealed class StubPortalUserRepository : IUserRepository
 
     public void Update(User user)
         => _users[user.Id] = user;
+
+    public Task<int> SaveChangesAsync(CancellationToken ct = default)
+        => Task.FromResult(1);
+}
+
+file sealed class StubResultService : IResultService
+{
+    private readonly IReadOnlyList<ResultResponse> _results;
+
+    public StubResultService(IReadOnlyList<ResultResponse> results)
+    {
+        _results = results;
+    }
+
+    public Task<ResultResponse> CreateAsync(CreateResultRequest request, CancellationToken ct = default)
+        => throw new NotSupportedException();
+
+    public Task<int> BulkCreateAsync(BulkCreateResultsRequest request, CancellationToken ct = default)
+        => throw new NotSupportedException();
+
+    public Task<bool> PublishAsync(Guid studentProfileId, Guid courseOfferingId, string resultType, Guid publishedByUserId, CancellationToken ct = default)
+        => throw new NotSupportedException();
+
+    public Task<int> PublishAllForOfferingAsync(Guid courseOfferingId, Guid publishedByUserId, CancellationToken ct = default)
+        => throw new NotSupportedException();
+
+    public Task<bool> CorrectAsync(Guid studentProfileId, Guid courseOfferingId, string resultType, CorrectResultRequest request, Guid correctedByUserId, CancellationToken ct = default)
+        => throw new NotSupportedException();
+
+    public Task<IReadOnlyList<ResultResponse>> GetByStudentAsync(Guid studentProfileId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<ResultResponse>>(_results.Where(r => r.StudentProfileId == studentProfileId).ToList());
+
+    public Task<IReadOnlyList<ResultResponse>> GetPublishedByStudentAsync(Guid studentProfileId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<ResultResponse>>(_results.Where(r => r.StudentProfileId == studentProfileId && r.IsPublished).ToList());
+
+    public Task<IReadOnlyList<ResultResponse>> GetByOfferingAsync(Guid courseOfferingId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<ResultResponse>>(_results.Where(r => r.CourseOfferingId == courseOfferingId).ToList());
+
+    public Task<(IReadOnlyList<ResultResponse> Results, Guid LogId)> ExportTranscriptAsync(TranscriptExportRequest request, Guid requestedByUserId, string? ipAddress, CancellationToken ct = default)
+        => throw new NotSupportedException();
+
+    public Task<IReadOnlyList<TranscriptExportLogResponse>> GetExportHistoryAsync(Guid studentProfileId, CancellationToken ct = default)
+        => throw new NotSupportedException();
+}
+
+file sealed class StubAttendanceService : IAttendanceService
+{
+    private readonly IReadOnlyList<AttendanceResponse> _items;
+
+    public StubAttendanceService(IReadOnlyList<AttendanceResponse> items)
+    {
+        _items = items;
+    }
+
+    public Task<bool> MarkAsync(MarkAttendanceRequest request, Guid markedByUserId, CancellationToken ct = default)
+        => throw new NotSupportedException();
+
+    public Task<int> BulkMarkAsync(BulkMarkAttendanceRequest request, Guid markedByUserId, CancellationToken ct = default)
+        => throw new NotSupportedException();
+
+    public Task<bool> CorrectAsync(CorrectAttendanceRequest request, Guid correctedByUserId, CancellationToken ct = default)
+        => throw new NotSupportedException();
+
+    public Task<IReadOnlyList<AttendanceResponse>> GetByOfferingAsync(Guid courseOfferingId, DateTime? from = null, DateTime? to = null, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<AttendanceResponse>>(_items.Where(i => i.CourseOfferingId == courseOfferingId).ToList());
+
+    public Task<IReadOnlyList<AttendanceResponse>> GetByStudentAsync(Guid studentProfileId, Guid? courseOfferingId = null, CancellationToken ct = default)
+    {
+        var q = _items.Where(i => i.StudentProfileId == studentProfileId);
+        if (courseOfferingId.HasValue)
+            q = q.Where(i => i.CourseOfferingId == courseOfferingId.Value);
+        return Task.FromResult<IReadOnlyList<AttendanceResponse>>(q.ToList());
+    }
+
+    public Task<AttendanceSummaryResponse> GetSummaryAsync(Guid studentProfileId, Guid courseOfferingId, CancellationToken ct = default)
+        => throw new NotSupportedException();
+
+    public Task<IReadOnlyList<(Guid StudentProfileId, Guid CourseOfferingId, double AttendancePercent)>> GetBelowThresholdAsync(double thresholdPercent, CancellationToken ct = default)
+        => throw new NotSupportedException();
+}
+
+file sealed class StubAnnouncementService : IAnnouncementService
+{
+    private readonly IReadOnlyDictionary<Guid, List<CourseAnnouncementDto>> _itemsByOffering;
+
+    public StubAnnouncementService(IReadOnlyDictionary<Guid, List<CourseAnnouncementDto>> itemsByOffering)
+    {
+        _itemsByOffering = itemsByOffering;
+    }
+
+    public Task<List<CourseAnnouncementDto>> GetByOfferingAsync(Guid offeringId, CancellationToken ct = default)
+        => Task.FromResult(_itemsByOffering.TryGetValue(offeringId, out var items) ? items.ToList() : []);
+
+    public Task<CourseAnnouncementDto> CreateAsync(CreateAnnouncementRequest request, CancellationToken ct = default)
+        => throw new NotSupportedException();
+
+    public Task DeleteAsync(Guid announcementId, CancellationToken ct = default)
+        => throw new NotSupportedException();
+}
+
+file sealed class StubTimetableService : ITimetableService
+{
+    private readonly IReadOnlyList<TimetableSummaryDto> _summaries;
+    private readonly IReadOnlyDictionary<Guid, TimetableDto> _details;
+
+    public StubTimetableService(IReadOnlyList<TimetableSummaryDto> summaries, IReadOnlyDictionary<Guid, TimetableDto> details)
+    {
+        _summaries = summaries;
+        _details = details;
+    }
+
+    public Task<IList<TimetableSummaryDto>> GetByDepartmentAsync(Guid departmentId, bool publishedOnly, CancellationToken ct = default)
+    {
+        var list = _summaries.Where(s => s.DepartmentId == departmentId).ToList();
+        if (publishedOnly)
+            list = list.Where(s => s.IsPublished).ToList();
+        return Task.FromResult<IList<TimetableSummaryDto>>(list);
+    }
+
+    public Task<TimetableDto> GetByIdAsync(Guid timetableId, CancellationToken ct = default)
+        => Task.FromResult(_details[timetableId]);
+
+    public Task<TimetableDto> CreateAsync(CreateTimetableCommand cmd, CancellationToken ct = default)
+        => throw new NotSupportedException();
+
+    public Task<TimetableDto> UpdateAsync(Guid timetableId, UpdateTimetableCommand cmd, CancellationToken ct = default)
+        => throw new NotSupportedException();
+
+    public Task<TimetableEntryDto> AddEntryAsync(Guid timetableId, UpsertTimetableEntryCommand cmd, CancellationToken ct = default)
+        => throw new NotSupportedException();
+
+    public Task<TimetableEntryDto> UpdateEntryAsync(Guid timetableId, Guid entryId, UpsertTimetableEntryCommand cmd, CancellationToken ct = default)
+        => throw new NotSupportedException();
+
+    public Task DeleteEntryAsync(Guid timetableId, Guid entryId, CancellationToken ct = default)
+        => throw new NotSupportedException();
+
+    public Task PublishAsync(Guid timetableId, CancellationToken ct = default)
+        => throw new NotSupportedException();
+
+    public Task UnpublishAsync(Guid timetableId, CancellationToken ct = default)
+        => throw new NotSupportedException();
+
+    public Task DeleteAsync(Guid timetableId, CancellationToken ct = default)
+        => throw new NotSupportedException();
+
+    public Task<byte[]> ExportExcelAsync(Guid timetableId, CancellationToken ct = default)
+        => throw new NotSupportedException();
+
+    public Task<byte[]> ExportPdfAsync(Guid timetableId, CancellationToken ct = default)
+        => throw new NotSupportedException();
+
+    public Task<IList<TeacherTimetableEntryDto>> GetForTeacherAsync(Guid facultyUserId, CancellationToken ct = default)
+        => throw new NotSupportedException();
+}
+
+file sealed class StubEnrollmentRepository : IEnrollmentRepository
+{
+    private readonly IReadOnlyList<Enrollment> _enrollments;
+
+    public StubEnrollmentRepository(IReadOnlyList<Enrollment> enrollments)
+    {
+        _enrollments = enrollments;
+    }
+
+    public Task<IReadOnlyList<Enrollment>> GetByStudentAsync(Guid studentProfileId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<Enrollment>>(_enrollments.Where(e => e.StudentProfileId == studentProfileId).ToList());
+
+    public Task<IReadOnlyList<Enrollment>> GetByOfferingAsync(Guid courseOfferingId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<Enrollment>>(_enrollments.Where(e => e.CourseOfferingId == courseOfferingId).ToList());
+
+    public Task<Enrollment?> GetByIdAsync(Guid id, CancellationToken ct = default)
+        => Task.FromResult(_enrollments.FirstOrDefault(e => e.Id == id));
+
+    public Task<Enrollment?> GetAsync(Guid studentProfileId, Guid courseOfferingId, CancellationToken ct = default)
+        => Task.FromResult(_enrollments.FirstOrDefault(e => e.StudentProfileId == studentProfileId && e.CourseOfferingId == courseOfferingId));
+
+    public Task<bool> IsEnrolledAsync(Guid studentProfileId, Guid courseOfferingId, CancellationToken ct = default)
+        => Task.FromResult(_enrollments.Any(e => e.StudentProfileId == studentProfileId && e.CourseOfferingId == courseOfferingId));
+
+    public Task AddAsync(Enrollment enrollment, CancellationToken ct = default)
+        => throw new NotSupportedException();
+
+    public void Update(Enrollment enrollment)
+        => throw new NotSupportedException();
 
     public Task<int> SaveChangesAsync(CancellationToken ct = default)
         => Task.FromResult(1);

@@ -1,4 +1,8 @@
 using Tabsan.EduSphere.Application.DTOs.Academic;
+using Tabsan.EduSphere.Application.DTOs.Assignments;
+using Tabsan.EduSphere.Application.DTOs.Attendance;
+using Tabsan.EduSphere.Application.DTOs.Lms;
+using Tabsan.EduSphere.Application.Dtos;
 
 namespace Tabsan.EduSphere.Application.Interfaces;
 
@@ -7,6 +11,14 @@ namespace Tabsan.EduSphere.Application.Interfaces;
 public interface IParentPortalService
 {
     Task<IReadOnlyList<ParentLinkedStudentDto>> GetLinkedStudentsAsync(Guid parentUserId, CancellationToken ct = default);
+
+    Task<IReadOnlyList<ResultResponse>> GetLinkedStudentResultsAsync(Guid parentUserId, Guid studentProfileId, CancellationToken ct = default);
+
+    Task<IReadOnlyList<AttendanceResponse>> GetLinkedStudentAttendanceAsync(Guid parentUserId, Guid studentProfileId, Guid? courseOfferingId = null, CancellationToken ct = default);
+
+    Task<IReadOnlyList<CourseAnnouncementDto>> GetLinkedStudentAnnouncementsAsync(Guid parentUserId, Guid studentProfileId, Guid? courseOfferingId = null, CancellationToken ct = default);
+
+    Task<TimetableDto?> GetLinkedStudentTimetableAsync(Guid parentUserId, Guid studentProfileId, Guid? timetableId = null, CancellationToken ct = default);
 
     Task<IReadOnlyList<ParentStudentLinkDto>> GetLinksByParentAsync(Guid parentUserId, CancellationToken ct = default);
 
