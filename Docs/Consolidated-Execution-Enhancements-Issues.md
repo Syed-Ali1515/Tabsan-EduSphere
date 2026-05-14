@@ -2877,7 +2877,14 @@ Complexity: Medium
 Depends on: Existing auth and audit systems
 
 ### Stage 34.1 - MFA and Access Hardening
-- Multi-factor authentication for privileged roles.
+- Status: Completed (2026-05-15).
+- Multi-factor authentication now supports privileged-role enforcement policy (`SuperAdmin`, `Admin`) with configurable role list.
+- Login flow enforces MFA challenge only when required by role-aware policy and returns explicit MFA-required response path.
+- Web login security-profile consumption now surfaces privileged-role MFA messaging in login UX.
+- Startup guardrails now block unsafe MFA placeholder configuration in non-development environments.
+
+Validation:
+- `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj --filter "FullyQualifiedName~AuthSecurityUxTests" -v minimal` passed (5/5).
 
 ### Stage 34.2 - Audit and Compliance Logging
 - Sensitive action trail coverage with searchable audit history.

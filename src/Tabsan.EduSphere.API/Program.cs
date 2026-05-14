@@ -221,6 +221,28 @@ builder.Services.AddDbContext<ApplicationDbContext>(opts =>
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 builder.Services.Configure<AuthSecurityOptions>(builder.Configuration.GetSection(AuthSecurityOptions.SectionName));
 var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>()!;
+var authSecuritySettings = builder.Configuration.GetSection(AuthSecurityOptions.SectionName).Get<AuthSecurityOptions>() ?? new AuthSecurityOptions();
+
+// Final-Touches Phase 34 Stage 34.1 - block unsafe MFA bootstrap in non-dev/test environments.
+if (!builder.Environment.IsDevelopment() && !builder.Environment.IsEnvironment("Testing"))
+{
+    if (authSecuritySettings.Mfa.Enabled)
+    {
+        var demoCode = authSecuritySettings.Mfa.DemoCode?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(demoCode)
+            || string.Equals(demoCode, "000000", StringComparison.Ordinal)
+            || string.Equals(demoCode, "REPLACE_OR_SET_VIA_ENV_VAR", StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException("AuthSecurity:Mfa is enabled but AuthSecurity:Mfa:DemoCode is still using an unsafe placeholder. Set a secure code via environment configuration before startup.");
+        }
+
+        if (authSecuritySettings.Mfa.RequireForPrivilegedRolesOnly
+            && (authSecuritySettings.Mfa.PrivilegedRoles is null || authSecuritySettings.Mfa.PrivilegedRoles.Length == 0))
+        {
+            throw new InvalidOperationException("AuthSecurity:Mfa:RequireForPrivilegedRolesOnly is enabled but no privileged roles are configured.");
+        }
+    }
+}
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
