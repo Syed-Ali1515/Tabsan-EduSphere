@@ -2980,20 +2980,39 @@ Complexity: Medium
 Depends on: Phase 24, existing CSV import backend, and role governance
 
 ### Stage 35.1 - User Creation Import Entry Point
-- Add an **Import Users** button on the user creation/management page.
-- Route the button to the existing CSV upload flow/API endpoint.
-- Keep role authorization unchanged (SuperAdmin/Admin only).
+- Status: Completed (2026-05-15).
+Implementation Summary
+- Added an `Import Users` button to the Admin user-management page to keep CSV onboarding in the same operational flow as user creation and updates.
+- Routed the new entry point directly to the existing `Portal/UserImport` page and `ImportUsersCsv` upload action without introducing any new API contract.
+- Kept existing role rules unchanged: import remains restricted to Admin and SuperAdmin users.
+
+Validation Summary
+- Manual flow verification from Admin Users page to User Import page passed.
+- Existing integration import authorization coverage remained green.
 
 ### Stage 35.2 - Template-Aware Upload Guidance
-- Add in-page helper text linking to templates in `User Import Sheets/`:
+- Status: Completed (2026-05-15).
+Implementation Summary
+- Added template guidance block on the User Import page with direct download links for:
   - `faculty-admin-import-template.csv`
   - `students-import-template.csv`
-- Show expected required columns and accepted file rules before upload.
+- Added a secure `UserImportTemplate` download endpoint with filename allow-listing and path traversal protection.
+- Added explicit pre-upload rules for required columns, optional columns, accepted file type, and allowed role values.
+
+Validation Summary
+- Template download links resolve to CSV payloads from the `User Import Sheets` source folder.
+- Upload guidance now renders before file submission and matches backend import requirements.
 
 ### Stage 35.3 - Upload Result and Validation UX
-- Display imported/duplicates/errors summary in UI after upload.
-- Surface row-level errors clearly for correction and re-upload.
-- Ensure institution-scope and role validation errors are readable and actionable.
+- Status: Completed (2026-05-15).
+Implementation Summary
+- Kept summary cards for total/imported/duplicates/errors and enhanced post-upload error presentation into a structured row-level table.
+- Added correction-focused helper copy so admins can quickly fix CSV rows and re-upload.
+- Split error strings into row label + issue message format for clearer visibility of institution/role validation failures.
+
+Validation Summary
+- `dotnet build Tabsan.EduSphere.sln -v minimal` passed.
+- `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~UserImportAndForceChangeIntegrationTests" -v minimal` passed (`3/3`).
 
 Deliverable goal:
 - Admin and SuperAdmin can import users directly from the user creation area using the provided CSV templates without leaving the app flow.

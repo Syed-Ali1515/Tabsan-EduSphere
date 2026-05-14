@@ -3,6 +3,15 @@
 > **Maintenance rule**: Every function added to the codebase must be registered here with Name, Purpose, and Location.
 > Format: `Name | Purpose | Location`
 
+## Phase 35 - In-App User Import UX Completion (2026-05-15)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `AdminUsers import entry action` | Adds direct `Import Users` entry from Admin user management page to keep create/manage/import flow contiguous. | `src/Tabsan.EduSphere.Web/Views/Portal/AdminUsers.cshtml` |
+| `PortalController.UserImportTemplate(fileName)` | Serves approved CSV template files from `User Import Sheets/` via filename allow-list with traversal-safe path resolution. | `src/Tabsan.EduSphere.Web/Controllers/PortalController.cs` |
+| `User Import template guidance block` | Displays template download links, required/optional columns, accepted file type, and role-value guidance before upload. | `src/Tabsan.EduSphere.Web/Views/Portal/UserImport.cshtml` |
+| `User Import row-level validation table` | Renders post-upload row-level validation issues in a structured Row/Issue table for actionable correction and re-upload. | `src/Tabsan.EduSphere.Web/Views/Portal/UserImport.cshtml` |
+
 ## Institute Parity Stage Update Governance (2026-05-13)
 
 | Function Name | Purpose | Location |

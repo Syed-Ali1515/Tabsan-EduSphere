@@ -20,7 +20,10 @@ else
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h2 class="h5 mb-0">Admin Users</h2>
-                <span class="badge bg-secondary">@Model.AdminUsers.Count total</span>
+                <div class="d-flex align-items-center gap-2">
+                    <a asp-action="UserImport" class="btn btn-sm btn-outline-primary">Import Users</a>
+                    <span class="badge bg-secondary">@Model.AdminUsers.Count total</span>
+                </div>
             </div>
 
             @if (Model.AdminUsers.Count == 0)

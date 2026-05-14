@@ -8,6 +8,7 @@ namespace Tabsan.EduSphere.Web.Controllers;
 public class PortalController : Controller
 {
     private readonly IEduApiClient _api;
+    private readonly IWebHostEnvironment _environment;
 
     private static readonly Dictionary<string, string> ActionMenuKeyMap = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -58,7 +59,11 @@ public class PortalController : Controller
         [nameof(InstitutionPolicy)] = "institution_policy"
     };
 
-    public PortalController(IEduApiClient api) => _api = api;
+    public PortalController(IEduApiClient api, IWebHostEnvironment environment)
+    {
+        _api = api;
+        _environment = environment;
+    }
 
     public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
@@ -1168,6 +1173,32 @@ public class PortalController : Controller
         }
 
         return View("UserImport", model);
+    }
+
+    [HttpGet]
+    public IActionResult UserImportTemplate(string fileName)
+    {
+        if (string.IsNullOrWhiteSpace(fileName))
+            return NotFound();
+
+        var allowedFileNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "faculty-admin-import-template.csv",
+            "students-import-template.csv"
+        };
+
+        if (!allowedFileNames.Contains(fileName))
+            return NotFound();
+
+        var templateRoot = Path.GetFullPath(Path.Combine(_environment.ContentRootPath, "..", "..", "User Import Sheets"));
+        var candidatePath = Path.GetFullPath(Path.Combine(templateRoot, fileName));
+        if (!candidatePath.StartsWith(templateRoot, StringComparison.OrdinalIgnoreCase))
+            return NotFound();
+
+        if (!System.IO.File.Exists(candidatePath))
+            return NotFound();
+
+        return PhysicalFile(candidatePath, "text/csv", fileName);
     }
 
     // ── Departments ────────────────────────────────────────────────────────

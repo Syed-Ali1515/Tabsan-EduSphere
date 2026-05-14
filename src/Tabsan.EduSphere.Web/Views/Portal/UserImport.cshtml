@@ -16,10 +16,20 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
                     <h2 class="h5 mb-3">Import Users From CSV</h2>
-                    <p class="text-muted small mb-3">
-                        Required columns: Username, Email, FullName, Role, DepartmentId(optional).<br />
-                        Imported accounts use Username as initial password and are forced to change password on first login.
-                    </p>
+                    <div class="alert alert-light border small mb-3">
+                        <p class="mb-2"><strong>Use one of the official templates before upload:</strong></p>
+                        <div class="d-flex flex-wrap gap-2 mb-2">
+                            <a class="btn btn-sm btn-outline-secondary" asp-action="UserImportTemplate" asp-route-fileName="faculty-admin-import-template.csv">faculty-admin-import-template.csv</a>
+                            <a class="btn btn-sm btn-outline-secondary" asp-action="UserImportTemplate" asp-route-fileName="students-import-template.csv">students-import-template.csv</a>
+                        </div>
+                        <ul class="mb-0 ps-3">
+                            <li>Required columns: <strong>Username, Email, FullName, Role</strong></li>
+                            <li>Optional columns: <strong>DepartmentId</strong></li>
+                            <li>Accepted file type: <strong>.csv</strong> only</li>
+                            <li>Role values: <strong>Admin</strong>, <strong>Faculty</strong>, <strong>Student</strong></li>
+                            <li>Imported accounts use Username as temporary password and must change it at first login.</li>
+                        </ul>
+                    </div>
 
                     <form asp-action="ImportUsersCsv" method="post" enctype="multipart/form-data">
                         @Html.AntiForgeryToken()
@@ -67,13 +77,30 @@ student1,student1@tabsan.local,Student One,Student,0f8fad5b-d9cb-469f-a165-70867
 
                         @if (Model.Result.ErrorDetails.Count > 0)
                         {
-                            <h3 class="h6">Error Details</h3>
-                            <ul class="mb-0">
-                                @foreach (var error in Model.Result.ErrorDetails)
-                                {
-                                    <li>@error</li>
-                                }
-                            </ul>
+                            <h3 class="h6">Row-Level Validation Errors</h3>
+                            <p class="text-muted small mb-2">Fix the rows below in your CSV and re-upload the same template.</p>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-striped align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 20%;">Row</th>
+                                            <th>Issue</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var error in Model.Result.ErrorDetails)
+                                        {
+                                            var parts = error.Split(':', 2, StringSplitOptions.TrimEntries);
+                                            var rowLabel = parts.Length == 2 ? parts[0] : "Validation";
+                                            var message = parts.Length == 2 ? parts[1] : error;
+                                            <tr>
+                                                <td><span class="badge bg-warning text-dark">@rowLabel</span></td>
+                                                <td>@message</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
                         }
                     </div>
                 </div>

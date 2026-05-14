@@ -18,6 +18,21 @@ Each stage log entry must clearly describe behavior impact for School/College/Un
 
 ## 0. Implementation Update Log
 
+### 2026-05-15 - Phase 35 (Execution Snapshot)
+- Completed In-App User Import UX Completion (Stages 35.1, 35.2, 35.3).
+- Implementation Summary:
+  - added `Import Users` button on Admin Users page and routed to existing portal CSV import flow,
+  - added in-page template guidance with direct links for `faculty-admin-import-template.csv` and `students-import-template.csv`,
+  - added secure template-download endpoint with file allow-list and safe path resolution,
+  - improved upload-result UX by rendering row-level validation feedback in a structured Row/Issue table with correction guidance.
+- Validation Summary:
+  - `dotnet build Tabsan.EduSphere.sln -v minimal` passed,
+  - `dotnet test tests/Tabsan.EduSphere.IntegrationTests/Tabsan.EduSphere.IntegrationTests.csproj --filter "FullyQualifiedName~UserImportAndForceChangeIntegrationTests" -v minimal` passed (`3/3`).
+- Behavior impact:
+  - Admin and SuperAdmin can now enter user import directly from user-management context,
+  - template-first guidance reduces malformed CSV uploads,
+  - import validation output is more actionable for institution/role correction cycles.
+
 ### 2026-05-14 - Phase 23 Stage 23.2 (Execution Snapshot)
 - Completed dynamic academic labels and context implementation/validation from `Docs/Advance-Enhancements.md`.
 - Implementation Summary:
