@@ -5,7 +5,10 @@ namespace Tabsan.EduSphere.API.Services;
 public enum AnalyticsExportReportType
 {
     Performance,
-    Attendance
+    Attendance,
+    TopPerformers,
+    PerformanceTrends,
+    ComparativeSummary
 }
 
 public enum AnalyticsExportFormat
@@ -39,6 +42,34 @@ public sealed class AnalyticsExportJobQueue
 
     public IAsyncEnumerable<AnalyticsExportJobRequest> DequeueAllAsync(CancellationToken ct)
         => _channel.Reader.ReadAllAsync(ct);
+}
+
+public static class AnalyticsExportConventions
+{
+    public static string GetExtension(AnalyticsExportFormat format)
+        => format == AnalyticsExportFormat.Excel ? "xlsx" : "pdf";
+
+    public static string GetContentType(AnalyticsExportFormat format)
+        => format == AnalyticsExportFormat.Excel
+            ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            : "application/pdf";
+
+    public static string GetReportKey(AnalyticsExportReportType reportType)
+        => reportType switch
+        {
+            AnalyticsExportReportType.Performance => "performance",
+            AnalyticsExportReportType.Attendance => "attendance",
+            AnalyticsExportReportType.TopPerformers => "top-performers",
+            AnalyticsExportReportType.PerformanceTrends => "performance-trends",
+            AnalyticsExportReportType.ComparativeSummary => "comparative-summary",
+            _ => "report"
+        };
+
+    public static string CreateFileName(AnalyticsExportReportType reportType, AnalyticsExportFormat format, DateTimeOffset? timestamp = null)
+    {
+        var utc = (timestamp ?? DateTimeOffset.UtcNow).UtcDateTime;
+        return $"analytics-{GetReportKey(reportType)}-{utc:yyyyMMddHHmmss}.{GetExtension(format)}";
+    }
 }
 
 public sealed class AnalyticsExportJobState

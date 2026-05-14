@@ -677,6 +677,175 @@ public sealed class AnalyticsService : IAnalyticsService
         using var ms2 = new MemoryStream(); wb.SaveAs(ms2); return ms2.ToArray();
     }
 
+    public async Task<byte[]> ExportTopPerformersPdfAsync(Guid? departmentId, int? institutionType = null, int take = 10, CancellationToken ct = default)
+    {
+        var report = await GetTopPerformersAsync(departmentId, institutionType, take, ct)
+                     ?? new TopPerformersReport(Guid.Empty, "All Departments", institutionType ?? (int)InstitutionType.University, take, []);
+
+        return Document.Create(container => container.Page(page =>
+        {
+            page.Size(PageSizes.A4.Landscape());
+            page.Margin(30);
+            page.Content().Column(col =>
+            {
+                col.Item().Text($"Top Performers - {report.DepartmentName}").FontSize(16).Bold();
+                col.Item().Text($"Institution Type: {report.EffectiveInstitutionType} | Take: {report.Take}").FontSize(10);
+                col.Item().PaddingTop(10).Table(table =>
+                {
+                    table.ColumnsDefinition(c =>
+                    {
+                        c.ConstantColumn(45); c.RelativeColumn(2); c.RelativeColumn(2);
+                        c.RelativeColumn(2); c.RelativeColumn(1); c.RelativeColumn(1);
+                    });
+                    AddPdfHeader(table, "Rank", "Reg No", "Name", "Department", "Avg %", "Results");
+                    foreach (var r in report.Rows)
+                        AddPdfRow(table, r.Rank.ToString(), r.RegistrationNumber, r.FullName, r.Department,
+                            r.AveragePercentage.ToString("F2"), r.ResultCount.ToString());
+                });
+            });
+        })).GeneratePdf();
+    }
+
+    public async Task<byte[]> ExportTopPerformersExcelAsync(Guid? departmentId, int? institutionType = null, int take = 10, CancellationToken ct = default)
+    {
+        var report = await GetTopPerformersAsync(departmentId, institutionType, take, ct)
+                     ?? new TopPerformersReport(Guid.Empty, "All Departments", institutionType ?? (int)InstitutionType.University, take, []);
+
+        using var wb = new XLWorkbook();
+        var ws = wb.AddWorksheet("Top Performers");
+        ws.Cell(1, 1).Value = $"Top Performers - {report.DepartmentName}";
+        ws.Range(1, 1, 1, 7).Merge().Style.Font.Bold = true;
+        string[] headers = ["Rank", "Reg No", "Name", "Department", "Avg %", "Results", "Last Published At"];
+        for (int i = 0; i < headers.Length; i++) { ws.Cell(2, i + 1).Value = headers[i]; ws.Cell(2, i + 1).Style.Font.Bold = true; }
+
+        var row = 3;
+        foreach (var r in report.Rows)
+        {
+            ws.Cell(row, 1).Value = r.Rank;
+            ws.Cell(row, 2).Value = r.RegistrationNumber;
+            ws.Cell(row, 3).Value = r.FullName;
+            ws.Cell(row, 4).Value = r.Department;
+            ws.Cell(row, 5).Value = r.AveragePercentage;
+            ws.Cell(row, 6).Value = r.ResultCount;
+            ws.Cell(row, 7).Value = r.LastPublishedAt;
+            row++;
+        }
+
+        ws.Columns().AdjustToContents();
+        using var ms = new MemoryStream(); wb.SaveAs(ms); return ms.ToArray();
+    }
+
+    public async Task<byte[]> ExportPerformanceTrendsPdfAsync(Guid? departmentId, int? institutionType = null, int windowDays = 30, CancellationToken ct = default)
+    {
+        var report = await GetPerformanceTrendsAsync(departmentId, institutionType, windowDays, ct)
+                     ?? new PerformanceTrendReport(Guid.Empty, "All Departments", institutionType ?? (int)InstitutionType.University, windowDays, []);
+
+        return Document.Create(container => container.Page(page =>
+        {
+            page.Size(PageSizes.A4.Landscape());
+            page.Margin(30);
+            page.Content().Column(col =>
+            {
+                col.Item().Text($"Performance Trends - {report.DepartmentName}").FontSize(16).Bold();
+                col.Item().Text($"Window: {report.WindowDays} days | Points: {report.Points.Count}").FontSize(10);
+                col.Item().PaddingTop(10).Table(table =>
+                {
+                    table.ColumnsDefinition(c =>
+                    {
+                        c.RelativeColumn(2); c.RelativeColumn(2); c.RelativeColumn(1);
+                    });
+                    AddPdfHeader(table, "Date", "Average %", "Result Count");
+                    foreach (var p in report.Points)
+                        AddPdfRow(table, p.Date.ToString("yyyy-MM-dd"), p.AveragePercentage.ToString("F2"), p.ResultCount.ToString());
+                });
+            });
+        })).GeneratePdf();
+    }
+
+    public async Task<byte[]> ExportPerformanceTrendsExcelAsync(Guid? departmentId, int? institutionType = null, int windowDays = 30, CancellationToken ct = default)
+    {
+        var report = await GetPerformanceTrendsAsync(departmentId, institutionType, windowDays, ct)
+                     ?? new PerformanceTrendReport(Guid.Empty, "All Departments", institutionType ?? (int)InstitutionType.University, windowDays, []);
+
+        using var wb = new XLWorkbook();
+        var ws = wb.AddWorksheet("Performance Trends");
+        ws.Cell(1, 1).Value = $"Performance Trends - {report.DepartmentName}";
+        ws.Range(1, 1, 1, 3).Merge().Style.Font.Bold = true;
+        string[] headers = ["Date", "Average %", "Result Count"];
+        for (int i = 0; i < headers.Length; i++) { ws.Cell(2, i + 1).Value = headers[i]; ws.Cell(2, i + 1).Style.Font.Bold = true; }
+
+        var row = 3;
+        foreach (var p in report.Points)
+        {
+            ws.Cell(row, 1).Value = p.Date.ToString("yyyy-MM-dd");
+            ws.Cell(row, 2).Value = p.AveragePercentage;
+            ws.Cell(row, 3).Value = p.ResultCount;
+            row++;
+        }
+
+        ws.Columns().AdjustToContents();
+        using var ms = new MemoryStream(); wb.SaveAs(ms); return ms.ToArray();
+    }
+
+    public async Task<byte[]> ExportComparativeSummaryPdfAsync(Guid? departmentId, int? institutionType = null, CancellationToken ct = default)
+    {
+        var report = await GetComparativeSummaryAsync(departmentId, institutionType, ct)
+                     ?? new ComparativeSummaryReport(institutionType ?? (int)InstitutionType.University, []);
+
+        return Document.Create(container => container.Page(page =>
+        {
+            page.Size(PageSizes.A4.Landscape());
+            page.Margin(30);
+            page.Content().Column(col =>
+            {
+                col.Item().Text("Comparative Summary").FontSize(16).Bold();
+                col.Item().Text($"Institution Type: {report.EffectiveInstitutionType}").FontSize(10);
+                col.Item().PaddingTop(10).Table(table =>
+                {
+                    table.ColumnsDefinition(c =>
+                    {
+                        c.RelativeColumn(2); c.RelativeColumn(1); c.RelativeColumn(1); c.RelativeColumn(1); c.RelativeColumn(1);
+                    });
+                    AddPdfHeader(table, "Department", "Result %", "Attendance %", "Submission %", "Quiz Avg");
+                    foreach (var r in report.Rows)
+                        AddPdfRow(table, r.DepartmentName,
+                            r.AverageResultPercentage.ToString("F2"),
+                            r.AverageAttendancePercentage.ToString("F2"),
+                            r.AssignmentSubmissionRate.ToString("F2"),
+                            r.QuizAverageScore.ToString("F2"));
+                });
+            });
+        })).GeneratePdf();
+    }
+
+    public async Task<byte[]> ExportComparativeSummaryExcelAsync(Guid? departmentId, int? institutionType = null, CancellationToken ct = default)
+    {
+        var report = await GetComparativeSummaryAsync(departmentId, institutionType, ct)
+                     ?? new ComparativeSummaryReport(institutionType ?? (int)InstitutionType.University, []);
+
+        using var wb = new XLWorkbook();
+        var ws = wb.AddWorksheet("Comparative Summary");
+        ws.Cell(1, 1).Value = "Comparative Summary";
+        ws.Range(1, 1, 1, 6).Merge().Style.Font.Bold = true;
+        string[] headers = ["Department", "Institution Type", "Result %", "Attendance %", "Submission %", "Quiz Avg"];
+        for (int i = 0; i < headers.Length; i++) { ws.Cell(2, i + 1).Value = headers[i]; ws.Cell(2, i + 1).Style.Font.Bold = true; }
+
+        var row = 3;
+        foreach (var r in report.Rows)
+        {
+            ws.Cell(row, 1).Value = r.DepartmentName;
+            ws.Cell(row, 2).Value = r.InstitutionType;
+            ws.Cell(row, 3).Value = r.AverageResultPercentage;
+            ws.Cell(row, 4).Value = r.AverageAttendancePercentage;
+            ws.Cell(row, 5).Value = r.AssignmentSubmissionRate;
+            ws.Cell(row, 6).Value = r.QuizAverageScore;
+            row++;
+        }
+
+        ws.Columns().AdjustToContents();
+        using var ms = new MemoryStream(); wb.SaveAs(ms); return ms.ToArray();
+    }
+
     // Private helpers
     /// <summary>Resolves a department name from its ID; returns "All Departments" for null.</summary>
     private async Task<string> ResolveDeptNameAsync(Guid? departmentId, int? institutionType, CancellationToken ct)
@@ -699,9 +868,13 @@ public sealed class AnalyticsService : IAnalyticsService
 
     private static void AddPdfHeader(TableDescriptor table, params string[] headers)
     {
-        foreach (var h in headers)
-            table.Header(header =>
-                header.Cell().Background("#2563EB").Padding(4).Text(h).FontColor("#FFFFFF").Bold());
+        table.Header(header =>
+        {
+            foreach (var h in headers)
+            {
+                header.Cell().Background("#2563EB").Padding(4).Text(h).FontColor("#FFFFFF").Bold();
+            }
+        });
     }
 
     private static void AddPdfRow(TableDescriptor table, params string[] values)

@@ -31,6 +31,24 @@ public interface IAnalyticsService
     /// <summary>Exports the attendance report for a department to an Excel byte array.</summary>
     Task<byte[]> ExportAttendanceExcelAsync(Guid? departmentId, int? institutionType = null, CancellationToken ct = default);
 
+    /// <summary>Exports the top performers report for a department to a PDF byte array.</summary>
+    Task<byte[]> ExportTopPerformersPdfAsync(Guid? departmentId, int? institutionType = null, int take = 10, CancellationToken ct = default);
+
+    /// <summary>Exports the top performers report for a department to an Excel byte array.</summary>
+    Task<byte[]> ExportTopPerformersExcelAsync(Guid? departmentId, int? institutionType = null, int take = 10, CancellationToken ct = default);
+
+    /// <summary>Exports the performance trends report for a department to a PDF byte array.</summary>
+    Task<byte[]> ExportPerformanceTrendsPdfAsync(Guid? departmentId, int? institutionType = null, int windowDays = 30, CancellationToken ct = default);
+
+    /// <summary>Exports the performance trends report for a department to an Excel byte array.</summary>
+    Task<byte[]> ExportPerformanceTrendsExcelAsync(Guid? departmentId, int? institutionType = null, int windowDays = 30, CancellationToken ct = default);
+
+    /// <summary>Exports the comparative summary report for a department to a PDF byte array.</summary>
+    Task<byte[]> ExportComparativeSummaryPdfAsync(Guid? departmentId, int? institutionType = null, CancellationToken ct = default);
+
+    /// <summary>Exports the comparative summary report for a department to an Excel byte array.</summary>
+    Task<byte[]> ExportComparativeSummaryExcelAsync(Guid? departmentId, int? institutionType = null, CancellationToken ct = default);
+
     /// <summary>Returns ranked top performers for a scoped analytics context.</summary>
     Task<TopPerformersReport?> GetTopPerformersAsync(Guid? departmentId, int? institutionType = null, int take = 10, CancellationToken ct = default);
 

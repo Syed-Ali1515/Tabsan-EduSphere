@@ -44,8 +44,7 @@ public sealed class AnalyticsExportJobWorker : BackgroundService
                 }, stoppingToken);
 
                 byte[] bytes = [];
-                string contentType = "application/octet-stream";
-                string extension = "bin";
+                var contentType = AnalyticsExportConventions.GetContentType(request.Format);
 
                 var maxAttempts = Math.Max(1, _reliability.MaxRetryAttempts);
                 for (var attempt = 1; attempt <= maxAttempts; attempt++)
@@ -59,23 +58,33 @@ public sealed class AnalyticsExportJobWorker : BackgroundService
                         {
                             case AnalyticsExportReportType.Attendance when request.Format == AnalyticsExportFormat.Excel:
                                 bytes = await analytics.ExportAttendanceExcelAsync(request.DepartmentId, request.InstitutionType, stoppingToken);
-                                contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                                extension = "xlsx";
                                 break;
                             case AnalyticsExportReportType.Attendance:
                                 bytes = await analytics.ExportAttendancePdfAsync(request.DepartmentId, request.InstitutionType, stoppingToken);
-                                contentType = "application/pdf";
-                                extension = "pdf";
                                 break;
                             case AnalyticsExportReportType.Performance when request.Format == AnalyticsExportFormat.Excel:
                                 bytes = await analytics.ExportPerformanceExcelAsync(request.DepartmentId, request.InstitutionType, stoppingToken);
-                                contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                                extension = "xlsx";
+                                break;
+                            case AnalyticsExportReportType.TopPerformers when request.Format == AnalyticsExportFormat.Excel:
+                                bytes = await analytics.ExportTopPerformersExcelAsync(request.DepartmentId, request.InstitutionType, 10, stoppingToken);
+                                break;
+                            case AnalyticsExportReportType.TopPerformers:
+                                bytes = await analytics.ExportTopPerformersPdfAsync(request.DepartmentId, request.InstitutionType, 10, stoppingToken);
+                                break;
+                            case AnalyticsExportReportType.PerformanceTrends when request.Format == AnalyticsExportFormat.Excel:
+                                bytes = await analytics.ExportPerformanceTrendsExcelAsync(request.DepartmentId, request.InstitutionType, 30, stoppingToken);
+                                break;
+                            case AnalyticsExportReportType.PerformanceTrends:
+                                bytes = await analytics.ExportPerformanceTrendsPdfAsync(request.DepartmentId, request.InstitutionType, 30, stoppingToken);
+                                break;
+                            case AnalyticsExportReportType.ComparativeSummary when request.Format == AnalyticsExportFormat.Excel:
+                                bytes = await analytics.ExportComparativeSummaryExcelAsync(request.DepartmentId, request.InstitutionType, stoppingToken);
+                                break;
+                            case AnalyticsExportReportType.ComparativeSummary:
+                                bytes = await analytics.ExportComparativeSummaryPdfAsync(request.DepartmentId, request.InstitutionType, stoppingToken);
                                 break;
                             default:
                                 bytes = await analytics.ExportPerformancePdfAsync(request.DepartmentId, request.InstitutionType, stoppingToken);
-                                contentType = "application/pdf";
-                                extension = "pdf";
                                 break;
                         }
 
@@ -94,7 +103,7 @@ public sealed class AnalyticsExportJobWorker : BackgroundService
                     }
                 }
 
-                var fileName = $"analytics-{request.ReportType.ToString().ToLowerInvariant()}-{request.JobId:N}.{extension}";
+                var fileName = AnalyticsExportConventions.CreateFileName(request.ReportType, request.Format);
                 await _store.SetPayloadAsync(request.JobId, bytes, stoppingToken);
                 await _store.SetStateAsync(new AnalyticsExportJobState
                 {

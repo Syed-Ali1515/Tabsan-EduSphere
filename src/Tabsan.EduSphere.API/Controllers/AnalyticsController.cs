@@ -153,7 +153,7 @@ public sealed class AnalyticsController : ControllerBase
         if (scope.Error is not null) return scope.Error;
 
         var bytes = await _analytics.ExportPerformancePdfAsync(scope.DepartmentId, scope.InstitutionType, ct);
-        return File(bytes, "application/pdf", "performance-report.pdf");
+        return ReturnAnalyticsFile(bytes, AnalyticsExportReportType.Performance, AnalyticsExportFormat.Pdf);
     }
 
     /// <summary>Downloads the performance report as an Excel file.</summary>
@@ -168,9 +168,7 @@ public sealed class AnalyticsController : ControllerBase
         if (scope.Error is not null) return scope.Error;
 
         var bytes = await _analytics.ExportPerformanceExcelAsync(scope.DepartmentId, scope.InstitutionType, ct);
-        return File(bytes,
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            "performance-report.xlsx");
+        return ReturnAnalyticsFile(bytes, AnalyticsExportReportType.Performance, AnalyticsExportFormat.Excel);
     }
 
     /// <summary>Downloads the attendance report as a PDF file.</summary>
@@ -185,7 +183,7 @@ public sealed class AnalyticsController : ControllerBase
         if (scope.Error is not null) return scope.Error;
 
         var bytes = await _analytics.ExportAttendancePdfAsync(scope.DepartmentId, scope.InstitutionType, ct);
-        return File(bytes, "application/pdf", "attendance-report.pdf");
+        return ReturnAnalyticsFile(bytes, AnalyticsExportReportType.Attendance, AnalyticsExportFormat.Pdf);
     }
 
     /// <summary>Downloads the attendance report as an Excel file.</summary>
@@ -200,14 +198,107 @@ public sealed class AnalyticsController : ControllerBase
         if (scope.Error is not null) return scope.Error;
 
         var bytes = await _analytics.ExportAttendanceExcelAsync(scope.DepartmentId, scope.InstitutionType, ct);
-        return File(bytes,
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            "attendance-report.xlsx");
+        return ReturnAnalyticsFile(bytes, AnalyticsExportReportType.Attendance, AnalyticsExportFormat.Excel);
+    }
+
+    /// <summary>Downloads top performers report as a PDF file.</summary>
+    [HttpGet("top-performers/export/pdf")]
+    [Authorize(Policy = "Admin")]
+    public async Task<IActionResult> ExportTopPerformersPdf(
+        [FromQuery] Guid? departmentId,
+        [FromQuery] int? institutionType,
+        [FromQuery] int take = 10,
+        CancellationToken ct = default)
+    {
+        var scope = await ResolveEffectiveScopeAsync(departmentId, institutionType, ct);
+        if (scope.Error is not null) return scope.Error;
+
+        var bytes = await _analytics.ExportTopPerformersPdfAsync(scope.DepartmentId, scope.InstitutionType, take, ct);
+        return ReturnAnalyticsFile(bytes, AnalyticsExportReportType.TopPerformers, AnalyticsExportFormat.Pdf);
+    }
+
+    /// <summary>Downloads top performers report as an Excel file.</summary>
+    [HttpGet("top-performers/export/excel")]
+    [Authorize(Policy = "Admin")]
+    public async Task<IActionResult> ExportTopPerformersExcel(
+        [FromQuery] Guid? departmentId,
+        [FromQuery] int? institutionType,
+        [FromQuery] int take = 10,
+        CancellationToken ct = default)
+    {
+        var scope = await ResolveEffectiveScopeAsync(departmentId, institutionType, ct);
+        if (scope.Error is not null) return scope.Error;
+
+        var bytes = await _analytics.ExportTopPerformersExcelAsync(scope.DepartmentId, scope.InstitutionType, take, ct);
+        return ReturnAnalyticsFile(bytes, AnalyticsExportReportType.TopPerformers, AnalyticsExportFormat.Excel);
+    }
+
+    /// <summary>Downloads performance trends report as a PDF file.</summary>
+    [HttpGet("performance-trends/export/pdf")]
+    [Authorize(Policy = "Admin")]
+    public async Task<IActionResult> ExportPerformanceTrendsPdf(
+        [FromQuery] Guid? departmentId,
+        [FromQuery] int? institutionType,
+        [FromQuery] int windowDays = 30,
+        CancellationToken ct = default)
+    {
+        var scope = await ResolveEffectiveScopeAsync(departmentId, institutionType, ct);
+        if (scope.Error is not null) return scope.Error;
+
+        var bytes = await _analytics.ExportPerformanceTrendsPdfAsync(scope.DepartmentId, scope.InstitutionType, windowDays, ct);
+        return ReturnAnalyticsFile(bytes, AnalyticsExportReportType.PerformanceTrends, AnalyticsExportFormat.Pdf);
+    }
+
+    /// <summary>Downloads performance trends report as an Excel file.</summary>
+    [HttpGet("performance-trends/export/excel")]
+    [Authorize(Policy = "Admin")]
+    public async Task<IActionResult> ExportPerformanceTrendsExcel(
+        [FromQuery] Guid? departmentId,
+        [FromQuery] int? institutionType,
+        [FromQuery] int windowDays = 30,
+        CancellationToken ct = default)
+    {
+        var scope = await ResolveEffectiveScopeAsync(departmentId, institutionType, ct);
+        if (scope.Error is not null) return scope.Error;
+
+        var bytes = await _analytics.ExportPerformanceTrendsExcelAsync(scope.DepartmentId, scope.InstitutionType, windowDays, ct);
+        return ReturnAnalyticsFile(bytes, AnalyticsExportReportType.PerformanceTrends, AnalyticsExportFormat.Excel);
+    }
+
+    /// <summary>Downloads comparative summary report as a PDF file.</summary>
+    [HttpGet("comparative-summary/export/pdf")]
+    [Authorize(Policy = "Admin")]
+    public async Task<IActionResult> ExportComparativeSummaryPdf(
+        [FromQuery] Guid? departmentId,
+        [FromQuery] int? institutionType,
+        CancellationToken ct = default)
+    {
+        var scope = await ResolveEffectiveScopeAsync(departmentId, institutionType, ct);
+        if (scope.Error is not null) return scope.Error;
+
+        var bytes = await _analytics.ExportComparativeSummaryPdfAsync(scope.DepartmentId, scope.InstitutionType, ct);
+        return ReturnAnalyticsFile(bytes, AnalyticsExportReportType.ComparativeSummary, AnalyticsExportFormat.Pdf);
+    }
+
+    /// <summary>Downloads comparative summary report as an Excel file.</summary>
+    [HttpGet("comparative-summary/export/excel")]
+    [Authorize(Policy = "Admin")]
+    public async Task<IActionResult> ExportComparativeSummaryExcel(
+        [FromQuery] Guid? departmentId,
+        [FromQuery] int? institutionType,
+        CancellationToken ct = default)
+    {
+        var scope = await ResolveEffectiveScopeAsync(departmentId, institutionType, ct);
+        if (scope.Error is not null) return scope.Error;
+
+        var bytes = await _analytics.ExportComparativeSummaryExcelAsync(scope.DepartmentId, scope.InstitutionType, ct);
+        return ReturnAnalyticsFile(bytes, AnalyticsExportReportType.ComparativeSummary, AnalyticsExportFormat.Excel);
     }
 
     /// <summary>
     /// Queues analytics export generation for background processing.
-    /// Supported reportType: performance, attendance. Supported format: pdf, excel.
+    /// Supported reportType: performance, attendance, top-performers, performance-trends, comparative-summary.
+    /// Supported format: pdf, excel.
     /// </summary>
     [HttpPost("export-jobs")]
     [Authorize(Policy = "Admin")]
@@ -222,7 +313,7 @@ public sealed class AnalyticsController : ControllerBase
         if (scope.Error is not null) return scope.Error;
 
         if (!TryParseReportType(reportType, out var parsedReportType))
-            return BadRequest("reportType must be one of: performance, attendance.");
+            return BadRequest("reportType must be one of: performance, attendance, top-performers, performance-trends, comparative-summary.");
 
         if (!TryParseExportFormat(format, out var parsedFormat))
             return BadRequest("format must be one of: pdf, excel.");
@@ -321,10 +412,29 @@ public sealed class AnalyticsController : ControllerBase
             case "attendance":
                 reportType = AnalyticsExportReportType.Attendance;
                 return true;
+            case "top-performers":
+            case "topperformers":
+                reportType = AnalyticsExportReportType.TopPerformers;
+                return true;
+            case "performance-trends":
+            case "performancetrends":
+                reportType = AnalyticsExportReportType.PerformanceTrends;
+                return true;
+            case "comparative-summary":
+            case "comparativesummary":
+                reportType = AnalyticsExportReportType.ComparativeSummary;
+                return true;
             default:
                 reportType = default;
                 return false;
         }
+    }
+
+    private IActionResult ReturnAnalyticsFile(byte[] payload, AnalyticsExportReportType reportType, AnalyticsExportFormat format)
+    {
+        var fileName = AnalyticsExportConventions.CreateFileName(reportType, format);
+        var contentType = AnalyticsExportConventions.GetContentType(format);
+        return File(payload, contentType, fileName);
     }
 
     private static bool TryParseExportFormat(string value, out AnalyticsExportFormat format)

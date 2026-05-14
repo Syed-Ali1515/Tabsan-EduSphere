@@ -238,6 +238,21 @@
 - No database migration or schema change was required for Stage 31.2.
 - Validation: `dotnet build Tabsan.EduSphere.sln` passed; focused analytics integration tests passed (`5/5`).
 
+### 2026-05-14 — Phase 31 Stage 31.3 (Export Enhancements)
+- Added shared analytics export conventions to standardize filename and content-type behavior across sync and background export flows.
+- Extended analytics export job model/worker coverage to support advanced report types:
+  - `top-performers`
+  - `performance-trends`
+  - `comparative-summary`
+- Added synchronous export endpoints for advanced analytics reports in both PDF and Excel formats:
+  - `GET /api/analytics/top-performers/export/pdf|excel`
+  - `GET /api/analytics/performance-trends/export/pdf|excel`
+  - `GET /api/analytics/comparative-summary/export/pdf|excel`
+- Fixed analytics PDF table-header composition reliability in the export layer to prevent runtime header-layer conflicts.
+- Added dedicated integration suite (`AnalyticsExportsIntegrationTests`) validating standardized export metadata across ten analytics export routes.
+- No database migration or schema change was required for Stage 31.3.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; focused analytics export tests passed (`10/10`), and analytics parity tests remained green (`5/5`).
+
 ---
 
 ## Phase 12 — Academic Calendar System ✅ Implemented

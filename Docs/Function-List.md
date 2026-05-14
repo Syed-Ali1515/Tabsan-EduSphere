@@ -138,6 +138,11 @@
 | `Phase 31 Stage 31.2 advanced analytics computation engine` | Implements cached top-performer ranking, daily performance trends, and comparative department metrics in analytics infrastructure service. | `src/Tabsan.EduSphere.Infrastructure/Analytics/AnalyticsService.cs` |
 | `Phase 31 Stage 31.2 analytics expansion API endpoints` | Exposes Stage 31.2 analytics routes for top performers, trends, and comparative summaries with existing role/institution scope enforcement. | `src/Tabsan.EduSphere.API/Controllers/AnalyticsController.cs` |
 | `Phase 31 Stage 31.2 analytics parity integration validation` | Verifies institution-claim auto-scope behavior for Stage 31.2 analytics endpoints and stabilizes tests with reports-module activation guard. | `tests/Tabsan.EduSphere.IntegrationTests/AnalyticsInstituteParityIntegrationTests.cs` |
+| `Phase 31 Stage 31.3 analytics export conventions` | Standardizes analytics export file naming, content type, and extension mapping for sync and queued export paths. | `src/Tabsan.EduSphere.API/Services/AnalyticsExportJobQueue.cs` |
+| `Phase 31 Stage 31.3 advanced analytics export endpoints` | Adds PDF/Excel export endpoints for top performers, performance trends, and comparative summary reports with standardized file metadata. | `src/Tabsan.EduSphere.API/Controllers/AnalyticsController.cs` |
+| `Phase 31 Stage 31.3 advanced analytics export worker support` | Extends queued analytics export worker to process advanced analytics report families under standardized export conventions. | `src/Tabsan.EduSphere.API/Services/AnalyticsExportJobWorker.cs` |
+| `Phase 31 Stage 31.3 advanced analytics export generators` | Adds PDF/Excel generators for top performers, performance trends, and comparative summary analytics outputs. | `src/Tabsan.EduSphere.Infrastructure/Analytics/AnalyticsService.cs` |
+| `Phase 31 Stage 31.3 analytics export metadata integration validation` | Verifies standardized content-type and filename conventions across analytics export endpoints for all report families and formats. | `tests/Tabsan.EduSphere.IntegrationTests/AnalyticsExportsIntegrationTests.cs` |
 
 ## Institution License Validation Plan (2026-05-12)
 

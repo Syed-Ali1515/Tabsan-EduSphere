@@ -13,7 +13,7 @@ Purpose:
 - Preserve core functionality, global configuration behavior, and role-rights policy.
 
 Status:
-- In progress (Phase 31 Stage 31.2 completed, ready to proceed with Stage 31.3)
+- In progress (Phase 31 completed, ready to proceed with Phase 32)
 
 ## Execution Updates
 
@@ -178,6 +178,24 @@ Status:
 - Behavior impact: analytics surfaces now provide rank, trend, and cross-department comparative insights while preserving existing role and institution-scope enforcement.
 - Residual risks: low; comparative summary currently prioritizes correctness over query minimization and may benefit from later query-shape optimization under very large datasets.
 - Documentation synchronization completed for Stage 31.2 across planning and tracker docs.
+
+### 2026-05-14 - Phase 31 Stage 31.3 (Export Enhancements)
+- Completed Stage 31.3 by standardizing analytics export metadata and extending PDF/Excel coverage to advanced analytics reports.
+- Implementation evidence:
+	- added shared analytics export conventions for content type, extension, and filename shape (`analytics-{report-key}-{utcstamp}.{ext}`),
+	- standardized sync and queued analytics export filenames/content types through the shared conventions,
+	- added new export endpoints for Stage 31.2 advanced analytics:
+		- `GET /api/analytics/top-performers/export/pdf|excel`,
+		- `GET /api/analytics/performance-trends/export/pdf|excel`,
+		- `GET /api/analytics/comparative-summary/export/pdf|excel`,
+	- extended queued analytics export support to include advanced analytics report types.
+- Validation evidence:
+	- added `AnalyticsExportsIntegrationTests` with standardized export metadata assertions across ten analytics export routes,
+	- focused analytics parity and export integration suites passed,
+	- solution build passed.
+- Behavior impact: analytics exports now follow one deterministic naming/content contract across synchronous downloads and queued export jobs, including all advanced analytics report families.
+- Residual risks: low; PDF layout uses tabular summaries and may be further refined for visual density in future UX-focused reporting stages.
+- Documentation synchronization completed for Stage 31.3 across planning and tracker docs.
 
 ---
 
@@ -474,7 +492,10 @@ Depends on: Phases 27, 29, 30
 - Validation: focused analytics parity integration tests passed for institution-claim auto-scope behavior.
 
 ### Stage 31.3 - Export Enhancements
-- PDF and Excel output standardization.
+- Status: Completed (2026-05-14).
+- Standardized analytics export filenames and content-type contracts across sync and queued exports.
+- Added PDF/Excel export support for top performers, performance trends, and comparative summary analytics reports.
+- Added integration test coverage validating metadata contract consistency across analytics export routes.
 
 Deliverable goal:
 - Actionable reporting without real-time heavy query pressure.
