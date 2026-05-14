@@ -2271,7 +2271,7 @@ Purpose:
 - Preserve core functionality, global configuration behavior, and role-rights policy.
 
 Status:
-- In progress (Phase 33 completed, ready to proceed with Phase 34)
+- In progress (Phase 33 completed, ready to proceed with Phase 34 and final Phase 35)
 
 ## Execution Updates
 
@@ -2507,14 +2507,14 @@ These rules are mandatory across all phases:
 
 To avoid editing the same core pieces repeatedly, implement in this exact order:
 
-Phase 23 -> Phase 24 -> Phase 25 -> Phase 26 -> Phase 27 -> Phase 28 -> Phase 29 -> Phase 30 -> Phase 31 -> Phase 32 -> Phase 33 -> Phase 34
+Phase 23 -> Phase 24 -> Phase 25 -> Phase 26 -> Phase 27 -> Phase 28 -> Phase 29 -> Phase 30 -> Phase 31 -> Phase 32 -> Phase 33 -> Phase 34 -> Phase 35
 
 Reason:
 - Institution model first.
 - License enforcement second.
 - School/college feature modules next.
 - Performance/scalability after data and workflow shape is stable.
-- SaaS and AI last to avoid rework.
+- SaaS hardening before final onboarding UX flow.
 
 ---
 
@@ -2890,6 +2890,31 @@ Deliverable goal:
 
 ---
 
+## Phase 35 - In-App User Import UX Completion
+Complexity: Medium
+Depends on: Phase 24, existing CSV import backend, and role governance
+
+### Stage 35.1 - User Creation Import Entry Point
+- Add an **Import Users** button on the user creation/management page.
+- Route the button to the existing CSV upload flow/API endpoint.
+- Keep role authorization unchanged (SuperAdmin/Admin only).
+
+### Stage 35.2 - Template-Aware Upload Guidance
+- Add in-page helper text linking to templates in `User Import Sheets/`:
+  - `faculty-admin-import-template.csv`
+  - `students-import-template.csv`
+- Show expected required columns and accepted file rules before upload.
+
+### Stage 35.3 - Upload Result and Validation UX
+- Display imported/duplicates/errors summary in UI after upload.
+- Surface row-level errors clearly for correction and re-upload.
+- Ensure institution-scope and role validation errors are readable and actionable.
+
+Deliverable goal:
+- Admin and SuperAdmin can import users directly from the user creation area using the provided CSV templates without leaving the app flow.
+
+---
+
 ## Implementation Guardrails (To Prevent Rework)
 
 1. One-time foundation changes only in early phases:
@@ -2941,13 +2966,14 @@ Use this table to schedule work without revisiting phase design decisions.
 | 32 | P2 | Communication Team | 1-2 weeks | Medium | Notification baseline validated |
 | 33 | P3 | Platform SaaS Team | 3-5 weeks | High | Phases 23-24 complete + security review |
 | 34 | P1 | Security Team | 1-2 weeks | Medium | Auth and audit baselines confirmed |
+| 35 | P1 | Platform + Web Team | 1 week | Medium | Phase 34 controls confirmed + CSV import endpoint healthy |
 
 ### Suggested Delivery Waves
 
 1. Wave A (foundation): 23, 24, 29
 2. Wave B (institution feature layer): 25, 26, 27, 28
 3. Wave C (scale + insights): 30, 31, 32
-4. Wave D (platform maturity): 33, 34
+4. Wave D (platform maturity): 33, 34, 35
 
 ### Definition of Done for Each Phase
 
