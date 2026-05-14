@@ -1,18 +1,40 @@
 # Tabsan EduSphere – Training Manual
 
-**Version:** 1.2  
+**Version:** 1.3  
 **Date:** 14 May 2026  
-**Aligned With PRD:** v1.7 | Modules v1.2  
+**Aligned With PRD:** v1.8 | Modules v1.3  
+**Completion Status:** Phase 31 Stage 31.3  
 **Audience:** Trainers, IT Staff, Super Admins, Department Coordinators
 
 ---
 
 ## 0. Training Updates (May 2026)
 
+### Institution-Aware Vocabulary (Phase 23.2)
 - Include module-governance demonstration: backend enforcement plus sidebar visibility alignment.
 - Include institution-aware label and filter behavior checks for School/College/University contexts.
+- Demonstrate dynamic vocabulary rendering on dashboard and lifecycle screens based on active institution policy.
+
+### School-Specific Features (Phase 25.2-25.3)
+- Include stream assignment and stream-aware subject filtering for Grade 9-12 students.
+- Demonstrate promotion logic enforcement for School institutions based on pass-threshold eligibility.
+- Include grade-based lifecycle navigation and label rendering (Grade/Promotion/Percentage terminology).
+
+### Advanced Analytics (Phase 31.2-31.3)
+- Include demonstration of top performers ranking and performance trend analysis in admin/faculty analytics views.
+- Include comparative department metrics overview for cross-institutional analysis.
+- Demonstrate standardized PDF/Excel export for all advanced analytics reports.
+- Show queued export job tracking and deterministic naming conventions (analytics-{report-key}-{utcstamp}.{ext}).
+
+### Module & License Governance (Phase 24.1-24.3)
+- Demonstrate backend enforcement blocking disabled module APIs with 403 responses.
+- Demonstrate UI navigation filtering hiding disabled modules from sidebar.
+- Verify license institution-scope flags and their impact on available data/reports.
+
+### Portal Governance Updates
 - Include parent portal read-only and notification behavior walkthrough where parent module is enabled.
 - Include tenant operations settings behavior overview for SaaS/multi-tenant readiness context.
+- Verify role and institute filters work together for data scoping and authorization.
 
 ---
 
@@ -45,7 +67,9 @@ The Tabsan.Lic tool now supports institution scope (School/College/University) a
 | Session 5 | Faculty | 45 min | FYP scheduling, notifications, results publication |
 | Session 6 | Admins | 45 min | Reporting, student data access, broadcast notifications |
 | Session 7 | Super Admin | 60 min | User management, license, modules, themes, audit |
-| Session 8 | IT Staff / Super Admin | 45 min | System health, operations, troubleshooting |
+| Session 9 | Admin / Faculty | 60 min | Advanced analytics: top performers, trends, comparative metrics, exports |
+| Session 10 | Admins | 45 min | Institution-aware report sections and institution-specific analytics |
+| Session 11 | IT Staff / Super Admin | 30 min | Analytics export pipeline and queued job tracking |
 
 ---
 

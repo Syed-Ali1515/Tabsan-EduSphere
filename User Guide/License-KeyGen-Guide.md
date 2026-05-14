@@ -1,8 +1,9 @@
 # License KeyGen User Guide
 
-Version: 1.2  
+Version: 1.3  
 Date: 14 May 2026  
-Applies to: tools/KeyGen/KeyGen.cs
+Applies to: tools/KeyGen/KeyGen.cs  
+Completion Status: Phase 31 Stage 31.3
 
 ## 1. Purpose
 

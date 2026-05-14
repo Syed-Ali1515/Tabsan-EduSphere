@@ -1,7 +1,8 @@
 # Student User Guide
 
-Version: 1.1  
-Date: 14 May 2026
+Version: 1.2  
+Date: 14 May 2026  
+Completion Status: Phase 31 Stage 31.3
 
 ## 1. Purpose
 
@@ -9,10 +10,12 @@ This guide helps students use Tabsan EduSphere for coursework, attendance, quizz
 
 ## 1.1 What's New (May 2026)
 
-- Dashboard and lifecycle terminology now follows institution context (Semester/Grade/Year).
+- Dashboard and lifecycle terminology now follows institution context (Semester/Grade/Year) based on your institution's policy (Phase 23.2).
+- Stream assignment (School Grades 9-12): Your course offerings automatically filter based on assigned stream (Science, Biology, Computer, Commerce, Arts) (Phase 25.2).
 - AI chat access uses a persistent floating launcher when chat module is licensed.
-- Parent-linked notification experience can be active in school-focused deployments.
-- Results, transcript, and analytics-adjacent data surfaces follow tighter role and institute scope boundaries.
+- Parent-linked notification experience can be active in school-focused deployments where parent module is enabled.
+- Results, transcript, and data surfaces follow tighter role and institute scope boundaries for your privacy.
+- Performance analytics and trends are now available in some institutions; view your individual performance compared to class averages (Phase 31.2).
 
 ## 2. Access and Login
 

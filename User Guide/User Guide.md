@@ -1,21 +1,35 @@
 # Tabsan EduSphere – User Guide
 
-**Version:** 1.2  
+**Version:** 1.3  
 **Date:** 14 May 2026  
-**Aligned With PRD:** v1.7 | Modules v1.2  
+**Aligned With PRD:** v1.8 | Modules v1.3  
+**Completion Status:** Phase 31 Stage 31.3  
 **Audience:** Students, Faculty, Admins, Super Admins
 
 ---
 
 ## 0. What’s New (May 2026)
 
-- License tool now supports 1 month, 1/2/3 year, and permanent expiry, and explicit School/College/University scope.
-- UAT, SAT, and Output documentation are available in the Docs folder for validation and acceptance.
-- Import/export (CSV, PDF, Excel) and index maintenance scripts are included for admins and IT staff.
+### Core Enhancements (Phase 23-25)
+- Institution-aware academic vocabulary: dynamically render Semester/Grade/Year, GPA/Percentage/Marks based on School/College/University policy (Phase 23.2).
+- School stream support for Grades 9-12 with automatic subject filtering by stream selection (Science, Biology, Computer, Commerce, Arts) (Phase 25.2).
+- License tool now supports 1 month, 1/2/3 year, and permanent expiry, and explicit School/College/University scope (Phase 24.1).
+- Backend module enforcement middleware blocks disabled modules consistently across all API endpoints (Phase 24.2).
+- UI/navigation filtering now hides disabled module menu items from sidebar (Phase 24.3).
 - Role + institute scoping has been tightened across analytics, reports, and lifecycle-sensitive operations.
 - Module-aware sidebar filtering now aligns with backend module enforcement middleware.
-- Parent portal enhancements include linked-student read-only views and parent notification fan-out (where enabled).
+
+### Analytics & Reporting (Phase 31)
+- Advanced analytics now include top performers ranking, performance trend analysis, and comparative department metrics (Phase 31.2).
+- Institution-specific report section composition for School, College, and University contexts (Phase 31.1).
+- Standardized analytics export metadata and extended PDF/Excel coverage to all advanced analytics reports (Phase 31.3).
+- Queued export support for advanced analytics with deterministic naming conventions.
+
+### Infrastructure & Governance (Phase 33)
 - Tenant operations settings now support tenant-scope isolation (onboarding, subscription, tenant profile) for SaaS-ready deployments.
+- Parent portal enhancements include linked-student read-only views and parent notification fan-out (where enabled).
+- UAT, SAT, and Output documentation are available in the Docs folder for validation and acceptance.
+- Import/export (CSV, PDF, Excel) and index maintenance scripts are included for admins and IT staff.
 
 ---
 

@@ -2,8 +2,9 @@
 
 This folder contains CSV templates for bulk-importing user accounts via the admin portal.
 
-Version: 1.2  
-Date: 14 May 2026
+Version: 1.3  
+Date: 14 May 2026  
+Completion Status: Phase 31 Stage 31.3
 
 ## Template: `user-import-template.csv`
 

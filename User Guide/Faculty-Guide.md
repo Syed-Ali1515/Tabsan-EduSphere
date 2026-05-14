@@ -1,7 +1,8 @@
 # Faculty User Guide
 
-Version: 1.1  
-Date: 14 May 2026
+Version: 1.2  
+Date: 14 May 2026  
+Completion Status: Phase 31 Stage 31.3
 
 ## 1. Purpose
 
@@ -10,6 +11,8 @@ This guide explains faculty workflows in Tabsan EduSphere: teaching setup, assig
 ## 1.1 What's New (May 2026)
 
 - Institution-aware vocabulary now appears in key screens (for example Semester vs Grade vs Year) based on active policy.
+- Advanced analytics now available for faculty: performance trends and class-level comparative metrics for assigned offerings (Phase 31.2).
+- Analytics exports to PDF/Excel are standardized with deterministic naming; large exports are processed as queued jobs (Phase 31.3).
 - Report and analytics requests now enforce assignment plus institute compatibility more strictly.
 - Parent notification fan-out is supported for published results and selected academic alerts where parent module is active.
 - Export behavior for analytics/reporting is standardized across synchronous and queued job paths.
@@ -142,12 +145,57 @@ Meeting quality checklist:
 - Record decisions and action items
 - Publish notes promptly
 
-## 10. Notifications
+## 11. Analytics and Class Performance
 
-Path: Sidebar > Notifications
+Path: Sidebar > Analytics
 
-You may send notifications to:
-- Individual students
+### Class-Level Performance Analytics (Phase 31.2)
+
+#### Performance Overview
+1. Navigate to **Analytics > Class Performance** (available for assigned offerings).
+2. Select an **Offering** and **Academic Level** (Semester/Grade/Year per institution policy).
+3. Review class performance summary:
+   - Average marks/percentage
+   - Grade distribution (A/B/C/D/F or percentage bands)
+   - Class attendance rate
+   - Assignment submission rate
+
+#### Top Performers in Class
+1. From **Analytics > Class Performance**, click **Top Performers**.
+2. View ranked students by performance metric (GPA/Percentage).
+3. Identify high achievers for recognition or mentoring opportunities.
+4. Export to PDF for class records.
+
+#### Performance Trends
+1. Navigate to **Analytics > Performance Trends**.
+2. Select **Academic Level** and **Offering** (if offering-specific view available).
+3. Review performance changes over time.
+4. Identify improvement areas or performance dips that require intervention.
+5. Export trend analysis to PDF/Excel for faculty meeting or parent communication.
+
+### Export Enhancements (Phase 31.3)
+
+Faculty analytics exports are standardized:
+- **Synchronous Export**: PDF/Excel downloads complete within seconds for typical class sizes.
+- **Queued Export**: Large class exports or complex reports are processed asynchronously. You receive a reference ID and email notification when complete.
+- **Filename Convention**: All exports follow pattern `{report-key}-{timestamp}.{extension}` (e.g., `analytics-class-performance-2026-05-14-143022.pdf`).
+- **Access Queued Export**: Navigate to **Faculty Dashboard > Export History** to view and download completed jobs.
+
+Export workflow:
+1. Open any analytics or report view for your assigned offerings.
+2. Click **Export as PDF** or **Export as Excel**.
+3. If synchronous, download begins immediately.
+4. If queued, you receive a job ID. Check Export History for status.
+5. Once complete, download from Export History or via email link.
+
+## 12. Institution-Aware Academic Terminology
+
+Vocabulary adapts by institution policy (Phase 23.2):
+- **Semester/Grade/Year**: Period label changes based on institution type.
+- **Progression/Promotion**: Advancement label changes based on context.
+- **GPA/Percentage/Marks**: Grading interpretation changes based on institution type.
+
+When viewing student records or analytics, terminology will automatically adjust. No configuration is needed; it is driven by the active institution license policy.
 - Full course offerings
 - Relevant student groups by scope
 

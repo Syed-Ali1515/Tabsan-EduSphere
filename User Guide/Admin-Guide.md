@@ -1,7 +1,8 @@
 # Admin User Guide
 
-Version: 1.1  
-Date: 14 May 2026
+Version: 1.2  
+Date: 14 May 2026  
+Completion Status: Phase 31 Stage 31.3
 
 ## 1. Purpose
 
@@ -10,8 +11,12 @@ This guide covers departmental administration in Tabsan EduSphere: user operatio
 ## 1.1 What's New (May 2026)
 
 - Module-aware sidebar filtering is now enforced with backend module licensing checks for protected routes.
+- Advanced analytics now include top performers ranking, performance trend analysis, and comparative department metrics (Phase 31.2).
+- Institution-specific report sections are available for School, College, and University contexts (Phase 31.1).
+- Analytics exports to PDF/Excel are standardized with deterministic naming and support queued export jobs (Phase 31.3).
 - Analytics and report flows include stronger institute-aware scope checks for Admin requests.
 - Student lifecycle views support institution-driven academic-level wording (Semester/Grade/Year).
+- School stream support for Grades 9-12 with stream-aware subject filtering is available where School mode is active.
 - Parent-facing read-only features and notifications are available when parent portal module is enabled.
 
 ## 2. Admin Scope
@@ -93,11 +98,100 @@ SIS oversight tasks:
 
 If a student cannot access course content, verify enrollment status first.
 
-## 7. Attendance and Result Governance
+## 8. Analytics and Advanced Reporting
 
-Path: Sidebar > Attendance, Results, Reports
+Path: Sidebar > Analytics, Reports
 
-Admin tasks:
+### Standard Analytics
+Admin analytics coverage includes:
+- Enrollment metrics by course, program, and department
+- Attendance trends and at-risk student identification
+- Result publication status and grade distributions
+- Assignment and quiz completion rates
+
+### Advanced Analytics (Phase 31.2)
+
+#### Top Performers
+1. Navigate to **Analytics > Top Performers**.
+2. Select **Academic Level** (Semester/Grade/Year based on institution mode) and **Department**.
+3. View ranked students by performance metric (GPA/Percentage).
+4. Export to **PDF** or **Excel** for reporting or distribution.
+
+#### Performance Trends
+1. Navigate to **Analytics > Performance Trends**.
+2. Select **Time Period** and **Academic Level**.
+3. Review trend charts showing performance changes over selected period.
+4. Identify improvement or decline patterns by course or department.
+5. Export trend analysis to PDF/Excel.
+
+#### Comparative Department Metrics
+1. Navigate to **Analytics > Comparative Metrics**.
+2. Select **Metric Type** (average GPA, enrollment, attendance).
+3. Review cross-department comparison charts and tables.
+4. Identify high and low-performing departments.
+5. Export for executive briefing or board reporting.
+
+### Institution-Specific Report Sections (Phase 31.1)
+
+Reports are partitioned by institution type:
+- **School Mode**: school_outcomes section includes grade-promotion metrics and class-level analytics.
+- **College Mode**: college_progression section includes progression rates and year-wise analytics.
+- **University Mode**: university_academics section includes semester progression, GPA analysis, and degree-completion metrics.
+
+When accessing Reports:
+1. Navigate to **Reports**.
+2. Available report sections are automatically filtered by institution context.
+3. Select a report from available sections.
+4. Apply filters (department, academic level, date range) as needed.
+5. Review and export results.
+
+### Export Enhancements (Phase 31.3)
+
+Exports are now standardized across all analytics and report surfaces:
+- **Synchronous Export**: PDF/Excel downloads complete in seconds for typical report sizes (< 50MB).
+- **Queued Export**: Large reports (> 50MB) are processed asynchronously. You receive a job ID and email notification when complete.
+- **Filename Convention**: All exports follow pattern `{report-key}-{timestamp}.{extension}` (e.g., `analytics-top-performers-2026-05-14-143022.pdf`).
+- **Access Queued Export**: Navigate to **Admin Dashboard > Export History** to view and download completed jobs.
+
+Export workflow:
+1. Select a report or analytics view.
+2. Click **Export as PDF** or **Export as Excel**.
+3. If synchronous, download begins immediately.
+4. If queued, you receive a reference ID. Check Export History for status.
+5. Once complete, download from Export History or via email link.
+
+## 9. Lifecycle and Stream Management (School Mode)
+
+Path: Sidebar > Student Lifecycle, Stream Management (where applicable)
+
+### Grade-Based Lifecycle (School/College)
+For institutions in School or College mode:
+- Academic levels are labeled **Grade** (School) or **Year** (College) instead of Semester.
+- Promotion workflows enforce institution-specific pass-threshold rules.
+- Stream assignment (School, Grades 9-12) controls subject visibility for students.
+
+### Stream Assignment (School Grades 9-12)
+1. Navigate to **Student Lifecycle > Stream Management** (if visible).
+2. Select **Grade 9, 10, 11, or 12**.
+3. Choose **Stream**: Science, Biology, Computer, Commerce, or Arts.
+4. Click **Assign** to apply to student group or individual students.
+5. Verify students can now see stream-aligned subjects in their course listings.
+
+Stream subject alignment:
+- **Science**: Physics, Chemistry, Biology, Math, English (core subjects always visible).
+- **Commerce**: Accounting, Economics, Business Studies, Math, English.
+- **Arts**: History, Geography, Literature, Philosophy, English.
+- **Computer**: Computer Science, Mathematics, Physics, English.
+- **Biology**: Biology, Chemistry, Botany, Zoology, English.
+
+## 10. Institution-Aware Academic Terminology
+
+Vocabulary adapts by institution policy (Phase 23.2):
+- **Semester/Grade/Year**: Period label changes based on institution type.
+- **Progression/Promotion**: Advancement label changes based on context.
+- **GPA/Percentage/Marks**: Grading interpretation changes based on institution type.
+
+When managing students or viewing reports, terminology will automatically adjust. No configuration is needed; it is driven by the active institution license policy.
 - Monitor attendance compliance and outliers
 - Review correction requests where policy requires approval
 - Track publication status of results

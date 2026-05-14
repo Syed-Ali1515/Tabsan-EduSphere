@@ -1,7 +1,8 @@
 # SuperAdmin User Guide
 
-Version: 1.1  
-Date: 14 May 2026
+Version: 1.2  
+Date: 14 May 2026  
+Completion Status: Phase 31 Stage 31.3
 
 ## 1. Purpose
 
@@ -9,10 +10,20 @@ This guide is for platform-level administrators responsible for licensing, modul
 
 ## 1.1 What's New (May 2026)
 
-- Backend module enforcement and module-aware sidebar visibility now operate together for safer governance.
+### Governance and Enforcement (Phase 24)
+- Backend module enforcement and module-aware sidebar visibility now operate together for safer governance (Phase 24.2-24.3).
 - Institution policy and report/analytics scoping behavior has been hardened for parity and authorization consistency.
+
+### Analytics and Reporting (Phase 31)
+- Advanced analytics now include top performers ranking, performance trend analysis, and comparative department metrics for admin/faculty/student surfaces (Phase 31.2).
+- Institution-specific report sections for School, College, and University contexts automatically filter available reports (Phase 31.1).
+- Standardized analytics export metadata across all export surfaces with support for queued jobs on large exports (Phase 31.3).
+- New analytics endpoints for top-performers, performance-trends, and comparative-summary with institution-scoped authorization.
+
+### Portal and Infrastructure
 - Parent portal capabilities can now include linked-student read surfaces and parent notification fan-out.
 - Phase 33 tenant-scope isolation was delivered for tenant operations settings (onboarding, subscription, tenant profile).
+- Institution-aware academic vocabulary (Semester/Grade/Year, GPA/Percentage/Marks) configured via license policy.
 
 ## 2. SuperAdmin Responsibilities
 
