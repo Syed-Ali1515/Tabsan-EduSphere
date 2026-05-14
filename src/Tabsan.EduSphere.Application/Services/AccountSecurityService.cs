@@ -1,5 +1,6 @@
 using Tabsan.EduSphere.Application.Dtos;
 using Tabsan.EduSphere.Application.Interfaces;
+using Tabsan.EduSphere.Domain.Auditing;
 using Tabsan.EduSphere.Domain.Identity;
 using Tabsan.EduSphere.Domain.Interfaces;
 
@@ -19,6 +20,7 @@ public class AccountSecurityService : IAccountSecurityService
     private readonly IEmailSender _emailSender;
     private readonly IEmailTemplateRenderer _templateRenderer;
     private readonly IAccountSecurityEmailQueue? _emailQueue;
+    private readonly IAuditService _audit;
 
     public AccountSecurityService(
         IUserRepository userRepo,
@@ -26,6 +28,7 @@ public class AccountSecurityService : IAccountSecurityService
         IPasswordHistoryRepository passwordHistory,
         IEmailSender emailSender,
         IEmailTemplateRenderer templateRenderer,
+        IAuditService audit,
         IAccountSecurityEmailQueue? emailQueue = null)
     {
         _userRepo          = userRepo;
@@ -33,6 +36,7 @@ public class AccountSecurityService : IAccountSecurityService
         _passwordHistory   = passwordHistory;
         _emailSender       = emailSender;
         _templateRenderer  = templateRenderer;
+        _audit             = audit;
         _emailQueue        = emailQueue;
     }
 
@@ -64,6 +68,15 @@ public class AccountSecurityService : IAccountSecurityService
         target.UnlockAccount();
         _userRepo.Update(target);
         await _userRepo.SaveChangesAsync(ct);
+
+        await _audit.LogAsync(new AuditLog(
+            action: "UnlockAccount",
+            entityName: "User",
+            entityId: target.Id.ToString(),
+            actorUserId: adminUserId,
+            oldValuesJson: null,
+            newValuesJson: "{\"isLockedOut\":false}",
+            ipAddress: null), ct);
 
         // Notify user by email if address is on file.
         if (!string.IsNullOrWhiteSpace(target.Email))
@@ -122,6 +135,15 @@ public class AccountSecurityService : IAccountSecurityService
         // Record in password history for reuse-prevention.
         await _passwordHistory.AddAsync(new PasswordHistoryEntry(target.Id, newHash), ct);
         await _passwordHistory.SaveChangesAsync(ct);
+
+        await _audit.LogAsync(new AuditLog(
+            action: "AdminResetPassword",
+            entityName: "User",
+            entityId: target.Id.ToString(),
+            actorUserId: adminUserId,
+            oldValuesJson: null,
+            newValuesJson: "{\"passwordReset\":true}",
+            ipAddress: null), ct);
 
         // Notify user by email if address is on file.
         if (!string.IsNullOrWhiteSpace(target.Email))

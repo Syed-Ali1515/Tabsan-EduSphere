@@ -259,6 +259,18 @@ file sealed class StubAuditService : IAuditService
 {
     public Task LogAsync(AuditLog entry, CancellationToken ct = default)
         => Task.CompletedTask;
+
+    public Task<(IReadOnlyList<AuditLog> Items, int TotalCount)> SearchAsync(
+        string? query = null,
+        Guid? actorUserId = null,
+        string? action = null,
+        string? entityName = null,
+        DateTime? fromUtc = null,
+        DateTime? toUtc = null,
+        int page = 1,
+        int pageSize = 50,
+        CancellationToken ct = default)
+        => Task.FromResult(((IReadOnlyList<AuditLog>)[], 0));
 }
 
 file sealed class StubPasswordHistoryRepository : IPasswordHistoryRepository

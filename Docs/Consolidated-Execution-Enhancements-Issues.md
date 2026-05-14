@@ -958,59 +958,46 @@ For **every completed phase**:
 - [x] Fix empty dropdown data sources.
 
 ### Stage 8.2 - Enrollments CRUD
-- [x] Add create/edit/delete enrollment workflows.
-
-### Implementation Summary
+ Implementation Summary
 
 **Root Causes Fixed (Stage 8.1):**
-1. **Empty dropdown**: `CourseController.GetOfferings()` returned an empty list when no `semesterId` or `departmentId` filter was provided. Added `ICourseRepository.GetAllOfferingsAsync()` (with `CourseRepository` implementation) and updated the controller else-branch to call it. Also fixed field name mismatches: `CourseName` â†’ `CourseTitle`, `IsOpen` â†’ `IsActive` â€” matching `OfferingApiDto` in EduApiClient.
-2. **Empty roster grid**: `EnrollmentController.GetRoster()` returned `{StudentProfileId, RegNo, EnrolledAt}` which did not match `RosterApiDto` fields (`Id, StudentName, RegistrationNumber, ProgramName, SemesterNumber`). Fixed the response mapping. Added `.ThenInclude(sp => sp.Program)` to `EnrollmentRepository.GetByOfferingAsync()` so `ProgramName` is available.
+ Validation Summary
+ - `dotnet build src/Tabsan.EduSphere.Web/Tabsan.EduSphere.Web.csproj` passed.
 
-**New CRUD Workflows (Stage 8.2):**
-- **Admin â€” Enroll Student**: New `POST /api/v1/enrollment/admin` endpoint (reuses `EnrollmentService.EnrollAsync`). Portal action `EnrollStudent` + modal in Enrollments.cshtml.
-- **Admin â€” Drop Enrollment**: New `DELETE /api/v1/enrollment/admin/{enrollmentId}` endpoint backed by new `IEnrollmentService.AdminDropByIdAsync` (requires new `IEnrollmentRepository.GetByIdAsync`). Portal action `AdminDropEnrollment` + per-row Drop button.
+ Implementation Summary
 - **Student â€” My Courses View**: `Enrollments GET` now branches on `IsStudent`; loads `GetMyEnrollmentsAsync()` â†’ `GET api/v1/enrollment/my-courses`. `MyCourses` endpoint updated to also return `CourseOfferingId`.
 - **Student â€” Self-Enroll**: `StudentEnroll` portal action + "Enroll in Course" modal.
 - **Student â€” Drop Own Enrollment**: `StudentDropEnrollment` portal action + per-row Drop button for active enrollments.
-
+ Validation Summary
 **Files Modified:**
 - `Domain/Interfaces/ICourseRepository.cs` â€” `GetAllOfferingsAsync`
 - `Domain/Interfaces/IEnrollmentRepository.cs` â€” `GetByIdAsync`
-- `Application/Interfaces/IEnrollmentService.cs` â€” `AdminDropByIdAsync`
-- `Application/DTOs/Academic/AcademicDtos.cs` â€” `AdminEnrollRequest`
-- `Application/Academic/EnrollmentService.cs` â€” `AdminDropByIdAsync`
+ Implementation Summary
 - `Infrastructure/Repositories/CourseRepository.cs` â€” `GetAllOfferingsAsync`
-- `Infrastructure/Repositories/AcademicSupportRepositories.cs` â€” fixed `GetByOfferingAsync` includes + `GetByIdAsync`
-- `API/Controllers/CourseController.cs` â€” `GetOfferings` fixes
-- `API/Controllers/EnrollmentController.cs` â€” `GetRoster` fix, `MyCourses` fix, `AdminEnroll`, `AdminDrop`
+ Validation Summary
 - `Web/Services/EduApiClient.cs` â€” 5 new methods + `MyCourseApiDto`
 - `Web/Models/Portal/PortalViewModels.cs` â€” `MyEnrollmentItem`, expanded `EnrollmentsPageModel`
 - `Web/Controllers/PortalController.cs` â€” `Enrollments` GET update + 4 new POST actions
 - `Web/Views/Portal/Enrollments.cshtml` â€” rebuilt with admin roster + student courses view
-
-### Validation Summary
+ Implementation Summary
 - Build: âœ… `dotnet build Tabsan.EduSphere.sln` â†’ **0 errors, 0 warnings**
-- Enrollment dropdown now populated from all offerings (no filter required).
-- Roster returns correct fields: `Id`, `RegistrationNumber`, `ProgramName`, `SemesterNumber`.
-- Admin can select an offering, view roster, enroll a student, and drop any enrollment.
-- Student view shows own courses, active/dropped status, and can enroll or drop.
+ Validation Summary
+ - Focused unit tests passed for Stage 33 isolation coverage.
 - All CSRF tokens (`[ValidateAntiForgeryToken]` + `@Html.AntiForgeryToken()`) applied to all write forms.
+ Implementation Summary
+ Validation Summary
+ - Validation is captured under the Phase 33 completion entry in this section.
 
----
+ Implementation Summary
+ Validation Summary
+ - Validation is captured under the Phase 33 completion entry in this section.
 
-## Phase 9 - Documentation and Script Regeneration
-**Status:** âœ… Complete
-
-### Stage 9.1 - Script Modernization
-- [x] Remove obsolete scripts.
+ Implementation Summary
+ Validation Summary
+ - Validation is captured under the Phase 33 completion entry in this section.
 - [x] Create new scripts aligned with updated app behavior and schema.
-- [x] Validate fresh environment setup using new scripts.
-
-### Stage 9.2 - Documentation Refresh
-- [x] Update all applicable files in:
-  - Project startup Docs
-  - Docs
-  - Scripts
+ Implementation Summary
+ Validation Summary
   - User Guide
 
 ### Stage 9.3 - Mandatory Completion Artifacts Per Phase
@@ -2594,16 +2581,23 @@ Depends on: Phase 24
 
 ### Stage 26.1 - Year-Based Academic Model
 - Status: Completed (2026-05-14).
+Implementation Summary
 - Year-based progression support for College now reuses `CurrentSemesterNumber` with year mapping (`Year N` == semesters `2N-1` and `2N`).
 - Academic-level student retrieval for College now resolves by semester range while preserving semester-based retrieval for School/University.
 - Lifecycle promotion for College now routes through progression checks and advances by one academic year (two semesters) when eligible.
-- Validation: focused unit and integration coverage added and passing.
+
+Validation Summary
+- Focused unit and integration coverage added and passing.
 
 ### Stage 26.2 - College Result and Promotion
 - Status: Completed (2026-05-14).
+Implementation Summary
 - Percentage-based grading model remains aligned through institution-aware progression thresholds and percentage normalization.
 - Year-to-year promotion now applies through progression orchestration for College (year-step advancement).
 - Supplementary handling policy is enforced in bulk promotion: non-eligible college promote entries are converted to hold with supplementary-required reason.
+
+Validation Summary
+- Completion is recorded in the execution updates section for 2026-05-14.
 
 Deliverable goal:
 - College workflows enabled with minimal duplication.
@@ -2616,17 +2610,25 @@ Depends on: Phases 25-26
 
 ### Stage 27.1 - SuperAdmin Grading Setup Sections
 - Status: Completed (2026-05-14).
+Implementation Summary
 - SuperAdmin grading setup now includes explicit institution sections:
 	- School Grading
 	- College Grading
 	- University Grading
 - Implemented through portal section cards with per-section threshold, grade-ranges JSON, and active-state controls backed by institution-grading-profile APIs.
 
+Validation Summary
+- Completion is recorded in the execution updates section for 2026-05-14.
+
 ### Stage 27.2 - Rule Application Engine
 - Status: Completed (2026-05-14).
+Implementation Summary
 - Enrollment prerequisite pass checks now resolve threshold by student institution type from institution grading profiles.
 - University prerequisite threshold is normalized from GPA-scale profile values to percentage for result-percentage comparisons.
 - Rule checks no longer use a fixed 50% prerequisite pass rule.
+
+Validation Summary
+- Completion is recorded in the execution updates section for 2026-05-14.
 
 Deliverable goal:
 - One grading engine with institution-specific configuration.
@@ -2639,23 +2641,33 @@ Depends on: Phase 25
 
 ### Stage 28.1 - Parent-Student Mapping
 - Status: Completed (2026-05-14).
+Implementation Summary
 - Added controlled parent/guardian linking operations with Admin-managed upsert and deactivate flows.
 - Link creation now validates Parent role and School-student scope before persistence.
 - Parent self-view remains read-only and only returns active links.
 
+Validation Summary
+- Completion is recorded in the execution updates section for 2026-05-14.
+
 ### Stage 28.2 - Parent Read-Only Views
 - Status: Completed (2026-05-14).
+Implementation Summary
 - Added linked-student read-only endpoints for results, attendance, announcements, and timetable.
 - Enforced active parent-student link checks before returning student-scoped data.
 - Preserved non-mutation behavior by exposing GET-only parent self-view routes.
-- Validation: focused unit tests passed (`16/16`) and parent-portal integration tests passed (`10/10`).
+
+Validation Summary
+- Focused unit tests passed (`16/16`) and parent-portal integration tests passed (`10/10`).
 
 ### Stage 28.3 - Parent Notifications
 - Status: Completed (2026-05-14).
+Implementation Summary
 - Added parent notification fan-out for result publication events.
 - Added parent attendance-warning notifications from the background alert job.
 - Added parent recipients to announcement broadcast fan-out for linked students.
-- Validation: API and BackgroundJobs builds passed, unit tests passed (`144/144`), and parent-portal integration tests passed (`10/10`).
+
+Validation Summary
+- API and BackgroundJobs builds passed, unit tests passed (`144/144`), and parent-portal integration tests passed (`10/10`).
 
 Deliverable goal:
 - Parent transparency without role-risk expansion.
@@ -2668,33 +2680,46 @@ Depends on: None (recommended after feature stabilization)
 
 ### Stage 29.1 - Indexing Plan Implementation
 - Status: Completed (2026-05-14).
+Implementation Summary
 - Added parent-link notification hot-path index `(StudentProfileId, IsActive)` to accelerate Stage 28.3 parent fan-out lookups.
 - Added EF migration `_20260514_Phase29_ParentLinkStudentActiveIndexHotPath` for schema deployment.
-- Validation: build and targeted tests passed after index and migration updates.
+
+Validation Summary
+- Build and targeted tests passed after index and migration updates.
 
 ### Stage 29.2 - Pagination and Projection Enforcement
 - Status: Completed (2026-05-14).
+Implementation Summary
 - Delivered pagination and projection contracts across high-volume list paths:
 	- Helpdesk tickets (Slice 1),
 	- Graduation applications (Slice 2),
 	- Payment receipts (Slice 3).
 - Replaced unbounded list materialization with SQL-side page/pageSize query patterns and total-count metadata.
-- Validation: build and automated test suites passed for Stage 29.2 delivery.
+
+Validation Summary
+- Build and automated test suites passed for Stage 29.2 delivery.
 
 ### Stage 29.3 - Query and Transaction Optimization
 - Status: Completed (2026-05-14).
+Implementation Summary
 - Added operational lifecycle scripts for performance sustainability:
 	- `Scripts/3-Phase29-ArchivePolicy.sql` (retention/cleanup policy with dry-run default),
 	- `Scripts/4-Phase29-IndexMaintenance.sql` (fragmentation-aware index maintenance plan/execution),
 	- `Scripts/5-Phase29-CapacityGrowthDashboard.sql` (capacity and growth telemetry dashboard).
 - Updated `Scripts/README.md` with Stage 29.3 run commands and safe execution guidance.
-- Validation: scripts compile as T-SQL batches and were reviewed for dry-run-first safety defaults.
+
+Validation Summary
+- Scripts compile as T-SQL batches and were reviewed for dry-run-first safety defaults.
 
 ### Phase 29 Completion
 - Status: Completed (2026-05-14).
+Implementation Summary
 - Stage 29.1 delivered baseline and follow-up hot-path indexes.
 - Stage 29.2 delivered pagination discipline on helpdesk/graduation/payment heavy-list routes.
 - Stage 29.3 delivered operational archive/index/capacity scripts and runbook guidance.
+
+Validation Summary
+- Stage-level validation outcomes are captured above for 29.1, 29.2, and 29.3.
 
 Deliverable goal:
 - Stable performance for high concurrency growth.
@@ -2707,24 +2732,33 @@ Depends on: Phase 29
 
 ### Stage 30.1 - Redis Caching
 - Status: Completed (2026-05-14).
+Implementation Summary
 - Added distributed-cache layer for dashboard context summaries (`/api/v1/dashboard/context`) with short TTL for role/policy scoped payload reuse.
 - Added distributed-cache layer for report summary reads (attendance, result, assignment, quiz, GPA, enrollment, semester results) using parameterized cache keys.
 - Added distributed-cache layer for common tenant profile reads (onboarding template, subscription plan, tenant profile) with write-path cache invalidation.
-- Validation: solution build and unit tests passed after cache integration changes.
+
+Validation Summary
+- Solution build and unit tests passed after cache integration changes.
 
 ### Stage 30.2 - Background Job Offloading
 - Status: Completed (2026-05-14).
+Implementation Summary
 - Expanded background offloading for heavy analytics exports by adding queued job APIs and a hosted worker for performance/attendance PDF/Excel generation.
 - Existing offloading coverage remains active for large notification fan-out and report export workflows.
 - Added async analytics export lifecycle endpoints (`queue`, `status`, `download`) so request threads return quickly under load while heavy generation executes in background.
-- Validation: solution build and unit tests passed after queue + worker integration changes.
+
+Validation Summary
+- Solution build and unit tests passed after queue + worker integration changes.
 
 ### Stage 30.3 - Reliability Controls
 - Status: Completed (2026-05-14).
+Implementation Summary
 - Added configurable retry strategy with bounded backoff for background workers handling result publish, report export, and analytics export jobs.
 - Added operational alerting via consecutive-failure threshold logging for each background worker pipeline.
 - Added `/health/background-jobs` endpoint exposing retry configuration and live background-job processing/retry/failure metrics.
-- Validation: solution build and unit tests passed after reliability-control integration changes.
+
+Validation Summary
+- Solution build and unit tests passed after reliability-control integration changes.
 
 Deliverable goal:
 - Fast user-facing responses under load.
@@ -2737,23 +2771,33 @@ Depends on: Phases 27, 29, 30
 
 ### Stage 31.1 - Institution-Specific Report Sections
 - Status: Completed (2026-05-14).
+Implementation Summary
 - Added `GET /api/v1/reports/sections` for institution-aware report section composition.
 - Added section contracts for institution model + grouped report items in reporting DTOs.
 - Added School/College/University section partition behavior with role-filtered report inclusion.
-- Validation: focused report integration tests passed for School override and College claim scope behavior.
+
+Validation Summary
+- Focused report integration tests passed for School override and College claim scope behavior.
 
 ### Stage 31.2 - Advanced Analytics
 - Status: Completed (2026-05-14).
+Implementation Summary
 - Added top performers analytics endpoint with ranked performance rows (`GET /api/analytics/top-performers`).
 - Added daily performance trend analytics endpoint (`GET /api/analytics/performance-trends`).
 - Added comparative department summary analytics endpoint (`GET /api/analytics/comparative-summary`).
-- Validation: focused analytics parity integration tests passed for institution-claim auto-scope behavior.
+
+Validation Summary
+- Focused analytics parity integration tests passed for institution-claim auto-scope behavior.
 
 ### Stage 31.3 - Export Enhancements
 - Status: Completed (2026-05-14).
+Implementation Summary
 - Standardized analytics export filenames and content-type contracts across sync and queued exports.
 - Added PDF/Excel export support for top performers, performance trends, and comparative summary analytics reports.
 - Added integration test coverage validating metadata contract consistency across analytics export routes.
+
+Validation Summary
+- Integration test coverage was added and validated for analytics export metadata consistency.
 
 Deliverable goal:
 - Actionable reporting without real-time heavy query pressure.
@@ -2766,6 +2810,7 @@ Depends on: Existing notifications
 
 ### Stage 32.1 - In-Portal Messaging
 - Status: Completed (2026-05-14).
+Implementation Summary
 - Implemented AI chatbot entry-point improvement by removing menu-based chatbot discovery and introducing a persistent floating launcher in the shared portal layout.
 - Launcher behavior:
 	- fixed bottom-right placement across portal pages,
@@ -2773,7 +2818,8 @@ Depends on: Existing notifications
 	- visibility is role/module aware (shown only when chat module is available in current sidebar visibility contract),
 	- responsive spacing for mobile and desktop with overlap-safe positioning.
 - Optional UX polish implemented: subtle pulse animation with reduced-motion accessibility fallback.
-- Validation: `dotnet build src/Tabsan.EduSphere.Web/Tabsan.EduSphere.Web.csproj` passed.
+Validation Summary
+- `dotnet build src/Tabsan.EduSphere.Web/Tabsan.EduSphere.Web.csproj` passed.
 
 Stage planning addendum (2026-05-14):
 - Add AI chatbot UI entry-point improvement to increase accessibility and reduce interaction friction.
@@ -2794,6 +2840,7 @@ Stage planning addendum (2026-05-14):
 
 ### Stage 32.2 - Email Integration
 - Status: Completed (2026-05-14).
+Implementation Summary
 - Implemented event-triggered notification email dispatch on top of existing in-app notification flows.
 - Delivery behavior:
 	- every in-app notification send path now optionally dispatches recipient email notifications,
@@ -2803,12 +2850,13 @@ Stage planning addendum (2026-05-14):
 	- added `NotificationEmail` settings section for enable/disable, subject prefix, and portal notification URL,
 	- production/default SMTP host aligned to Brevo free-tier-compatible relay (`smtp-relay.brevo.com`) with credential placeholders,
 	- development/default `NotificationEmail:Enabled` remains `false` to avoid local test breakage without SMTP credentials.
-- Validation:
+Validation Summary
 	- focused notification unit tests passed,
 	- full solution build passed.
 
 ### Stage 32.3 - SMS Integration
 - Status: Completed (2026-05-14).
+Implementation Summary
 - Implemented Twilio-based SMS notification dispatch on top of existing in-app and email flows.
 - Delivery behavior:
 	- every in-app notification send path now optionally dispatches SMS notifications to configured phone numbers,
@@ -2828,7 +2876,7 @@ Stage planning addendum (2026-05-14):
 	- `NotificationService.DispatchSmsAsync()` method: per-recipient SMS template dispatch with exception logging (non-blocking),
 	- `NotificationService` constructor extended with `ISmsDeliveryProvider?` and `IOptions<NotificationSmsOptions>?` DI parameters,
 	- `SendAsync()` and `SendSystemAsync()` dispatch paths include SMS in addition to email and in-app delivery.
-- Validation:
+Validation Summary
 	- full solution build passed with 20 warnings (Twilio version and pre-existing nullability warnings),
 	- Phase 28 Stage 2 notification tests passed (2/2),
 	- DI wiring and configuration binding validated in Program.cs.
@@ -2845,6 +2893,7 @@ Complexity: High
 Depends on: Phases 23-24
 
 ### 2026-05-14 - Phase 33 Completion
+Implementation Summary
 - Completed tenant-scope isolation for tenant operations settings reads/writes without schema churn.
 - Added tenant-scoped key and cache behavior in `TenantOperationsService` for:
 	- onboarding template,
@@ -2853,19 +2902,29 @@ Depends on: Phases 23-24
 - Added default-scope backward compatibility so existing single-tenant deployments continue to read legacy unscoped keys.
 - Added API tenant-scope resolver (`HttpTenantScopeResolver`) with claim/header discovery (`tenant_code`, `tenantCode`, `tenant`, `tid`, `X-Tenant-Code`).
 - Added unit validation proving isolation across two tenant scopes using a shared settings repository.
-- Validation: focused unit tests passed for Stage 33 isolation coverage.
+Validation Summary
+- Focused unit tests passed for Stage 33 isolation coverage.
 
 ### Stage 33.1 - Tenant Isolation Model
 - Status: Completed (2026-05-14).
+Implementation Summary
 - Tenant-aware boundaries now applied on tenant operations settings via tenant-scoped keys and cache keys.
+Validation Summary
+- Validation is captured under the Phase 33 completion entry in this section.
 
 ### Stage 33.2 - Subscription Management
 - Status: Completed (2026-05-14).
+Implementation Summary
 - Subscription plan state is now tenant-scoped, preventing cross-tenant read/write leakage.
+Validation Summary
+- Validation is captured under the Phase 33 completion entry in this section.
 
 ### Stage 33.3 - Onboarding and Branding
 - Status: Completed (2026-05-14).
+Implementation Summary
 - Onboarding template and tenant profile/branding settings now resolve and persist per-tenant scope.
+Validation Summary
+- Validation is captured under the Phase 33 completion entry in this section.
 
 Deliverable goal:
 - Production SaaS posture with clear tenant boundaries.
@@ -2878,16 +2937,27 @@ Depends on: Existing auth and audit systems
 
 ### Stage 34.1 - MFA and Access Hardening
 - Status: Completed (2026-05-15).
+Implementation Summary
 - Multi-factor authentication now supports privileged-role enforcement policy (`SuperAdmin`, `Admin`) with configurable role list.
 - Login flow enforces MFA challenge only when required by role-aware policy and returns explicit MFA-required response path.
 - Web login security-profile consumption now surfaces privileged-role MFA messaging in login UX.
 - Startup guardrails now block unsafe MFA placeholder configuration in non-development environments.
 
-Validation:
+Validation Summary
 - `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj --filter "FullyQualifiedName~AuthSecurityUxTests" -v minimal` passed (5/5).
 
 ### Stage 34.2 - Audit and Compliance Logging
-- Sensitive action trail coverage with searchable audit history.
+- Status: Completed (2026-05-15).
+Implementation Summary
+- Added `GET /api/v1/audit/logs` (Admin/SuperAdmin) with searchable and paged audit-history retrieval.
+- Added audit search filters for query text, actor user id, action, entity name, and UTC time range, with descending time ordering and total-count pagination metadata.
+- Extended `IAuditService`/`AuditService` with `SearchAsync(...)` for centralized compliance-history queries.
+- Added explicit sensitive action audit entries for account unlock and admin password reset in `AccountSecurityService`.
+- Mapped `/api/v1/audit` to `advanced_audit` in module-license enforcement middleware so access respects module gating.
+
+Validation Summary
+- `dotnet build Tabsan.EduSphere.sln -v minimal` passed.
+- `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj --filter "FullyQualifiedName~AuthSecurityUxTests|FullyQualifiedName~Phase27Stage2Tests" -v minimal` passed (`5/5`).
 
 ### Stage 34.3 - Failure and Recovery Readiness
 - Backup/restore drills and rollback-safe deployment playbook.
@@ -6587,8 +6657,10 @@ Implemented student-side assignment workflow corrections in the web portal:
 
 Enhancement phases 12ï¿½15 are tracked in `Docs/Enhancements.md`. Summary entry recorded here for cross-reference.
 
+Implementation Summary
 - Stages 14.1ï¿½14.3: Full ticket lifecycle (create, thread reply, assign, resolve, close, reopen); Admin/SuperAdmin case management; Faculty responses; EF migration `20260507_Phase14_Helpdesk`.
-- Validation: 0 build errors; 78/78 tests passed.
+Validation Summary
+- 0 build errors; 78/78 tests passed.
 
 ---
 
@@ -6596,121 +6668,147 @@ Enhancement phases 12ï¿½15 are tracked in `Docs/Enhancements.md`. Summary ent
 
 Enhancement phases 12ï¿½15 are tracked in `Docs/Enhancements.md`. Summary entry recorded here for cross-reference.
 
+Implementation Summary
 - Stage 15.1: Prerequisite validation in `TryEnrollAsync`; `CoursePrerequisite` entity; `PrerequisiteController`; EF migration `20260507133254_Phase15_EnrollmentRules`.
 - Stage 15.2: Timetable clash detection; Admin override with audit log.
 - Stage 15.3: Capacity limits already enforced (pre-existing).
 - Web portal: Prerequisites page (Admin/SuperAdmin) ï¿½ view, add, remove prerequisites per course.
-- Validation: 0 build errors; 7/7 tests passed.
+Validation Summary
+- 0 build errors; 7/7 tests passed.
 
 ## Phase 16 â€” Faculty Grading System âœ… Complete (2026-05-08)
 
 Enhancement phase tracked in `Docs/Enhancements.md`. Summary entry recorded here for cross-reference.
 
+Implementation Summary
 - Stage 16.1: Gradebook grid view; `GradebookController` + `GradebookService` + `GradebookRepository`; inline cell editing in `Gradebook.cshtml`.
 - Stage 16.2: Rubric domain entities (`Rubric`, `RubricCriterion`, `RubricLevel`, `RubricStudentGrade`); `RubricController` + `RubricService`; `RubricManage.cshtml` + `RubricView.cshtml`.
 - Stage 16.3: Bulk CSV grade import; CSV template download, preview endpoint, confirm endpoint; bulk upload UI in `Gradebook.cshtml`.
 - Migration `Phase16_FacultyGrading` â€” adds 4 rubric tables.
-- Validation: 0 build errors; 78/78 tests passed.
+Validation Summary
+- 0 build errors; 78/78 tests passed.
 
 ## Phase 17 â€” Degree Audit System âœ… Complete (2026-05-08)
 
 Enhancement phase tracked in `Docs/Enhancements.md`. Summary entry recorded here for cross-reference.
 
+Implementation Summary
 - Stage 17.1: Credit completion tracking; `DegreeRule` + `DegreeRuleRequiredCourse` entities; `DegreeAuditRepository.GetEarnedCreditsAsync` (3-way join: Results â†’ CourseOfferings â†’ Courses); `DegreeAuditService.GetAuditAsync` deduplicates by CourseId; `DegreeAudit.cshtml`.
 - Stage 17.2: Graduation eligibility checker; `DegreeAuditService.GetEligibilityListAsync`; `GraduationEligibility.cshtml` with eligibility badges.
 - Stage 17.3: `CourseType` enum on `Course`; `SetCourseTypeAsync`; `DegreeRules.cshtml` SuperAdmin rule management.
 - Migration `Phase17_DegreeAudit` â€” adds `degree_rules`, `degree_rule_required_courses` tables + `course_type` column.
-- Validation: 0 build errors; 78/78 tests passed.
+Validation Summary
+- 0 build errors; 78/78 tests passed.
 
 ## Phase 18 â€” Graduation Workflow âœ… Complete
 
 Enhancement phase tracked in `Docs/Enhancements.md`. Summary entry recorded here for cross-reference.
 
+Implementation Summary
 - Stage 18.1: Multi-stage graduation application workflow (Draft â†’ PendingFaculty â†’ PendingAdmin â†’ PendingFinalApproval â†’ Approved/Rejected); `GraduationApplication` + `GraduationApplicationApproval` domain entities; `GraduationRepository`; `GraduationService` orchestration; `GraduationController` (10 endpoints).
 - Stage 18.2: `ICertificateGenerator` abstraction (Application layer) + `CertificateGenerator` (Infrastructure/QuestPDF) â€” A4 Landscape PDF; stored to `wwwroot/certificates/`; `FinalApproveAsync` auto-generates certificate + marks student Graduated.
 - Web portal: `GraduationApply`, `GraduationApplications`, `GraduationApplicationDetail` views + controller actions + EduApiClient methods.
 - Migration `Phase18_GraduationWorkflow` â€” adds `graduation_applications`, `graduation_application_approvals` tables.
-- Validation: 0 build errors; 78/78 tests passed.
+Validation Summary
+- 0 build errors; 78/78 tests passed.
 
 ## Phase 19 â€” Course Type & Grading Config Refactor âœ… Complete (2026-05-08)
 
 Enhancement phase tracked in `Docs/Enhancements.md`. Summary entry recorded here for cross-reference.
 
+Implementation Summary
 - Stage 19.1: `CourseType` enum (SemesterBased/ShortCourse), `HasSemesters` flag on Course; auto-semester generation; `CourseGradingConfig` per offering.
 - Stage 19.2: Smart filtering in result calculation â€” only `HasSemesters` courses show in semester result UI.
+Validation Summary
 - Migration `Phase19_CourseTypeGrading`. 0 build errors; unit tests passed.
 
 ## Phase 20 â€” Learning Management System (LMS) âœ… Complete (2026-05-08, commit `ecf4d91`)
 
 Enhancement phase tracked in `Docs/Enhancements.md`. Summary entry recorded here for cross-reference.
 
+Implementation Summary
 - Stage 20.1: `CourseContentModule` entity; faculty weekly module management; student view.
 - Stage 20.2: `ContentVideo` child entity per module; faculty attach/delete video references.
 - Stage 20.3: `DiscussionThread` + `DiscussionReply`; faculty pin/close/reopen; all participants create/reply.
 - Stage 20.4: `CourseAnnouncement`; fan-out notification on creation; `Announcements.cshtml` portal view.
 - EF config in `LmsConfigurations.cs`; migration `Phase20_LMS`.
-- Validation: 0 build errors; 7/7 unit tests passed.
+Validation Summary
+- 0 build errors; 7/7 unit tests passed.
 
 ## Phase 21 â€” Study Planner âœ… Complete (2026-05-08)
 
 Enhancement phase tracked in `Docs/Enhancements.md`. Summary entry recorded here for cross-reference.
 
+Implementation Summary
 - Stage 21.1: `StudyPlan` aggregate (`AdvisorStatus`, endorsement workflow); `StudyPlanCourse` child entity; `AcademicProgram.MaxCreditLoadPerSemester`.
 - Service validates prerequisites (Phase 15) + credit load; course picker restricted to `HasSemesters=true` (Phase 19).
 - EF config in `StudyPlanConfigurations.cs`; migration `Phase21_StudyPlanner`.
 - `StudyPlanController` (9 endpoints); portal views `StudyPlan.cshtml`, `StudyPlanDetail.cshtml`.
 - Stage 21.2: Recommendation engine â€” degree audit gaps + eligible electives, prerequisite-gated; `StudyPlanRecommendations.cshtml`.
-- Validation: 0 build errors; 7/7 unit tests passed.
+Validation Summary
+- 0 build errors; 7/7 unit tests passed.
 
 ## Phase 22 â€” External Integrations âœ… Complete (2026-05-08) | Commit: `dddee69`
 
 Enhancement phase tracked in `Docs/Enhancements.md`. No regressions introduced.
 
+Implementation Summary
 - Library system integration (`LibraryService`, `ILibraryService`) and accreditation reporting (`AccreditationReport`, `AccreditationRepository`).
 - Migration: `Phase22_ExternalIntegrations` (`accreditation_templates` table).
-- Validation: 0 build errors; no existing tests broken.
+Validation Summary
+- 0 build errors; no existing tests broken.
 
 ## Phase 23 â€” Core Policy Foundation âœ… Complete (2026-05-08) | Commit: `28cac36`
 
 Enhancement phase tracked in `Docs/Enhancements.md`. No regressions introduced.
 
+Implementation Summary
 - `InstitutionPolicySnapshot` sealed record; `InstitutionType` enum; `IInstitutionPolicyService` / `InstitutionPolicyService`.
+Validation Summary
 - 27/27 unit tests passed.
 
 ## Phase 24 â€” Dynamic Module and UI Composition âœ… Complete (2026-05-09) | Commit: `391ac45`
 
 Enhancement phase tracked in `Docs/Enhancements.md`. No regressions introduced.
 
+Implementation Summary
 - `ModuleRegistry`, `IModuleRegistryService`, `ILabelService`, `IDashboardCompositionService` â€” no DB changes, no migration.
+Validation Summary
 - 44/44 unit tests passed.
 
 ## Phase 25 â€” Academic Engine Unification âœ… Complete (2026-05-09) | Commit: `d2aabd3`
 
 Enhancement phase tracked in `Docs/Enhancements.md`. No regressions introduced. No existing tests broken.
 
+Implementation Summary
 - Strategy Pattern for result calculation; Institution Grading Profiles; Progression/Promotion Logic.
 - Migration: `20260508152906_Phase25_AcademicEngineUnification` (`institution_grading_profiles` table).
+Validation Summary
 - 29 new unit tests added; 144/144 total tests passed.
 
 ## Phase 26 â€” School and College Functional Expansion âœ… Complete (2026-05-09) | Commit: `4c0904c`
 
 Enhancement phase tracked in `Docs/Enhancements.md`. No regressions introduced. No existing tests broken.
 
+Implementation Summary
 - Stage 26.1: School streams + student stream assignments (`school_streams`, `student_stream_assignments`).
 - Stage 26.2: Report card snapshots + approval-based bulk promotion (`student_report_cards`, `bulk_promotion_batches`, `bulk_promotion_entries`).
 - Stage 26.3: Parent-student read model (`parent_student_links`) and parent-linked student endpoint.
 - Migration: `20260509044437_Phase26_SchoolCollegeExpansion`.
+Validation Summary
 - 8 new unit tests added; 152/152 total tests passed.
 
 ## Phase 27 â€” University Portal Parity and Student Experience âœ… Complete (2026-05-09)
 
 Enhancement phase tracked in `Docs/Enhancements.md`. Summary entry recorded here for cross-reference.
 
+Implementation Summary
 - Stage 27.1 (commit `fd3b137`): portal capability matrix service + API + web view + unit tests.
 - Stage 27.2 (commit `20dba8d`): deployment-configurable MFA toggle, SSO-ready auth security profile endpoint, session-risk controls, and auth audit improvements.
 - Stage 27.3 (commit `56cf1dd`): vendor-agnostic provider contracts for ticketing, announcements, and email; default adapters; integration profile endpoint.
 - Data model impact: no new tables and no EF migration required.
-- Validation: latest unit run 89/89 passing; solution build successful.
+Validation Summary
+- Latest unit run 89/89 passing; solution build successful.
 
 ---
 

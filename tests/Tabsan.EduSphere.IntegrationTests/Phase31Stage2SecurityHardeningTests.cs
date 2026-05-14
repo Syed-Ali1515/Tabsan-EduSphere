@@ -173,6 +173,18 @@ file sealed class AuditCollector : IAuditService
         Entries.Add(entry);
         return Task.CompletedTask;
     }
+
+    public Task<(IReadOnlyList<AuditLog> Items, int TotalCount)> SearchAsync(
+        string? query = null,
+        Guid? actorUserId = null,
+        string? action = null,
+        string? entityName = null,
+        DateTime? fromUtc = null,
+        DateTime? toUtc = null,
+        int page = 1,
+        int pageSize = 50,
+        CancellationToken ct = default)
+        => Task.FromResult(((IReadOnlyList<AuditLog>)Entries, Entries.Count));
 }
 
 file sealed class FeatureFlagServiceStub : IFeatureFlagService

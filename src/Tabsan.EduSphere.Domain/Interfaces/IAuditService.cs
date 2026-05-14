@@ -15,4 +15,19 @@ public interface IAuditService
     /// completion before returning a response to the client.
     /// </summary>
     Task LogAsync(AuditLog entry, CancellationToken ct = default);
+
+    /// <summary>
+    /// Searches audit logs using optional filters and returns paged results.
+    /// Intended for compliance/audit-history views.
+    /// </summary>
+    Task<(IReadOnlyList<AuditLog> Items, int TotalCount)> SearchAsync(
+        string? query = null,
+        Guid? actorUserId = null,
+        string? action = null,
+        string? entityName = null,
+        DateTime? fromUtc = null,
+        DateTime? toUtc = null,
+        int page = 1,
+        int pageSize = 50,
+        CancellationToken ct = default);
 }
