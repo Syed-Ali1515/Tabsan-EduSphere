@@ -289,8 +289,10 @@ Depends on: Phase 24
 - Validation: focused unit and integration coverage added and passing.
 
 ### Stage 26.2 - College Result and Promotion
-- Percentage-based grading model.
-- Year-to-year progression and supplementary handling policy.
+- Status: Completed (2026-05-14).
+- Percentage-based grading model remains aligned through institution-aware progression thresholds and percentage normalization.
+- Year-to-year promotion now applies through progression orchestration for College (year-step advancement).
+- Supplementary handling policy is enforced in bulk promotion: non-eligible college promote entries are converted to hold with supplementary-required reason.
 
 Deliverable goal:
 - College workflows enabled with minimal duplication.

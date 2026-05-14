@@ -133,6 +133,14 @@
 - Validation status: focused verification passed (9/9 unit, 7/7 integration).
 - Status: Stage 26.1 completed and validated as of 2026-05-14.
 
+### Stage 26.2 - College Result and Promotion (Advanced Track)
+- Bulk promotion apply flow now runs progression eligibility checks per promote entry before mutating student level.
+- College promote entries that fail progression are converted to `Hold` with supplementary-required reasoning.
+- College promote entries that pass progression now advance by an academic year step through progression orchestration.
+- Unit coverage in `BulkPromotionServiceTests` validates both supplementary-hold conversion and successful year-step promotion.
+- Validation status: focused unit verification passed together with progression checks (14/14).
+- Status: Stage 26.2 completed and validated as of 2026-05-14.
+
 ## Authentication & Authorization
 
 ### User Authentication

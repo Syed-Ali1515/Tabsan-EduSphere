@@ -27,6 +27,12 @@
 - Student self-progression endpoint now supports `studentProfileId` claim naming used by current JWT payloads.
 - Validation: `StudentLifecycleIntegrationTests` includes School promotion pass-rule denial coverage and passed in focused run.
 
+### 2026-05-14 — Advanced Track Phase 26 Stage 26.2 Complete
+- Bulk promotion now enforces institution-aware progression checks before applying promote entries.
+- College promote entries that fail threshold are automatically converted to `Hold` with supplementary-required reasoning.
+- College promote entries that pass now advance by an academic year step (two semesters) through progression orchestration.
+- Validation: focused unit runs passed for `BulkPromotionServiceTests` and `ProgressionServiceTests` (`14/14`).
+
 ### 2026-05-09 — Phase 28 Stage 28.1 Complete
 - Phase 28 is now **In Progress** with **Stage 28.1 — API and App Tier Scaling** completed.
 - API and Web now enable Brotli/Gzip response compression for lower payload cost under higher concurrent traffic.
@@ -536,6 +542,13 @@
   - Unit: `ProgressionServiceTests` now covers college year-step promotion and GPA-scale normalization to percentage.
   - Integration: `StudentLifecycleIntegrationTests` now covers College year-one academic-level retrieval and two-semester promotion behavior.
   - Focused runs passed: 9/9 unit, 7/7 integration.
+
+### Stage 26.2 — College Result and Promotion (Advanced Track) ✅
+- `BulkPromotionService.ApplyAsync` now evaluates progression eligibility per student and institution type before applying promotion entries.
+- Promote entries that do not meet progression criteria are automatically converted to `Hold` with explanatory reason.
+- For College, failed promotion reasons now explicitly include supplementary-required guidance.
+- For College, successful promote entries advance using progression service orchestration so year-step advancement remains consistent.
+- Validation: `BulkPromotionServiceTests` includes coverage for college supplementary hold conversion and college year-step promotion.
 
 ---
 

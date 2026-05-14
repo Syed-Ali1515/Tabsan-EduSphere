@@ -4827,6 +4827,14 @@ New themes added to site.css and ThemeSettingsPageModel: `neon_mint`, `sakura_pi
 |---|---|---|
 | `ProgressionService.PromoteAsync(request, ct)` | For College promotion, advances two semesters to represent a full year progression after eligibility passes. | `Application/Academic/ProgressionService.cs` |
 
+### Application — Bulk Promotion Supplementary Policy (Advanced Stage 26.2)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `BulkPromotionService.ApplyAsync(request, ct)` | Evaluates progression eligibility before applying promote entries; converts failed entries to `Hold` instead of force-promoting. | `Application/Academic/BulkPromotionService.cs` |
+| `BulkPromotionService.ApplyAsync(request, ct)` (College path) | Adds supplementary-required reason when a College promote entry fails threshold checks. | `Application/Academic/BulkPromotionService.cs` |
+| `BulkPromotionService.ApplyAsync(request, ct)` (College success path) | Uses progression orchestration so successful College promote entries preserve year-step advancement semantics. | `Application/Academic/BulkPromotionService.cs` |
+
 ### API — InstitutionGradingProfileController (Stage 25.2)
 
 | Function Name | Purpose | Location |

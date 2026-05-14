@@ -12,11 +12,16 @@ public class BulkPromotionService : IBulkPromotionService
 {
     private readonly IBulkPromotionRepository _repo;
     private readonly IStudentProfileRepository _studentRepo;
+    private readonly IProgressionService _progression;
 
-    public BulkPromotionService(IBulkPromotionRepository repo, IStudentProfileRepository studentRepo)
+    public BulkPromotionService(
+        IBulkPromotionRepository repo,
+        IStudentProfileRepository studentRepo,
+        IProgressionService progression)
     {
         _repo = repo;
         _studentRepo = studentRepo;
+        _progression = progression;
     }
 
     public async Task<BulkPromotionBatchDto> CreateBatchAsync(
@@ -103,8 +108,23 @@ public class BulkPromotionService : IBulkPromotionService
             var student = await _studentRepo.GetByIdAsync(entry.StudentProfileId, ct)
                 ?? throw new KeyNotFoundException($"Student profile {entry.StudentProfileId} not found.");
 
-            student.AdvanceSemester();
-            _studentRepo.Update(student);
+            var institutionType = student.Department?.InstitutionType ?? InstitutionType.University;
+            var decision = await _progression.EvaluateAsync(
+                new ProgressionEvaluationRequest(student.Id, institutionType),
+                ct);
+
+            if (!decision.CanProgress)
+            {
+                var reason = institutionType == InstitutionType.College
+                    ? $"Supplementary required before year progression. {decision.Remarks}"
+                    : $"Promotion criteria not met. {decision.Remarks}";
+
+                entry.UpdateDecision(EntryDecision.Hold, reason);
+                _repo.UpdateEntry(entry);
+                continue;
+            }
+
+            await _progression.PromoteAsync(new ProgressionEvaluationRequest(student.Id, institutionType), ct);
 
             entry.MarkApplied();
             _repo.UpdateEntry(entry);
@@ -113,7 +133,6 @@ public class BulkPromotionService : IBulkPromotionService
         batch.MarkApplied();
         _repo.UpdateBatch(batch);
 
-        await _studentRepo.SaveChangesAsync(ct);
         await _repo.SaveChangesAsync(ct);
 
         return await GetRequiredDtoAsync(batch.Id, ct);

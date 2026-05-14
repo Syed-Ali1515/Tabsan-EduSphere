@@ -123,7 +123,10 @@ public class BulkPromotionServiceTests
 
         var studentRepo = new StubStudentProfileRepository([s1, s2]);
         var repo = new StubBulkPromotionRepository();
-        var sut = new BulkPromotionService(repo, studentRepo);
+        var progression = new ProgressionService(
+            studentRepo,
+            new StubInstitutionGradingProfileRepository(null));
+        var sut = new BulkPromotionService(repo, studentRepo, progression);
 
         var batch = await sut.CreateBatchAsync(new CreateBulkPromotionBatchRequest("Grade 9 Promotion", Guid.NewGuid()));
         await sut.AddEntriesAsync(new AddBulkPromotionEntriesRequest(batch.Id,
@@ -148,7 +151,10 @@ public class BulkPromotionServiceTests
         var s1 = TestData.MakeStudent(semester: 9);
         var studentRepo = new StubStudentProfileRepository([s1]);
         var repo = new StubBulkPromotionRepository();
-        var sut = new BulkPromotionService(repo, studentRepo);
+        var progression = new ProgressionService(
+            studentRepo,
+            new StubInstitutionGradingProfileRepository(null));
+        var sut = new BulkPromotionService(repo, studentRepo, progression);
 
         var batch = await sut.CreateBatchAsync(new CreateBulkPromotionBatchRequest("X", Guid.NewGuid()));
 
@@ -163,6 +169,65 @@ public class BulkPromotionServiceTests
         var act = batch.Submit;
 
         act.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task ApplyBatch_CollegePromoteEntryWithoutPassingScore_BecomesHoldWithSupplementaryReason()
+    {
+        var collegeStudent = TestData.MakeStudent(semester: 1, institutionType: InstitutionType.College);
+        TestData.Set(collegeStudent, nameof(StudentProfile.CurrentSemesterGpa), 1.2m); // 30%
+
+        var studentRepo = new StubStudentProfileRepository([collegeStudent]);
+        var repo = new StubBulkPromotionRepository();
+        var progression = new ProgressionService(
+            studentRepo,
+            new StubInstitutionGradingProfileRepository(null));
+        var sut = new BulkPromotionService(repo, studentRepo, progression);
+
+        var batch = await sut.CreateBatchAsync(new CreateBulkPromotionBatchRequest("College Y1", Guid.NewGuid()));
+        await sut.AddEntriesAsync(new AddBulkPromotionEntriesRequest(batch.Id,
+        [
+            new BulkPromotionEntryInput(collegeStudent.Id, EntryDecision.Promote)
+        ]));
+        await sut.SubmitAsync(batch.Id);
+        await sut.ReviewAsync(new ReviewBulkPromotionBatchRequest(batch.Id, Guid.NewGuid(), true, "Approved"));
+
+        var applied = await sut.ApplyAsync(new ApplyBulkPromotionBatchRequest(batch.Id));
+        var entry = applied.Entries.Single();
+
+        studentRepo.GetRequired(collegeStudent.Id).CurrentSemesterNumber.Should().Be(1);
+        entry.Decision.Should().Be(EntryDecision.Hold);
+        entry.IsApplied.Should().BeFalse();
+        entry.Reason.Should().Contain("Supplementary required");
+    }
+
+    [Fact]
+    public async Task ApplyBatch_CollegePromoteEntryWithPassingScore_AdvancesByAcademicYear()
+    {
+        var collegeStudent = TestData.MakeStudent(semester: 1, institutionType: InstitutionType.College);
+        TestData.Set(collegeStudent, nameof(StudentProfile.CurrentSemesterGpa), 2.4m); // 60%
+
+        var studentRepo = new StubStudentProfileRepository([collegeStudent]);
+        var repo = new StubBulkPromotionRepository();
+        var progression = new ProgressionService(
+            studentRepo,
+            new StubInstitutionGradingProfileRepository(null));
+        var sut = new BulkPromotionService(repo, studentRepo, progression);
+
+        var batch = await sut.CreateBatchAsync(new CreateBulkPromotionBatchRequest("College Y1", Guid.NewGuid()));
+        await sut.AddEntriesAsync(new AddBulkPromotionEntriesRequest(batch.Id,
+        [
+            new BulkPromotionEntryInput(collegeStudent.Id, EntryDecision.Promote)
+        ]));
+        await sut.SubmitAsync(batch.Id);
+        await sut.ReviewAsync(new ReviewBulkPromotionBatchRequest(batch.Id, Guid.NewGuid(), true, "Approved"));
+
+        var applied = await sut.ApplyAsync(new ApplyBulkPromotionBatchRequest(batch.Id));
+        var entry = applied.Entries.Single();
+
+        studentRepo.GetRequired(collegeStudent.Id).CurrentSemesterNumber.Should().Be(3);
+        entry.Decision.Should().Be(EntryDecision.Promote);
+        entry.IsApplied.Should().BeTrue();
     }
 }
 
@@ -214,7 +279,7 @@ file static class TestData
         return profile;
     }
 
-    private static void Set<T>(object target, string propertyName, T value)
+    internal static void Set<T>(object target, string propertyName, T value)
     {
         var prop = target.GetType().GetProperty(propertyName,
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
@@ -267,6 +332,35 @@ file sealed class StubStudentProfileRepository : IStudentProfileRepository
 
     public void Update(StudentProfile profile)
         => _students[profile.Id] = profile;
+
+    public Task<int> SaveChangesAsync(CancellationToken ct = default)
+        => Task.FromResult(1);
+}
+
+file sealed class StubInstitutionGradingProfileRepository : IInstitutionGradingProfileRepository
+{
+    private readonly InstitutionGradingProfile? _profile;
+
+    public StubInstitutionGradingProfileRepository(InstitutionGradingProfile? profile)
+    {
+        _profile = profile;
+    }
+
+    public Task<IReadOnlyList<InstitutionGradingProfile>> GetAllAsync(CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<InstitutionGradingProfile>>(_profile is null ? [] : [_profile]);
+
+    public Task<InstitutionGradingProfile?> GetByTypeAsync(InstitutionType institutionType, CancellationToken ct = default)
+        => Task.FromResult(_profile?.InstitutionType == institutionType ? _profile : null);
+
+    public Task<InstitutionGradingProfile?> GetByIdAsync(Guid id, CancellationToken ct = default)
+        => Task.FromResult(_profile?.Id == id ? _profile : null);
+
+    public Task AddAsync(InstitutionGradingProfile profile, CancellationToken ct = default)
+        => Task.CompletedTask;
+
+    public void Update(InstitutionGradingProfile profile)
+    {
+    }
 
     public Task<int> SaveChangesAsync(CancellationToken ct = default)
         => Task.FromResult(1);
