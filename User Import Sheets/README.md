@@ -2,22 +2,49 @@
 
 This folder contains CSV templates for bulk-importing user accounts via the admin portal.
 
-Version: 1.3  
-Date: 14 May 2026  
-Completion Status: Phase 31 Stage 31.3
+Version: 1.4  
+Date: 15 May 2026  
+Completion Status: Updated import templates
 
-## Template: `user-import-template.csv`
+## Templates
+
+1. `faculty-admin-import-template.csv`
+2. `students-import-template.csv`
+
+Note: CSV format itself cannot store in-cell dropdown validation metadata. Dropdowns are applied in Excel after opening/importing the CSV files.
+
+## Template: `faculty-admin-import-template.csv`
 
 ### Columns
 
-| Column       | Required | Description                                                                 |
-|--------------|----------|-----------------------------------------------------------------------------|
-| Username     | Yes      | Unique login handle. Used as the initial password on import.                |
-| Email        | No       | Optional email address. Must be unique if provided.                         |
-| FullName     | No       | Display name (stored for reference; not enforced by the import).            |
-| Role         | Yes      | Must be one of: `Admin`, `Faculty`, `Student` (SuperAdmin not allowed).     |
-| DepartmentId | No       | GUID of the department. Required for Faculty accounts; optional for others. |
-| InstitutionType | No    | Explicit per-user institution assignment: `School`, `College`, or `University`. |
+| Column | Required | Description |
+|---|---|---|
+| Username | Yes | Unique login handle. Used as the initial password on import. |
+| Email | No | Optional email address. Must be unique if provided. |
+| FullName | No | Display name (reference only). |
+| Role | Yes | Must be `Admin` or `Faculty` for this template. |
+| DepartmentId | Yes | Department GUID. Required for faculty and recommended for admin scope assignment. |
+| InstitutionType | Yes | `School`, `College`, or `University` (must be license-enabled). |
+
+## Template: `students-import-template.csv`
+
+### Columns
+
+| Column | Required | Description |
+|---|---|---|
+| Username | Yes | Unique login handle. Used as the initial password on import. |
+| Email | No | Optional email address. Must be unique if provided. |
+| FullName | No | Display name (reference only). |
+| Role | Yes | Must be `Student`. |
+| DepartmentId | Yes | Student department GUID. |
+| InstitutionType | Yes | `School`, `College`, or `University` (must be license-enabled). |
+| ProgramId | Recommended | Program GUID for downstream student profile setup. |
+| RegistrationNumber | Recommended | Student registration number for profile/whitelist workflows. |
+| CurrentSemesterNumber | Recommended | Numeric level/semester value for initial academic state. |
+| SemesterName | Yes | Semester/grade-year label used for allocation workflow. |
+| CourseCode | Yes | Course code for enrollment mapping workflow. |
+| CourseTitle | Recommended | Human-readable course title. |
+| CourseOfferingId | Recommended | Course offering GUID when assigning directly to an offering. |
 
 ### Rules
 
@@ -26,8 +53,22 @@ Completion Status: Phase 31 Stage 31.3
 - Rows with duplicate usernames (across the file or already in the database) are skipped and counted as duplicates.
 - Rows with missing required fields or invalid values are skipped and reported as errors.
 - If `InstitutionType` is provided, it must be enabled in the active institution license policy.
-- `DepartmentId` must be a valid GUID when provided and should match an active department in the current environment.
+- `DepartmentId` must be a valid GUID and should match an active department in the current environment.
 - Keep `InstitutionType` values consistent with active deployment policy to avoid avoidable import rejects.
+- The current API import parser requires these minimum columns in uploaded files: `Username, Email, Role`.
+- Extra student-oriented columns are included for operational consistency and downstream mapping workflows.
+
+## Excel Dropdown Setup
+
+1. Open `faculty-admin-import-template.csv` or `students-import-template.csv` in Excel.
+2. Create a `Lists` sheet in the workbook and add values for:
+	- `InstitutionType`: `School`, `College`, `University`
+	- `CourseCode`: active course codes from your environment
+	- `SemesterName`: active semester names from your environment
+3. Select the target column (for example `InstitutionType`, `CourseCode`, or `SemesterName`).
+4. Go to Data -> Data Validation -> List.
+5. Set Source to the corresponding range in the `Lists` sheet.
+6. Save as `.xlsx` if you want dropdowns to persist.
 
 ### How to import
 
@@ -39,6 +80,7 @@ Completion Status: Phase 31 Stage 31.3
 ## Import Quality Checklist
 
 - Validate duplicate usernames before upload.
-- Confirm role names are exact (`Admin`, `Faculty`, `Student`).
-- Confirm GUID format for all non-empty `DepartmentId` values.
+- Confirm role names are exact (`Admin`, `Faculty`, `Student`) and template-specific.
+- Confirm GUID format for all `DepartmentId` values.
 - Confirm institution mode support before using `InstitutionType` assignments.
+- For student imports, align `CourseCode` and `SemesterName` to active course offerings.
