@@ -4855,6 +4855,18 @@ New themes added to site.css and ThemeSettingsPageModel: `neon_mint`, `sakura_pi
 | `IResultRepository.HasPassedCourseAsync(studentProfileId, courseId, passThresholdPercentage, ct)` | Repository contract for threshold-parameterized prerequisite pass evaluation. | `Domain/Interfaces/IResultRepository.cs` |
 | `ResultRepository.HasPassedCourseAsync(studentProfileId, courseId, passThresholdPercentage, ct)` | EF implementation of policy-driven prerequisite pass check (no fixed 50% constant). | `Infrastructure/Repositories/AssignmentResultRepositories.cs` |
 
+### Application/API — Parent-Student Controlled Mapping (Advanced Stage 28.1)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `IParentPortalService.GetLinksByParentAsync(parentUserId, ct)` | Returns all parent-student links for admin management view. | `Application/Interfaces/IParentPortalService.cs` |
+| `IParentPortalService.UpsertLinkAsync(request, ct)` | Creates/updates parent-student links with role/scope validation. | `Application/Interfaces/IParentPortalService.cs` |
+| `IParentPortalService.DeactivateLinkAsync(parentUserId, studentProfileId, ct)` | Soft-deactivates an existing parent-student link. | `Application/Interfaces/IParentPortalService.cs` |
+| `ParentPortalService.UpsertLinkAsync(request, ct)` | Enforces Parent-role target user and School-student scope before persistence. | `Application/Academic/ParentPortalService.cs` |
+| `ParentPortalController.GetLinksByParent(parentUserId, ct)` | `GET api/v1/parent-portal/links/{parentUserId}` admin-managed link list endpoint. | `API/Controllers/ParentPortalController.cs` |
+| `ParentPortalController.UpsertLink(request, ct)` | `PUT api/v1/parent-portal/links` admin-managed controlled link upsert endpoint. | `API/Controllers/ParentPortalController.cs` |
+| `ParentPortalController.DeactivateLink(parentUserId, studentProfileId, ct)` | `DELETE api/v1/parent-portal/links/{parentUserId}/{studentProfileId}` admin-managed link deactivation endpoint. | `API/Controllers/ParentPortalController.cs` |
+
 ### API — InstitutionGradingProfileController (Stage 25.2)
 
 | Function Name | Purpose | Location |

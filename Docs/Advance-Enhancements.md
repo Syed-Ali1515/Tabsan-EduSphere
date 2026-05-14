@@ -327,7 +327,10 @@ Complexity: Medium
 Depends on: Phase 25
 
 ### Stage 28.1 - Parent-Student Mapping
-- Controlled linking of parents/guardians to student records.
+- Status: Completed (2026-05-14).
+- Added controlled parent/guardian linking operations with Admin-managed upsert and deactivate flows.
+- Link creation now validates Parent role and School-student scope before persistence.
+- Parent self-view remains read-only and only returns active links.
 
 ### Stage 28.2 - Parent Read-Only Views
 - Results, attendance, announcements, timetable visibility for linked students.

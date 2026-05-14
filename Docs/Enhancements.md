@@ -45,6 +45,12 @@
 - Added University threshold normalization from GPA-scale profile values to percentage for prerequisite result comparisons.
 - Validation: solution build passed and unit suite passed (`136/136`).
 
+### 2026-05-14 — Advanced Track Phase 28 Stage 28.1 Complete
+- Added controlled parent-student link management operations for Admin users.
+- Parent link upsert now validates target user role (`Parent`) and School student scope before creating/updating links.
+- Added explicit link deactivation operation while preserving read-only parent self-view behavior.
+- Validation: focused parent portal unit tests passed (`5/5`) and solution build succeeded.
+
 ### 2026-05-09 — Phase 28 Stage 28.1 Complete
 - Phase 28 is now **In Progress** with **Stage 28.1 — API and App Tier Scaling** completed.
 - API and Web now enable Brotli/Gzip response compression for lower payload cost under higher concurrent traffic.
@@ -578,6 +584,20 @@
 - Validation:
   - `dotnet build Tabsan.EduSphere.sln` succeeded.
   - `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj` succeeded (`136/136`).
+
+### Stage 28.1 — Parent-Student Mapping (Advanced Track) ✅
+- `IParentPortalService` now supports controlled parent-student link management (`GetLinksByParentAsync`, `UpsertLinkAsync`, `DeactivateLinkAsync`).
+- `ParentPortalService.UpsertLinkAsync` enforces:
+  - target user must be Parent role,
+  - target student profile must exist,
+  - linking is restricted to School students for school-focused parent portal scope.
+- `ParentPortalController` now exposes Admin-managed link endpoints:
+  - `GET /api/v1/parent-portal/links/{parentUserId}`
+  - `PUT /api/v1/parent-portal/links`
+  - `DELETE /api/v1/parent-portal/links/{parentUserId}/{studentProfileId}`
+- Validation:
+  - `ParentPortalServiceTests` expanded for upsert/deactivate and guardrail scenarios (`5/5` focused run).
+  - `dotnet build Tabsan.EduSphere.sln` succeeded.
 
 ---
 

@@ -7,4 +7,10 @@ namespace Tabsan.EduSphere.Application.Interfaces;
 public interface IParentPortalService
 {
     Task<IReadOnlyList<ParentLinkedStudentDto>> GetLinkedStudentsAsync(Guid parentUserId, CancellationToken ct = default);
+
+    Task<IReadOnlyList<ParentStudentLinkDto>> GetLinksByParentAsync(Guid parentUserId, CancellationToken ct = default);
+
+    Task<ParentStudentLinkDto> UpsertLinkAsync(UpsertParentStudentLinkRequest request, CancellationToken ct = default);
+
+    Task<bool> DeactivateLinkAsync(Guid parentUserId, Guid studentProfileId, CancellationToken ct = default);
 }

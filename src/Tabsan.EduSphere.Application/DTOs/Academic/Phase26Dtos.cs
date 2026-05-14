@@ -72,3 +72,15 @@ public sealed record ParentLinkedStudentDto(
     decimal Cgpa,
     decimal CurrentSemesterGpa,
     string? Relationship);
+
+public sealed record UpsertParentStudentLinkRequest(
+    Guid ParentUserId,
+    Guid StudentProfileId,
+    string? Relationship,
+    bool IsActive = true);
+
+public sealed record ParentStudentLinkDto(
+    Guid ParentUserId,
+    Guid StudentProfileId,
+    string? Relationship,
+    bool IsActive);

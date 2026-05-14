@@ -5,6 +5,7 @@ using Tabsan.EduSphere.Application.Academic;
 using Tabsan.EduSphere.Application.DTOs.Academic;
 using Tabsan.EduSphere.Domain.Academic;
 using Tabsan.EduSphere.Domain.Enums;
+using Tabsan.EduSphere.Domain.Identity;
 using Tabsan.EduSphere.Domain.Interfaces;
 using Xunit;
 
@@ -248,13 +249,91 @@ public class ParentPortalServiceTests
         var second = (await linkRepo.GetByParentUserIdAsync(parent))[1];
         second.Update("Guardian", false);
 
-        var sut = new ParentPortalService(linkRepo, new StubStudentProfileRepository([student1, student2]));
+        var sut = new ParentPortalService(
+            linkRepo,
+            new StubStudentProfileRepository([student1, student2]),
+            new StubPortalUserRepository(parent, "Parent"));
 
         var result = await sut.GetLinkedStudentsAsync(parent);
 
         result.Should().HaveCount(1);
         result[0].StudentProfileId.Should().Be(student1.Id);
         result[0].Relationship.Should().Be("Father");
+    }
+
+    [Fact]
+    public async Task UpsertLink_WithParentRoleAndSchoolStudent_CreatesLink()
+    {
+        var parent = Guid.NewGuid();
+        var student = TestData.MakeStudent(semester: 6, institutionType: InstitutionType.School);
+        var linkRepo = new StubParentLinkRepository([]);
+
+        var sut = new ParentPortalService(
+            linkRepo,
+            new StubStudentProfileRepository([student]),
+            new StubPortalUserRepository(parent, "Parent"));
+
+        var dto = await sut.UpsertLinkAsync(new UpsertParentStudentLinkRequest(parent, student.Id, "Mother", true));
+
+        dto.ParentUserId.Should().Be(parent);
+        dto.StudentProfileId.Should().Be(student.Id);
+        dto.Relationship.Should().Be("Mother");
+        dto.IsActive.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task UpsertLink_WithNonParentRole_ThrowsInvalidOperation()
+    {
+        var parent = Guid.NewGuid();
+        var student = TestData.MakeStudent(semester: 6, institutionType: InstitutionType.School);
+
+        var sut = new ParentPortalService(
+            new StubParentLinkRepository([]),
+            new StubStudentProfileRepository([student]),
+            new StubPortalUserRepository(parent, "Student"));
+
+        var act = () => sut.UpsertLinkAsync(new UpsertParentStudentLinkRequest(parent, student.Id, "Guardian", true));
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*Parent role*");
+    }
+
+    [Fact]
+    public async Task UpsertLink_WithNonSchoolStudent_ThrowsInvalidOperation()
+    {
+        var parent = Guid.NewGuid();
+        var student = TestData.MakeStudent(semester: 2, institutionType: InstitutionType.College);
+
+        var sut = new ParentPortalService(
+            new StubParentLinkRepository([]),
+            new StubStudentProfileRepository([student]),
+            new StubPortalUserRepository(parent, "Parent"));
+
+        var act = () => sut.UpsertLinkAsync(new UpsertParentStudentLinkRequest(parent, student.Id, "Guardian", true));
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*only allowed for School students*");
+    }
+
+    [Fact]
+    public async Task DeactivateLink_WhenExists_SetsInactive()
+    {
+        var parent = Guid.NewGuid();
+        var student = TestData.MakeStudent(semester: 7, institutionType: InstitutionType.School);
+        var existing = new ParentStudentLink(parent, student.Id, "Father");
+
+        var linkRepo = new StubParentLinkRepository([existing]);
+        var sut = new ParentPortalService(
+            linkRepo,
+            new StubStudentProfileRepository([student]),
+            new StubPortalUserRepository(parent, "Parent"));
+
+        var changed = await sut.DeactivateLinkAsync(parent, student.Id);
+
+        changed.Should().BeTrue();
+        var link = await linkRepo.GetByParentAndStudentAsync(parent, student.Id);
+        link.Should().NotBeNull();
+        link!.IsActive.Should().BeFalse();
     }
 }
 
@@ -497,6 +576,75 @@ file sealed class StubParentLinkRepository : IParentStudentLinkRepository
         var idx = _links.FindIndex(l => l.Id == link.Id);
         if (idx >= 0) _links[idx] = link;
     }
+
+    public Task<int> SaveChangesAsync(CancellationToken ct = default)
+        => Task.FromResult(1);
+}
+
+file sealed class StubPortalUserRepository : IUserRepository
+{
+    private readonly Dictionary<Guid, User> _users;
+
+    public StubPortalUserRepository(Guid userId, string roleName)
+    {
+        var role = new Role(roleName);
+        var user = (User)RuntimeHelpers.GetUninitializedObject(typeof(User));
+        TestData.Set(user, nameof(User.Id), userId);
+        TestData.Set(user, nameof(User.Username), $"u_{userId:N}"[..10]);
+        TestData.Set(user, nameof(User.PasswordHash), "hash");
+        TestData.Set(user, nameof(User.Role), role);
+        TestData.Set(user, nameof(User.RoleId), 1);
+        TestData.Set(user, nameof(User.IsActive), true);
+        _users = new Dictionary<Guid, User> { [userId] = user };
+    }
+
+    public Task<User?> GetByIdAsync(Guid id, CancellationToken ct = default)
+        => Task.FromResult(_users.GetValueOrDefault(id));
+
+    public Task<User?> GetByUsernameAsync(string username, CancellationToken ct = default)
+        => Task.FromResult(_users.Values.FirstOrDefault(u => u.Username == username));
+
+    public Task<User?> GetByEmailAsync(string email, CancellationToken ct = default)
+        => Task.FromResult(_users.Values.FirstOrDefault(u => string.Equals(u.Email, email, StringComparison.OrdinalIgnoreCase)));
+
+    public Task<bool> UsernameExistsAsync(string username, CancellationToken ct = default)
+        => Task.FromResult(_users.Values.Any(u => string.Equals(u.Username, username, StringComparison.OrdinalIgnoreCase)));
+
+    public Task<IList<User>> GetLockedAccountsAsync(CancellationToken ct = default)
+        => Task.FromResult<IList<User>>([]);
+
+    public Task<IList<User>> GetFacultyUsersAsync(CancellationToken ct = default)
+        => Task.FromResult<IList<User>>([]);
+
+    public Task<IList<User>> GetActiveUsersByRolesAsync(IReadOnlyList<string> roleNames, CancellationToken ct = default)
+        => GetUsersByRolesAsync(roleNames, includeInactive: false, ct);
+
+    public Task<IList<User>> GetUsersByRolesAsync(IReadOnlyList<string> roleNames, bool includeInactive = false, CancellationToken ct = default)
+    {
+        var users = _users.Values
+            .Where(u => roleNames.Any(r => string.Equals(r, u.Role.Name, StringComparison.OrdinalIgnoreCase)))
+            .ToList();
+        return Task.FromResult<IList<User>>(users);
+    }
+
+    public Task<Role?> GetRoleByNameAsync(string roleName, CancellationToken ct = default)
+        => Task.FromResult<Role?>(new Role(roleName));
+
+    public Task AddAsync(User user, CancellationToken ct = default)
+    {
+        _users[user.Id] = user;
+        return Task.CompletedTask;
+    }
+
+    public Task AddRangeAsync(IEnumerable<User> users, CancellationToken ct = default)
+    {
+        foreach (var user in users)
+            _users[user.Id] = user;
+        return Task.CompletedTask;
+    }
+
+    public void Update(User user)
+        => _users[user.Id] = user;
 
     public Task<int> SaveChangesAsync(CancellationToken ct = default)
         => Task.FromResult(1);

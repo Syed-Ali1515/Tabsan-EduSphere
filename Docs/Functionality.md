@@ -158,6 +158,16 @@
 - Validation status: solution build and full unit suite verification passed (136/136).
 - Status: Stage 27.2 completed and validated as of 2026-05-14.
 
+### Stage 28.1 - Parent-Student Mapping (Advanced Track)
+- Added controlled parent-student link management operations for Admin users (upsert/list/deactivate).
+- Parent link upsert now validates:
+	- target account must be Parent role,
+	- target student profile must exist,
+	- student must belong to School institution scope.
+- Parent self-view endpoint remains read-only and returns only active links.
+- Validation status: focused `ParentPortalServiceTests` verification passed (5/5) and full solution build passed.
+- Status: Stage 28.1 completed and validated as of 2026-05-14.
+
 ## Authentication & Authorization
 
 ### User Authentication
