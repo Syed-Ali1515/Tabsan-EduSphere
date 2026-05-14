@@ -2,6 +2,9 @@
 
 This folder contains CSV templates for bulk-importing user accounts via the admin portal.
 
+Version: 1.2  
+Date: 14 May 2026
+
 ## Template: `user-import-template.csv`
 
 ### Columns
@@ -22,6 +25,8 @@ This folder contains CSV templates for bulk-importing user accounts via the admi
 - Rows with duplicate usernames (across the file or already in the database) are skipped and counted as duplicates.
 - Rows with missing required fields or invalid values are skipped and reported as errors.
 - If `InstitutionType` is provided, it must be enabled in the active institution license policy.
+- `DepartmentId` must be a valid GUID when provided and should match an active department in the current environment.
+- Keep `InstitutionType` values consistent with active deployment policy to avoid avoidable import rejects.
 
 ### How to import
 
@@ -29,3 +34,10 @@ This folder contains CSV templates for bulk-importing user accounts via the admi
 2. Select your completed CSV file and click **Upload**.
 3. Review the import summary (imported / duplicates / errors).
 4. Share the generated usernames and initial-login instructions with the new users.
+
+## Import Quality Checklist
+
+- Validate duplicate usernames before upload.
+- Confirm role names are exact (`Admin`, `Faculty`, `Student`).
+- Confirm GUID format for all non-empty `DepartmentId` values.
+- Confirm institution mode support before using `InstitutionType` assignments.

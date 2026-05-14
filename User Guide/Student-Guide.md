@@ -1,11 +1,18 @@
 # Student User Guide
 
 Version: 1.1  
-Date: 05 May 2026
+Date: 14 May 2026
 
 ## 1. Purpose
 
 This guide helps students use Tabsan EduSphere for coursework, attendance, quizzes, results, transcript download, notifications, FYP updates, and AI chat support.
+
+## 1.1 What's New (May 2026)
+
+- Dashboard and lifecycle terminology now follows institution context (Semester/Grade/Year).
+- AI chat access uses a persistent floating launcher when chat module is licensed.
+- Parent-linked notification experience can be active in school-focused deployments.
+- Results, transcript, and analytics-adjacent data surfaces follow tighter role and institute scope boundaries.
 
 ## 2. Access and Login
 

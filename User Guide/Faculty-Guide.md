@@ -1,11 +1,18 @@
 # Faculty User Guide
 
 Version: 1.1  
-Date: 05 May 2026
+Date: 14 May 2026
 
 ## 1. Purpose
 
 This guide explains faculty workflows in Tabsan EduSphere: teaching setup, assignments, quizzes, attendance, results, FYP supervision, and notifications.
+
+## 1.1 What's New (May 2026)
+
+- Institution-aware vocabulary now appears in key screens (for example Semester vs Grade vs Year) based on active policy.
+- Report and analytics requests now enforce assignment plus institute compatibility more strictly.
+- Parent notification fan-out is supported for published results and selected academic alerts where parent module is active.
+- Export behavior for analytics/reporting is standardized across synchronous and queued job paths.
 
 ## 2. Login and Role Scope
 

@@ -1,11 +1,18 @@
 # SuperAdmin User Guide
 
 Version: 1.1  
-Date: 05 May 2026
+Date: 14 May 2026
 
 ## 1. Purpose
 
 This guide is for platform-level administrators responsible for licensing, module governance, role access controls, and cross-department platform operations in Tabsan EduSphere.
+
+## 1.1 What's New (May 2026)
+
+- Backend module enforcement and module-aware sidebar visibility now operate together for safer governance.
+- Institution policy and report/analytics scoping behavior has been hardened for parity and authorization consistency.
+- Parent portal capabilities can now include linked-student read surfaces and parent notification fan-out.
+- Phase 33 tenant-scope isolation was delivered for tenant operations settings (onboarding, subscription, tenant profile).
 
 ## 2. SuperAdmin Responsibilities
 

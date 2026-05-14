@@ -1,2 +1,4 @@
 Username,Email,FullName,Role,DepartmentId,InstitutionType
 john.doe,john.doe@example.com,John Doe,Student,,University
+amna.faculty,amna.faculty@example.com,Amna Faculty,Faculty,11111111-1111-1111-1111-111111111111,College
+rizwan.admin,rizwan.admin@example.com,Rizwan Admin,Admin,,School

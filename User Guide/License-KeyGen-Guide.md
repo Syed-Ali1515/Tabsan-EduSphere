@@ -1,7 +1,7 @@
 # License KeyGen User Guide
 
-Version: 1.1  
-Date: 05 May 2026  
+Version: 1.2  
+Date: 14 May 2026  
 Applies to: tools/KeyGen/KeyGen.cs
 
 ## 1. Purpose
@@ -14,6 +14,12 @@ The utility generates:
 - AES-256 key (Base64)
 
 These keys support secure license generation and verification workflows.
+
+## 1.1 What's New (May 2026)
+
+- Institution-scope-aware licensing remains a core control path for School/College/University enablement.
+- Current operational baseline includes stronger module enforcement and institute-scope guardrails across API and portal surfaces.
+- Continue using strict key-handling controls: private keys in vault only, public keys in verifier configuration only.
 
 ## 2. Prerequisites
 

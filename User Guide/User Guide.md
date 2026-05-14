@@ -1,7 +1,7 @@
 # Tabsan EduSphere – User Guide
 
-**Version:** 1.1  
-**Date:** 11 May 2026  
+**Version:** 1.2  
+**Date:** 14 May 2026  
 **Aligned With PRD:** v1.7 | Modules v1.2  
 **Audience:** Students, Faculty, Admins, Super Admins
 
@@ -12,6 +12,10 @@
 - License tool now supports 1 month, 1/2/3 year, and permanent expiry, and explicit School/College/University scope.
 - UAT, SAT, and Output documentation are available in the Docs folder for validation and acceptance.
 - Import/export (CSV, PDF, Excel) and index maintenance scripts are included for admins and IT staff.
+- Role + institute scoping has been tightened across analytics, reports, and lifecycle-sensitive operations.
+- Module-aware sidebar filtering now aligns with backend module enforcement middleware.
+- Parent portal enhancements include linked-student read-only views and parent notification fan-out (where enabled).
+- Tenant operations settings now support tenant-scope isolation (onboarding, subscription, tenant profile) for SaaS-ready deployments.
 
 ---
 

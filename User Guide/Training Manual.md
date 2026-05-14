@@ -1,9 +1,18 @@
 # Tabsan EduSphere – Training Manual
 
-**Version:** 1.1  
-**Date:** 11 May 2026  
+**Version:** 1.2  
+**Date:** 14 May 2026  
 **Aligned With PRD:** v1.7 | Modules v1.2  
 **Audience:** Trainers, IT Staff, Super Admins, Department Coordinators
+
+---
+
+## 0. Training Updates (May 2026)
+
+- Include module-governance demonstration: backend enforcement plus sidebar visibility alignment.
+- Include institution-aware label and filter behavior checks for School/College/University contexts.
+- Include parent portal read-only and notification behavior walkthrough where parent module is enabled.
+- Include tenant operations settings behavior overview for SaaS/multi-tenant readiness context.
 
 ---
 

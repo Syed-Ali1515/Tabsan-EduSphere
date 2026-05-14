@@ -1,11 +1,18 @@
 # Admin User Guide
 
 Version: 1.1  
-Date: 05 May 2026
+Date: 14 May 2026
 
 ## 1. Purpose
 
 This guide covers departmental administration in Tabsan EduSphere: user operations, academic structure, course offerings, timetables, reporting, and operational oversight.
+
+## 1.1 What's New (May 2026)
+
+- Module-aware sidebar filtering is now enforced with backend module licensing checks for protected routes.
+- Analytics and report flows include stronger institute-aware scope checks for Admin requests.
+- Student lifecycle views support institution-driven academic-level wording (Semester/Grade/Year).
+- Parent-facing read-only features and notifications are available when parent portal module is enabled.
 
 ## 2. Admin Scope
 
