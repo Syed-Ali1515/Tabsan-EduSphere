@@ -46,6 +46,19 @@ SET XACT_ABORT ON;
 BEGIN TRY
 BEGIN TRANSACTION;
 
+-- VALIDATE CRITICAL PREREQUISITES
+IF OBJECT_ID(N'[academic_programs]') IS NULL
+BEGIN
+    RAISERROR('ERROR: Table [academic_programs] does not exist. You MUST run scripts in this order: 01, then 02, then 03.', 16, 1);
+    THROW;
+END;
+
+IF (SELECT COUNT(1) FROM [academic_programs]) = 0
+BEGIN
+    RAISERROR('ERROR: Table [academic_programs] is empty. You MUST run 02-Seed-Core.sql first before running this script.', 16, 1);
+    THROW;
+END;
+
 DECLARE @Now DATETIME2 = SYSUTCDATETIME();
 DECLARE @PwdHash NVARCHAR(512) = N'REPLACE_WITH_VALID_HASH';
 
@@ -67,7 +80,9 @@ END;
 
 IF @RoleSuperAdmin IS NULL OR @RoleAdmin IS NULL OR @RoleFaculty IS NULL OR @RoleStudent IS NULL
 BEGIN
-    RAISERROR('Roles not found. Run 02-Seed-Core.sql first.', 16, 1);
+    RAISERROR('ERROR: Roles not found. You MUST run 02-Seed-Core.sql before running this script.', 16, 1);
+    -- Throw the error to trigger CATCH block
+    THROW;
 END;
 
 /* 0) Demo metadata table (custom object requested for demos) */

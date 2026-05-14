@@ -39,6 +39,25 @@ GO
 BEGIN TRY
 BEGIN TRANSACTION;
 
+-- VALIDATE CRITICAL PREREQUISITES
+IF OBJECT_ID(N'[roles]') IS NULL
+BEGIN
+    RAISERROR('ERROR: Table [roles] does not exist. You MUST run 01-Schema-Current.sql first before running this script.', 16, 1);
+    THROW;
+END;
+
+IF OBJECT_ID(N'[institutions]') IS NULL
+BEGIN
+    RAISERROR('ERROR: Table [institutions] does not exist. You MUST run 01-Schema-Current.sql first before running this script.', 16, 1);
+    THROW;
+END;
+
+IF OBJECT_ID(N'[departments]') IS NULL
+BEGIN
+    RAISERROR('ERROR: Table [departments] does not exist. You MUST run 01-Schema-Current.sql first before running this script.', 16, 1);
+    THROW;
+END;
+
 DECLARE @Now DATETIME2 = SYSUTCDATETIME();
 
 /* 1) System roles */
