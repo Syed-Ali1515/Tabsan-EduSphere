@@ -168,6 +168,57 @@
 - Validation status: focused `ParentPortalServiceTests` verification passed (5/5) and full solution build passed.
 - Status: Stage 28.1 completed and validated as of 2026-05-14.
 
+### Stage 28.2 - Parent Read-Only Views (Advanced Track)
+- Added parent read-only linked-student views for results, attendance, announcements, and timetable.
+- Enforced active-link authorization checks so parent reads are denied when no active parent-student link exists.
+- Added integration coverage for parent-portal linked-student success and role/auth guard behavior.
+- Validation status: focused integration tests passed (10/10) and unit tests passed.
+- Status: Stage 28.2 completed and validated as of 2026-05-14.
+
+### Stage 28.3 - Parent Notifications (Advanced Track)
+- Added parent notification fan-out for result publication events (single and bulk publish paths).
+- Added linked-parent attendance warning notifications in background attendance alert workflows.
+- Added linked-parent recipients in announcement broadcast fan-out.
+- Validation status: API and BackgroundJobs builds passed, parent-portal integration tests passed (10/10), and unit tests passed.
+- Status: Stage 28.3 completed and validated as of 2026-05-14.
+
+### Phase 29 - Performance Foundation (MSSQL + Query Discipline)
+- Stage 29.1: Added baseline and hot-path composite indexes, including parent-link notification lookup indexing.
+- Stage 29.2: Added server-side pagination contracts for high-volume list paths (helpdesk tickets, graduation applications, payment receipts).
+- Stage 29.3: Added SQL operations scripts for archive policy, index maintenance, and capacity-growth observability dashboards.
+- Validation status: build and targeted/focused test runs passed for stage deliveries.
+- Status: Phase 29 completed and validated as of 2026-05-14.
+
+### Phase 30 - Distributed Cache and Background Processing
+- Stage 30.1: Added distributed cache coverage for dashboard context, report summary reads, and tenant operations profile reads with invalidation on writes.
+- Stage 30.2: Added async analytics export queue pipeline with queue/status/download lifecycle endpoints.
+- Stage 30.3: Added worker reliability controls (retry/backoff), consecutive-failure alert signaling, and runtime worker health endpoint (`/health/background-jobs`).
+- Validation status: solution build and unit suites passed for stage deliveries.
+- Status: Phase 30 completed and validated as of 2026-05-14.
+
+### Phase 31 - Reporting and Analytics Expansion
+- Stage 31.1: Added institution-aware report sectioning endpoint (`GET /api/v1/reports/sections`) with School/College/University section grouping.
+- Stage 31.2: Added advanced analytics endpoints for top performers, performance trends, and comparative summary.
+- Stage 31.3: Added standardized analytics export metadata and advanced analytics export routes (PDF/Excel), including queued export support.
+- Validation status: focused report and analytics integration suites passed.
+- Status: Phase 31 completed and validated as of 2026-05-14.
+
+### Phase 32 - Communication Enhancements
+- Stage 32.1: Added persistent floating AI chatbot launcher and removed primary chatbot access from sidebar/menu paths.
+- Stage 32.2: Added optional email fan-out channel for in-app notifications using template-based HTML email dispatch and runtime config toggles.
+- Stage 32.3: Added optional Twilio-based SMS fan-out channel with template truncation and environment-secret configuration support.
+- Validation status: web/API builds passed with focused notification tests for delivery behavior.
+- Status: Phase 32 completed and validated as of 2026-05-14.
+
+### Phase 33 - SaaS and Multi-Tenant Readiness
+- Stage 33.1: Added tenant-scope isolation model for tenant operations settings via scoped setting keys and scoped distributed-cache keys.
+- Stage 33.2: Subscription plan reads/writes now operate with tenant-scoped boundaries to prevent cross-tenant state leakage.
+- Stage 33.3: Onboarding template and tenant profile/branding settings now resolve and persist per tenant scope.
+- Added claim/header-based tenant-scope resolution (`tenant_code`, `tenantCode`, `tenant`, `tid`, `X-Tenant-Code`) through API resolver wiring.
+- Added backward compatibility fallback for default scope so legacy single-tenant unscoped keys continue to work.
+- Validation status: focused unit isolation coverage passed for shared-repository multi-scope access.
+- Status: Phase 33 completed and validated as of 2026-05-14.
+
 ## Authentication & Authorization
 
 ### User Authentication
@@ -681,5 +732,5 @@ For more detailed information, see:
 
 ---
 
-**Last Updated**: May 11, 2026  
-**Status**: Phase 33 - Security Hardening Active
+**Last Updated**: May 14, 2026  
+**Status**: Phase 33 complete, Phase 34 next
