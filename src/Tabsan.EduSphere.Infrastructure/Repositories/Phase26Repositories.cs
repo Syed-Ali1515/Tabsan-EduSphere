@@ -138,6 +138,25 @@ public class ParentStudentLinkRepository : IParentStudentLinkRepository
         => _db.ParentStudentLinks
             .FirstOrDefaultAsync(x => x.ParentUserId == parentUserId && x.StudentProfileId == studentProfileId, ct);
 
+    public async Task<IReadOnlyList<Guid>> GetActiveParentUserIdsByStudentAsync(Guid studentProfileId, CancellationToken ct = default)
+        => await _db.ParentStudentLinks
+            .Where(x => x.StudentProfileId == studentProfileId && x.IsActive)
+            .Select(x => x.ParentUserId)
+            .Distinct()
+            .ToListAsync(ct);
+
+    public async Task<IReadOnlyList<Guid>> GetActiveParentUserIdsByStudentsAsync(IReadOnlyList<Guid> studentProfileIds, CancellationToken ct = default)
+    {
+        if (studentProfileIds.Count == 0)
+            return [];
+
+        return await _db.ParentStudentLinks
+            .Where(x => x.IsActive && studentProfileIds.Contains(x.StudentProfileId))
+            .Select(x => x.ParentUserId)
+            .Distinct()
+            .ToListAsync(ct);
+    }
+
     public Task AddAsync(ParentStudentLink link, CancellationToken ct = default)
         => _db.ParentStudentLinks.AddAsync(link, ct).AsTask();
 

@@ -340,7 +340,11 @@ Depends on: Phase 25
 - Validation: focused unit tests passed (`16/16`) and parent-portal integration tests passed (`10/10`).
 
 ### Stage 28.3 - Parent Notifications
-- Result published, attendance warning, key academic updates.
+- Status: Completed (2026-05-14).
+- Added parent notification fan-out for result publication events.
+- Added parent attendance-warning notifications from the background alert job.
+- Added parent recipients to announcement broadcast fan-out for linked students.
+- Validation: API and BackgroundJobs builds passed, unit tests passed (`144/144`), and parent-portal integration tests passed (`10/10`).
 
 Deliverable goal:
 - Parent transparency without role-risk expansion.

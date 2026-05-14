@@ -69,6 +69,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(o => o.UseSqlServer(connecti
 // ── Repository + notification services ───────────────────────────────────────
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IParentStudentLinkRepository, ParentStudentLinkRepository>();
 builder.Services.AddScoped<IEmailSender, MailKitEmailSender>();
 builder.Services.AddSingleton<IEmailTemplateRenderer, EmailTemplateRenderer>();
 

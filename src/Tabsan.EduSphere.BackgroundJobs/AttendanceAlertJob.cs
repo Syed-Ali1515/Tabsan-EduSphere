@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Tabsan.EduSphere.Application.Interfaces;
+using Tabsan.EduSphere.Domain.Interfaces;
 using Tabsan.EduSphere.Domain.Notifications;
 
 namespace Tabsan.EduSphere.BackgroundJobs;
@@ -65,6 +66,7 @@ public class AttendanceAlertJob : BackgroundService
             using var scope = _services.CreateScope();
             var attendanceService    = scope.ServiceProvider.GetRequiredService<IAttendanceService>();
             var notificationService  = scope.ServiceProvider.GetRequiredService<INotificationService>();
+            var parentLinkRepository = scope.ServiceProvider.GetRequiredService<IParentStudentLinkRepository>();
 
             var belowThreshold = await attendanceService.GetBelowThresholdAsync(_threshold, ct);
 
@@ -85,6 +87,17 @@ public class AttendanceAlertJob : BackgroundService
                     type:  NotificationType.AttendanceAlert,
                     recipientUserIds: new[] { studentProfileId },   // student profile ID doubles as user lookup key; controller resolves to user ID
                     ct: ct);
+
+                var parentRecipientIds = await parentLinkRepository.GetActiveParentUserIdsByStudentAsync(studentProfileId, ct);
+                if (parentRecipientIds.Count > 0)
+                {
+                    await notificationService.SendSystemAsync(
+                        title: "Child Attendance Warning",
+                        body:  $"Attendance warning: your linked student in course offering {courseOfferingId} is currently at {percent:F1}%, below the {_threshold}% threshold.",
+                        type:  NotificationType.AttendanceAlert,
+                        recipientUserIds: parentRecipientIds,
+                        ct: ct);
+                }
             }
         }
         catch (Exception ex)

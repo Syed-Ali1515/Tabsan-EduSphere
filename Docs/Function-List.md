@@ -802,6 +802,18 @@
 | `GetLinkedStudentTimetableAsync(parentUserId, studentProfileId, timetableId, ct)` | Service-layer linked-student authorization + published department timetable resolution. | `Application/Academic/ParentPortalService.cs` |
 | `GetLinkedStudentAsync(parentUserId, studentProfileId, ct)` | Internal active-link guard and student profile resolution used by parent read-only views. | `Application/Academic/ParentPortalService.cs` |
 
+### API / Application / BackgroundJobs — Advanced Track Phase 28 Stage 28.3 (Parent Notifications)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `PublishAsync(studentProfileId, courseOfferingId, resultType, publishedByUserId, ct)` | Publishes an individual result and triggers linked-parent notification fan-out for the published result event. | `Application/Assignments/ResultService.cs` |
+| `PublishAllForOfferingAsync(courseOfferingId, publishedByUserId, ct)` | Publishes all draft results for an offering and triggers linked-parent notification fan-out for affected students. | `Application/Assignments/ResultService.cs` |
+| `NotifyParentsForPublishedResultsAsync(studentProfileIds, courseOfferingId, normalizedResultType, ct)` | Internal helper that resolves active parent links and dispatches result notifications to linked parent users. | `Application/Assignments/ResultService.cs` |
+| `GetActiveParentUserIdsByStudentAsync(studentProfileId, ct)` | Resolves active linked parent user IDs for a single student profile for notification fan-out. | `Domain/Interfaces/IParentStudentLinkRepository.cs`, `Infrastructure/Repositories/Phase26Repositories.cs` |
+| `GetActiveParentUserIdsByStudentsAsync(studentProfileIds, ct)` | Resolves active linked parent user IDs for multiple student profiles in one query for batch fan-out. | `Domain/Interfaces/IParentStudentLinkRepository.cs`, `Infrastructure/Repositories/Phase26Repositories.cs` |
+| `RunCheckAsync(ct)` (parent alert path) | Sends linked-parent attendance warning notifications for student-offering pairs below the configured threshold. | `BackgroundJobs/AttendanceAlertJob.cs` |
+| `BroadcastAsync(offeringId, title, body, ct)` | Includes linked parents in announcement recipient fan-out for key academic updates. | `Infrastructure/Integrations/InAppAnnouncementBroadcastProvider.cs` |
+
 ### API — Phase 28 Stage 28.3 Slice 5 (Portal Branding Logo Storage)
 
 | Function Name | Purpose | Location |

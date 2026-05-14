@@ -57,6 +57,12 @@
 - Added integration coverage for parent-portal role/auth behavior and linked-student success paths.
 - Validation: parent-portal focused integration tests passed (`10/10`) and unit tests passed (`144/144`).
 
+### 2026-05-14 — Advanced Track Phase 28 Stage 28.3 Complete
+- Added parent notification fan-out when results are published (single and bulk publish paths).
+- Added linked-parent attendance-warning notifications in the attendance alert background job.
+- Added linked-parent recipients for announcement broadcasts as key academic updates.
+- Validation: `Tabsan.EduSphere.API` and `Tabsan.EduSphere.BackgroundJobs` builds passed, unit tests passed (`144/144`), and parent-portal integration tests passed (`10/10`).
+
 ### 2026-05-09 — Phase 28 Stage 28.1 Complete
 - Phase 28 is now **In Progress** with **Stage 28.1 — API and App Tier Scaling** completed.
 - API and Web now enable Brotli/Gzip response compression for lower payload cost under higher concurrent traffic.

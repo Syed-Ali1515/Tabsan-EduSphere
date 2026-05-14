@@ -10,15 +10,18 @@ namespace Tabsan.EduSphere.Infrastructure.Integrations;
 public sealed class InAppAnnouncementBroadcastProvider : IAnnouncementBroadcastProvider
 {
     private readonly IEnrollmentRepository _enrollments;
+    private readonly IParentStudentLinkRepository _parentLinks;
     private readonly INotificationService _notifications;
     private readonly IOutboundIntegrationGateway _gateway;
 
     public InAppAnnouncementBroadcastProvider(
         IEnrollmentRepository enrollments,
+        IParentStudentLinkRepository parentLinks,
         INotificationService notifications,
         IOutboundIntegrationGateway gateway)
     {
         _enrollments = enrollments;
+        _parentLinks = parentLinks;
         _notifications = notifications;
         _gateway = gateway;
     }
@@ -31,9 +34,22 @@ public sealed class InAppAnnouncementBroadcastProvider : IAnnouncementBroadcastP
             return 0;
 
         var enrollments = await _enrollments.GetByOfferingAsync(offeringId.Value, ct);
-        var recipientIds = enrollments
+        var studentRecipientIds = enrollments
             .Where(e => e.Status == EnrollmentStatus.Active && e.StudentProfile is not null)
             .Select(e => e.StudentProfile!.UserId)
+            .Distinct()
+            .ToList();
+
+        var studentProfileIds = enrollments
+            .Where(e => e.Status == EnrollmentStatus.Active)
+            .Select(e => e.StudentProfileId)
+            .Distinct()
+            .ToList();
+
+        var parentRecipientIds = await _parentLinks.GetActiveParentUserIdsByStudentsAsync(studentProfileIds, ct);
+
+        var recipientIds = studentRecipientIds
+            .Concat(parentRecipientIds)
             .Distinct()
             .ToList();
 

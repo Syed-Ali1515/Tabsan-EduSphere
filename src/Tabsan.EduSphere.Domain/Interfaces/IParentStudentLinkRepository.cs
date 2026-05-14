@@ -11,6 +11,10 @@ public interface IParentStudentLinkRepository
 
     Task<ParentStudentLink?> GetByParentAndStudentAsync(Guid parentUserId, Guid studentProfileId, CancellationToken ct = default);
 
+    Task<IReadOnlyList<Guid>> GetActiveParentUserIdsByStudentAsync(Guid studentProfileId, CancellationToken ct = default);
+
+    Task<IReadOnlyList<Guid>> GetActiveParentUserIdsByStudentsAsync(IReadOnlyList<Guid> studentProfileIds, CancellationToken ct = default);
+
     Task AddAsync(ParentStudentLink link, CancellationToken ct = default);
 
     void Update(ParentStudentLink link);

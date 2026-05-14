@@ -3,6 +3,7 @@ using Tabsan.EduSphere.Application.Interfaces;
 using Tabsan.EduSphere.Domain.Assignments;
 using Tabsan.EduSphere.Domain.Auditing;
 using Tabsan.EduSphere.Domain.Interfaces;
+using Tabsan.EduSphere.Domain.Notifications;
 
 namespace Tabsan.EduSphere.Application.Assignments;
 
@@ -18,11 +19,19 @@ public class ResultService : IResultService
 {
     private readonly IResultRepository _repo;
     private readonly IAuditService _audit;
+    private readonly INotificationService? _notifications;
+    private readonly IParentStudentLinkRepository? _parentLinks;
 
-    public ResultService(IResultRepository repo, IAuditService audit)
+    public ResultService(
+        IResultRepository repo,
+        IAuditService audit,
+        INotificationService? notifications = null,
+        IParentStudentLinkRepository? parentLinks = null)
     {
         _repo = repo;
         _audit = audit;
+        _notifications = notifications;
+        _parentLinks = parentLinks;
     }
 
     // ── Result entry ──────────────────────────────────────────────────────────
@@ -113,6 +122,12 @@ public class ResultService : IResultService
         await _audit.LogAsync(new AuditLog("PublishResult", "Result", result.Id.ToString(),
             actorUserId: publishedByUserId), ct);
 
+        await NotifyParentsForPublishedResultsAsync(
+            [studentProfileId],
+            courseOfferingId,
+            normalizedResultType: NormalizeResultType(resultType),
+            ct);
+
         return true;
     }
 
@@ -138,6 +153,17 @@ public class ResultService : IResultService
             await _audit.LogAsync(new AuditLog("BulkPublishResults", "CourseOffering", courseOfferingId.ToString(),
                 actorUserId: publishedByUserId,
                 newValuesJson: $"{{\"count\":{unpublished.Count}}}"), ct);
+
+            var affectedStudentIds = unpublished
+                .Select(r => r.StudentProfileId)
+                .Distinct()
+                .ToList();
+
+            await NotifyParentsForPublishedResultsAsync(
+                affectedStudentIds,
+                courseOfferingId,
+                normalizedResultType: null,
+                ct);
         }
 
         return unpublished.Count;
@@ -388,6 +414,27 @@ public class ResultService : IResultService
 
     private static bool IsAggregateType(string value)
         => string.Equals(value, TotalResultType, StringComparison.OrdinalIgnoreCase);
+
+    private async Task NotifyParentsForPublishedResultsAsync(
+        IReadOnlyList<Guid> studentProfileIds,
+        Guid courseOfferingId,
+        string? normalizedResultType,
+        CancellationToken ct)
+    {
+        if (_notifications is null || _parentLinks is null || studentProfileIds.Count == 0)
+            return;
+
+        var parentUserIds = await _parentLinks.GetActiveParentUserIdsByStudentsAsync(studentProfileIds, ct);
+        if (parentUserIds.Count == 0)
+            return;
+
+        var title = "Result Published";
+        var body = string.IsNullOrWhiteSpace(normalizedResultType)
+            ? $"New results have been published for your child in course offering {courseOfferingId}."
+            : $"A {normalizedResultType} result has been published for your child in course offering {courseOfferingId}.";
+
+        await _notifications.SendSystemAsync(title, body, NotificationType.Result, parentUserIds, ct);
+    }
 
     private const string TotalResultType = "Total";
 }

@@ -691,6 +691,25 @@ file sealed class StubParentLinkRepository : IParentStudentLinkRepository
     public Task<ParentStudentLink?> GetByParentAndStudentAsync(Guid parentUserId, Guid studentProfileId, CancellationToken ct = default)
         => Task.FromResult(_links.FirstOrDefault(l => l.ParentUserId == parentUserId && l.StudentProfileId == studentProfileId));
 
+    public Task<IReadOnlyList<Guid>> GetActiveParentUserIdsByStudentAsync(Guid studentProfileId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<Guid>>(_links
+            .Where(l => l.StudentProfileId == studentProfileId && l.IsActive)
+            .Select(l => l.ParentUserId)
+            .Distinct()
+            .ToList());
+
+    public Task<IReadOnlyList<Guid>> GetActiveParentUserIdsByStudentsAsync(IReadOnlyList<Guid> studentProfileIds, CancellationToken ct = default)
+    {
+        if (studentProfileIds.Count == 0)
+            return Task.FromResult<IReadOnlyList<Guid>>([]);
+
+        return Task.FromResult<IReadOnlyList<Guid>>(_links
+            .Where(l => l.IsActive && studentProfileIds.Contains(l.StudentProfileId))
+            .Select(l => l.ParentUserId)
+            .Distinct()
+            .ToList());
+    }
+
     public Task AddAsync(ParentStudentLink link, CancellationToken ct = default)
     {
         _links.Add(link);
