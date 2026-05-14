@@ -39,23 +39,29 @@ GO
 BEGIN TRY
 BEGIN TRANSACTION;
 
--- VALIDATE CRITICAL PREREQUISITES
+-- VALIDATE CRITICAL PREREQUISITES - Check table existence FIRST before any queries
 IF OBJECT_ID(N'[roles]') IS NULL
 BEGIN
-    RAISERROR('ERROR: Table [roles] does not exist. You MUST run 01-Schema-Current.sql first before running this script.', 16, 1);
-    THROW;
+    RAISERROR('ERROR: Table [roles] does not exist. You MUST run 01-Schema-Current.sql FIRST before running this script.', 16, 1);
+    RETURN;
 END;
 
 IF OBJECT_ID(N'[institutions]') IS NULL
 BEGIN
-    RAISERROR('ERROR: Table [institutions] does not exist. You MUST run 01-Schema-Current.sql first before running this script.', 16, 1);
-    THROW;
+    RAISERROR('ERROR: Table [institutions] does not exist. You MUST run 01-Schema-Current.sql FIRST before running this script.', 16, 1);
+    RETURN;
 END;
 
 IF OBJECT_ID(N'[departments]') IS NULL
 BEGIN
-    RAISERROR('ERROR: Table [departments] does not exist. You MUST run 01-Schema-Current.sql first before running this script.', 16, 1);
-    THROW;
+    RAISERROR('ERROR: Table [departments] does not exist. You MUST run 01-Schema-Current.sql FIRST before running this script.', 16, 1);
+    RETURN;
+END;
+
+IF OBJECT_ID(N'[users]') IS NULL
+BEGIN
+    RAISERROR('ERROR: Table [users] does not exist. You MUST run 01-Schema-Current.sql FIRST before running this script.', 16, 1);
+    RETURN;
 END;
 
 DECLARE @Now DATETIME2 = SYSUTCDATETIME();

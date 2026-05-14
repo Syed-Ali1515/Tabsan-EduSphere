@@ -46,17 +46,19 @@ SET XACT_ABORT ON;
 BEGIN TRY
 BEGIN TRANSACTION;
 
--- VALIDATE CRITICAL PREREQUISITES
+-- VALIDATE CRITICAL PREREQUISITES - Check table existence FIRST
 IF OBJECT_ID(N'[academic_programs]') IS NULL
 BEGIN
-    RAISERROR('ERROR: Table [academic_programs] does not exist. You MUST run scripts in this order: 01, then 02, then 03.', 16, 1);
-    THROW;
+    RAISERROR('ERROR: Table [academic_programs] does not exist. You MUST run scripts in this order: 01-Schema, 02-Seed, 03-DummyData', 16, 1);
+    RETURN;
 END;
 
-IF (SELECT COUNT(1) FROM [academic_programs]) = 0
+-- Only check row count if table exists
+DECLARE @AcademicProgramCount INT = (SELECT COUNT(1) FROM [academic_programs]);
+IF @AcademicProgramCount = 0
 BEGIN
-    RAISERROR('ERROR: Table [academic_programs] is empty. You MUST run 02-Seed-Core.sql first before running this script.', 16, 1);
-    THROW;
+    RAISERROR('ERROR: Table [academic_programs] is empty. You MUST run 02-Seed-Core.sql BEFORE running this script.', 16, 1);
+    RETURN;
 END;
 
 DECLARE @Now DATETIME2 = SYSUTCDATETIME();
@@ -78,11 +80,11 @@ BEGIN
     SET @SuperAdminUserId = '66666666-6666-6666-6666-666666666601';
 END;
 
-IF @RoleSuperAdmin IS NULL OR @RoleAdmin IS NULL OR @RoleFaculty IS NULL OR @RoleStudent IS NULL
+DECLARE @RoleCount INT = (SELECT COUNT(1) FROM [roles] WHERE [Id] IN (@RoleSuperAdmin, @RoleAdmin, @RoleFaculty, @RoleStudent));
+IF @RoleCount < 4
 BEGIN
-    RAISERROR('ERROR: Roles not found. You MUST run 02-Seed-Core.sql before running this script.', 16, 1);
-    -- Throw the error to trigger CATCH block
-    THROW;
+    RAISERROR('ERROR: Not all required roles found. You MUST run 02-Seed-Core.sql BEFORE running this script.', 16, 1);
+    RETURN;
 END;
 
 /* 0) Demo metadata table (custom object requested for demos) */
