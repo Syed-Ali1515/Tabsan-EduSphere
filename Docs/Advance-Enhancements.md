@@ -312,8 +312,10 @@ Depends on: Phases 25-26
 - Implemented through portal section cards with per-section threshold, grade-ranges JSON, and active-state controls backed by institution-grading-profile APIs.
 
 ### Stage 27.2 - Rule Application Engine
-- Result calculation automatically picks grading profile by institution type.
-- Promotion checks use configured thresholds, not hardcoded values.
+- Status: Completed (2026-05-14).
+- Enrollment prerequisite pass checks now resolve threshold by student institution type from institution grading profiles.
+- University prerequisite threshold is normalized from GPA-scale profile values to percentage for result-percentage comparisons.
+- Rule checks no longer use a fixed 50% prerequisite pass rule.
 
 Deliverable goal:
 - One grading engine with institution-specific configuration.

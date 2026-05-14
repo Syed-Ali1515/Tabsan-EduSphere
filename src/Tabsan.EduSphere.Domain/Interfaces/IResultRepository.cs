@@ -81,9 +81,13 @@ public interface IResultRepository
     // Final-Touches Phase 15 Stage 15.1 — HasPassedCourseAsync: prerequisite check
     /// <summary>
     /// Returns true when the student has a published 'Total' result for any offering of the given course
-    /// with a passing mark (marks obtained ≥ 50% of max marks).
+    /// with a passing mark (marks obtained percentage >= passThresholdPercentage).
     /// </summary>
-    Task<bool> HasPassedCourseAsync(Guid studentProfileId, Guid courseId, CancellationToken ct = default);
+    Task<bool> HasPassedCourseAsync(
+        Guid studentProfileId,
+        Guid courseId,
+        decimal passThresholdPercentage,
+        CancellationToken ct = default);
 
     /// <summary>Commits pending changes.</summary>
     Task<int> SaveChangesAsync(CancellationToken ct = default);

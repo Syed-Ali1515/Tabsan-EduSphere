@@ -39,6 +39,12 @@
 - Grading configuration page now supports per-section pass-threshold, optional grade-ranges JSON, and active-state save operations.
 - Validation: `Tabsan.EduSphere.Web` build passed after portal/controller/service updates.
 
+### 2026-05-14 — Advanced Track Phase 27 Stage 27.2 Complete
+- Enrollment prerequisite checks now resolve pass thresholds from institution grading profiles by student institution type.
+- Removed hardcoded fixed-pass prerequisite logic by making repository pass-check threshold-driven.
+- Added University threshold normalization from GPA-scale profile values to percentage for prerequisite result comparisons.
+- Validation: solution build passed and unit suite passed (`136/136`).
+
 ### 2026-05-09 — Phase 28 Stage 28.1 Complete
 - Phase 28 is now **In Progress** with **Stage 28.1 — API and App Tier Scaling** completed.
 - API and Web now enable Brotli/Gzip response compression for lower payload cost under higher concurrent traffic.
@@ -564,6 +570,14 @@
 - Added `SaveInstitutionGradingProfile` portal post flow that persists section changes via institution-type upsert API.
 - Added section-aware web models and API client contracts to load/update institution grading profiles.
 - Validation: `dotnet build src/Tabsan.EduSphere.Web/Tabsan.EduSphere.Web.csproj` succeeded.
+
+### Stage 27.2 — Rule Application Engine (Advanced Track) ✅
+- Enrollment prerequisite evaluation now resolves pass threshold from the active institution grading profile for the student's institution type.
+- `IResultRepository.HasPassedCourseAsync(...)` now takes `passThresholdPercentage` so prerequisite pass/fail is threshold-driven instead of fixed 50%.
+- University profile thresholds (0-4 GPA scale) are normalized to percentage before prerequisite comparison.
+- Validation:
+  - `dotnet build Tabsan.EduSphere.sln` succeeded.
+  - `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj` succeeded (`136/136`).
 
 ---
 

@@ -2,6 +2,7 @@ using Tabsan.EduSphere.Application.DTOs.Academic;
 using Tabsan.EduSphere.Application.Interfaces;
 using Tabsan.EduSphere.Domain.Academic;
 using Tabsan.EduSphere.Domain.Auditing;
+using Tabsan.EduSphere.Domain.Enums;
 using Tabsan.EduSphere.Domain.Interfaces;
 
 namespace Tabsan.EduSphere.Application.Academic;
@@ -24,6 +25,7 @@ public class EnrollmentService : IEnrollmentService
     private readonly IPrerequisiteRepository _prerequisiteRepo;
     private readonly IResultRepository _resultRepo;
     private readonly ITimetableRepository _timetableRepo;
+    private readonly IInstitutionGradingProfileRepository _gradingProfileRepo;
 
     public EnrollmentService(
         IEnrollmentRepository enrollmentRepo,
@@ -32,7 +34,8 @@ public class EnrollmentService : IEnrollmentService
         IAuditService audit,
         IPrerequisiteRepository prerequisiteRepo,
         IResultRepository resultRepo,
-        ITimetableRepository timetableRepo)
+        ITimetableRepository timetableRepo,
+        IInstitutionGradingProfileRepository gradingProfileRepo)
     {
         _enrollmentRepo = enrollmentRepo;
         _courseRepo = courseRepo;
@@ -41,6 +44,7 @@ public class EnrollmentService : IEnrollmentService
         _prerequisiteRepo = prerequisiteRepo;
         _resultRepo = resultRepo;
         _timetableRepo = timetableRepo;
+        _gradingProfileRepo = gradingProfileRepo;
     }
 
     /// <summary>
@@ -166,10 +170,15 @@ public class EnrollmentService : IEnrollmentService
         var prerequisites = await _prerequisiteRepo.GetByCourseIdAsync(offering.CourseId, ct);
         if (prerequisites.Count > 0)
         {
+            var prerequisitePassThreshold = await ResolvePrerequisitePassThresholdPercentageAsync(studentProfileId, ct);
             var unmet = new List<string>();
             foreach (var prereq in prerequisites)
             {
-                if (!await _resultRepo.HasPassedCourseAsync(studentProfileId, prereq.PrerequisiteCourseId, ct))
+                if (!await _resultRepo.HasPassedCourseAsync(
+                        studentProfileId,
+                        prereq.PrerequisiteCourseId,
+                        prerequisitePassThreshold,
+                        ct))
                 {
                     var label = prereq.PrerequisiteCourse is not null
                         ? $"{prereq.PrerequisiteCourse.Code} – {prereq.PrerequisiteCourse.Title}"
@@ -254,4 +263,22 @@ public class EnrollmentService : IEnrollmentService
             Status:           enrollment.Status.ToString(),
             EnrolledAt:       enrollment.EnrolledAt));
     }
+
+    private async Task<decimal> ResolvePrerequisitePassThresholdPercentageAsync(Guid studentProfileId, CancellationToken ct)
+    {
+        var student = await _resultRepo.GetStudentProfileAsync(studentProfileId, ct);
+        var institutionType = student?.Department?.InstitutionType ?? InstitutionType.University;
+
+        var profile = await _gradingProfileRepo.GetByTypeAsync(institutionType, ct);
+        var threshold = profile?.PassThreshold ?? DefaultThresholdFor(institutionType);
+
+        // University thresholds are configured on GPA scale (0-4); prerequisite checks compare percentages.
+        if (institutionType == InstitutionType.University && threshold <= 4.0m)
+            return threshold * 25m;
+
+        return threshold;
+    }
+
+    private static decimal DefaultThresholdFor(InstitutionType institutionType)
+        => institutionType == InstitutionType.University ? 2.0m : 40m;
 }

@@ -177,7 +177,9 @@ public class ResultRepository : IResultRepository
     }
 
     public Task<StudentProfile?> GetStudentProfileAsync(Guid studentProfileId, CancellationToken ct = default)
-        => _db.StudentProfiles.FirstOrDefaultAsync(s => s.Id == studentProfileId, ct);
+        => _db.StudentProfiles
+              .Include(s => s.Department)
+              .FirstOrDefaultAsync(s => s.Id == studentProfileId, ct);
 
     public async Task<IReadOnlyList<Enrollment>> GetActiveEnrollmentsForSemesterAsync(Guid studentProfileId, Guid semesterId, CancellationToken ct = default)
         => await _db.Enrollments
@@ -226,15 +228,19 @@ public class ResultRepository : IResultRepository
     // Final-Touches Phase 15 Stage 15.1 — HasPassedCourseAsync: prerequisite pass check
     /// <summary>
     /// Returns true when the student has a published 'Total' result for any offering of the given course
-    /// with marks obtained >= 50% of max marks.
+    /// with marks obtained percentage >= configured threshold.
     /// </summary>
-    public Task<bool> HasPassedCourseAsync(Guid studentProfileId, Guid courseId, CancellationToken ct = default)
+    public Task<bool> HasPassedCourseAsync(
+        Guid studentProfileId,
+        Guid courseId,
+        decimal passThresholdPercentage,
+        CancellationToken ct = default)
         => _db.Results.AnyAsync(r =>
                r.StudentProfileId == studentProfileId
                && r.IsPublished
                && r.ResultType == "Total"
                && r.MaxMarks > 0
-               && r.MarksObtained * 2 >= r.MaxMarks
+               && r.MarksObtained * 100m >= r.MaxMarks * passThresholdPercentage
                && _db.CourseOfferings.Any(o => o.Id == r.CourseOfferingId && o.CourseId == courseId), ct);
 
     /// <summary>Commits pending changes.</summary>

@@ -4846,6 +4846,15 @@ New themes added to site.css and ThemeSettingsPageModel: `neon_mint`, `sakura_pi
 | `IEduApiClient.SaveInstitutionGradingProfileAsync(...)` | Persists a single institution grading section by institution type. | `Web/Services/EduApiClient.cs` |
 | `InstitutionGradingSectionItem` | View model backing section cards (threshold bounds, JSON ranges, active state). | `Web/Models/Portal/PortalViewModels.cs` |
 
+### Application/Infrastructure — Rule Application Engine (Advanced Stage 27.2)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `EnrollmentService.TryEnrollAsync(studentProfileId, courseOfferingId, overrideClash, overrideReason, ct)` | Applies institution-profile-driven prerequisite pass thresholds before enrollment approval. | `Application/Academic/EnrollmentService.cs` |
+| `EnrollmentService.ResolvePrerequisitePassThresholdPercentageAsync(studentProfileId, ct)` | Resolves prerequisite pass threshold by student institution type and normalizes University GPA-scale thresholds to percentage. | `Application/Academic/EnrollmentService.cs` |
+| `IResultRepository.HasPassedCourseAsync(studentProfileId, courseId, passThresholdPercentage, ct)` | Repository contract for threshold-parameterized prerequisite pass evaluation. | `Domain/Interfaces/IResultRepository.cs` |
+| `ResultRepository.HasPassedCourseAsync(studentProfileId, courseId, passThresholdPercentage, ct)` | EF implementation of policy-driven prerequisite pass check (no fixed 50% constant). | `Infrastructure/Repositories/AssignmentResultRepositories.cs` |
+
 ### API — InstitutionGradingProfileController (Stage 25.2)
 
 | Function Name | Purpose | Location |

@@ -151,6 +151,13 @@
 - Validation status: web project build verification passed after UI/controller/api-client updates.
 - Status: Stage 27.1 completed and validated as of 2026-05-14.
 
+### Stage 27.2 - Rule Application Engine (Advanced Track)
+- Enrollment prerequisite pass checks now use institution-type grading profile thresholds rather than a fixed pass percentage.
+- Prerequisite repository pass checks now receive threshold as input, enabling policy-driven pass/fail decisions.
+- University threshold values configured on GPA scale are normalized to percentage for prerequisite comparison logic.
+- Validation status: solution build and full unit suite verification passed (136/136).
+- Status: Stage 27.2 completed and validated as of 2026-05-14.
+
 ## Authentication & Authorization
 
 ### User Authentication
