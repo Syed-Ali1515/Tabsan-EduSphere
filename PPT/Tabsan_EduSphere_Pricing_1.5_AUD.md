@@ -94,15 +94,18 @@ Summary: Continuous innovation ensures institutions stay competitive and digital
 ---
 
 ## Pricing
-Summary: A low-risk model with predictable yearly cost and full support.
+Summary: Entry package for institutions starting digital transformation with essential features and low risk.
+- Plan: Foundation Lite
 - AUD 1.5 per user (Yearly)
-- No implementation fees
-- Free support included
+- Includes: user management, attendance, results, report cards, dashboards, and role-based access
+- Support: free standard support (business hours)
+- Best for: schools or institutes starting with core academic digitization
+- Optional add-ons: LMS, AI chat, parent portal, advanced analytics exports
 
 ---
 
 ## Conclusion / Call to Action
-Summary: Adopt Tabsan EduSphere to modernize operations quickly and cost-effectively.
-- Encourage adoption of Tabsan EduSphere
-- Highlight cost efficiency and flexibility
-- Invite for demo or onboarding
+Summary: Start fast with a low-cost core package, then scale features as institutional maturity grows.
+- Encourage adoption of the Foundation Lite plan
+- Highlight lowest entry price and upgrade flexibility
+- Invite for demo, trial onboarding, and phased rollout

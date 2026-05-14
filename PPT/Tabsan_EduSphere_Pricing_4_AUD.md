@@ -94,15 +94,18 @@ Summary: Continuous innovation ensures institutions stay competitive and digital
 ---
 
 ## Pricing
-Summary: A low-risk model with predictable yearly cost and full support.
+Summary: Advanced package for institutions requiring broader automation, analytics, and parent transparency.
+- Plan: Advanced
 - AUD 4 per user (Yearly)
-- No implementation fees
-- Free support included
+- Includes everything in Growth, plus advanced analytics, export jobs, parent portal read views, and notification fan-out
+- Support: free accelerated support with operational guidance
+- Best for: institutions running data-driven decisions and cross-role workflow orchestration
+- Optional add-ons: enterprise SLA, custom reporting packs, integration acceleration
 
 ---
 
 ## Conclusion / Call to Action
-Summary: Adopt Tabsan EduSphere to modernize operations quickly and cost-effectively.
-- Encourage adoption of Tabsan EduSphere
-- Highlight cost efficiency and flexibility
-- Invite for demo or onboarding
+Summary: The Advanced plan is ideal for institutions that need deeper visibility and higher workflow automation.
+- Encourage adoption of the Advanced plan for analytics-led operations
+- Highlight reduced manual load and improved governance
+- Invite for demo with KPI-based adoption targets

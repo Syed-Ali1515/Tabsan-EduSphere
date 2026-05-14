@@ -94,15 +94,18 @@ Summary: Continuous innovation ensures institutions stay competitive and digital
 ---
 
 ## Pricing
-Summary: A low-risk model with predictable yearly cost and full support.
+Summary: Balanced package for institutions scaling operations beyond basic administration.
+- Plan: Growth
 - AUD 3 per user (Yearly)
-- No implementation fees
-- Free support included
+- Includes everything in Foundation Lite, plus LMS, discussion, helpdesk, and study planner
+- Support: free priority-email support with faster response window
+- Best for: institutions with active academic workflows and mixed admin/faculty adoption
+- Optional add-ons: parent portal notifications, advanced analytics exports, custom integrations
 
 ---
 
 ## Conclusion / Call to Action
-Summary: Adopt Tabsan EduSphere to modernize operations quickly and cost-effectively.
-- Encourage adoption of Tabsan EduSphere
-- Highlight cost efficiency and flexibility
-- Invite for demo or onboarding
+Summary: The Growth plan offers strong capability coverage with clear ROI for mid-scale institutions.
+- Encourage adoption of the Growth plan for operational expansion
+- Highlight feature depth at predictable cost
+- Invite for demo with migration and enablement roadmap

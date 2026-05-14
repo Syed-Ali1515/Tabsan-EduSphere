@@ -94,15 +94,18 @@ Summary: Continuous innovation ensures institutions stay competitive and digital
 ---
 
 ## Pricing
-Summary: A low-risk model with predictable yearly cost and full support.
+Summary: Enterprise package for institutions needing full platform capability, reliability controls, and strategic support.
+- Plan: Enterprise
 - AUD 5 per user (Yearly)
-- No implementation fees
-- Free support included
+- Includes all modules: multi-institution governance, advanced analytics/export, parent engagement, communication integrations, and high-load readiness features
+- Support: premium support path with onboarding and optimization assistance
+- Best for: large or multi-campus institutions with strict reporting, scalability, and governance requirements
+- Optional add-ons: dedicated success planning, custom SLA terms, advanced implementation workshops
 
 ---
 
 ## Conclusion / Call to Action
-Summary: Adopt Tabsan EduSphere to modernize operations quickly and cost-effectively.
-- Encourage adoption of Tabsan EduSphere
-- Highlight cost efficiency and flexibility
-- Invite for demo or onboarding
+Summary: The Enterprise plan delivers full-value digital transformation with platform maturity and operational confidence.
+- Encourage enterprise rollout with phased governance model
+- Highlight strategic value beyond core software licensing
+- Invite for executive demo, implementation blueprint, and kickoff planning
