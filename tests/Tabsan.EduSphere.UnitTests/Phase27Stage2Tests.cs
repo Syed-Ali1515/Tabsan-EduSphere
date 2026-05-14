@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Microsoft.Extensions.Options;
+using System.Reflection;
 using Tabsan.EduSphere.Application.Auth;
 using Tabsan.EduSphere.Application.DTOs.Auth;
 using Tabsan.EduSphere.Application.Interfaces;
@@ -29,6 +30,8 @@ public class AuthSecurityUxTests
 
         profile.MfaEnabled.Should().BeTrue();
         profile.RequireMfaForPasswordLogin.Should().BeTrue();
+        profile.RequireMfaForPrivilegedRolesOnly.Should().BeTrue();
+        profile.PrivilegedMfaRoles.Should().Contain(new[] { "SuperAdmin", "Admin" });
         profile.SsoEnabled.Should().BeTrue();
         profile.SsoProvider.Should().Be("AzureAD");
         profile.SsoLoginUrl.Should().Be("https://sso.contoso.edu/login");
@@ -43,12 +46,67 @@ public class AuthSecurityUxTests
         var sut = CreateSut(
             new AuthSecurityOptions
             {
-                Mfa = new MfaSettings { Enabled = true, RequireForPasswordLogin = true, DemoCode = "123456" },
+                Mfa = new MfaSettings { Enabled = true, RequireForPasswordLogin = true, RequireForPrivilegedRolesOnly = false, DemoCode = "123456" },
                 SessionRisk = new SessionRiskSettings { Enabled = false }
             },
             user: user);
 
         var result = await sut.LoginAsync(new LoginRequest("student1", "pass"), "10.0.0.5");
+
+        result.IsSuccess.Should().BeFalse();
+        result.FailureReason.Should().Be(LoginFailureReason.MfaRequired);
+    }
+
+    [Fact]
+    public async Task LoginAsync_WhenPrivilegedOnlyMfaEnabled_StudentWithoutCode_CanLogin()
+    {
+        var user = new User("student1", "HASH", roleId: 1);
+        SetRole(user, "Student");
+
+        var sut = CreateSut(
+            new AuthSecurityOptions
+            {
+                Mfa = new MfaSettings
+                {
+                    Enabled = true,
+                    RequireForPasswordLogin = true,
+                    RequireForPrivilegedRolesOnly = true,
+                    PrivilegedRoles = ["SuperAdmin", "Admin"],
+                    DemoCode = "123456"
+                },
+                SessionRisk = new SessionRiskSettings { Enabled = false }
+            },
+            user: user);
+
+        var result = await sut.LoginAsync(new LoginRequest("student1", "pass"), "10.0.0.5");
+
+        result.IsSuccess.Should().BeTrue();
+        result.Response.Should().NotBeNull();
+        result.Response!.MfaEnabled.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task LoginAsync_WhenPrivilegedOnlyMfaEnabled_AdminWithoutCode_ReturnsMfaRequired()
+    {
+        var user = new User("admin1", "HASH", roleId: 2);
+        SetRole(user, "Admin");
+
+        var sut = CreateSut(
+            new AuthSecurityOptions
+            {
+                Mfa = new MfaSettings
+                {
+                    Enabled = true,
+                    RequireForPasswordLogin = true,
+                    RequireForPrivilegedRolesOnly = true,
+                    PrivilegedRoles = ["SuperAdmin", "Admin"],
+                    DemoCode = "123456"
+                },
+                SessionRisk = new SessionRiskSettings { Enabled = false }
+            },
+            user: user);
+
+        var result = await sut.LoginAsync(new LoginRequest("admin1", "pass"), "10.0.0.5");
 
         result.IsSuccess.Should().BeFalse();
         result.FailureReason.Should().Be(LoginFailureReason.MfaRequired);
@@ -96,6 +154,13 @@ public class AuthSecurityUxTests
             new StubPasswordHistoryRepository(),
             new StubLicenseRepository(),
             Options.Create(options));
+    }
+
+    private static void SetRole(User user, string roleName)
+    {
+        var roleProperty = typeof(User).GetProperty("Role", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        roleProperty.Should().NotBeNull();
+        roleProperty!.SetValue(user, new Role(roleName));
     }
 }
 

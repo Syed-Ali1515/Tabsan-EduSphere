@@ -14,6 +14,8 @@ public sealed class MfaSettings
 {
     public bool Enabled { get; init; }
     public bool RequireForPasswordLogin { get; init; }
+    public bool RequireForPrivilegedRolesOnly { get; init; } = true;
+    public string[] PrivilegedRoles { get; init; } = ["SuperAdmin", "Admin"];
     public string DemoCode { get; init; } = "000000";
 }
 

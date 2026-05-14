@@ -85,6 +85,8 @@ public enum LoginFailureReason
 public sealed record AuthSecurityProfileResponse(
     bool MfaEnabled,
     bool RequireMfaForPasswordLogin,
+    bool RequireMfaForPrivilegedRolesOnly,
+    string[] PrivilegedMfaRoles,
     bool SsoEnabled,
     string? SsoProvider,
     string? SsoLoginUrl,

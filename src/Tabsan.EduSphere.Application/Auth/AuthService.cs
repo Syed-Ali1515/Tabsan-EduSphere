@@ -46,6 +46,8 @@ public class AuthService : IAuthService
         => Task.FromResult(new AuthSecurityProfileResponse(
             MfaEnabled: _security.Mfa.Enabled,
             RequireMfaForPasswordLogin: _security.Mfa.RequireForPasswordLogin,
+            RequireMfaForPrivilegedRolesOnly: _security.Mfa.RequireForPrivilegedRolesOnly,
+            PrivilegedMfaRoles: _security.Mfa.PrivilegedRoles,
             SsoEnabled: _security.Sso.Enabled,
             SsoProvider: string.IsNullOrWhiteSpace(_security.Sso.Provider) ? null : _security.Sso.Provider,
             SsoLoginUrl: string.IsNullOrWhiteSpace(_security.Sso.LoginUrl) ? null : _security.Sso.LoginUrl,
@@ -110,7 +112,12 @@ public class AuthService : IAuthService
             return LoginResult.Fail(LoginFailureReason.InvalidCredentials);
         }
 
-        if (_security.Mfa.Enabled && _security.Mfa.RequireForPasswordLogin)
+        var roleName = user.Role?.Name ?? string.Empty;
+        var mfaRequiredForThisLogin = _security.Mfa.Enabled
+                                      && _security.Mfa.RequireForPasswordLogin
+                                      && (!_security.Mfa.RequireForPrivilegedRolesOnly || IsPrivilegedRole(roleName));
+
+        if (mfaRequiredForThisLogin)
         {
             var provided = request.MfaCode?.Trim();
             var expected = _security.Mfa.DemoCode?.Trim();
@@ -191,7 +198,7 @@ public class AuthService : IAuthService
 
         await _audit.LogAsync(new AuditLog("Login", "User", user.Id.ToString(),
             actorUserId: user.Id,
-            newValuesJson: "{\"riskLevel\":\"" + riskLevel + "\",\"mfaEnabled\":" + (_security.Mfa.Enabled && _security.Mfa.RequireForPasswordLogin).ToString().ToLowerInvariant() + "}",
+            newValuesJson: "{\"riskLevel\":\"" + riskLevel + "\",\"mfaEnabled\":" + mfaRequiredForThisLogin.ToString().ToLowerInvariant() + "}",
             ipAddress: ipAddress), ct);
 
         return LoginResult.Ok(new LoginResponse(
@@ -202,7 +209,7 @@ public class AuthService : IAuthService
             UserId: user.Id,
             Username: user.Username,
             MustChangePassword: user.MustChangePassword,
-            MfaEnabled: _security.Mfa.Enabled && _security.Mfa.RequireForPasswordLogin,
+            MfaEnabled: mfaRequiredForThisLogin,
             SsoEnabled: _security.Sso.Enabled,
             SsoProvider: string.IsNullOrWhiteSpace(_security.Sso.Provider) ? null : _security.Sso.Provider,
             SessionRiskLevel: riskLevel));
@@ -345,5 +352,14 @@ public class AuthService : IAuthService
         return string.Equals(currentIp, previousIp, StringComparison.OrdinalIgnoreCase)
             ? "low"
             : "high";
+    }
+
+    private bool IsPrivilegedRole(string roleName)
+    {
+        if (string.IsNullOrWhiteSpace(roleName))
+            return false;
+
+        return _security.Mfa.PrivilegedRoles.Any(r =>
+            string.Equals(r, roleName, StringComparison.OrdinalIgnoreCase));
     }
 }

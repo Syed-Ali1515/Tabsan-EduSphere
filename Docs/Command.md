@@ -7,6 +7,15 @@ Before starting any work, the assistant must:
 2. Read Project startup Docs/Final-Touches.md.
 3. Continue from the exact Current Execution Pointer below.
 
+## Global Repository Sync Rule (Always Mandatory)
+After **every completion** (stage, phase, feature, fix, or documentation task), always update the repository in this sequence:
+1. Commit all relevant changes
+2. Pull latest remote changes with `--rebase`
+3. Push local committed changes
+4. Pull once more to confirm local/remote are fully synchronized
+
+Do not end a completed task with local-only changes.
+
 ## Institution License Validation Workflow (2026-05-12)
 - Plan file: `Docs/Institution-License-Validation-Phases.md`
 - For each completed validation phase, mandatory outputs are:

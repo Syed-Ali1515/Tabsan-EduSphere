@@ -155,6 +155,8 @@ public class LoginController : Controller
     private sealed record SecurityProfileApiResponse(
         bool MfaEnabled,
         bool RequireMfaForPasswordLogin,
+        bool RequireMfaForPrivilegedRolesOnly,
+        string[]? PrivilegedMfaRoles,
         bool SsoEnabled,
         string? SsoProvider,
         string? SsoLoginUrl,
@@ -176,6 +178,8 @@ public class LoginController : Controller
                 return;
 
             ViewData["MfaEnabled"] = profile.MfaEnabled && profile.RequireMfaForPasswordLogin;
+            ViewData["MfaPrivilegedOnly"] = profile.RequireMfaForPrivilegedRolesOnly;
+            ViewData["MfaPrivilegedRoles"] = profile.PrivilegedMfaRoles;
             ViewData["SsoEnabled"] = profile.SsoEnabled;
             ViewData["SsoProvider"] = profile.SsoProvider;
             ViewData["SsoLoginUrl"] = profile.SsoLoginUrl;
