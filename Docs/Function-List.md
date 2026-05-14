@@ -3,6 +3,13 @@
 > **Maintenance rule**: Every function added to the codebase must be registered here with Name, Purpose, and Location.
 > Format: `Name | Purpose | Location`
 
+## Phase 36 - Deployment Readiness (2026-05-15)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `Phase36-Release-Candidate-Manifest` | Pins the release-candidate baseline commit and defines deployable units, prerequisites, security/config flags, required secrets, and validation evidence for production readiness. | `Docs/Phase36-Release-Candidate-Manifest.md` |
+| `Stage 36.1 baseline freeze status` | Records completion state with implementation and validation summaries for release-candidate freeze execution. | `Docs/Consolidated-Execution-Enhancements-Issues.md` |
+
 ## Phase 35 - In-App User Import UX Completion (2026-05-15)
 
 | Function Name | Purpose | Location |

@@ -18,6 +18,20 @@ Each stage log entry must clearly describe behavior impact for School/College/Un
 
 ## 0. Implementation Update Log
 
+### 2026-05-15 - Phase 36 Stage 36.1 (Execution Snapshot)
+- Completed release-candidate baseline freeze setup for deployment readiness.
+- Implementation Summary:
+  - declared scope freeze to production blockers and defect-only changes,
+  - captured immutable release baseline commit identity for deployment units,
+  - added Stage 36.1 release manifest with prerequisites, module/security baseline, required secrets, and pre-deploy parity checks.
+- Validation Summary:
+  - RC baseline SHA captured and stored in release manifest,
+  - release-candidate git tag created for baseline traceability,
+  - solution build baseline command passed against current release candidate state.
+- Behavior impact:
+  - no runtime functional behavior changed,
+  - deployment governance and traceability are now explicit for go-live readiness.
+
 ### 2026-05-15 - Phase 35 (Execution Snapshot)
 - Completed In-App User Import UX Completion (Stages 35.1, 35.2, 35.3).
 - Implementation Summary:

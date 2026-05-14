@@ -2510,9 +2510,16 @@ Complexity: High
 Depends on: Phase 35 completed and validated
 
 ### Stage 36.1 - Release Candidate Baseline Freeze
-- Freeze scope to bug fixes and production blockers only.
-- Tag release candidate (`rc`) build and capture exact commit SHA for API, Web, and BackgroundJobs deployment units.
-- Produce final release manifest with versions, runtime prerequisites, feature/module flags, and required environment variables.
+- Status: Completed (2026-05-15).
+Implementation Summary
+- Declared scope freeze policy for Stage 36.1: only production blockers and defect corrections are allowed until go-live gates complete.
+- Captured and pinned release-candidate baseline commit SHA for all deployment units (API/Web/BackgroundJobs) so deployment artifacts share one immutable source revision.
+- Added final release manifest: `Docs/Phase36-Release-Candidate-Manifest.md` including runtime prerequisites, module/security baseline, required secrets/env vars, and pre-deploy parity checks.
+
+Validation Summary
+- Captured RC baseline SHA from git and recorded it in the manifest.
+- Created and pushed RC git tag: `rc-20260515-stage36-1`.
+- `dotnet build Tabsan.EduSphere.sln -v minimal` passed against the RC baseline commit.
 
 ### Stage 36.2 - Environment and Secret Readiness
 - Validate environment parity across Development, Staging/UAT, and Production for appsettings, queue providers, cache providers, and storage providers.
