@@ -18,8 +18,9 @@
 8. [Administration & Configuration](#administration--configuration)
 9. [Reporting & Analytics](#reporting--analytics)
 10. [Advanced Features](#advanced-features)
-11. [Integration & Support](#integration--support)
-12. [Performance & Scalability](#performance--scalability)
+11. [Controller-Level Feature Surface](#controller-level-feature-surface)
+12. [Integration & Support](#integration--support)
+13. [Performance & Scalability](#performance--scalability)
 
 ---
 
@@ -557,6 +558,68 @@
 - **Fine Management**: Track overdue books and fines
 - **Digital Resources**: E-books and journals
 - **Library Catalog**: Searchable library database
+
+---
+
+## Controller-Level Feature Surface
+
+This section captures implementation-level functionality, including smaller operational features exposed through API controllers and supporting services.
+
+### Security, Governance, and Platform Controls
+- **Account Security Operations**: Password reset and account-unlock workflows, locked-account review paths, and account security activity handling.
+- **Feature Flag Control Plane**: Runtime feature toggles for controlled rollout, emergency disable, and policy-safe activation boundaries.
+- **Portal Capability Matrix**: Role and module capability exposure for portal composition and UI contract alignment.
+- **Institution Policy and Licensing**: Institution mode policy management, module entitlement enforcement, and license activation/validation contracts.
+- **Module Registry and Activation**: Module registration, activation-state management, and visibility governance.
+- **Theme and Branding Operations**: Theme management, branding settings, logo/media support, and tenant profile branding settings.
+- **Sidebar Governance**: Role + module-aware sidebar visibility payloads and route/menu consistency support.
+- **Configuration and Reporting Governance**: Report settings, portal settings, and communication integration settings APIs.
+
+### Academic Operations and Rule Engines
+- **Accreditation Management**: Accreditation records and governance actions for academic quality tracking.
+- **Program and Course Governance**: Program, course, and offering lifecycle management with prerequisite and grading-rule support.
+- **Department and Facility Ops**: Department assignment flows, buildings, and room operations.
+- **School Stream Operations**: Stream assignment and stream-aware subject filtering for School Grade 9-12 scenarios.
+- **Prerequisite and Enrollment Rules**: Threshold-aware prerequisite checks and enrollment guard enforcement.
+- **Result and Gradebook Engine**: Result entry/publish paths, result calculation endpoints, grading configurations, and rubric support.
+- **Bulk Promotion Operations**: Promotion batch operations with progression-aware hold/promote decisions.
+
+### Student Journey and Lifecycle Features
+- **Student Lifecycle Controls**: Academic-level progression views, promote/hold/graduate paths, and institution-aware lifecycle scoping.
+- **Progression Tracking**: Student progression summaries and institution-aware threshold interpretation.
+- **Degree Audit and Report Cards**: Degree completion analysis and structured report-card generation.
+- **Graduation Workflows**: Graduation application, candidate management, and certificate lifecycle support.
+- **Student Profile and Registration Tools**: Student profile operations and registration import support.
+
+### Learning, Engagement, and Support Features
+- **LMS Operations**: Learning module/content endpoints and delivery metadata support.
+- **Study Planner**: Study plan and planning workflow support for students and faculty scope.
+- **Calendar and Deadline Features**: Academic calendar and deadline/reminder management support.
+- **Discussion and Announcement Features**: Discussion threads, announcements, and role-aware communication publishing.
+- **Helpdesk and Ticketing**: Ticket creation, assignment, responses, and lifecycle status operations.
+- **Search Services**: Cross-entity search and typed result discovery.
+- **AI Chat Operations**: AI chat conversation endpoints plus floating-launcher portal experience.
+- **Parent Portal Features**: Parent-student link management, linked-student read-only views, and parent notification fan-out support.
+
+### Communication, Notifications, and Integrations
+- **Notification Channels**: In-app notification fan-out with optional email and SMS channel dispatch support.
+- **Communication Integration APIs**: Configurable communication integration endpoints for runtime channel setup.
+- **Attendance-Driven Alerts**: Attendance warning and related notification pathways.
+- **Payment and Receipt Operations**: Payment receipt management and supporting upload/media paths.
+- **Library Integration Paths**: Catalog and circulation-related API support for library workflows.
+
+### Reporting, Analytics, Exports, and Jobs
+- **Report Catalog and Generation**: Role/institute scoped report discovery and report generation endpoints.
+- **Report Export Jobs**: Queued report export creation, status tracking, and download workflows.
+- **Analytics Summaries**: Attendance/performance/assignment analytics plus top-performers, trends, and comparative summaries.
+- **Analytics Export Jobs**: Async analytics export job queue, status, and result retrieval endpoints.
+- **Institution-Aware Report Sections**: School/College/University section partition APIs for report UIs.
+
+### Operations and Runtime Reliability
+- **Health Surfaces**: Background jobs, scaling, and observability health endpoints for runtime diagnostics.
+- **Queue and Worker Infrastructure**: Background processing support for notifications, exports, and heavy workloads.
+- **Distributed Cache Behavior**: Cached dashboard/report/tenant-setting reads with scoped invalidation behavior.
+- **Media Storage Reliability**: Provider-backed media persistence and signed-read URL compatibility workflows.
 
 ---
 
