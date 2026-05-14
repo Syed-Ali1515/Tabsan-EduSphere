@@ -133,6 +133,11 @@
 | `Phase 31 Stage 31.1 institution report sections endpoint` | Exposes institution-aware report section partitions with claim-scoped institution resolution and optional SuperAdmin override via `GET /api/v1/reports/sections`. | `src/Tabsan.EduSphere.API/Controllers/ReportController.cs` |
 | `Phase 31 Stage 31.1 report section response contracts` | Defines reporting DTO contracts for institution model metadata, section envelopes, and report items consumed by report-section clients. | `src/Tabsan.EduSphere.Application/DTOs/Reports/ReportDtos.cs` |
 | `Phase 31 Stage 31.1 report sections integration validation` | Verifies School override behavior and claim-scoped College section selection for the report sections API. | `tests/Tabsan.EduSphere.IntegrationTests/ReportExportsIntegrationTests.cs` |
+| `Phase 31 Stage 31.2 advanced analytics response contracts` | Defines top-performer, performance-trend, and comparative-summary response models for analytics expansion endpoints. | `src/Tabsan.EduSphere.Application/DTOs/Analytics/AnalyticsDtos.cs` |
+| `Phase 31 Stage 31.2 advanced analytics service contract` | Adds top-performer, trend, and comparative-summary operations to analytics service contract for API-layer composition. | `src/Tabsan.EduSphere.Application/Interfaces/IAnalyticsService.cs` |
+| `Phase 31 Stage 31.2 advanced analytics computation engine` | Implements cached top-performer ranking, daily performance trends, and comparative department metrics in analytics infrastructure service. | `src/Tabsan.EduSphere.Infrastructure/Analytics/AnalyticsService.cs` |
+| `Phase 31 Stage 31.2 analytics expansion API endpoints` | Exposes Stage 31.2 analytics routes for top performers, trends, and comparative summaries with existing role/institution scope enforcement. | `src/Tabsan.EduSphere.API/Controllers/AnalyticsController.cs` |
+| `Phase 31 Stage 31.2 analytics parity integration validation` | Verifies institution-claim auto-scope behavior for Stage 31.2 analytics endpoints and stabilizes tests with reports-module activation guard. | `tests/Tabsan.EduSphere.IntegrationTests/AnalyticsInstituteParityIntegrationTests.cs` |
 
 ## Institution License Validation Plan (2026-05-12)
 

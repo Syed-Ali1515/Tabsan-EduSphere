@@ -13,7 +13,7 @@ Purpose:
 - Preserve core functionality, global configuration behavior, and role-rights policy.
 
 Status:
-- In progress (Phase 31 Stage 31.1 completed, ready to proceed with Stage 31.2)
+- In progress (Phase 31 Stage 31.2 completed, ready to proceed with Stage 31.3)
 
 ## Execution Updates
 
@@ -161,6 +161,23 @@ Status:
 - Behavior impact: report surfaces can now consume a deterministic institution-partitioned section model while preserving role-based catalog filtering.
 - Residual risks: low; endpoint depends on seeded report keys and will omit sections with no role-allowed reports by design.
 - Documentation synchronization completed for Stage 31.1 across planning and tracker docs.
+
+### 2026-05-14 - Phase 31 Stage 31.2 (Advanced Analytics)
+- Completed Stage 31.2 by adding advanced analytics summaries for top performers, performance trends, and comparative department metrics.
+- Implementation evidence:
+	- added analytics DTO contracts for advanced analytics reports and rows (`TopPerformersReport`, `PerformanceTrendReport`, `ComparativeSummaryReport`),
+	- added new analytics service contract methods and infrastructure implementations with distributed-cache coverage,
+	- added new analytics endpoints in `AnalyticsController`:
+		- `GET /api/analytics/top-performers`,
+		- `GET /api/analytics/performance-trends`,
+		- `GET /api/analytics/comparative-summary`.
+- Validation evidence:
+	- extended `AnalyticsInstituteParityIntegrationTests` with Stage 31.2 scenarios,
+	- validated claim-scoped institution behavior for top performers, trends, and comparative summary.
+	- focused analytics integration suite passed (`5/5`) and solution build passed.
+- Behavior impact: analytics surfaces now provide rank, trend, and cross-department comparative insights while preserving existing role and institution-scope enforcement.
+- Residual risks: low; comparative summary currently prioritizes correctness over query minimization and may benefit from later query-shape optimization under very large datasets.
+- Documentation synchronization completed for Stage 31.2 across planning and tracker docs.
 
 ---
 
@@ -450,7 +467,11 @@ Depends on: Phases 27, 29, 30
 - Validation: focused report integration tests passed for School override and College claim scope behavior.
 
 ### Stage 31.2 - Advanced Analytics
-- Top performers, trends, and comparative summaries.
+- Status: Completed (2026-05-14).
+- Added top performers analytics endpoint with ranked performance rows (`GET /api/analytics/top-performers`).
+- Added daily performance trend analytics endpoint (`GET /api/analytics/performance-trends`).
+- Added comparative department summary analytics endpoint (`GET /api/analytics/comparative-summary`).
+- Validation: focused analytics parity integration tests passed for institution-claim auto-scope behavior.
 
 ### Stage 31.3 - Export Enhancements
 - PDF and Excel output standardization.

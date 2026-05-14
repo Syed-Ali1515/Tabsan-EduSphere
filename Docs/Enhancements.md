@@ -224,6 +224,20 @@
 - No database migration or schema change was required for Stage 31.1.
 - Validation: `dotnet build Tabsan.EduSphere.sln` passed; focused integration tests for report sections passed.
 
+### 2026-05-14 — Phase 31 Stage 31.2 (Advanced Analytics)
+- Added advanced analytics contracts and implementation for:
+  - top performers,
+  - performance trends,
+  - comparative department summary metrics.
+- Added new analytics endpoints in `AnalyticsController`:
+  - `GET /api/analytics/top-performers`
+  - `GET /api/analytics/performance-trends`
+  - `GET /api/analytics/comparative-summary`
+- Added service contract methods and infrastructure implementation with distributed-cache keys for advanced analytics response sets.
+- Added integration tests to validate institution-claim auto-scope behavior for new analytics endpoints.
+- No database migration or schema change was required for Stage 31.2.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; focused analytics integration tests passed (`5/5`).
+
 ---
 
 ## Phase 12 — Academic Calendar System ✅ Implemented

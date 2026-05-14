@@ -75,3 +75,53 @@ public record QuizStatsReport(
     Guid   DepartmentId,
     string DepartmentName,
     IReadOnlyList<QuizStatsRow> Quizzes);
+
+// ── Stage 31.2: Advanced Analytics ─────────────────────────────────────────
+
+/// <summary>Ranked top performer entry for a scoped analytics context.</summary>
+public record TopPerformerRow(
+    int Rank,
+    Guid StudentProfileId,
+    string RegistrationNumber,
+    string FullName,
+    string Department,
+    decimal AveragePercentage,
+    int ResultCount,
+    DateTime? LastPublishedAt);
+
+/// <summary>Top performers report for the selected analytics scope.</summary>
+public record TopPerformersReport(
+    Guid DepartmentId,
+    string DepartmentName,
+    int EffectiveInstitutionType,
+    int Take,
+    IReadOnlyList<TopPerformerRow> Rows);
+
+/// <summary>Time-bucketed performance trend point.</summary>
+public record PerformanceTrendPoint(
+    DateOnly Date,
+    decimal AveragePercentage,
+    int ResultCount);
+
+/// <summary>Performance trend report for the selected analytics scope.</summary>
+public record PerformanceTrendReport(
+    Guid DepartmentId,
+    string DepartmentName,
+    int EffectiveInstitutionType,
+    int WindowDays,
+    IReadOnlyList<PerformanceTrendPoint> Points);
+
+/// <summary>Comparative analytics row for a single department.</summary>
+public record ComparativeSummaryRow(
+    Guid DepartmentId,
+    string DepartmentName,
+    int InstitutionType,
+    decimal AverageResultPercentage,
+    decimal AverageAttendancePercentage,
+    decimal AssignmentSubmissionRate,
+    decimal QuizAverageScore);
+
+/// <summary>Comparative summary report across scoped departments.</summary>
+public record ComparativeSummaryReport(
+    int EffectiveInstitutionType,
+    IReadOnlyList<ComparativeSummaryRow> Rows);

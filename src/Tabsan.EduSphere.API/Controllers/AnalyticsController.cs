@@ -95,6 +95,50 @@ public sealed class AnalyticsController : ControllerBase
         return result is null ? NotFound("No data found.") : Ok(result);
     }
 
+    /// <summary>Returns ranked top performers for a department or scoped institution context.</summary>
+    [HttpGet("top-performers")]
+    public async Task<IActionResult> GetTopPerformers(
+        [FromQuery] Guid? departmentId,
+        [FromQuery] int? institutionType,
+        [FromQuery] int take = 10,
+        CancellationToken ct = default)
+    {
+        var scope = await ResolveEffectiveScopeAsync(departmentId, institutionType, ct);
+        if (scope.Error is not null) return scope.Error;
+
+        var result = await _analytics.GetTopPerformersAsync(scope.DepartmentId, scope.InstitutionType, take, ct);
+        return result is null ? NotFound("No data found.") : Ok(result);
+    }
+
+    /// <summary>Returns daily performance trends for a department or scoped institution context.</summary>
+    [HttpGet("performance-trends")]
+    public async Task<IActionResult> GetPerformanceTrends(
+        [FromQuery] Guid? departmentId,
+        [FromQuery] int? institutionType,
+        [FromQuery] int windowDays = 30,
+        CancellationToken ct = default)
+    {
+        var scope = await ResolveEffectiveScopeAsync(departmentId, institutionType, ct);
+        if (scope.Error is not null) return scope.Error;
+
+        var result = await _analytics.GetPerformanceTrendsAsync(scope.DepartmentId, scope.InstitutionType, windowDays, ct);
+        return result is null ? NotFound("No data found.") : Ok(result);
+    }
+
+    /// <summary>Returns comparative summary metrics across scoped departments.</summary>
+    [HttpGet("comparative-summary")]
+    public async Task<IActionResult> GetComparativeSummary(
+        [FromQuery] Guid? departmentId,
+        [FromQuery] int? institutionType,
+        CancellationToken ct = default)
+    {
+        var scope = await ResolveEffectiveScopeAsync(departmentId, institutionType, ct);
+        if (scope.Error is not null) return scope.Error;
+
+        var result = await _analytics.GetComparativeSummaryAsync(scope.DepartmentId, scope.InstitutionType, ct);
+        return result is null ? NotFound("No data found.") : Ok(result);
+    }
+
     // ── Export endpoints ──────────────────────────────────────────────────────
 
     /// <summary>Downloads the performance report as a PDF file.</summary>

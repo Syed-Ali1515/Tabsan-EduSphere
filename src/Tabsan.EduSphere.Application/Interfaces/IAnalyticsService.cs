@@ -30,4 +30,13 @@ public interface IAnalyticsService
 
     /// <summary>Exports the attendance report for a department to an Excel byte array.</summary>
     Task<byte[]> ExportAttendanceExcelAsync(Guid? departmentId, int? institutionType = null, CancellationToken ct = default);
+
+    /// <summary>Returns ranked top performers for a scoped analytics context.</summary>
+    Task<TopPerformersReport?> GetTopPerformersAsync(Guid? departmentId, int? institutionType = null, int take = 10, CancellationToken ct = default);
+
+    /// <summary>Returns daily performance trends for a scoped analytics context.</summary>
+    Task<PerformanceTrendReport?> GetPerformanceTrendsAsync(Guid? departmentId, int? institutionType = null, int windowDays = 30, CancellationToken ct = default);
+
+    /// <summary>Returns comparative summary metrics across scoped departments.</summary>
+    Task<ComparativeSummaryReport?> GetComparativeSummaryAsync(Guid? departmentId, int? institutionType = null, CancellationToken ct = default);
 }

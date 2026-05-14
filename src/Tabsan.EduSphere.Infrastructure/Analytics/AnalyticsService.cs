@@ -271,6 +271,307 @@ public sealed class AnalyticsService : IAnalyticsService
         return report;
     }
 
+    // Stage 31.2 - Top performers
+    public async Task<TopPerformersReport?> GetTopPerformersAsync(
+        Guid? departmentId,
+        int? institutionType = null,
+        int take = 10,
+        CancellationToken ct = default)
+    {
+        var normalizedTake = Math.Clamp(take, 1, 100);
+        var cacheKey = BuildAnalyticsCacheKey($"top-performers:{normalizedTake}", departmentId, institutionType);
+        var cached = await _distributedCache.GetStringAsync(cacheKey, ct);
+        if (!string.IsNullOrWhiteSpace(cached))
+        {
+            var cachedReport = JsonSerializer.Deserialize<TopPerformersReport>(cached);
+            if (cachedReport is not null)
+            {
+                return cachedReport;
+            }
+        }
+
+        var deptName = await ResolveDeptNameAsync(departmentId, institutionType, ct);
+        var effectiveInstitutionType = institutionType ?? (int)InstitutionType.University;
+
+        var raw = await (
+            from r in _db.Results
+            join sp in _db.StudentProfiles on r.StudentProfileId equals sp.Id
+            join u  in _db.Users on sp.UserId equals u.Id
+            join co in _db.CourseOfferings on r.CourseOfferingId equals co.Id
+            join c  in _db.Courses on co.CourseId equals c.Id
+            join d  in _db.Departments on c.DepartmentId equals d.Id
+            where r.IsPublished
+               && r.MaxMarks > 0
+               && (departmentId == null || c.DepartmentId == departmentId)
+               && (!institutionType.HasValue || (int)d.InstitutionType == institutionType.Value)
+            select new
+            {
+                sp.Id,
+                sp.RegistrationNumber,
+                FullName = u.Username,
+                DepartmentName = d.Name,
+                Percentage = (r.MarksObtained / r.MaxMarks) * 100m,
+                r.PublishedAt,
+                DepartmentInstitutionType = (int)d.InstitutionType
+            }
+        ).ToListAsync(ct);
+
+        if (!raw.Any()) return null;
+
+        if (!institutionType.HasValue)
+        {
+            effectiveInstitutionType = raw
+                .GroupBy(x => x.DepartmentInstitutionType)
+                .OrderByDescending(g => g.Count())
+                .Select(g => g.Key)
+                .FirstOrDefault((int)InstitutionType.University);
+        }
+
+        var rows = raw
+            .GroupBy(x => new { x.Id, x.RegistrationNumber, x.FullName, x.DepartmentName })
+            .Select(g => new
+            {
+                g.Key.Id,
+                g.Key.RegistrationNumber,
+                g.Key.FullName,
+                g.Key.DepartmentName,
+                AveragePercentage = Math.Round(g.Average(x => x.Percentage), 2),
+                ResultCount = g.Count(),
+                LastPublishedAt = g.Max(x => x.PublishedAt)
+            })
+            .OrderByDescending(x => x.AveragePercentage)
+            .ThenByDescending(x => x.ResultCount)
+            .ThenBy(x => x.FullName)
+            .Take(normalizedTake)
+            .Select((x, idx) => new TopPerformerRow(
+                idx + 1,
+                x.Id,
+                x.RegistrationNumber,
+                x.FullName,
+                x.DepartmentName,
+                x.AveragePercentage,
+                x.ResultCount,
+                x.LastPublishedAt))
+            .ToList();
+
+        var report = new TopPerformersReport(
+            departmentId ?? Guid.Empty,
+            deptName,
+            effectiveInstitutionType,
+            normalizedTake,
+            rows);
+
+        await _distributedCache.SetStringAsync(
+            cacheKey,
+            JsonSerializer.Serialize(report),
+            new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = AnalyticsCacheTtl
+            },
+            ct);
+
+        return report;
+    }
+
+    // Stage 31.2 - Performance trends
+    public async Task<PerformanceTrendReport?> GetPerformanceTrendsAsync(
+        Guid? departmentId,
+        int? institutionType = null,
+        int windowDays = 30,
+        CancellationToken ct = default)
+    {
+        var normalizedWindowDays = Math.Clamp(windowDays, 7, 180);
+        var cacheKey = BuildAnalyticsCacheKey($"performance-trends:{normalizedWindowDays}", departmentId, institutionType);
+        var cached = await _distributedCache.GetStringAsync(cacheKey, ct);
+        if (!string.IsNullOrWhiteSpace(cached))
+        {
+            var cachedReport = JsonSerializer.Deserialize<PerformanceTrendReport>(cached);
+            if (cachedReport is not null)
+            {
+                return cachedReport;
+            }
+        }
+
+        var deptName = await ResolveDeptNameAsync(departmentId, institutionType, ct);
+        var effectiveInstitutionType = institutionType ?? (int)InstitutionType.University;
+        var windowStartDateUtc = DateTime.UtcNow.Date.AddDays(-(normalizedWindowDays - 1));
+
+        var raw = await (
+            from r in _db.Results
+            join co in _db.CourseOfferings on r.CourseOfferingId equals co.Id
+            join c  in _db.Courses on co.CourseId equals c.Id
+            join d  in _db.Departments on c.DepartmentId equals d.Id
+            where r.IsPublished
+               && r.MaxMarks > 0
+               && (r.PublishedAt ?? r.CreatedAt) >= windowStartDateUtc
+               && (departmentId == null || c.DepartmentId == departmentId)
+               && (!institutionType.HasValue || (int)d.InstitutionType == institutionType.Value)
+            select new
+            {
+                Day = (r.PublishedAt ?? r.CreatedAt).Date,
+                Percentage = (r.MarksObtained / r.MaxMarks) * 100m,
+                DepartmentInstitutionType = (int)d.InstitutionType
+            }
+        ).ToListAsync(ct);
+
+        if (!raw.Any()) return null;
+
+        if (!institutionType.HasValue)
+        {
+            effectiveInstitutionType = raw
+                .GroupBy(x => x.DepartmentInstitutionType)
+                .OrderByDescending(g => g.Count())
+                .Select(g => g.Key)
+                .FirstOrDefault((int)InstitutionType.University);
+        }
+
+        var points = raw
+            .GroupBy(x => x.Day)
+            .OrderBy(g => g.Key)
+            .Select(g => new PerformanceTrendPoint(
+                DateOnly.FromDateTime(g.Key),
+                Math.Round(g.Average(x => x.Percentage), 2),
+                g.Count()))
+            .ToList();
+
+        var report = new PerformanceTrendReport(
+            departmentId ?? Guid.Empty,
+            deptName,
+            effectiveInstitutionType,
+            normalizedWindowDays,
+            points);
+
+        await _distributedCache.SetStringAsync(
+            cacheKey,
+            JsonSerializer.Serialize(report),
+            new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = AnalyticsCacheTtl
+            },
+            ct);
+
+        return report;
+    }
+
+    // Stage 31.2 - Comparative summary
+    public async Task<ComparativeSummaryReport?> GetComparativeSummaryAsync(
+        Guid? departmentId,
+        int? institutionType = null,
+        CancellationToken ct = default)
+    {
+        var cacheKey = BuildAnalyticsCacheKey("comparative-summary", departmentId, institutionType);
+        var cached = await _distributedCache.GetStringAsync(cacheKey, ct);
+        if (!string.IsNullOrWhiteSpace(cached))
+        {
+            var cachedReport = JsonSerializer.Deserialize<ComparativeSummaryReport>(cached);
+            if (cachedReport is not null)
+            {
+                return cachedReport;
+            }
+        }
+
+        var scopedDepartments = await _db.Departments
+            .Where(d => !departmentId.HasValue || d.Id == departmentId.Value)
+            .Where(d => !institutionType.HasValue || (int)d.InstitutionType == institutionType.Value)
+            .Select(d => new { d.Id, d.Name, InstitutionType = (int)d.InstitutionType })
+            .ToListAsync(ct);
+
+        if (!scopedDepartments.Any()) return null;
+
+        var rows = new List<ComparativeSummaryRow>(scopedDepartments.Count);
+        foreach (var department in scopedDepartments)
+        {
+            var resultAverage = await (
+                from r in _db.Results
+                join co in _db.CourseOfferings on r.CourseOfferingId equals co.Id
+                join c  in _db.Courses on co.CourseId equals c.Id
+                where c.DepartmentId == department.Id
+                   && r.IsPublished
+                   && r.MaxMarks > 0
+                select (r.MarksObtained / r.MaxMarks) * 100m
+            ).ToListAsync(ct);
+
+            var attendanceSnapshot = await (
+                from ar in _db.AttendanceRecords
+                join co in _db.CourseOfferings on ar.CourseOfferingId equals co.Id
+                join c  in _db.Courses on co.CourseId equals c.Id
+                where c.DepartmentId == department.Id
+                select ar.Status
+            ).ToListAsync(ct);
+
+            var assignmentMeta = await (
+                from a in _db.Assignments
+                join co in _db.CourseOfferings on a.CourseOfferingId equals co.Id
+                join c  in _db.Courses on co.CourseId equals c.Id
+                where c.DepartmentId == department.Id
+                select new { a.Id, a.CourseOfferingId }
+            ).ToListAsync(ct);
+
+            var quizScores = await (
+                from qa in _db.QuizAttempts
+                join q in _db.Quizzes on qa.QuizId equals q.Id
+                join co in _db.CourseOfferings on q.CourseOfferingId equals co.Id
+                join c  in _db.Courses on co.CourseId equals c.Id
+                where c.DepartmentId == department.Id
+                   && (qa.Status == AttemptStatus.Submitted || qa.Status == AttemptStatus.TimedOut)
+                   && qa.TotalScore.HasValue
+                select qa.TotalScore!.Value
+            ).ToListAsync(ct);
+
+            var expectedSubmissions = 0;
+            var actualSubmissions = 0;
+            foreach (var assignment in assignmentMeta)
+            {
+                var enrolledCount = await _db.Enrollments
+                    .CountAsync(e => e.CourseOfferingId == assignment.CourseOfferingId, ct);
+                var submissionsCount = await _db.AssignmentSubmissions
+                    .CountAsync(s => s.AssignmentId == assignment.Id, ct);
+                expectedSubmissions += enrolledCount;
+                actualSubmissions += submissionsCount;
+            }
+
+            var averageResultPercentage = resultAverage.Any() ? Math.Round(resultAverage.Average(), 2) : 0m;
+            var averageAttendancePercentage = attendanceSnapshot.Any()
+                ? Math.Round((decimal)attendanceSnapshot.Count(s => s == AttendanceStatus.Present || s == AttendanceStatus.Late)
+                             / attendanceSnapshot.Count * 100m, 2)
+                : 0m;
+            var assignmentSubmissionRate = expectedSubmissions > 0
+                ? Math.Round((decimal)actualSubmissions / expectedSubmissions * 100m, 2)
+                : 0m;
+            var quizAverageScore = quizScores.Any() ? Math.Round(quizScores.Average(), 2) : 0m;
+
+            rows.Add(new ComparativeSummaryRow(
+                department.Id,
+                department.Name,
+                department.InstitutionType,
+                averageResultPercentage,
+                averageAttendancePercentage,
+                assignmentSubmissionRate,
+                quizAverageScore));
+        }
+
+        var effectiveInstitutionType = institutionType
+            ?? rows.GroupBy(r => r.InstitutionType)
+                   .OrderByDescending(g => g.Count())
+                   .Select(g => g.Key)
+                   .FirstOrDefault((int)InstitutionType.University);
+
+        var report = new ComparativeSummaryReport(
+            effectiveInstitutionType,
+            rows.OrderByDescending(r => r.AverageResultPercentage).ToList());
+
+        await _distributedCache.SetStringAsync(
+            cacheKey,
+            JsonSerializer.Serialize(report),
+            new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = AnalyticsCacheTtl
+            },
+            ct);
+
+        return report;
+    }
+
     // PDF exports
     /// <summary>Exports the performance report to a PDF byte array.</summary>
     public async Task<byte[]> ExportPerformancePdfAsync(Guid? departmentId, int? institutionType = null, CancellationToken ct = default)
