@@ -143,6 +143,9 @@
 | `Phase 31 Stage 31.3 advanced analytics export worker support` | Extends queued analytics export worker to process advanced analytics report families under standardized export conventions. | `src/Tabsan.EduSphere.API/Services/AnalyticsExportJobWorker.cs` |
 | `Phase 31 Stage 31.3 advanced analytics export generators` | Adds PDF/Excel generators for top performers, performance trends, and comparative summary analytics outputs. | `src/Tabsan.EduSphere.Infrastructure/Analytics/AnalyticsService.cs` |
 | `Phase 31 Stage 31.3 analytics export metadata integration validation` | Verifies standardized content-type and filename conventions across analytics export endpoints for all report families and formats. | `tests/Tabsan.EduSphere.IntegrationTests/AnalyticsExportsIntegrationTests.cs` |
+| `Phase 32.1 AI chatbot floating entry planning` | Defines roadmap scope to replace menu-only chatbot entry with an always-visible floating launcher and responsive open behavior. | `Docs/Enhancements.md`, `Docs/Advance-Enhancements.md` |
+| `Phase 32.1 chatbot launcher UX implementation checklist` | Captures staged implementation steps for floating button creation, fixed positioning, click-to-open interaction, overlap safety, and screen-size validation. | `Docs/Enhancements.md` |
+| `Phase 32.1 chatbot launcher optional UX polish` | Records optional pulse/bounce animation and unread-badge enhancements for the floating chatbot icon pattern. | `Docs/Enhancements.md` |
 
 ## Institution License Validation Plan (2026-05-12)
 

@@ -253,6 +253,40 @@
 - No database migration or schema change was required for Stage 31.3.
 - Validation: `dotnet build Tabsan.EduSphere.sln` passed; focused analytics export tests passed (`10/10`), and analytics parity tests remained green (`5/5`).
 
+## New Phase: AI Chatbot UI Improvement
+
+### Goal
+Improve user accessibility and experience by changing the AI chatbot entry point.
+
+### Current Behavior
+- The AI chatbot is accessed through a menu option.
+
+### Proposed Enhancement
+- Remove chatbot access from the menu.
+- Add a floating chatbot icon that is always visible on the app UI.
+
+### Features
+- Floating button positioned at bottom-right corner of the screen.
+- Click/tap action opens the chatbot interface.
+- Icon remains visible across all pages.
+- Responsive design for mobile and desktop.
+
+### Benefits
+- Faster access to chatbot
+- Improved user engagement
+- Modern app experience similar to popular apps
+
+### Suggested Implementation Steps
+1. Create a floating button component.
+2. Position it using fixed CSS (`bottom` and `right`).
+3. Attach click event to open chatbot modal/drawer.
+4. Ensure it does not block important UI elements.
+5. Test across different screen sizes.
+
+### Optional Enhancements
+- Add animation (e.g., pulse or bounce)
+- Show notification badge for unread messages
+
 ---
 
 ## Phase 12 — Academic Calendar System ✅ Implemented

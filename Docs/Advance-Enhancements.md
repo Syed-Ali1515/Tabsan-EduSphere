@@ -509,6 +509,23 @@ Depends on: Existing notifications
 ### Stage 32.1 - In-Portal Messaging
 - Role-safe communication channels.
 
+Stage planning addendum (2026-05-14):
+- Add AI chatbot UI entry-point improvement to increase accessibility and reduce interaction friction.
+- Move chatbot access from menu-only discovery to an always-visible floating launcher.
+- Scope for Stage 32.1 execution:
+	- remove primary chatbot entry from menu navigation,
+	- add persistent floating chatbot icon/button at bottom-right across portal pages,
+	- open chatbot interface through click/tap action (modal or drawer),
+	- maintain responsive behavior for desktop and mobile layouts,
+	- include overlap-safe positioning so critical UI actions remain unobstructed.
+- Optional UX polish:
+	- subtle pulse/bounce attention animation,
+	- unread-message notification badge.
+- Expected benefit:
+	- faster chatbot access,
+	- improved engagement,
+	- modern interaction pattern parity with contemporary web applications.
+
 ### Stage 32.2 - Email Integration
 - Event-driven email notifications.
 
