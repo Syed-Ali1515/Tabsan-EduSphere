@@ -22,5 +22,8 @@ public class ParentStudentLinkConfiguration : IEntityTypeConfiguration<ParentStu
         builder.HasIndex(x => new { x.ParentUserId, x.StudentProfileId })
             .IsUnique()
             .HasDatabaseName("IX_parent_student_links_parent_student");
+
+        builder.HasIndex(x => new { x.StudentProfileId, x.IsActive })
+            .HasDatabaseName("IX_parent_student_links_student_active");
     }
 }

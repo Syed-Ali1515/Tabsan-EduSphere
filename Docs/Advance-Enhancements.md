@@ -13,7 +13,7 @@ Purpose:
 - Preserve core functionality, global configuration behavior, and role-rights policy.
 
 Status:
-- In progress (Phase 25 in progress, Stage 25.3 completed)
+- In progress (Phase 29 in progress, Stage 29.1 completed)
 
 ## Execution Updates
 
@@ -356,8 +356,10 @@ Complexity: Medium
 Depends on: None (recommended after feature stabilization)
 
 ### Stage 29.1 - Indexing Plan Implementation
-- Add critical non-clustered and composite indexes for high-frequency filters.
-- Prioritize StudentId, CourseId, InstitutionId, Semester/Year fields.
+- Status: Completed (2026-05-14).
+- Added parent-link notification hot-path index `(StudentProfileId, IsActive)` to accelerate Stage 28.3 parent fan-out lookups.
+- Added EF migration `_20260514_Phase29_ParentLinkStudentActiveIndexHotPath` for schema deployment.
+- Validation: build and targeted tests passed after index and migration updates.
 
 ### Stage 29.2 - Pagination and Projection Enforcement
 - No large unbounded list endpoints.

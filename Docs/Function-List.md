@@ -885,6 +885,8 @@
 | `QuizAttemptConfiguration.Configure(builder)` | Adds student/quiz recency indexes for attempt history queries. | `Infrastructure/Persistence/Configurations/QuizConfigurations.cs` |
 | `UserSessionConfiguration.Configure(builder)` | Adds composite user-session recency index for most-recent refresh session lookup. | `Infrastructure/Persistence/Configurations/UserSessionConfiguration.cs` |
 | `_20260510_Phase29_IndexBaseline.Up(migrationBuilder)` | Applies the Stage 29.1 index baseline migration to SQL Server. | `Infrastructure/Migrations/20260509155457_20260510_Phase29_IndexBaseline.cs` |
+| `ParentStudentLinkConfiguration.Configure(builder)` | Adds composite index `(StudentProfileId, IsActive)` for parent-notification fan-out linked-student lookups. | `Infrastructure/Persistence/Configurations/ParentStudentLinkConfiguration.cs` |
+| `_20260514_Phase29_ParentLinkStudentActiveIndexHotPath.Up(migrationBuilder)` | Applies the Stage 29.1 follow-up parent-link hot-path index migration to SQL Server. | `Infrastructure/Migrations/20260514134000_20260514_Phase29_ParentLinkStudentActiveIndexHotPath.cs` |
 
 ### Application/API/Web — Phase 29 Stage 29.2 Slice 1 (Helpdesk Pagination)
 

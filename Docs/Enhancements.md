@@ -156,6 +156,11 @@
 - Validated current schema audit: no `InstitutionId`, `YearId`, or `GradeId` columns are present in the current model, so Stage 29.1 focused on active `StudentId`/`UserId`/`CourseId`/`SemesterId` shaped query paths.
 - Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
 
+### 2026-05-14 — Phase 29 Stage 29.1 (Parent Notification Hot-Path Index Follow-up)
+- Added composite index `IX_parent_student_links_student_active` on `parent_student_links(StudentProfileId, IsActive)` to optimize Stage 28.3 parent-recipient fan-out lookups by linked students.
+- Added EF migration `20260514134000_20260514_Phase29_ParentLinkStudentActiveIndexHotPath` to persist the index.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; targeted tests passed.
+
 ### 2026-05-10 — Phase 29 Stage 29.2 Slice 1 (Query Discipline and Pagination)
 - Added paged helpdesk ticket listing contract end to end with `page` and `pageSize` parameters.
 - Updated repository queries so Student, Faculty, Admin, and SuperAdmin helpdesk views no longer materialize unbounded ticket lists.
