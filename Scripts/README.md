@@ -53,30 +53,8 @@ Rollback and verification checklist:
 - Demo users in `03-FullDummyData.sql` use `REPLACE_WITH_VALID_HASH` placeholder for password hashes. Replace before using interactive login.
 - Scripts are designed to be idempotent where practical (MERGE / NOT EXISTS guards).
 
-## Operational Scale Scripts
+## Non-Deployment Utility Scripts
 
-| File | Purpose |
-| --- | --- |
-| `3-Phase29-ArchivePolicy.sql` | Dry-run-first retention workflow for operational tables with optional batched cleanup mode (`@ApplyCleanup = 1`). |
-| `4-Phase29-IndexMaintenance.sql` | Fragmentation analysis plus plan-first index maintenance (`REORGANIZE`/`REBUILD`) with optional execution mode (`@Execute = 1`). |
-| `5-Phase29-CapacityGrowthDashboard.sql` | Capacity dashboard for table-size snapshots, recent row-growth windows, and index usage telemetry. |
-| `Phase2-Stage2.1-MultiInstance-Api.ps1` | Starts/stops multiple local API instances for horizontal-scale baseline checks (`/health/instance`, `X-EduSphere-Instance`). |
-| `Phase2-Stage2.2-nginx-leastconn.conf.template` | Nginx least-connections upstream template for Stage 2.2 load balancer policy baseline. |
-| `Phase2-Stage2.2-LoadBalancer.ps1` | Starts/stops a local Nginx load balancer container using least-connections upstream policy over API instances. |
-| `Phase2-Stage2.2-Validate-LB.ps1` | Sends repeated requests via the load balancer and summarizes per-instance distribution using `X-EduSphere-Instance`. |
+The only scripts required for deployment are `01` through `05`.
 
-## Phase 29.3 Operations Runbook
-
-Run scripts in read-only/plan mode first:
-
-```powershell
-sqlcmd -S "localhost" -E -d "master" -i "Scripts\3-Phase29-ArchivePolicy.sql"
-sqlcmd -S "localhost" -E -d "master" -i "Scripts\4-Phase29-IndexMaintenance.sql"
-sqlcmd -S "localhost" -E -d "master" -i "Scripts\5-Phase29-CapacityGrowthDashboard.sql"
-```
-
-Execution notes:
-
-- `3-Phase29-ArchivePolicy.sql`: keep `@ApplyCleanup = 0` for dry-run reporting; set to `1` only during approved maintenance windows.
-- `4-Phase29-IndexMaintenance.sql`: keep `@Execute = 0` for maintenance planning; set to `1` for controlled maintenance execution.
-- `5-Phase29-CapacityGrowthDashboard.sql`: read-only dashboard script for capacity planning and growth trend visibility.
+Other files in this folder (load balancer helpers, phase utilities, and one-off maintenance helpers) are not part of the standard database setup sequence.
