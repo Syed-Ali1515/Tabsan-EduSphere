@@ -253,6 +253,18 @@
 - No database migration or schema change was required for Stage 31.3.
 - Validation: `dotnet build Tabsan.EduSphere.sln` passed; focused analytics export tests passed (`10/10`), and analytics parity tests remained green (`5/5`).
 
+### 2026-05-14 — Phase 32 Stage 32.1 (In-Portal Messaging: AI Chatbot Floating Launcher)
+- Removed AI chatbot access from sidebar navigation rendering paths.
+- Added a persistent floating chatbot launcher in the shared portal layout so chat entry is always visible on app pages.
+- Launcher behavior:
+  - fixed bottom-right positioning,
+  - click/tap opens `Portal/AiChat`,
+  - responsive desktop/mobile spacing,
+  - role/module-aware visibility using current sidebar visibility contract.
+- Added optional launcher pulse animation with reduced-motion accessibility fallback.
+- No database migration or schema change was required for Stage 32.1.
+- Validation: `dotnet build src/Tabsan.EduSphere.Web/Tabsan.EduSphere.Web.csproj` passed.
+
 ## New Phase: AI Chatbot UI Improvement
 
 ### Goal

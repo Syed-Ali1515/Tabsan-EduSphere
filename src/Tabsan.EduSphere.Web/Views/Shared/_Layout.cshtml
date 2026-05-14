@@ -76,6 +76,10 @@
     }
 
     var useDynamicMenus = visibleMenus.Count > 0;
+    var hasAiChatMenu = visibleMenus.Any(m =>
+        string.Equals(m.Key, "ai_chat", StringComparison.OrdinalIgnoreCase)
+        || m.SubMenus.Any(s => string.Equals(s.Key, "ai_chat", StringComparison.OrdinalIgnoreCase)));
+    var showAiChatLauncher = isConnected && (!useDynamicMenus || hasAiChatMenu);
 
     // Load portal branding (university name, initials, subtitle, footer)
     const string BrandingCacheKey = "PortalBrandingCache";
@@ -131,7 +135,6 @@
         "gradebook"         => ("Portal", "Gradebook"),
         "rubric_manage"     => ("Portal", "RubricManage"),
         "analytics"         => ("Portal", "Analytics"),
-        "ai_chat"           => ("Portal", "AiChat"),
         "student_lifecycle" => ("Portal", "StudentLifecycle"),
         "payments"          => ("Portal", "Payments"),
         "enrollments"       => ("Portal", "Enrollments"),
@@ -189,7 +192,6 @@
         "prerequisites" => ("Academic Related", 2),
         "gradebook"     => ("Faculty Related", 2),
         "rubric_manage" => ("Faculty Related", 2),
-        "ai_chat" => ("Student Related", 3),
         "student_lifecycle" => ("Student Related", 3),
 
         "payments" => ("Finance Related", 4),
@@ -435,9 +437,6 @@
                         }
                     }
 
-                    <div class="menu-label">AI Assistant</div>
-                    <a class="menu-link" asp-controller="Portal" asp-action="AiChat">AI Chat</a>
-
                     @if (showSuperAdminLinks)
                     {
                         <div class="menu-label">System Settings</div>
@@ -516,6 +515,18 @@
                 }
             </footer>
         </section>
+
+        @if (showAiChatLauncher)
+        {
+            <a class="ai-chat-launcher"
+               asp-controller="Portal"
+               asp-action="AiChat"
+               aria-label="Open AI chat"
+               title="Open AI chat">
+                <span class="ai-chat-launcher-dot" aria-hidden="true">AI</span>
+                <span class="ai-chat-launcher-text">Chat</span>
+            </a>
+        }
     </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js" defer></script>

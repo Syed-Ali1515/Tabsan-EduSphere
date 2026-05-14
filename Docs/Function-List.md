@@ -146,6 +146,10 @@
 | `Phase 32.1 AI chatbot floating entry planning` | Defines roadmap scope to replace menu-only chatbot entry with an always-visible floating launcher and responsive open behavior. | `Docs/Enhancements.md`, `Docs/Advance-Enhancements.md` |
 | `Phase 32.1 chatbot launcher UX implementation checklist` | Captures staged implementation steps for floating button creation, fixed positioning, click-to-open interaction, overlap safety, and screen-size validation. | `Docs/Enhancements.md` |
 | `Phase 32.1 chatbot launcher optional UX polish` | Records optional pulse/bounce animation and unread-badge enhancements for the floating chatbot icon pattern. | `Docs/Enhancements.md` |
+| `Phase 32.1 AI chat sidebar-link removal mapping` | Removes `ai_chat` route/group mapping from sidebar rendering so chatbot access is no longer menu-driven in dynamic or fallback menu paths. | `src/Tabsan.EduSphere.Web/Views/Shared/_Layout.cshtml` |
+| `Phase 32.1 AI chat floating launcher visibility guard` | Computes launcher visibility from connection state and sidebar visibility contract so floating chat access remains role/module-safe. | `src/Tabsan.EduSphere.Web/Views/Shared/_Layout.cshtml` |
+| `Phase 32.1 AI chat floating launcher UI component` | Renders a persistent bottom-right floating launcher that opens the AI chat portal action from any app page. | `src/Tabsan.EduSphere.Web/Views/Shared/_Layout.cshtml` |
+| `Phase 32.1 AI chat floating launcher responsive styling` | Adds desktop/mobile fixed-position, overlap-safe, animated launcher styling with reduced-motion fallback. | `src/Tabsan.EduSphere.Web/Views/Shared/_Layout.cshtml.css` |
 
 ## Institution License Validation Plan (2026-05-12)
 

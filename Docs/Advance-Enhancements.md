@@ -13,7 +13,7 @@ Purpose:
 - Preserve core functionality, global configuration behavior, and role-rights policy.
 
 Status:
-- In progress (Phase 31 completed, ready to proceed with Phase 32)
+- In progress (Phase 32 Stage 32.1 completed, ready to proceed with Stage 32.2)
 
 ## Execution Updates
 
@@ -507,7 +507,15 @@ Complexity: Medium
 Depends on: Existing notifications
 
 ### Stage 32.1 - In-Portal Messaging
-- Role-safe communication channels.
+- Status: Completed (2026-05-14).
+- Implemented AI chatbot entry-point improvement by removing menu-based chatbot discovery and introducing a persistent floating launcher in the shared portal layout.
+- Launcher behavior:
+	- fixed bottom-right placement across portal pages,
+	- click/tap opens the existing AI chat interface,
+	- visibility is role/module aware (shown only when chat module is available in current sidebar visibility contract),
+	- responsive spacing for mobile and desktop with overlap-safe positioning.
+- Optional UX polish implemented: subtle pulse animation with reduced-motion accessibility fallback.
+- Validation: `dotnet build src/Tabsan.EduSphere.Web/Tabsan.EduSphere.Web.csproj` passed.
 
 Stage planning addendum (2026-05-14):
 - Add AI chatbot UI entry-point improvement to increase accessibility and reduce interaction friction.
