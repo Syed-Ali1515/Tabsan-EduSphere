@@ -979,6 +979,17 @@
 | `AnalyticsExportJobStore.GetPayloadAsync(jobId, ct)` | Retrieves generated analytics export payload for download endpoint. | `API/Services/AnalyticsExportJobStore.cs` |
 | `AnalyticsExportJobWorker.ExecuteAsync(stoppingToken)` | Executes queued analytics export jobs and writes final payload/state results. | `API/Services/AnalyticsExportJobWorker.cs` |
 
+### API/Infrastructure — Phase 30 Stage 30.3 (Reliability Controls)
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `BackgroundJobReliabilityOptions` | Defines configurable retry attempts, retry delay, and operational alert threshold for background job pipelines. | `API/Services/BackgroundJobReliabilityOptions.cs`, `API/appsettings.json`, `API/appsettings.Development.json`, `API/appsettings.Production.json` |
+| `BackgroundJobHealthTracker.GetSnapshot()` | Provides live per-pipeline background job metrics (processed/succeeded/failed/retried/consecutive failures) for runtime health monitoring. | `API/Services/BackgroundJobReliabilityOptions.cs` |
+| `ResultPublishJobWorker.ExecuteAsync(stoppingToken)` (retry-enhanced) | Adds bounded retry + backoff for transient failures and emits threshold-based consecutive-failure alerts for result publish workloads. | `API/Services/ResultPublishJobWorker.cs` |
+| `ReportExportJobWorker.ExecuteAsync(stoppingToken)` (retry-enhanced) | Adds bounded retry + backoff for transient export failures and emits threshold-based consecutive-failure alerts for report export workloads. | `API/Services/ReportExportJobWorker.cs` |
+| `AnalyticsExportJobWorker.ExecuteAsync(stoppingToken)` (retry-enhanced) | Adds bounded retry + backoff for transient analytics export failures and emits threshold-based consecutive-failure alerts for analytics workloads. | `API/Services/AnalyticsExportJobWorker.cs` |
+| `GET /health/background-jobs` | Exposes background worker reliability configuration and live processing/retry/failure metrics for operational monitoring. | `API/Program.cs` |
+
 ### API — Phase 28 Stage 28.2 Completion
 
 | Function Name | Purpose | Location |

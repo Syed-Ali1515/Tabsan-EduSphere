@@ -206,6 +206,13 @@
 - No database migration or schema change was required for Stage 30.2.
 - Validation: `dotnet build Tabsan.EduSphere.sln` passed; unit tests passed **144/144**.
 
+### 2026-05-14 — Phase 30 Stage 30.3 (Reliability Controls)
+- Added configurable retry and backoff strategy (`BackgroundJobReliability`) for result publish, report export, and analytics export background workers.
+- Added worker-level operational alerts via consecutive-failure threshold logging to highlight sustained pipeline issues.
+- Added `GET /health/background-jobs` runtime monitoring endpoint exposing reliability configuration and live worker processing/retry/failure counters.
+- No database migration or schema change was required for Stage 30.3.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; unit tests passed **144/144**.
+
 ---
 
 ## Phase 12 — Academic Calendar System ✅ Implemented

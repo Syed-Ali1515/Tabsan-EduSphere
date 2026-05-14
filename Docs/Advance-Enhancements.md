@@ -13,7 +13,7 @@ Purpose:
 - Preserve core functionality, global configuration behavior, and role-rights policy.
 
 Status:
-- In progress (Phase 30 in progress, Stage 30.2 completed)
+- In progress (Phase 30 completed, ready to proceed with Phase 31)
 
 ## Execution Updates
 
@@ -409,8 +409,11 @@ Depends on: Phase 29
 - Validation: solution build and unit tests passed after queue + worker integration changes.
 
 ### Stage 30.3 - Reliability Controls
-- Retry strategy for transient failures.
-- Health monitoring and operational alerts.
+- Status: Completed (2026-05-14).
+- Added configurable retry strategy with bounded backoff for background workers handling result publish, report export, and analytics export jobs.
+- Added operational alerting via consecutive-failure threshold logging for each background worker pipeline.
+- Added `/health/background-jobs` endpoint exposing retry configuration and live background-job processing/retry/failure metrics.
+- Validation: solution build and unit tests passed after reliability-control integration changes.
 
 Deliverable goal:
 - Fast user-facing responses under load.

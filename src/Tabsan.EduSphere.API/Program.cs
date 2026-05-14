@@ -36,6 +36,7 @@ using Tabsan.EduSphere.Infrastructure.Exporters;
 using Tabsan.EduSphere.Infrastructure.Integrations;
 using Tabsan.EduSphere.API.Services;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.Extensions.Options;
 using System.Diagnostics;
 using Serilog;
 using Serilog.Events;
@@ -64,6 +65,8 @@ Console.WriteLine($"[Startup] ScaleOut InstanceId: {runtimeInstanceId} | ExposeI
 
 // Final-Touches Phase 9 Stage 9.1 — shared observability state for Prometheus metrics and latency SLO snapshots.
 builder.Services.AddSingleton(new ObservabilityMetrics(processStartUtc));
+builder.Services.Configure<BackgroundJobReliabilityOptions>(builder.Configuration.GetSection(BackgroundJobReliabilityOptions.SectionName));
+builder.Services.AddSingleton<BackgroundJobHealthTracker>();
 
 // Final-Touches Phase 8 Stage 8.1 — auto-scaling policy metadata and startup guardrails.
 var autoScalingEnabled = builder.Configuration.GetValue("InfrastructureTuning:AutoScaling:Enabled", true);
@@ -678,6 +681,18 @@ app.MapGet("/health/instance", () => Results.Ok(new
     version = typeof(Program).Assembly.GetName().Version?.ToString() ?? "unknown"
 })).AllowAnonymous();
 app.MapGet("/health/observability", (ObservabilityMetrics observabilityMetrics) => Results.Ok(observabilityMetrics.GetSnapshot())).AllowAnonymous();
+app.MapGet("/health/background-jobs", (
+    BackgroundJobHealthTracker backgroundJobHealthTracker,
+    IOptions<BackgroundJobReliabilityOptions> reliabilityOptions) => Results.Ok(new
+{
+    reliability = new
+    {
+        maxRetryAttempts = Math.Max(1, reliabilityOptions.Value.MaxRetryAttempts),
+        baseDelayMilliseconds = Math.Max(25, reliabilityOptions.Value.BaseDelayMilliseconds),
+        alertConsecutiveFailureThreshold = Math.Max(1, reliabilityOptions.Value.AlertConsecutiveFailureThreshold)
+    },
+    metrics = backgroundJobHealthTracker.GetSnapshot()
+})).AllowAnonymous();
 app.MapGet("/health/scaling", () => Results.Ok(new
 {
     autoScalingEnabled,

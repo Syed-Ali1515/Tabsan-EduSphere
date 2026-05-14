@@ -1,4 +1,5 @@
 using Tabsan.EduSphere.Application.Interfaces;
+using Microsoft.Extensions.Options;
 
 namespace Tabsan.EduSphere.API.Services;
 
@@ -8,16 +9,22 @@ public sealed class AnalyticsExportJobWorker : BackgroundService
     private readonly AnalyticsExportJobStore _store;
     private readonly IServiceProvider _services;
     private readonly ILogger<AnalyticsExportJobWorker> _logger;
+    private readonly BackgroundJobReliabilityOptions _reliability;
+    private readonly BackgroundJobHealthTracker _healthTracker;
 
     public AnalyticsExportJobWorker(
         AnalyticsExportJobQueue queue,
         AnalyticsExportJobStore store,
         IServiceProvider services,
+        IOptions<BackgroundJobReliabilityOptions> reliability,
+        BackgroundJobHealthTracker healthTracker,
         ILogger<AnalyticsExportJobWorker> logger)
     {
         _queue = queue;
         _store = store;
         _services = services;
+        _reliability = reliability.Value;
+        _healthTracker = healthTracker;
         _logger = logger;
     }
 
@@ -36,35 +43,55 @@ public sealed class AnalyticsExportJobWorker : BackgroundService
                     Status = "running"
                 }, stoppingToken);
 
-                using var scope = _services.CreateScope();
-                var analytics = scope.ServiceProvider.GetRequiredService<IAnalyticsService>();
+                byte[] bytes = [];
+                string contentType = "application/octet-stream";
+                string extension = "bin";
 
-                byte[] bytes;
-                string contentType;
-                string extension;
-
-                switch (request.ReportType)
+                var maxAttempts = Math.Max(1, _reliability.MaxRetryAttempts);
+                for (var attempt = 1; attempt <= maxAttempts; attempt++)
                 {
-                    case AnalyticsExportReportType.Attendance when request.Format == AnalyticsExportFormat.Excel:
-                        bytes = await analytics.ExportAttendanceExcelAsync(request.DepartmentId, request.InstitutionType, stoppingToken);
-                        contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                        extension = "xlsx";
+                    try
+                    {
+                        using var scope = _services.CreateScope();
+                        var analytics = scope.ServiceProvider.GetRequiredService<IAnalyticsService>();
+
+                        switch (request.ReportType)
+                        {
+                            case AnalyticsExportReportType.Attendance when request.Format == AnalyticsExportFormat.Excel:
+                                bytes = await analytics.ExportAttendanceExcelAsync(request.DepartmentId, request.InstitutionType, stoppingToken);
+                                contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                                extension = "xlsx";
+                                break;
+                            case AnalyticsExportReportType.Attendance:
+                                bytes = await analytics.ExportAttendancePdfAsync(request.DepartmentId, request.InstitutionType, stoppingToken);
+                                contentType = "application/pdf";
+                                extension = "pdf";
+                                break;
+                            case AnalyticsExportReportType.Performance when request.Format == AnalyticsExportFormat.Excel:
+                                bytes = await analytics.ExportPerformanceExcelAsync(request.DepartmentId, request.InstitutionType, stoppingToken);
+                                contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                                extension = "xlsx";
+                                break;
+                            default:
+                                bytes = await analytics.ExportPerformancePdfAsync(request.DepartmentId, request.InstitutionType, stoppingToken);
+                                contentType = "application/pdf";
+                                extension = "pdf";
+                                break;
+                        }
+
                         break;
-                    case AnalyticsExportReportType.Attendance:
-                        bytes = await analytics.ExportAttendancePdfAsync(request.DepartmentId, request.InstitutionType, stoppingToken);
-                        contentType = "application/pdf";
-                        extension = "pdf";
-                        break;
-                    case AnalyticsExportReportType.Performance when request.Format == AnalyticsExportFormat.Excel:
-                        bytes = await analytics.ExportPerformanceExcelAsync(request.DepartmentId, request.InstitutionType, stoppingToken);
-                        contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                        extension = "xlsx";
-                        break;
-                    default:
-                        bytes = await analytics.ExportPerformancePdfAsync(request.DepartmentId, request.InstitutionType, stoppingToken);
-                        contentType = "application/pdf";
-                        extension = "pdf";
-                        break;
+                    }
+                    catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+                    {
+                        throw;
+                    }
+                    catch (Exception ex) when (attempt < maxAttempts)
+                    {
+                        _healthTracker.RecordAnalyticsExportRetry();
+                        var delayMs = Math.Max(25, _reliability.BaseDelayMilliseconds * attempt);
+                        _logger.LogWarning(ex, "Analytics export job {JobId} attempt {Attempt}/{MaxAttempts} failed, retrying in {DelayMs}ms.", request.JobId, attempt, maxAttempts, delayMs);
+                        await Task.Delay(TimeSpan.FromMilliseconds(delayMs), stoppingToken);
+                    }
                 }
 
                 var fileName = $"analytics-{request.ReportType.ToString().ToLowerInvariant()}-{request.JobId:N}.{extension}";
@@ -80,6 +107,7 @@ public sealed class AnalyticsExportJobWorker : BackgroundService
                     FileName = fileName,
                     CompletedAt = DateTimeOffset.UtcNow
                 }, stoppingToken);
+                _healthTracker.RecordAnalyticsExportSuccess();
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
@@ -88,6 +116,12 @@ public sealed class AnalyticsExportJobWorker : BackgroundService
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Analytics export job {JobId} failed.", request.JobId);
+                _healthTracker.RecordAnalyticsExportFailure();
+                var consecutiveFailures = _healthTracker.GetAnalyticsExportConsecutiveFailures();
+                if (consecutiveFailures >= Math.Max(1, _reliability.AlertConsecutiveFailureThreshold))
+                {
+                    _logger.LogWarning("Analytics export worker consecutive failures reached {ConsecutiveFailures}.", consecutiveFailures);
+                }
                 await _store.SetStateAsync(new AnalyticsExportJobState
                 {
                     JobId = request.JobId,
