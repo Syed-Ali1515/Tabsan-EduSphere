@@ -33,10 +33,12 @@ Do not end a completed task with local-only changes.
   4. Project startup Docs/Database Schema.md
   5. Project startup Docs/Development Plan - ASP.NET.md
   6. Docs/Command.md
-- After every phase completion, run repository sync in order:
+- After every phase completion, run repository sync in order (mandatory):
   1. Commit
-  2. Pull (rebase)
+  2. Pull (`--rebase`)
   3. Push
+  4. Pull again to confirm local and remote are synchronized
+- Do not treat a phase as completed until both summaries and this full sync sequence are done.
 
 ## Institute Parity Workflow (2026-05-13)
 
@@ -58,6 +60,8 @@ Do not end a completed task with local-only changes.
   1. Commit
   2. Pull (`--rebase`)
   3. Push
+  4. Pull again to confirm local and remote are synchronized
+- A stage is not complete unless both `Implementation Summary` + `Validation Summary` and this full sync sequence are finished.
 
 ### Institute Parity Checkpoint (2026-05-13 - Stage 0.1)
 - Completed Stage 0.1 baseline parity audit in `Docs/Institute-Parity-Issue-Fix-Phases.md` with required Implementation Summary and Validation Summary.
