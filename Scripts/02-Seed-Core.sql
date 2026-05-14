@@ -46,12 +46,6 @@ BEGIN
     RETURN;
 END;
 
-IF OBJECT_ID(N'[institutions]') IS NULL
-BEGIN
-    RAISERROR('ERROR: Table [institutions] does not exist. You MUST run 01-Schema-Current.sql FIRST before running this script.', 16, 1);
-    RETURN;
-END;
-
 IF OBJECT_ID(N'[departments]') IS NULL
 BEGIN
     RAISERROR('ERROR: Table [departments] does not exist. You MUST run 01-Schema-Current.sql FIRST before running this script.', 16, 1);

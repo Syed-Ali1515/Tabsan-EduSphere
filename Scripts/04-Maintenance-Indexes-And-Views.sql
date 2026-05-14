@@ -210,10 +210,10 @@ END
 
   IF COL_LENGTH('registration_whitelist', 'IdentifierType') IS NOT NULL
   AND COL_LENGTH('registration_whitelist', 'IdentifierValue') IS NOT NULL
-  AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_registration_whitelist_type_value' AND object_id = OBJECT_ID('registration_whitelist'))
+  AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_registration_whitelist_value_department_program' AND object_id = OBJECT_ID('registration_whitelist'))
   BEGIN
-    CREATE INDEX IX_registration_whitelist_type_value
-    ON registration_whitelist (IdentifierType, IdentifierValue);
+    CREATE INDEX IX_registration_whitelist_value_department_program
+    ON registration_whitelist (IdentifierValue, DepartmentId, ProgramId);
   END
 
 /* 2) Operational summary views */

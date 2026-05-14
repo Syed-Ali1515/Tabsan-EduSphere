@@ -389,12 +389,14 @@ IF NOT EXISTS (
     WHERE [MigrationId] = N'20260513124500_Phase1Stage12ReferentialIntegrityAndIndexes'
 )
 BEGIN
-    IF COL_LENGTH('enrollments', 'Status') IS NOT NULL
+    IF OBJECT_ID(N'[enrollments]') IS NOT NULL
+    AND COL_LENGTH('enrollments', 'Status') IS NOT NULL
     BEGIN
         ALTER TABLE [enrollments] ALTER COLUMN [Status] nvarchar(32) NOT NULL;
     END;
 
-    IF EXISTS (
+    IF OBJECT_ID(N'[academic_programs]') IS NOT NULL
+    AND EXISTS (
         SELECT 1 FROM sys.indexes
         WHERE [name] = N'IX_academic_programs_code'
           AND [object_id] = OBJECT_ID(N'academic_programs')
@@ -403,7 +405,8 @@ BEGIN
         DROP INDEX [IX_academic_programs_code] ON [academic_programs];
     END;
 
-    IF NOT EXISTS (
+        IF OBJECT_ID(N'[academic_programs]') IS NOT NULL
+        AND NOT EXISTS (
         SELECT 1 FROM sys.indexes
         WHERE [name] = N'IX_academic_programs_code_dept'
           AND [object_id] = OBJECT_ID(N'academic_programs')
@@ -412,34 +415,44 @@ BEGIN
         CREATE UNIQUE INDEX [IX_academic_programs_code_dept] ON [academic_programs] ([Code], [DepartmentId]);
     END;
 
-    IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE [name] = N'IX_academic_programs_dept_active' AND [object_id] = OBJECT_ID(N'academic_programs'))
+    IF OBJECT_ID(N'[academic_programs]') IS NOT NULL
+    AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE [name] = N'IX_academic_programs_dept_active' AND [object_id] = OBJECT_ID(N'academic_programs'))
         CREATE INDEX [IX_academic_programs_dept_active] ON [academic_programs] ([DepartmentId], [IsActive]);
 
-    IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE [name] = N'IX_courses_dept_active' AND [object_id] = OBJECT_ID(N'courses'))
+    IF OBJECT_ID(N'[courses]') IS NOT NULL
+    AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE [name] = N'IX_courses_dept_active' AND [object_id] = OBJECT_ID(N'courses'))
         CREATE INDEX [IX_courses_dept_active] ON [courses] ([DepartmentId], [IsActive]);
 
-    IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE [name] = N'IX_course_offerings_semester_open' AND [object_id] = OBJECT_ID(N'course_offerings'))
+    IF OBJECT_ID(N'[course_offerings]') IS NOT NULL
+    AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE [name] = N'IX_course_offerings_semester_open' AND [object_id] = OBJECT_ID(N'course_offerings'))
         CREATE INDEX [IX_course_offerings_semester_open] ON [course_offerings] ([SemesterId], [IsOpen]);
 
-    IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE [name] = N'IX_course_offerings_faculty_open' AND [object_id] = OBJECT_ID(N'course_offerings'))
+    IF OBJECT_ID(N'[course_offerings]') IS NOT NULL
+    AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE [name] = N'IX_course_offerings_faculty_open' AND [object_id] = OBJECT_ID(N'course_offerings'))
         CREATE INDEX [IX_course_offerings_faculty_open] ON [course_offerings] ([FacultyUserId], [IsOpen]);
 
-    IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE [name] = N'IX_student_profiles_dept_status' AND [object_id] = OBJECT_ID(N'student_profiles'))
+    IF OBJECT_ID(N'[student_profiles]') IS NOT NULL
+    AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE [name] = N'IX_student_profiles_dept_status' AND [object_id] = OBJECT_ID(N'student_profiles'))
         CREATE INDEX [IX_student_profiles_dept_status] ON [student_profiles] ([DepartmentId], [Status]);
 
-    IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE [name] = N'IX_student_profiles_program_status' AND [object_id] = OBJECT_ID(N'student_profiles'))
+    IF OBJECT_ID(N'[student_profiles]') IS NOT NULL
+    AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE [name] = N'IX_student_profiles_program_status' AND [object_id] = OBJECT_ID(N'student_profiles'))
         CREATE INDEX [IX_student_profiles_program_status] ON [student_profiles] ([ProgramId], [Status]);
 
-    IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE [name] = N'IX_enrollments_offering_status' AND [object_id] = OBJECT_ID(N'enrollments'))
+    IF OBJECT_ID(N'[enrollments]') IS NOT NULL
+    AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE [name] = N'IX_enrollments_offering_status' AND [object_id] = OBJECT_ID(N'enrollments'))
         CREATE INDEX [IX_enrollments_offering_status] ON [enrollments] ([CourseOfferingId], [Status]);
 
-    IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE [name] = N'IX_enrollments_student_status' AND [object_id] = OBJECT_ID(N'enrollments'))
+    IF OBJECT_ID(N'[enrollments]') IS NOT NULL
+    AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE [name] = N'IX_enrollments_student_status' AND [object_id] = OBJECT_ID(N'enrollments'))
         CREATE INDEX [IX_enrollments_student_status] ON [enrollments] ([StudentProfileId], [Status]);
 
-    IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE [name] = N'IX_faculty_dept_assignments_active_lookup' AND [object_id] = OBJECT_ID(N'faculty_department_assignments'))
+    IF OBJECT_ID(N'[faculty_department_assignments]') IS NOT NULL
+    AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE [name] = N'IX_faculty_dept_assignments_active_lookup' AND [object_id] = OBJECT_ID(N'faculty_department_assignments'))
         CREATE INDEX [IX_faculty_dept_assignments_active_lookup] ON [faculty_department_assignments] ([FacultyUserId], [RemovedAt], [DepartmentId]);
 
-    IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE [name] = N'IX_admin_dept_assignments_active_lookup' AND [object_id] = OBJECT_ID(N'admin_department_assignments'))
+    IF OBJECT_ID(N'[admin_department_assignments]') IS NOT NULL
+    AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE [name] = N'IX_admin_dept_assignments_active_lookup' AND [object_id] = OBJECT_ID(N'admin_department_assignments'))
         CREATE INDEX [IX_admin_dept_assignments_active_lookup] ON [admin_department_assignments] ([AdminUserId], [RemovedAt], [DepartmentId]);
 END;
 GO

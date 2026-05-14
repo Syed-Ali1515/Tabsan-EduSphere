@@ -430,8 +430,8 @@ SELECT 'IndexExists_IX_course_content_modules_offering_week' AS [CheckName],
 SELECT 'IndexExists_IX_parent_student_links_parent_active' AS [CheckName],
 	CASE WHEN EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_parent_student_links_parent_active' AND object_id = OBJECT_ID('parent_student_links')) THEN 1 ELSE 0 END AS [Value];
 
-SELECT 'IndexExists_IX_registration_whitelist_type_value' AS [CheckName],
-	CASE WHEN EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_registration_whitelist_type_value' AND object_id = OBJECT_ID('registration_whitelist')) THEN 1 ELSE 0 END AS [Value];
+SELECT 'IndexExists_IX_registration_whitelist_value_department_program' AS [CheckName],
+	CASE WHEN EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_registration_whitelist_value_department_program' AND object_id = OBJECT_ID('registration_whitelist')) THEN 1 ELSE 0 END AS [Value];
 
 SELECT 'DummySeed_RegistrationNumberDuplicates' AS [CheckName], COUNT(1) AS [Value]
 FROM (
