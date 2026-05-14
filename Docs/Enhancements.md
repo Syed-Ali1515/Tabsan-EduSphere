@@ -175,6 +175,20 @@
 - No database migration or schema change was required for Stage 29.2 Slice 2.
 - Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
 
+### 2026-05-10 — Phase 29 Stage 29.2 Slice 3 (Query Discipline and Pagination)
+- Added paged payment receipt list contract for admin/student receipt endpoints and student-filtered admin listing paths.
+- Replaced unbounded payment receipt list materialization with server-side `page` and `pageSize` SQL paging in repository/service/API/web layers.
+- Updated portal payments page with previous/next pagination controls while preserving selected student filters.
+- No database migration or schema change was required for Stage 29.2 Slice 3.
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed; automated tests passed **162/162**.
+
+### 2026-05-14 — Phase 29 Stage 29.3 (Data Lifecycle and Maintenance)
+- Added `Scripts/3-Phase29-ArchivePolicy.sql` with dry-run-first archive/retention policy checks and optional batched cleanup mode.
+- Added `Scripts/4-Phase29-IndexMaintenance.sql` with fragmentation-driven index maintenance planning and optional execution mode.
+- Added `Scripts/5-Phase29-CapacityGrowthDashboard.sql` for table-size, row-growth, and index-usage observability snapshots.
+- Updated `Scripts/README.md` with Stage 29.3 runbook commands and safety notes.
+- No database migration or schema change was required for Stage 29.3.
+
 ---
 
 ## Phase 12 — Academic Calendar System ✅ Implemented

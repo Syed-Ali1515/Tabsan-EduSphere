@@ -13,7 +13,7 @@ Purpose:
 - Preserve core functionality, global configuration behavior, and role-rights policy.
 
 Status:
-- In progress (Phase 29 in progress, Stage 29.1 completed)
+- In progress (Phase 30 queued, Phase 29 completed)
 
 ## Execution Updates
 
@@ -362,13 +362,28 @@ Depends on: None (recommended after feature stabilization)
 - Validation: build and targeted tests passed after index and migration updates.
 
 ### Stage 29.2 - Pagination and Projection Enforcement
-- No large unbounded list endpoints.
-- Return only required columns and paged result sets.
+- Status: Completed (2026-05-14).
+- Delivered pagination and projection contracts across high-volume list paths:
+	- Helpdesk tickets (Slice 1),
+	- Graduation applications (Slice 2),
+	- Payment receipts (Slice 3).
+- Replaced unbounded list materialization with SQL-side page/pageSize query patterns and total-count metadata.
+- Validation: build and automated test suites passed for Stage 29.2 delivery.
 
 ### Stage 29.3 - Query and Transaction Optimization
-- Remove avoidable table scans.
-- Keep transactions short.
-- Optimize heavy report/result paths.
+- Status: Completed (2026-05-14).
+- Added operational lifecycle scripts for performance sustainability:
+	- `Scripts/3-Phase29-ArchivePolicy.sql` (retention/cleanup policy with dry-run default),
+	- `Scripts/4-Phase29-IndexMaintenance.sql` (fragmentation-aware index maintenance plan/execution),
+	- `Scripts/5-Phase29-CapacityGrowthDashboard.sql` (capacity and growth telemetry dashboard).
+- Updated `Scripts/README.md` with Stage 29.3 run commands and safe execution guidance.
+- Validation: scripts compile as T-SQL batches and were reviewed for dry-run-first safety defaults.
+
+### Phase 29 Completion
+- Status: Completed (2026-05-14).
+- Stage 29.1 delivered baseline and follow-up hot-path indexes.
+- Stage 29.2 delivered pagination discipline on helpdesk/graduation/payment heavy-list routes.
+- Stage 29.3 delivered operational archive/index/capacity scripts and runbook guidance.
 
 Deliverable goal:
 - Stable performance for high concurrency growth.
