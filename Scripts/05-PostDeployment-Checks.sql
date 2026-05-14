@@ -322,6 +322,117 @@ FROM school_streams;
 SELECT 'DummySeed_CriticalEntityCount_StudentStreamAssignments' AS [CheckName], COUNT(1) AS [Value]
 FROM student_stream_assignments;
 
+SELECT 'DummySeed_CriticalEntityCount_LicenseState' AS [CheckName], COUNT(1) AS [Value]
+FROM license_state;
+
+SELECT 'DummySeed_CriticalEntityCount_ModuleRoleAssignments' AS [CheckName], COUNT(1) AS [Value]
+FROM module_role_assignments;
+
+SELECT 'DummySeed_CriticalEntityCount_RegistrationWhitelist' AS [CheckName], COUNT(1) AS [Value]
+FROM registration_whitelist;
+
+SELECT 'DummySeed_CriticalEntityCount_GpaScaleRules' AS [CheckName], COUNT(1) AS [Value]
+FROM gpa_scale_rules;
+
+SELECT 'DummySeed_CriticalEntityCount_ResultComponentRules' AS [CheckName], COUNT(1) AS [Value]
+FROM result_component_rules;
+
+SELECT 'DummySeed_CriticalEntityCount_AcademicDeadlines' AS [CheckName], COUNT(1) AS [Value]
+FROM academic_deadlines;
+
+SELECT 'DummySeed_CriticalEntityCount_CoursePrerequisites' AS [CheckName], COUNT(1) AS [Value]
+FROM course_prerequisites;
+
+SELECT 'DummySeed_CriticalEntityCount_DegreeRules' AS [CheckName], COUNT(1) AS [Value]
+FROM degree_rules;
+
+SELECT 'DummySeed_CriticalEntityCount_DegreeRuleRequiredCourses' AS [CheckName], COUNT(1) AS [Value]
+FROM degree_rule_required_courses;
+
+SELECT 'DummySeed_CriticalEntityCount_CourseGradingConfigs' AS [CheckName], COUNT(1) AS [Value]
+FROM course_grading_configs;
+
+SELECT 'DummySeed_CriticalEntityCount_StudyPlans' AS [CheckName], COUNT(1) AS [Value]
+FROM study_plans;
+
+SELECT 'DummySeed_CriticalEntityCount_StudyPlanCourses' AS [CheckName], COUNT(1) AS [Value]
+FROM study_plan_courses;
+
+SELECT 'DummySeed_CriticalEntityCount_CourseAnnouncements' AS [CheckName], COUNT(1) AS [Value]
+FROM course_announcements;
+
+SELECT 'DummySeed_CriticalEntityCount_CourseContentModules' AS [CheckName], COUNT(1) AS [Value]
+FROM course_content_modules;
+
+SELECT 'DummySeed_CriticalEntityCount_ContentVideos' AS [CheckName], COUNT(1) AS [Value]
+FROM content_videos;
+
+SELECT 'DummySeed_CriticalEntityCount_Rubrics' AS [CheckName], COUNT(1) AS [Value]
+FROM rubrics;
+
+SELECT 'DummySeed_CriticalEntityCount_RubricCriteria' AS [CheckName], COUNT(1) AS [Value]
+FROM rubric_criteria;
+
+SELECT 'DummySeed_CriticalEntityCount_RubricLevels' AS [CheckName], COUNT(1) AS [Value]
+FROM rubric_levels;
+
+SELECT 'DummySeed_CriticalEntityCount_RubricStudentGrades' AS [CheckName], COUNT(1) AS [Value]
+FROM rubric_student_grades;
+
+SELECT 'DummySeed_CriticalEntityCount_FypProjects' AS [CheckName], COUNT(1) AS [Value]
+FROM fyp_projects;
+
+SELECT 'DummySeed_CriticalEntityCount_FypMeetings' AS [CheckName], COUNT(1) AS [Value]
+FROM fyp_meetings;
+
+SELECT 'DummySeed_CriticalEntityCount_FypPanelMembers' AS [CheckName], COUNT(1) AS [Value]
+FROM fyp_panel_members;
+
+SELECT 'DummySeed_CriticalEntityCount_ChatConversations' AS [CheckName], COUNT(1) AS [Value]
+FROM chat_conversations;
+
+SELECT 'DummySeed_CriticalEntityCount_ChatMessages' AS [CheckName], COUNT(1) AS [Value]
+FROM chat_messages;
+
+SELECT 'DummySeed_CriticalEntityCount_UserSessions' AS [CheckName], COUNT(1) AS [Value]
+FROM user_sessions;
+
+SELECT 'DummySeed_CriticalEntityCount_ConsumedVerificationKeys' AS [CheckName], COUNT(1) AS [Value]
+FROM consumed_verification_keys;
+
+SELECT 'DummySeed_CriticalEntityCount_PasswordHistory' AS [CheckName], COUNT(1) AS [Value]
+FROM password_history;
+
+SELECT 'DummySeed_CriticalEntityCount_OutboundEmailLogs' AS [CheckName], COUNT(1) AS [Value]
+FROM outbound_email_logs;
+
+SELECT 'DummySeed_CriticalEntityCount_AdminChangeRequests' AS [CheckName], COUNT(1) AS [Value]
+FROM admin_change_requests;
+
+SELECT 'DummySeed_CriticalEntityCount_TeacherModificationRequests' AS [CheckName], COUNT(1) AS [Value]
+FROM teacher_modification_requests;
+
+SELECT 'DummySeed_CriticalEntityCount_AccreditationTemplates' AS [CheckName], COUNT(1) AS [Value]
+FROM accreditation_templates;
+
+SELECT 'DummySeed_CriticalEntityCount_InstitutionGradingProfiles' AS [CheckName], COUNT(1) AS [Value]
+FROM institution_grading_profiles;
+
+SELECT 'DummySeed_CriticalEntityCount_ParentStudentLinks' AS [CheckName], COUNT(1) AS [Value]
+FROM parent_student_links;
+
+SELECT 'DummySeed_CriticalEntityCount_AuditLogs' AS [CheckName], COUNT(1) AS [Value]
+FROM audit_logs;
+
+SELECT 'IndexExists_IX_course_content_modules_offering_week' AS [CheckName],
+	CASE WHEN EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_course_content_modules_offering_week' AND object_id = OBJECT_ID('course_content_modules')) THEN 1 ELSE 0 END AS [Value];
+
+SELECT 'IndexExists_IX_parent_student_links_parent_active' AS [CheckName],
+	CASE WHEN EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_parent_student_links_parent_active' AND object_id = OBJECT_ID('parent_student_links')) THEN 1 ELSE 0 END AS [Value];
+
+SELECT 'IndexExists_IX_registration_whitelist_type_value' AS [CheckName],
+	CASE WHEN EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_registration_whitelist_type_value' AND object_id = OBJECT_ID('registration_whitelist')) THEN 1 ELSE 0 END AS [Value];
+
 SELECT 'DummySeed_RegistrationNumberDuplicates' AS [CheckName], COUNT(1) AS [Value]
 FROM (
 	SELECT RegistrationNumber

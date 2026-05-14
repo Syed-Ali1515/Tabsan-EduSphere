@@ -168,6 +168,54 @@ END
     ON admin_department_assignments (AdminUserId, RemovedAt, DepartmentId);
   END
 
+  IF COL_LENGTH('study_plans', 'StudentProfileId') IS NOT NULL
+  AND COL_LENGTH('study_plans', 'AdvisorStatus') IS NOT NULL
+  AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_study_plans_student_status' AND object_id = OBJECT_ID('study_plans'))
+  BEGIN
+    CREATE INDEX IX_study_plans_student_status
+    ON study_plans (StudentProfileId, AdvisorStatus);
+  END
+
+  IF COL_LENGTH('course_content_modules', 'OfferingId') IS NOT NULL
+  AND COL_LENGTH('course_content_modules', 'WeekNumber') IS NOT NULL
+  AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_course_content_modules_offering_week' AND object_id = OBJECT_ID('course_content_modules'))
+  BEGIN
+    CREATE INDEX IX_course_content_modules_offering_week
+    ON course_content_modules (OfferingId, WeekNumber);
+  END
+
+  IF COL_LENGTH('chat_messages', 'ConversationId') IS NOT NULL
+  AND COL_LENGTH('chat_messages', 'SentAt') IS NOT NULL
+  AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_chat_messages_conversation_sent' AND object_id = OBJECT_ID('chat_messages'))
+  BEGIN
+    CREATE INDEX IX_chat_messages_conversation_sent
+    ON chat_messages (ConversationId, SentAt DESC);
+  END
+
+  IF COL_LENGTH('audit_logs', 'EntityName') IS NOT NULL
+  AND COL_LENGTH('audit_logs', 'OccurredAt') IS NOT NULL
+  AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_audit_logs_entity_time_desc' AND object_id = OBJECT_ID('audit_logs'))
+  BEGIN
+    CREATE INDEX IX_audit_logs_entity_time_desc
+    ON audit_logs (EntityName, OccurredAt DESC);
+  END
+
+  IF COL_LENGTH('parent_student_links', 'ParentUserId') IS NOT NULL
+  AND COL_LENGTH('parent_student_links', 'IsActive') IS NOT NULL
+  AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_parent_student_links_parent_active' AND object_id = OBJECT_ID('parent_student_links'))
+  BEGIN
+    CREATE INDEX IX_parent_student_links_parent_active
+    ON parent_student_links (ParentUserId, IsActive);
+  END
+
+  IF COL_LENGTH('registration_whitelist', 'IdentifierType') IS NOT NULL
+  AND COL_LENGTH('registration_whitelist', 'IdentifierValue') IS NOT NULL
+  AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_registration_whitelist_type_value' AND object_id = OBJECT_ID('registration_whitelist'))
+  BEGIN
+    CREATE INDEX IX_registration_whitelist_type_value
+    ON registration_whitelist (IdentifierType, IdentifierValue);
+  END
+
 /* 2) Operational summary views */
 IF OBJECT_ID('dbo.vw_ActiveAcademicHierarchy', 'V') IS NULL
 BEGIN

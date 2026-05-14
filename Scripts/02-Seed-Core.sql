@@ -263,6 +263,107 @@ WHERE NOT EXISTS (
     WHERE x.[SidebarMenuItemId] = m.[Id] AND x.[RoleName] = ra.[RoleName]
 );
 
+/* 7) License baseline state */
+IF OBJECT_ID(N'[license_state]') IS NOT NULL
+AND NOT EXISTS (SELECT 1 FROM [license_state])
+BEGIN
+    INSERT INTO [license_state]
+        ([Id], [LicenseHash], [LicenseType], [Status], [ActivatedAt], [ExpiresAt], [CreatedAt], [UpdatedAt])
+    VALUES
+        ('0f0f0f0f-0f0f-0f0f-0f0f-0f0f0f0f0f01',
+         N'SEED-LICENSE-HASH-CHANGE-IN-PROD',
+         N'Education',
+         N'Active',
+         @Now,
+         DATEADD(year, 1, @Now),
+         @Now,
+         NULL);
+END
+
+IF OBJECT_ID(N'[license_state]') IS NOT NULL
+BEGIN
+    IF COL_LENGTH('license_state', 'ActivatedDomain') IS NOT NULL
+    BEGIN
+        UPDATE [license_state]
+        SET [ActivatedDomain] = COALESCE([ActivatedDomain], N'tabsan.local')
+        WHERE [ActivatedDomain] IS NULL;
+    END
+
+    IF COL_LENGTH('license_state', 'MaxUsers') IS NOT NULL
+    BEGIN
+        UPDATE [license_state]
+        SET [MaxUsers] = CASE WHEN [MaxUsers] < 100000 THEN 100000 ELSE [MaxUsers] END;
+    END
+END
+
+/* 8) Module role access matrix */
+IF OBJECT_ID(N'[module_role_assignments]') IS NOT NULL
+BEGIN
+    DECLARE @ModuleRoleMatrix TABLE ([ModuleKey] NVARCHAR(50), [RoleName] NVARCHAR(50));
+    INSERT INTO @ModuleRoleMatrix ([ModuleKey], [RoleName]) VALUES
+    (N'authentication', N'SuperAdmin'),
+    (N'authentication', N'Admin'),
+    (N'authentication', N'Faculty'),
+    (N'authentication', N'Student'),
+    (N'departments', N'SuperAdmin'),
+    (N'departments', N'Admin'),
+    (N'sis', N'SuperAdmin'),
+    (N'sis', N'Admin'),
+    (N'sis', N'Faculty'),
+    (N'courses', N'SuperAdmin'),
+    (N'courses', N'Admin'),
+    (N'courses', N'Faculty'),
+    (N'courses', N'Student'),
+    (N'assignments', N'SuperAdmin'),
+    (N'assignments', N'Admin'),
+    (N'assignments', N'Faculty'),
+    (N'assignments', N'Student'),
+    (N'quizzes', N'SuperAdmin'),
+    (N'quizzes', N'Admin'),
+    (N'quizzes', N'Faculty'),
+    (N'quizzes', N'Student'),
+    (N'attendance', N'SuperAdmin'),
+    (N'attendance', N'Admin'),
+    (N'attendance', N'Faculty'),
+    (N'attendance', N'Student'),
+    (N'results', N'SuperAdmin'),
+    (N'results', N'Admin'),
+    (N'results', N'Faculty'),
+    (N'results', N'Student'),
+    (N'notifications', N'SuperAdmin'),
+    (N'notifications', N'Admin'),
+    (N'notifications', N'Faculty'),
+    (N'notifications', N'Student'),
+    (N'fyp', N'SuperAdmin'),
+    (N'fyp', N'Admin'),
+    (N'fyp', N'Faculty'),
+    (N'fyp', N'Student'),
+    (N'ai-chat', N'SuperAdmin'),
+    (N'ai-chat', N'Admin'),
+    (N'ai-chat', N'Faculty'),
+    (N'ai-chat', N'Student'),
+    (N'reports', N'SuperAdmin'),
+    (N'reports', N'Admin'),
+    (N'reports', N'Faculty'),
+    (N'reports', N'Student'),
+    (N'theming', N'SuperAdmin'),
+    (N'theming', N'Admin'),
+    (N'theming', N'Faculty'),
+    (N'theming', N'Student'),
+    (N'advanced-audit', N'SuperAdmin'),
+    (N'advanced-audit', N'Admin');
+
+    INSERT INTO [module_role_assignments] ([Id], [ModuleId], [RoleName], [CreatedAt], [UpdatedAt])
+    SELECT NEWID(), m.[Id], matrix.[RoleName], @Now, NULL
+    FROM @ModuleRoleMatrix matrix
+    INNER JOIN [modules] m ON m.[Key] = matrix.[ModuleKey]
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM [module_role_assignments] x
+        WHERE x.[ModuleId] = m.[Id] AND x.[RoleName] = matrix.[RoleName]
+    );
+END
+
 COMMIT TRANSACTION;
 PRINT 'Core seed data completed successfully.';
 

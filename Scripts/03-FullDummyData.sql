@@ -1078,6 +1078,685 @@ SELECT r.Id, r.NotificationId, r.RecipientUserId, r.IsRead,
 FROM @Recipients r
 WHERE NOT EXISTS (SELECT 1 FROM [notification_recipients] x WHERE x.[Id] = r.Id);
 
+/* 17) Extended coverage for remaining domains + high-volume dummy data */
+
+IF OBJECT_ID(N'[gpa_scale_rules]') IS NOT NULL
+BEGIN
+    INSERT INTO [gpa_scale_rules] ([Id], [GradePoint], [MinimumScore], [DisplayOrder], [CreatedAt], [UpdatedAt])
+    SELECT src.[Id], src.[GradePoint], src.[MinimumScore], src.[DisplayOrder], @Now, NULL
+    FROM (VALUES
+        ('41414141-4141-4141-4141-414141414101', CAST(4.00 AS DECIMAL(4,2)), CAST(85.00 AS DECIMAL(5,2)), 1),
+        ('41414141-4141-4141-4141-414141414102', CAST(3.70 AS DECIMAL(4,2)), CAST(80.00 AS DECIMAL(5,2)), 2),
+        ('41414141-4141-4141-4141-414141414103', CAST(3.30 AS DECIMAL(4,2)), CAST(75.00 AS DECIMAL(5,2)), 3),
+        ('41414141-4141-4141-4141-414141414104', CAST(3.00 AS DECIMAL(4,2)), CAST(70.00 AS DECIMAL(5,2)), 4),
+        ('41414141-4141-4141-4141-414141414105', CAST(2.70 AS DECIMAL(4,2)), CAST(65.00 AS DECIMAL(5,2)), 5),
+        ('41414141-4141-4141-4141-414141414106', CAST(2.30 AS DECIMAL(4,2)), CAST(60.00 AS DECIMAL(5,2)), 6),
+        ('41414141-4141-4141-4141-414141414107', CAST(2.00 AS DECIMAL(4,2)), CAST(55.00 AS DECIMAL(5,2)), 7),
+        ('41414141-4141-4141-4141-414141414108', CAST(1.70 AS DECIMAL(4,2)), CAST(50.00 AS DECIMAL(5,2)), 8),
+        ('41414141-4141-4141-4141-414141414109', CAST(0.00 AS DECIMAL(4,2)), CAST(0.00 AS DECIMAL(5,2)), 9)
+    ) src([Id], [GradePoint], [MinimumScore], [DisplayOrder])
+    WHERE NOT EXISTS (SELECT 1 FROM [gpa_scale_rules] x WHERE x.[Id] = src.[Id]);
+END
+
+IF OBJECT_ID(N'[result_component_rules]') IS NOT NULL
+BEGIN
+    INSERT INTO [result_component_rules] ([Id], [Name], [Weightage], [DisplayOrder], [IsActive], [CreatedAt], [UpdatedAt])
+    SELECT src.[Id], src.[Name], src.[Weightage], src.[DisplayOrder], 1, @Now, NULL
+    FROM (VALUES
+        ('42424242-4242-4242-4242-424242424201', N'Assignments', CAST(25.00 AS DECIMAL(5,2)), 1),
+        ('42424242-4242-4242-4242-424242424202', N'Quizzes', CAST(15.00 AS DECIMAL(5,2)), 2),
+        ('42424242-4242-4242-4242-424242424203', N'Midterm', CAST(25.00 AS DECIMAL(5,2)), 3),
+        ('42424242-4242-4242-4242-424242424204', N'Final', CAST(35.00 AS DECIMAL(5,2)), 4)
+    ) src([Id], [Name], [Weightage], [DisplayOrder])
+    WHERE NOT EXISTS (SELECT 1 FROM [result_component_rules] x WHERE x.[Id] = src.[Id]);
+END
+
+IF OBJECT_ID(N'[institution_grading_profiles]') IS NOT NULL
+BEGIN
+    INSERT INTO [institution_grading_profiles] ([Id], [InstitutionType], [PassThreshold], [GradeRangesJson], [IsActive], [CreatedAt], [UpdatedAt])
+    SELECT src.[Id], src.[InstitutionType], src.[PassThreshold], src.[GradeRangesJson], 1, @Now, NULL
+    FROM (VALUES
+        ('43434343-4343-4343-4343-434343434301', 0, CAST(50.00 AS DECIMAL(5,2)), N'[{"grade":"A","min":85},{"grade":"B","min":70},{"grade":"C","min":55},{"grade":"D","min":50}]'),
+        ('43434343-4343-4343-4343-434343434302', 1, CAST(55.00 AS DECIMAL(5,2)), N'[{"grade":"A","min":85},{"grade":"B","min":72},{"grade":"C","min":60},{"grade":"D","min":55}]'),
+        ('43434343-4343-4343-4343-434343434303', 2, CAST(60.00 AS DECIMAL(5,2)), N'[{"grade":"A","min":85},{"grade":"B","min":75},{"grade":"C","min":65},{"grade":"D","min":60}]')
+    ) src([Id], [InstitutionType], [PassThreshold], [GradeRangesJson])
+    WHERE NOT EXISTS (SELECT 1 FROM [institution_grading_profiles] x WHERE x.[InstitutionType] = src.[InstitutionType]);
+END
+
+IF OBJECT_ID(N'[accreditation_templates]') IS NOT NULL
+BEGIN
+    INSERT INTO [accreditation_templates] ([Id], [Name], [Description], [Format], [FieldMappingsJson], [IsActive], [CreatedAt], [UpdatedAt])
+    SELECT src.[Id], src.[Name], src.[Description], src.[Format], src.[FieldMappingsJson], 1, @Now, NULL
+    FROM (VALUES
+        ('44444444-4444-4444-4444-444444444401', N'HEC Program Template', N'Program-level accreditation mapping for HEC style submissions.', N'JSON', N'{"program":"academic_programs.Name","courses":"courses.Code","faculty":"users.Username"}'),
+        ('44444444-4444-4444-4444-444444444402', N'NAAC Department Template', N'Department-level quality assurance data extract.', N'CSV', N'{"department":"departments.Name","students":"student_profiles.RegistrationNumber"}'),
+        ('44444444-4444-4444-4444-444444444403', N'ISO Academic Ops Template', N'Operational process compliance and evidence template.', N'JSON', N'{"tickets":"support_tickets.Subject","audit":"audit_logs.Action"}')
+    ) src([Id], [Name], [Description], [Format], [FieldMappingsJson])
+    WHERE NOT EXISTS (SELECT 1 FROM [accreditation_templates] x WHERE x.[Id] = src.[Id]);
+END
+
+IF OBJECT_ID(N'[registration_whitelist]') IS NOT NULL
+BEGIN
+    INSERT INTO [registration_whitelist] ([Id], [IdentifierType], [IdentifierValue], [DepartmentId], [ProgramId], [IsUsed], [UsedAt], [CreatedUserId], [CreatedAt], [UpdatedAt])
+    SELECT NEWID(), N'RegistrationNumber', sp.[RegistrationNumber], sp.[DepartmentId], sp.[ProgramId], 1, DATEADD(day, -7, @Now), @SuperAdminUserId, @Now, NULL
+    FROM [student_profiles] sp
+    WHERE NOT EXISTS (
+        SELECT 1 FROM [registration_whitelist] x
+        WHERE x.[IdentifierType] = N'RegistrationNumber' AND x.[IdentifierValue] = sp.[RegistrationNumber]
+    );
+
+    INSERT INTO [registration_whitelist] ([Id], [IdentifierType], [IdentifierValue], [DepartmentId], [ProgramId], [IsUsed], [UsedAt], [CreatedUserId], [CreatedAt], [UpdatedAt])
+    SELECT NEWID(), N'Email', u.[Email], sp.[DepartmentId], sp.[ProgramId], 1, DATEADD(day, -6, @Now), @SuperAdminUserId, @Now, NULL
+    FROM [student_profiles] sp
+    INNER JOIN [users] u ON u.[Id] = sp.[UserId]
+    WHERE u.[Email] IS NOT NULL
+      AND NOT EXISTS (
+          SELECT 1 FROM [registration_whitelist] x
+          WHERE x.[IdentifierType] = N'Email' AND x.[IdentifierValue] = u.[Email]
+      );
+END
+
+IF OBJECT_ID(N'[course_prerequisites]') IS NOT NULL
+BEGIN
+    ;WITH RankedCourses AS (
+        SELECT c.[Id], c.[DepartmentId], ROW_NUMBER() OVER (PARTITION BY c.[DepartmentId] ORDER BY c.[Code], c.[Id]) AS rn
+        FROM [courses] c
+    )
+    INSERT INTO [course_prerequisites] ([Id], [CourseId], [PrerequisiteCourseId], [CreatedAt], [UpdatedAt])
+    SELECT NEWID(), c2.[Id], c1.[Id], @Now, NULL
+    FROM RankedCourses c1
+    INNER JOIN RankedCourses c2 ON c2.[DepartmentId] = c1.[DepartmentId] AND c2.rn = c1.rn + 1
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM [course_prerequisites] x
+        WHERE x.[CourseId] = c2.[Id] AND x.[PrerequisiteCourseId] = c1.[Id]
+    );
+END
+
+IF OBJECT_ID(N'[degree_rules]') IS NOT NULL
+BEGIN
+    ;WITH ProgramBase AS (
+        SELECT ap.[Id], ap.[TotalSemesters]
+        FROM [academic_programs] ap
+    )
+    INSERT INTO [degree_rules] ([Id], [AcademicProgramId], [MinTotalCredits], [MinCoreCredits], [MinElectiveCredits], [MinGpa], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt])
+    SELECT NEWID(), pb.[Id],
+           CASE WHEN pb.[TotalSemesters] <= 2 THEN 40 WHEN pb.[TotalSemesters] <= 4 THEN 72 ELSE 132 END,
+           CASE WHEN pb.[TotalSemesters] <= 2 THEN 24 WHEN pb.[TotalSemesters] <= 4 THEN 48 ELSE 96 END,
+           CASE WHEN pb.[TotalSemesters] <= 2 THEN 16 WHEN pb.[TotalSemesters] <= 4 THEN 24 ELSE 36 END,
+           CAST(2.00 AS DECIMAL(4,2)),
+           @Now, NULL, 0, NULL
+    FROM ProgramBase pb
+    WHERE NOT EXISTS (SELECT 1 FROM [degree_rules] x WHERE x.[AcademicProgramId] = pb.[Id]);
+END
+
+IF OBJECT_ID(N'[degree_rule_required_courses]') IS NOT NULL
+BEGIN
+    ;WITH RuleCourses AS (
+        SELECT dr.[Id] AS DegreeRuleId, c.[Id] AS CourseId,
+               ROW_NUMBER() OVER (PARTITION BY dr.[Id] ORDER BY c.[Code], c.[Id]) AS rn
+        FROM [degree_rules] dr
+        INNER JOIN [academic_programs] ap ON ap.[Id] = dr.[AcademicProgramId]
+        INNER JOIN [courses] c ON c.[DepartmentId] = ap.[DepartmentId]
+    )
+    INSERT INTO [degree_rule_required_courses] ([Id], [DegreeRuleId], [CourseId], [CreatedAt], [UpdatedAt])
+    SELECT NEWID(), rc.[DegreeRuleId], rc.[CourseId], @Now, NULL
+    FROM RuleCourses rc
+    WHERE rc.rn <= 3
+      AND NOT EXISTS (
+          SELECT 1 FROM [degree_rule_required_courses] x
+          WHERE x.[DegreeRuleId] = rc.[DegreeRuleId] AND x.[CourseId] = rc.[CourseId]
+      );
+END
+
+IF OBJECT_ID(N'[course_grading_configs]') IS NOT NULL
+BEGIN
+    INSERT INTO [course_grading_configs] ([Id], [CourseId], [PassThreshold], [GradingType], [GradeRangesJson], [CreatedAt], [UpdatedAt])
+    SELECT NEWID(), c.[Id], CAST(50.00 AS DECIMAL(5,2)),
+           CASE WHEN COL_LENGTH('courses', 'GradingType') IS NOT NULL THEN COALESCE(c.[GradingType], N'GPA') ELSE N'GPA' END,
+           N'[{"grade":"A","min":85},{"grade":"B","min":70},{"grade":"C","min":55},{"grade":"D","min":50}]',
+           @Now, NULL
+    FROM [courses] c
+    WHERE NOT EXISTS (SELECT 1 FROM [course_grading_configs] x WHERE x.[CourseId] = c.[Id]);
+END
+
+IF OBJECT_ID(N'[academic_deadlines]') IS NOT NULL
+BEGIN
+    ;WITH SemesterBase AS (
+        SELECT s.[Id], s.[StartDate], s.[EndDate], ROW_NUMBER() OVER (ORDER BY s.[StartDate], s.[Id]) AS rn
+        FROM [semesters] s
+    )
+    INSERT INTO [academic_deadlines] ([Id], [SemesterId], [Title], [Description], [DeadlineDate], [ReminderDaysBefore], [IsActive], [LastReminderSentAt], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt])
+    SELECT
+        CONVERT(uniqueidentifier, CONCAT('45454545-4545-4545-4545-', RIGHT('000000000000' + CAST((sb.rn * 10 + d.[Ordinal]) AS VARCHAR(12)), 12))),
+        sb.[Id],
+        d.[Title],
+        d.[Description],
+        DATEADD(day, d.[OffsetDays], sb.[StartDate]),
+        3,
+        1,
+        NULL,
+        @Now,
+        NULL,
+        0,
+        NULL
+    FROM SemesterBase sb
+    CROSS APPLY (VALUES
+        (1, N'Enrollment Deadline', N'Final date for enrollment changes.', 14),
+        (2, N'Midterm Submission Window', N'Mid-semester evaluation and assignment checkpoint.', 60),
+        (3, N'Final Exam Preparation', N'Preparation window before semester closure.', 100)
+    ) d([Ordinal], [Title], [Description], [OffsetDays])
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM [academic_deadlines] x
+        WHERE x.[SemesterId] = sb.[Id] AND x.[Title] = d.[Title]
+    );
+END
+
+IF OBJECT_ID(N'[study_plans]') IS NOT NULL
+BEGIN
+    ;WITH StudentBase AS (
+        SELECT sp.[Id], sp.[DepartmentId], ROW_NUMBER() OVER (ORDER BY sp.[RegistrationNumber], sp.[Id]) AS rn
+        FROM [student_profiles] sp
+    )
+    INSERT INTO [study_plans] ([Id], [StudentProfileId], [PlannedSemesterName], [Notes], [AdvisorStatus], [AdvisorNotes], [ReviewedByUserId], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt])
+    SELECT
+        CONVERT(uniqueidentifier, CONCAT('46464646-4646-4646-4646-', RIGHT('000000000000' + CAST(sb.rn AS VARCHAR(12)), 12))),
+        sb.[Id],
+        N'Spring 2026',
+        N'Auto-generated study plan for high-volume demo data.',
+        1,
+        N'Initial advisor review completed.',
+        @SuperAdminUserId,
+        @Now,
+        NULL,
+        0,
+        NULL
+    FROM StudentBase sb
+    WHERE NOT EXISTS (SELECT 1 FROM [study_plans] x WHERE x.[StudentProfileId] = sb.[Id]);
+END
+
+IF OBJECT_ID(N'[study_plan_courses]') IS NOT NULL
+BEGIN
+    ;WITH PlanCourses AS (
+        SELECT spc.[Id] AS StudyPlanId, c.[Id] AS CourseId,
+               ROW_NUMBER() OVER (PARTITION BY spc.[Id] ORDER BY c.[Code], c.[Id]) AS rn
+        FROM [study_plans] spc
+        INNER JOIN [student_profiles] sp ON sp.[Id] = spc.[StudentProfileId]
+        INNER JOIN [courses] c ON c.[DepartmentId] = sp.[DepartmentId]
+    )
+    INSERT INTO [study_plan_courses] ([Id], [StudyPlanId], [CourseId], [CreatedAt], [UpdatedAt])
+    SELECT NEWID(), pc.[StudyPlanId], pc.[CourseId], @Now, NULL
+    FROM PlanCourses pc
+    WHERE pc.rn <= 4
+      AND NOT EXISTS (
+          SELECT 1 FROM [study_plan_courses] x
+          WHERE x.[StudyPlanId] = pc.[StudyPlanId] AND x.[CourseId] = pc.[CourseId]
+      );
+END
+
+IF OBJECT_ID(N'[course_announcements]') IS NOT NULL
+BEGIN
+    ;WITH OfferingBase AS (
+        SELECT o.[Id], ROW_NUMBER() OVER (ORDER BY o.[Id]) AS rn
+        FROM [course_offerings] o
+    )
+    INSERT INTO [course_announcements] ([Id], [OfferingId], [AuthorId], [Title], [Body], [PostedAt], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt])
+    SELECT
+        CONVERT(uniqueidentifier, CONCAT('47474747-4747-4747-4747-', RIGHT('000000000000' + CAST((ob.rn * 10 + a.[Ordinal]) AS VARCHAR(12)), 12))),
+        ob.[Id],
+        COALESCE((SELECT TOP 1 o2.[FacultyUserId] FROM [course_offerings] o2 WHERE o2.[Id] = ob.[Id]), @SuperAdminUserId),
+        a.[Title],
+        a.[Body],
+        DATEADD(day, -a.[Ordinal], @Now),
+        @Now,
+        NULL,
+        0,
+        NULL
+    FROM OfferingBase ob
+    CROSS APPLY (VALUES
+        (1, N'Course Kickoff', N'Welcome note and semester expectations.'),
+        (2, N'Weekly Update', N'Important weekly milestones and reading plan.')
+    ) a([Ordinal], [Title], [Body])
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM [course_announcements] x
+        WHERE x.[OfferingId] = ob.[Id] AND x.[Title] = a.[Title]
+    );
+END
+
+IF OBJECT_ID(N'[course_content_modules]') IS NOT NULL
+BEGIN
+    ;WITH OfferingBase AS (
+        SELECT o.[Id], ROW_NUMBER() OVER (ORDER BY o.[Id]) AS rn
+        FROM [course_offerings] o
+    )
+    INSERT INTO [course_content_modules] ([Id], [OfferingId], [Title], [WeekNumber], [Body], [IsPublished], [PublishedAt], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt])
+    SELECT
+        CONVERT(uniqueidentifier, CONCAT('48484848-4848-4848-4848-', RIGHT('000000000000' + CAST((ob.rn * 10 + w.[WeekNumber]) AS VARCHAR(12)), 12))),
+        ob.[Id],
+        CONCAT(N'Week ', w.[WeekNumber], N' Learning Module'),
+        w.[WeekNumber],
+        CONCAT(N'Content package for week ', w.[WeekNumber], N' including slides, readings, and lab work.'),
+        1,
+        DATEADD(day, -w.[WeekNumber], @Now),
+        @Now,
+        NULL,
+        0,
+        NULL
+    FROM OfferingBase ob
+    CROSS APPLY (VALUES (1), (2), (3), (4)) w([WeekNumber])
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM [course_content_modules] x
+        WHERE x.[OfferingId] = ob.[Id] AND x.[WeekNumber] = w.[WeekNumber]
+    );
+END
+
+IF OBJECT_ID(N'[content_videos]') IS NOT NULL
+BEGIN
+    INSERT INTO [content_videos] ([Id], [ModuleId], [Title], [StorageUrl], [EmbedUrl], [DurationSeconds], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt])
+    SELECT NEWID(), m.[Id], CONCAT(m.[Title], N' - Video Walkthrough'),
+           CONCAT(N'https://cdn.demo.local/videos/', CONVERT(NVARCHAR(36), m.[Id]), N'.mp4'),
+           CONCAT(N'https://video.demo.local/embed/', CONVERT(NVARCHAR(36), m.[Id])),
+           900 + (ABS(CHECKSUM(m.[Id])) % 1800),
+           @Now,
+           NULL,
+           0,
+           NULL
+    FROM [course_content_modules] m
+    WHERE NOT EXISTS (SELECT 1 FROM [content_videos] x WHERE x.[ModuleId] = m.[Id]);
+END
+
+IF OBJECT_ID(N'[rubrics]') IS NOT NULL
+BEGIN
+    INSERT INTO [rubrics] ([Id], [AssignmentId], [Title], [IsActive], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt])
+    SELECT NEWID(), a.[Id], CONCAT(a.[Title], N' Rubric'), 1, @Now, NULL, 0, NULL
+    FROM [assignments] a
+    WHERE NOT EXISTS (SELECT 1 FROM [rubrics] x WHERE x.[AssignmentId] = a.[Id]);
+END
+
+IF OBJECT_ID(N'[rubric_criteria]') IS NOT NULL
+BEGIN
+    INSERT INTO [rubric_criteria] ([Id], [RubricId], [Name], [MaxPoints], [DisplayOrder], [CreatedAt], [UpdatedAt])
+    SELECT NEWID(), r.[Id], c.[Name], c.[MaxPoints], c.[DisplayOrder], @Now, NULL
+    FROM [rubrics] r
+    CROSS APPLY (VALUES
+        (N'Problem Understanding', CAST(10.00 AS DECIMAL(8,2)), 1),
+        (N'Implementation Quality', CAST(10.00 AS DECIMAL(8,2)), 2),
+        (N'Documentation and Clarity', CAST(5.00 AS DECIMAL(8,2)), 3)
+    ) c([Name], [MaxPoints], [DisplayOrder])
+    WHERE NOT EXISTS (
+        SELECT 1 FROM [rubric_criteria] x
+        WHERE x.[RubricId] = r.[Id] AND x.[Name] = c.[Name]
+    );
+END
+
+IF OBJECT_ID(N'[rubric_levels]') IS NOT NULL
+BEGIN
+    INSERT INTO [rubric_levels] ([Id], [CriterionId], [Label], [PointsAwarded], [DisplayOrder], [RubricCriterionId], [CreatedAt], [UpdatedAt])
+    SELECT NEWID(), rc.[Id], lv.[Label], lv.[PointsAwarded], lv.[DisplayOrder], rc.[Id], @Now, NULL
+    FROM [rubric_criteria] rc
+    CROSS APPLY (VALUES
+        (N'Excellent', rc.[MaxPoints], 1),
+        (N'Good', CAST(rc.[MaxPoints] * 0.80 AS DECIMAL(8,2)), 2),
+        (N'Fair', CAST(rc.[MaxPoints] * 0.60 AS DECIMAL(8,2)), 3),
+        (N'Needs Improvement', CAST(rc.[MaxPoints] * 0.40 AS DECIMAL(8,2)), 4)
+    ) lv([Label], [PointsAwarded], [DisplayOrder])
+    WHERE NOT EXISTS (
+        SELECT 1 FROM [rubric_levels] x
+        WHERE x.[CriterionId] = rc.[Id] AND x.[Label] = lv.[Label]
+    );
+END
+
+IF OBJECT_ID(N'[rubric_student_grades]') IS NOT NULL
+BEGIN
+    ;WITH SubmissionCriteria AS (
+        SELECT s.[Id] AS AssignmentSubmissionId,
+               rc.[Id] AS RubricCriterionId,
+               rl.[Id] AS RubricLevelId,
+               ROW_NUMBER() OVER (PARTITION BY s.[Id], rc.[Id] ORDER BY rl.[DisplayOrder]) AS rn
+        FROM [assignment_submissions] s
+        INNER JOIN [rubrics] r ON r.[AssignmentId] = s.[AssignmentId]
+        INNER JOIN [rubric_criteria] rc ON rc.[RubricId] = r.[Id]
+        INNER JOIN [rubric_levels] rl ON rl.[CriterionId] = rc.[Id]
+    )
+    INSERT INTO [rubric_student_grades] ([Id], [AssignmentSubmissionId], [RubricCriterionId], [RubricLevelId], [PointsAwarded], [GradedByUserId], [CreatedAt], [UpdatedAt])
+    SELECT NEWID(), sc.[AssignmentSubmissionId], sc.[RubricCriterionId], sc.[RubricLevelId], rl.[PointsAwarded],
+           COALESCE(sub.[GradedByUserId], @SuperAdminUserId), @Now, NULL
+    FROM SubmissionCriteria sc
+    INNER JOIN [rubric_levels] rl ON rl.[Id] = sc.[RubricLevelId]
+    INNER JOIN [assignment_submissions] sub ON sub.[Id] = sc.[AssignmentSubmissionId]
+    WHERE sc.rn = 1
+      AND NOT EXISTS (
+          SELECT 1
+          FROM [rubric_student_grades] x
+          WHERE x.[AssignmentSubmissionId] = sc.[AssignmentSubmissionId]
+            AND x.[RubricCriterionId] = sc.[RubricCriterionId]
+      );
+END
+
+IF OBJECT_ID(N'[fyp_projects]') IS NOT NULL
+BEGIN
+    ;WITH CandidateStudents AS (
+        SELECT TOP 24 sp.[Id] AS StudentProfileId, sp.[DepartmentId], ROW_NUMBER() OVER (ORDER BY sp.[RegistrationNumber], sp.[Id]) AS rn
+        FROM [student_profiles] sp
+        ORDER BY sp.[RegistrationNumber], sp.[Id]
+    ), FacultyBase AS (
+        SELECT u.[Id], ROW_NUMBER() OVER (ORDER BY u.[Username], u.[Id]) AS rn
+        FROM [users] u
+        WHERE u.[RoleId] = @RoleFaculty
+    )
+    INSERT INTO [fyp_projects]
+        ([Id], [StudentProfileId], [DepartmentId], [Title], [Description], [Status], [SupervisorUserId], [CoordinatorRemarks], [CreatedAt], [UpdatedAt], [CompletionApprovedByUserIdsCsv], [CompletionRequestedAt], [CompletionRequestedByStudentProfileId], [IsCompletionRequested])
+    SELECT
+        CONVERT(uniqueidentifier, CONCAT('49494949-4949-4949-4949-', RIGHT('000000000000' + CAST(cs.rn AS VARCHAR(12)), 12))),
+        cs.[StudentProfileId],
+        cs.[DepartmentId],
+        CONCAT(N'Capstone Project ', FORMAT(cs.rn, '00')),
+        N'Full-stack academic automation and analytics project for enterprise-scale institution workflows.',
+        CASE WHEN cs.rn % 3 = 0 THEN N'UnderReview' ELSE N'InProgress' END,
+        fb.[Id],
+        N'Auto-generated coordinator note for demo coverage.',
+        @Now,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        0
+    FROM CandidateStudents cs
+    INNER JOIN FacultyBase fb ON fb.rn = ((cs.rn - 1) % (SELECT COUNT(1) FROM FacultyBase)) + 1
+    WHERE NOT EXISTS (SELECT 1 FROM [fyp_projects] x WHERE x.[StudentProfileId] = cs.[StudentProfileId]);
+END
+
+IF OBJECT_ID(N'[fyp_meetings]') IS NOT NULL
+BEGIN
+    INSERT INTO [fyp_meetings] ([Id], [FypProjectId], [ScheduledAt], [Venue], [Agenda], [Status], [OrganiserUserId], [Minutes], [CreatedAt], [UpdatedAt])
+    SELECT NEWID(), p.[Id], DATEADD(day, -3, @Now), N'Innovation Lab 2', N'Progress review and milestone alignment.', N'Completed',
+           COALESCE(p.[SupervisorUserId], @SuperAdminUserId), N'Initial progress meeting completed with action items.', @Now, NULL
+    FROM [fyp_projects] p
+    WHERE NOT EXISTS (SELECT 1 FROM [fyp_meetings] x WHERE x.[FypProjectId] = p.[Id]);
+END
+
+IF OBJECT_ID(N'[fyp_panel_members]') IS NOT NULL
+BEGIN
+    ;WITH FacultyBase AS (
+        SELECT u.[Id], ROW_NUMBER() OVER (ORDER BY u.[Username], u.[Id]) AS rn
+        FROM [users] u
+        WHERE u.[RoleId] = @RoleFaculty
+    ), ProjectBase AS (
+        SELECT p.[Id], ROW_NUMBER() OVER (ORDER BY p.[Id]) AS rn
+        FROM [fyp_projects] p
+    )
+    INSERT INTO [fyp_panel_members] ([Id], [FypProjectId], [UserId], [Role], [CreatedAt], [UpdatedAt])
+    SELECT NEWID(), pb.[Id], fb.[Id], roleMap.[RoleName], @Now, NULL
+    FROM ProjectBase pb
+    CROSS APPLY (VALUES (N'Supervisor', 0), (N'Internal', 1)) roleMap([RoleName], [Offset])
+    INNER JOIN FacultyBase fb ON fb.rn = ((pb.rn + roleMap.[Offset] - 1) % (SELECT COUNT(1) FROM FacultyBase)) + 1
+    WHERE NOT EXISTS (
+        SELECT 1 FROM [fyp_panel_members] x
+        WHERE x.[FypProjectId] = pb.[Id] AND x.[Role] = roleMap.[RoleName]
+    );
+END
+
+IF OBJECT_ID(N'[chat_conversations]') IS NOT NULL
+BEGIN
+    ;WITH UserBase AS (
+        SELECT TOP 80 u.[Id], r.[Name] AS RoleName, u.[DepartmentId], ROW_NUMBER() OVER (ORDER BY u.[Username], u.[Id]) AS rn
+        FROM [users] u
+        INNER JOIN [roles] r ON r.[Id] = u.[RoleId]
+        WHERE r.[Name] IN (N'Student', N'Faculty', N'Admin')
+        ORDER BY u.[Username], u.[Id]
+    )
+    INSERT INTO [chat_conversations] ([Id], [UserId], [UserRole], [DepartmentId], [StartedAt])
+    SELECT
+        CONVERT(uniqueidentifier, CONCAT('50505050-5050-5050-5050-', RIGHT('000000000000' + CAST(ub.rn AS VARCHAR(12)), 12))),
+        ub.[Id],
+        ub.[RoleName],
+        ub.[DepartmentId],
+        DATEADD(minute, -ub.rn, @Now)
+    FROM UserBase ub
+    WHERE NOT EXISTS (SELECT 1 FROM [chat_conversations] x WHERE x.[UserId] = ub.[Id]);
+END
+
+IF OBJECT_ID(N'[chat_messages]') IS NOT NULL
+BEGIN
+    INSERT INTO [chat_messages] ([Id], [ConversationId], [Role], [Content], [SentAt], [TokensUsed])
+    SELECT NEWID(), c.[Id], m.[Role], m.[Content], DATEADD(second, m.[OffsetSeconds], c.[StartedAt]), m.[TokensUsed]
+    FROM [chat_conversations] c
+    CROSS APPLY (VALUES
+        (1, N'user', N'Please help summarize this week''s key topics and action items.', 120),
+        (2, N'assistant', N'Here is a concise weekly summary with priorities and deadlines.', 180),
+        (3, N'user', N'Generate a quick revision checklist for exams.', 110),
+        (4, N'assistant', N'Revision checklist generated with topic clusters and practice targets.', 210)
+    ) m([OffsetSeconds], [Role], [Content], [TokensUsed])
+    WHERE NOT EXISTS (
+        SELECT 1 FROM [chat_messages] x
+        WHERE x.[ConversationId] = c.[Id] AND x.[Role] = m.[Role] AND x.[Content] = m.[Content]
+    );
+END
+
+IF OBJECT_ID(N'[consumed_verification_keys]') IS NOT NULL
+BEGIN
+    ;WITH Nums AS (
+        SELECT TOP 120 ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS n
+        FROM sys.all_objects
+    )
+    INSERT INTO [consumed_verification_keys] ([Id], [KeyHash], [ConsumedAt], [CreatedAt], [UpdatedAt])
+    SELECT
+        CONVERT(uniqueidentifier, CONCAT('51515151-5151-5151-5151-', RIGHT('000000000000' + CAST(n AS VARCHAR(12)), 12))),
+        CONCAT(N'SEEDKEY-', RIGHT('000000', n), N'-', RIGHT(CONVERT(NVARCHAR(32), NEWID()), 8)),
+        DATEADD(day, -n, @Now),
+        DATEADD(day, -n, @Now),
+        NULL
+    FROM Nums
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM [consumed_verification_keys] x
+        WHERE x.[Id] = CONVERT(uniqueidentifier, CONCAT('51515151-5151-5151-5151-', RIGHT('000000000000' + CAST(n AS VARCHAR(12)), 12)))
+    );
+END
+
+IF OBJECT_ID(N'[user_sessions]') IS NOT NULL
+BEGIN
+    INSERT INTO [user_sessions] ([Id], [UserId], [RefreshTokenHash], [DeviceInfo], [IpAddress], [ExpiresAt], [RevokedAt], [CreatedAt], [UpdatedAt])
+    SELECT NEWID(), u.[Id], CONCAT(N'seed-refresh-', CONVERT(NVARCHAR(36), u.[Id])),
+           N'Chrome on Windows', CONCAT(N'10.0.0.', (ABS(CHECKSUM(u.[Id])) % 200) + 20), DATEADD(day, 30, @Now), NULL, @Now, NULL
+    FROM [users] u
+    WHERE u.[IsActive] = 1
+      AND NOT EXISTS (
+          SELECT 1 FROM [user_sessions] x
+          WHERE x.[UserId] = u.[Id] AND x.[RefreshTokenHash] = CONCAT(N'seed-refresh-', CONVERT(NVARCHAR(36), u.[Id]))
+      );
+END
+
+IF OBJECT_ID(N'[password_history]') IS NOT NULL
+BEGIN
+    INSERT INTO [password_history] ([Id], [UserId], [PasswordHash], [CreatedAt])
+    SELECT NEWID(), u.[Id], CONCAT(N'seed-hash-v1-', CONVERT(NVARCHAR(36), u.[Id])), DATEADD(day, -90, @Now)
+    FROM [users] u
+    WHERE NOT EXISTS (
+        SELECT 1 FROM [password_history] x
+        WHERE x.[UserId] = u.[Id] AND x.[PasswordHash] = CONCAT(N'seed-hash-v1-', CONVERT(NVARCHAR(36), u.[Id]))
+    );
+
+    INSERT INTO [password_history] ([Id], [UserId], [PasswordHash], [CreatedAt])
+    SELECT NEWID(), u.[Id], CONCAT(N'seed-hash-v2-', CONVERT(NVARCHAR(36), u.[Id])), DATEADD(day, -30, @Now)
+    FROM [users] u
+    WHERE NOT EXISTS (
+        SELECT 1 FROM [password_history] x
+        WHERE x.[UserId] = u.[Id] AND x.[PasswordHash] = CONCAT(N'seed-hash-v2-', CONVERT(NVARCHAR(36), u.[Id]))
+    );
+END
+
+IF OBJECT_ID(N'[outbound_email_logs]') IS NOT NULL
+BEGIN
+    ;WITH Nums AS (
+        SELECT TOP 240 ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS n
+        FROM sys.all_objects
+    )
+    INSERT INTO [outbound_email_logs] ([Id], [ToAddress], [Subject], [Status], [ErrorMessage], [AttemptedAt])
+    SELECT
+        CONVERT(uniqueidentifier, CONCAT('52525252-5252-5252-5252-', RIGHT('000000000000' + CAST(n AS VARCHAR(12)), 12))),
+        CONCAT(N'user', n, N'@demo.local'),
+        CONCAT(N'Notification Batch ', n),
+        CASE WHEN n % 11 = 0 THEN N'Failed' WHEN n % 5 = 0 THEN N'Retrying' ELSE N'Sent' END,
+        CASE WHEN n % 11 = 0 THEN N'SMTP timeout in seed simulation.' ELSE NULL END,
+        DATEADD(minute, -n, @Now)
+    FROM Nums
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM [outbound_email_logs] x
+        WHERE x.[Id] = CONVERT(uniqueidentifier, CONCAT('52525252-5252-5252-5252-', RIGHT('000000000000' + CAST(n AS VARCHAR(12)), 12)))
+    );
+END
+
+IF OBJECT_ID(N'[audit_logs]') IS NOT NULL
+BEGIN
+    ;WITH UserBase AS (
+        SELECT u.[Id], ROW_NUMBER() OVER (ORDER BY u.[Username], u.[Id]) AS rn
+        FROM [users] u
+    ), UserCount AS (
+        SELECT COUNT(1) AS cnt FROM UserBase
+    ), Nums AS (
+        SELECT TOP 400 ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS n
+        FROM sys.all_objects
+    )
+    INSERT INTO [audit_logs] ([ActorUserId], [Action], [EntityName], [EntityId], [OldValuesJson], [NewValuesJson], [OccurredAt], [IpAddress])
+    SELECT
+        ub.[Id],
+        CASE n.n % 6 WHEN 0 THEN N'Create' WHEN 1 THEN N'Update' WHEN 2 THEN N'Publish' WHEN 3 THEN N'Approve' WHEN 4 THEN N'Assign' ELSE N'Generate' END,
+        CASE n.n % 7 WHEN 0 THEN N'Course' WHEN 1 THEN N'Result' WHEN 2 THEN N'Attendance' WHEN 3 THEN N'Announcement' WHEN 4 THEN N'Assignment' WHEN 5 THEN N'FypProject' ELSE N'SupportTicket' END,
+        CONVERT(NVARCHAR(100), NEWID()),
+        N'{"before":"seed"}',
+        N'{"after":"seed-updated"}',
+        DATEADD(minute, -n.n, @Now),
+        CONCAT(N'192.168.1.', (n.n % 200) + 10)
+    FROM Nums n
+    CROSS JOIN UserCount uc
+    INNER JOIN UserBase ub ON ub.rn = ((n.n - 1) % uc.cnt) + 1;
+END
+
+IF OBJECT_ID(N'[admin_change_requests]') IS NOT NULL
+BEGIN
+    ;WITH Admins AS (
+        SELECT u.[Id], ROW_NUMBER() OVER (ORDER BY u.[Username], u.[Id]) AS rn
+        FROM [users] u WHERE u.[RoleId] IN (@RoleAdmin, @RoleSuperAdmin)
+    ), Nums AS (
+        SELECT TOP 24 ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS n FROM sys.all_objects
+    )
+    INSERT INTO [admin_change_requests]
+        ([Id], [RequestorUserId], [ReviewedByUserId], [Status], [ChangeDescription], [Reason], [NewData], [AdminNotes], [ReviewedAt], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt])
+    SELECT
+        CONVERT(uniqueidentifier, CONCAT('53535353-5353-5353-5353-', RIGHT('000000000000' + CAST(n.n AS VARCHAR(12)), 12))),
+        rq.[Id], rv.[Id],
+        CASE WHEN n.n % 3 = 0 THEN 2 WHEN n.n % 2 = 0 THEN 1 ELSE 0 END,
+        N'Admin profile scope update request',
+        N'Operational realignment for academic period transition.',
+        N'{"scope":"department-access","requestedBy":"seed"}',
+        CASE WHEN n.n % 2 = 0 THEN N'Auto-approved in demo data set.' ELSE NULL END,
+        CASE WHEN n.n % 2 = 0 THEN DATEADD(day, -1, @Now) ELSE NULL END,
+        DATEADD(day, -n.n, @Now),
+        @Now,
+        0,
+        NULL
+    FROM Nums n
+    CROSS JOIN (SELECT COUNT(1) AS cnt FROM Admins) c
+    INNER JOIN Admins rq ON rq.rn = ((n.n - 1) % c.cnt) + 1
+    INNER JOIN Admins rv ON rv.rn = ((n.n) % c.cnt) + 1
+    WHERE NOT EXISTS (
+        SELECT 1 FROM [admin_change_requests] x
+        WHERE x.[Id] = CONVERT(uniqueidentifier, CONCAT('53535353-5353-5353-5353-', RIGHT('000000000000' + CAST(n.n AS VARCHAR(12)), 12)))
+    );
+END
+
+IF OBJECT_ID(N'[teacher_modification_requests]') IS NOT NULL
+BEGIN
+    ;WITH FacultyBase AS (
+        SELECT u.[Id], ROW_NUMBER() OVER (ORDER BY u.[Username], u.[Id]) AS rn
+        FROM [users] u WHERE u.[RoleId] = @RoleFaculty
+    ), ReviewerBase AS (
+        SELECT u.[Id], ROW_NUMBER() OVER (ORDER BY u.[Username], u.[Id]) AS rn
+        FROM [users] u WHERE u.[RoleId] IN (@RoleAdmin, @RoleSuperAdmin)
+    ), Nums AS (
+        SELECT TOP 40 ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS n FROM sys.all_objects
+    )
+    INSERT INTO [teacher_modification_requests]
+        ([Id], [TeacherUserId], [ReviewedByUserId], [ModificationType], [RecordId], [Status], [Reason], [ProposedData], [AdminNotes], [ReviewedAt], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt])
+    SELECT
+        CONVERT(uniqueidentifier, CONCAT('54545454-5454-5454-5454-', RIGHT('000000000000' + CAST(n.n AS VARCHAR(12)), 12))),
+        fb.[Id],
+        rb.[Id],
+        n.n % 5,
+        NEWID(),
+        CASE WHEN n.n % 4 = 0 THEN 2 WHEN n.n % 2 = 0 THEN 1 ELSE 0 END,
+        N'Marks correction and activity update request.',
+        N'{"requestedChange":"score-adjustment","source":"dummy-seed"}',
+        CASE WHEN n.n % 2 = 0 THEN N'Reviewed and synchronized.' ELSE NULL END,
+        CASE WHEN n.n % 2 = 0 THEN DATEADD(day, -2, @Now) ELSE NULL END,
+        DATEADD(day, -n.n, @Now),
+        @Now,
+        0,
+        NULL
+    FROM Nums n
+    CROSS JOIN (SELECT COUNT(1) AS fcnt FROM FacultyBase) fc
+    CROSS JOIN (SELECT COUNT(1) AS rcnt FROM ReviewerBase) rc
+    INNER JOIN FacultyBase fb ON fb.rn = ((n.n - 1) % fc.fcnt) + 1
+    INNER JOIN ReviewerBase rb ON rb.rn = ((n.n) % rc.rcnt) + 1
+    WHERE NOT EXISTS (
+        SELECT 1 FROM [teacher_modification_requests] x
+        WHERE x.[Id] = CONVERT(uniqueidentifier, CONCAT('54545454-5454-5454-5454-', RIGHT('000000000000' + CAST(n.n AS VARCHAR(12)), 12)))
+    );
+END
+
+IF OBJECT_ID(N'[parent_student_links]') IS NOT NULL
+BEGIN
+    DECLARE @ParentUsers TABLE (Id UNIQUEIDENTIFIER, Username NVARCHAR(100), Email NVARCHAR(256));
+    INSERT INTO @ParentUsers (Id, Username, Email)
+    VALUES
+    ('55550000-0000-0000-0000-000000000001', N'parent.guardian.01', N'parent.guardian.01@demo.local'),
+    ('55550000-0000-0000-0000-000000000002', N'parent.guardian.02', N'parent.guardian.02@demo.local'),
+    ('55550000-0000-0000-0000-000000000003', N'parent.guardian.03', N'parent.guardian.03@demo.local'),
+    ('55550000-0000-0000-0000-000000000004', N'parent.guardian.04', N'parent.guardian.04@demo.local'),
+    ('55550000-0000-0000-0000-000000000005', N'parent.guardian.05', N'parent.guardian.05@demo.local'),
+    ('55550000-0000-0000-0000-000000000006', N'parent.guardian.06', N'parent.guardian.06@demo.local'),
+    ('55550000-0000-0000-0000-000000000007', N'parent.guardian.07', N'parent.guardian.07@demo.local'),
+    ('55550000-0000-0000-0000-000000000008', N'parent.guardian.08', N'parent.guardian.08@demo.local'),
+    ('55550000-0000-0000-0000-000000000009', N'parent.guardian.09', N'parent.guardian.09@demo.local'),
+    ('55550000-0000-0000-0000-000000000010', N'parent.guardian.10', N'parent.guardian.10@demo.local');
+
+    INSERT INTO [users] ([Id], [Username], [Email], [PasswordHash], [RoleId], [DepartmentId], [InstitutionType], [IsActive], [LastLoginAt], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt])
+    SELECT p.[Id], p.[Username], p.[Email], @PwdHash, @RoleStudent, NULL, 0, 1, NULL, @Now, NULL, 0, NULL
+    FROM @ParentUsers p
+    WHERE NOT EXISTS (SELECT 1 FROM [users] x WHERE x.[Id] = p.[Id] OR x.[Username] = p.[Username]);
+
+    ;WITH ParentBase AS (
+        SELECT u.[Id], ROW_NUMBER() OVER (ORDER BY u.[Username], u.[Id]) AS rn
+        FROM [users] u
+        WHERE u.[Id] IN (SELECT Id FROM @ParentUsers)
+    ), StudentBase AS (
+        SELECT sp.[Id], ROW_NUMBER() OVER (ORDER BY sp.[RegistrationNumber], sp.[Id]) AS rn
+        FROM [student_profiles] sp
+    ), ParentCount AS (
+        SELECT COUNT(1) AS cnt FROM ParentBase
+    )
+    INSERT INTO [parent_student_links] ([Id], [ParentUserId], [StudentProfileId], [Relationship], [IsActive], [CreatedAt], [UpdatedAt], [IsDeleted], [DeletedAt])
+    SELECT
+        CONVERT(uniqueidentifier, CONCAT('56565656-5656-5656-5656-', RIGHT('000000000000' + CAST(sb.rn AS VARCHAR(12)), 12))),
+        pb.[Id],
+        sb.[Id],
+        CASE WHEN sb.rn % 2 = 0 THEN N'Father' ELSE N'Mother' END,
+        1,
+        @Now,
+        NULL,
+        0,
+        NULL
+    FROM StudentBase sb
+    CROSS JOIN ParentCount pc
+    INNER JOIN ParentBase pb ON pb.rn = ((sb.rn - 1) % pc.cnt) + 1
+    WHERE NOT EXISTS (SELECT 1 FROM [parent_student_links] x WHERE x.[StudentProfileId] = sb.[Id]);
+END
+
 COMMIT TRANSACTION;
 
 PRINT 'Full dummy demo data seeding completed.';
