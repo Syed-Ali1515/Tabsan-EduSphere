@@ -275,6 +275,20 @@
 - No database migration or schema change was required for Stage 32.2.
 - Validation: focused unit tests for Stage 28.2 notification service behavior passed (`2/2`); `dotnet build Tabsan.EduSphere.sln` passed.
 
+### 2026-05-14 — Phase 32 Stage 32.3 (SMS Integration)
+- Added notification SMS integration to dispatch SMS copies for in-app notifications to active recipients with valid phone numbers using Twilio free tier.
+- Extended notification repository contract with active recipient phone-number resolution stub (returns empty list until User.PhoneNumber field is added in a future phase).
+- Added Twilio NuGet package (6.15.0) and implemented `ISmsDeliveryProvider` interface with `TwilioSmsDeliveryProvider` for REST API dispatch.
+- Added template-based SMS text rendering with character-limit truncation (160 chars for single SMS segment).
+- Added `NotificationSms` configuration section (`Enabled`, `PortalUrl`) to control runtime behavior without code edits.
+- Development/default and production-initial SMS dispatch remains disabled to preserve test reliability and allow credential provisioning before enabling.
+- Twilio credentials sourced from environment variables (`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER`) for secure secret management.
+- Extended `NotificationService` constructor with optional SMS provider and options DI parameters.
+- Updated `SendAsync()` and `SendSystemAsync()` dispatch paths to include SMS delivery alongside in-app and email channels.
+- No database migration or schema change was required for Stage 32.3 (phone number field is deferred).
+- Validation: `dotnet build Tabsan.EduSphere.sln` passed with pre-existing warnings; Phase 28 Stage 2 notification tests passed (`2/2`); DI and configuration binding validated.
+- Post-implementation TODO: add `PhoneNumber` field to User entity, provision Twilio account, enable `NotificationSms:Enabled` in production, and populate user phone numbers.
+
 ## New Phase: AI Chatbot UI Improvement
 
 ### Goal

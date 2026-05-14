@@ -76,6 +76,28 @@ public class NotificationRepository : INotificationRepository
             .ToListAsync(ct);
     }
 
+    /// <summary>
+    /// Returns active recipient phone numbers for the provided user IDs (Phase 32.3).
+    /// Currently returns empty list as a placeholder — phone number field will be added to User entity in a future phase.
+    /// TODO: Implement after PhoneNumber field is added to User entity.
+    /// </summary>
+    public async Task<IReadOnlyList<string>> GetActiveUserPhoneNumbersAsync(IReadOnlyList<Guid> userIds, CancellationToken ct = default)
+    {
+        if (userIds.Count == 0)
+            return Array.Empty<string>();
+
+        // Placeholder: return empty list until User entity has PhoneNumber field
+        // Future implementation:
+        // var normalizedIds = userIds.Distinct().ToList();
+        // return await _db.Users
+        //     .AsNoTracking()
+        //     .Where(u => normalizedIds.Contains(u.Id) && u.IsActive && !string.IsNullOrWhiteSpace(u.PhoneNumber))
+        //     .Select(u => u.PhoneNumber!)
+        //     .Distinct()
+        //     .ToListAsync(ct);
+        return await Task.FromResult(Array.Empty<string>());
+    }
+
     /// <summary>Queues multiple recipient rows for bulk insertion (fan-out on dispatch).</summary>
     public async Task AddRecipientsAsync(IEnumerable<NotificationRecipient> recipients, CancellationToken ct = default)
         => await _db.NotificationRecipients.AddRangeAsync(recipients, ct);

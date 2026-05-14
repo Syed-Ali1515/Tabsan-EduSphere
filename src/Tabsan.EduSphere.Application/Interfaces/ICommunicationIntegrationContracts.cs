@@ -26,6 +26,14 @@ public interface IEmailDeliveryProvider
     Task SendTemplateAsync(string to, string subject, string templateName, IDictionary<string, string> tokens, CancellationToken ct = default);
 }
 
+public interface ISmsDeliveryProvider
+{
+    string ProviderKey { get; }
+
+    Task SendAsync(string to, string body, CancellationToken ct = default);
+    Task SendTemplateAsync(string to, string templateName, IDictionary<string, string> tokens, CancellationToken ct = default);
+}
+
 public sealed record CommunicationIntegrationProfile(
     string TicketingProvider,
     string AnnouncementProvider,

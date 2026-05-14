@@ -21,8 +21,10 @@ public class NotificationService : INotificationService
     private readonly INotificationFanoutQueue? _fanoutQueue;
     private readonly IMemoryCache _cache;
     private readonly IEmailDeliveryProvider? _emailDeliveryProvider;
+    private readonly ISmsDeliveryProvider? _smsDeliveryProvider;
     private readonly ILogger<NotificationService> _logger;
     private readonly NotificationEmailOptions _emailOptions;
+    private readonly NotificationSmsOptions _smsOptions;
 
     private const int DeferredFanoutThreshold = 250;
     private static readonly TimeSpan InboxCacheTtl = TimeSpan.FromSeconds(10);
@@ -34,15 +36,19 @@ public class NotificationService : INotificationService
         INotificationFanoutQueue? fanoutQueue = null,
         IMemoryCache? cache = null,
         IEmailDeliveryProvider? emailDeliveryProvider = null,
+        ISmsDeliveryProvider? smsDeliveryProvider = null,
         ILogger<NotificationService>? logger = null,
-        IOptions<NotificationEmailOptions>? emailOptions = null)
+        IOptions<NotificationEmailOptions>? emailOptions = null,
+        IOptions<NotificationSmsOptions>? smsOptions = null)
     {
         _repo = repo;
         _fanoutQueue = fanoutQueue;
         _cache = cache ?? new MemoryCache(new MemoryCacheOptions());
         _emailDeliveryProvider = emailDeliveryProvider;
+        _smsDeliveryProvider = smsDeliveryProvider;
         _logger = logger ?? Microsoft.Extensions.Logging.Abstractions.NullLogger<NotificationService>.Instance;
         _emailOptions = emailOptions?.Value ?? new NotificationEmailOptions();
+        _smsOptions = smsOptions?.Value ?? new NotificationSmsOptions();
     }
 
     /// <summary>
@@ -57,6 +63,7 @@ public class NotificationService : INotificationService
 
         await FanOutRecipientsAsync(notification.Id, request.RecipientUserIds, ct);
         await DispatchEmailsAsync(notification.Title, notification.Body, notification.Type, request.RecipientUserIds, ct);
+        await DispatchSmsAsync(notification.Title, notification.Body, notification.Type, request.RecipientUserIds, ct);
         BumpCacheVersion();
 
         return notification.Id;
@@ -76,6 +83,7 @@ public class NotificationService : INotificationService
 
         await FanOutRecipientsAsync(notification.Id, recipientUserIds, ct);
         await DispatchEmailsAsync(notification.Title, notification.Body, notification.Type, recipientUserIds, ct);
+        await DispatchSmsAsync(notification.Title, notification.Body, notification.Type, recipientUserIds, ct);
         BumpCacheVersion();
 
         return notification.Id;
@@ -236,6 +244,47 @@ public class NotificationService : INotificationService
                 _logger.LogWarning(ex,
                     "Failed to send notification email to {RecipientEmail} for notification '{Title}'.",
                     email,
+                    title);
+            }
+        }
+    }
+
+    private async Task DispatchSmsAsync(
+        string title,
+        string body,
+        NotificationType type,
+        IReadOnlyList<Guid> recipientUserIds,
+        CancellationToken ct)
+    {
+        if (!_smsOptions.Enabled || _smsDeliveryProvider is null)
+            return;
+
+        var phoneNumbers = await _repo.GetActiveUserPhoneNumbersAsync(recipientUserIds, ct);
+        if (phoneNumbers.Count == 0)
+            return;
+
+        foreach (var phoneNumber in phoneNumbers)
+        {
+            try
+            {
+                await _smsDeliveryProvider.SendTemplateAsync(
+                    phoneNumber,
+                    "notification-alert",
+                    new Dictionary<string, string>
+                    {
+                        ["TITLE"] = title,
+                        ["BODY"] = body,
+                        ["TYPE"] = type.ToString(),
+                        ["CREATED_AT_UTC"] = DateTime.UtcNow.ToString("u"),
+                        ["PORTAL_URL"] = _smsOptions.PortalUrl
+                    },
+                    ct);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex,
+                    "Failed to send notification SMS to {RecipientPhoneNumber} for notification '{Title}'.",
+                    phoneNumber,
                     title);
             }
         }

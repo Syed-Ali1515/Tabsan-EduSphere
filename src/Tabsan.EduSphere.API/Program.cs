@@ -67,6 +67,7 @@ Console.WriteLine($"[Startup] ScaleOut InstanceId: {runtimeInstanceId} | ExposeI
 builder.Services.AddSingleton(new ObservabilityMetrics(processStartUtc));
 builder.Services.Configure<BackgroundJobReliabilityOptions>(builder.Configuration.GetSection(BackgroundJobReliabilityOptions.SectionName));
 builder.Services.Configure<NotificationEmailOptions>(builder.Configuration.GetSection(NotificationEmailOptions.SectionName));
+builder.Services.Configure<NotificationSmsOptions>(builder.Configuration.GetSection(NotificationSmsOptions.SectionName));
 builder.Services.AddSingleton<BackgroundJobHealthTracker>();
 
 // Final-Touches Phase 8 Stage 8.1 — auto-scaling policy metadata and startup guardrails.
@@ -475,6 +476,7 @@ builder.Services.AddSingleton<Tabsan.EduSphere.Application.Interfaces.IOutboundI
 builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.ISupportTicketingProvider, Tabsan.EduSphere.Infrastructure.Integrations.InAppSupportTicketingProvider>();
 builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IAnnouncementBroadcastProvider, Tabsan.EduSphere.Infrastructure.Integrations.InAppAnnouncementBroadcastProvider>();
 builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.IEmailDeliveryProvider, Tabsan.EduSphere.Infrastructure.Integrations.SmtpEmailDeliveryProvider>();
+builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.ISmsDeliveryProvider, Tabsan.EduSphere.Infrastructure.Integrations.TwilioSmsDeliveryProvider>();
 builder.Services.AddScoped<Tabsan.EduSphere.Application.Interfaces.ICommunicationIntegrationService, Tabsan.EduSphere.Application.Services.CommunicationIntegrationService>();
 // ── Rate limiting (OWASP hardening) ─────────────────────────────────────
 builder.Services.AddRateLimiter(opts =>

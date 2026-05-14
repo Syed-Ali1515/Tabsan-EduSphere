@@ -36,6 +36,9 @@ public interface INotificationRepository
     /// <summary>Returns active recipient email addresses for the provided user IDs.</summary>
     Task<IReadOnlyList<string>> GetActiveUserEmailsAsync(IReadOnlyList<Guid> userIds, CancellationToken ct = default);
 
+    /// <summary>Returns active recipient phone numbers for the provided user IDs (Phase 32.3).</summary>
+    Task<IReadOnlyList<string>> GetActiveUserPhoneNumbersAsync(IReadOnlyList<Guid> userIds, CancellationToken ct = default);
+
     /// <summary>Queues multiple recipient rows for bulk insertion (fan-out).</summary>
     Task AddRecipientsAsync(IEnumerable<NotificationRecipient> recipients, CancellationToken ct = default);
 

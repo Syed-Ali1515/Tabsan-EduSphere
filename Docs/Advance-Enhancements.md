@@ -13,7 +13,7 @@ Purpose:
 - Preserve core functionality, global configuration behavior, and role-rights policy.
 
 Status:
-- In progress (Phase 32 Stage 32.2 completed, ready to proceed with Stage 32.3)
+- In progress (Phase 32 all stages completed 32.1-32.3, ready to proceed with Phase 33)
 
 ## Execution Updates
 
@@ -550,10 +550,35 @@ Stage planning addendum (2026-05-14):
 	- full solution build passed.
 
 ### Stage 32.3 - SMS Integration
-- High-priority SMS alerts.
-
-Deliverable goal:
-- Multi-channel communication with role and event controls.
+- Status: Completed (2026-05-14).
+- Implemented Twilio-based SMS notification dispatch on top of existing in-app and email flows.
+- Delivery behavior:
+	- every in-app notification send path now optionally dispatches SMS notifications to configured phone numbers,
+	- recipient phone list is resolved from active user accounts with non-empty phone numbers (placeholder: returns empty until User entity has PhoneNumber field added),
+	- dispatch uses Twilio API with free-tier credentials (AccountSid, AuthToken, PhoneNumber from environment variables),
+	- SMS templates use concise plain-text format with 160-character truncation to fit single SMS segment.
+- Configuration and free-service alignment:
+	- added `NotificationSms` settings section for enable/disable and portal notification URL,
+	- Twilio credentials sourced from environment variables (`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER`),
+	- free-tier mode: production/default `NotificationSms:Enabled` remains `false` until Twilio credentials are provisioned,
+	- development/default `NotificationSms:Enabled` remains `false` to avoid test failures without credentials.
+- Implementation details:
+	- `ISmsDeliveryProvider` interface contract in communication integration,
+	- `TwilioSmsDeliveryProvider` implementation: sends SMS via Twilio REST API with E.164 phone validation,
+	- `NotificationSmsOptions` config class mirroring email pattern,
+	- `INotificationRepository.GetActiveUserPhoneNumbersAsync()` stub (ready for User.PhoneNumber field addition),
+	- `NotificationService.DispatchSmsAsync()` method: per-recipient SMS template dispatch with exception logging (non-blocking),
+	- `NotificationService` constructor extended with `ISmsDeliveryProvider?` and `IOptions<NotificationSmsOptions>?` DI parameters,
+	- `SendAsync()` and `SendSystemAsync()` dispatch paths include SMS in addition to email and in-app delivery.
+- Validation:
+	- full solution build passed with 20 warnings (Twilio version and pre-existing nullability warnings),
+	- Phase 28 Stage 2 notification tests passed (2/2),
+	- DI wiring and configuration binding validated in Program.cs.
+- Next steps (Phase 32.3 post-implementation):
+	- add `PhoneNumber` field to User entity (migration required),
+	- provision Twilio account and set environment variables for production,
+	- enable `NotificationSms:Enabled` in production appsettings,
+	- populate user phone numbers through admin UI or CSV import.
 
 ---
 
