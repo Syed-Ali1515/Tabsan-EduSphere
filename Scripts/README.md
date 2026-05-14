@@ -58,3 +58,26 @@ Rollback and verification checklist:
 The only scripts required for deployment are `01` through `05`.
 
 Other files in this folder (load balancer helpers, phase utilities, and one-off maintenance helpers) are not part of the standard database setup sequence.
+
+### Stage 34.3 Failure/Recovery Utilities
+
+These scripts are operational drills and safeguards; they do not replace the required `01` through `05` deployment flow.
+
+1. `Phase34-BackupRestore-Drill.ps1`
+- Performs a backup/restore drill by creating a full backup, running `RESTORE VERIFYONLY`, and restoring into a drill database.
+- Produces backup artifacts under `Artifacts/Phase34/Backups` by default.
+
+Example:
+```powershell
+powershell -ExecutionPolicy Bypass -File "Scripts\Phase34-BackupRestore-Drill.ps1" -ServerInstance "localhost"
+```
+
+2. `Phase34-Rollback-Safe-Deployment.ps1`
+- Runs scripts `01 -> 05` with a pre-deployment backup gate for existing databases.
+- If deployment fails after backup, it performs automatic rollback restore from the pre-deployment backup.
+- Stores rollback backups under `Artifacts/Phase34/RollbackBackups` by default.
+
+Example:
+```powershell
+powershell -ExecutionPolicy Bypass -File "Scripts\Phase34-Rollback-Safe-Deployment.ps1" -ServerInstance "localhost"
+```

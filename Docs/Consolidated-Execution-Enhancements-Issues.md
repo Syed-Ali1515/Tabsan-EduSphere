@@ -2960,7 +2960,15 @@ Validation Summary
 - `dotnet test tests/Tabsan.EduSphere.UnitTests/Tabsan.EduSphere.UnitTests.csproj --filter "FullyQualifiedName~AuthSecurityUxTests|FullyQualifiedName~Phase27Stage2Tests" -v minimal` passed (`5/5`).
 
 ### Stage 34.3 - Failure and Recovery Readiness
-- Backup/restore drills and rollback-safe deployment playbook.
+- Status: Completed (2026-05-15).
+Implementation Summary
+- Added operational drill script `Scripts/Phase34-BackupRestore-Drill.ps1` for backup creation, restore verification, and restore-to-drill-database execution.
+- Added rollback-safe deployment script `Scripts/Phase34-Rollback-Safe-Deployment.ps1` to enforce pre-deployment backup and automatic restore-on-failure behavior for the standard `01 -> 05` SQL script chain.
+- Updated `Scripts/README.md` with Stage 34.3 utility usage, scope, and execution examples.
+
+Validation Summary
+- `dotnet build Tabsan.EduSphere.sln -v minimal` passed after Stage 34.3 additions.
+- Script structure validated via strict PowerShell syntax parse for both new Stage 34.3 scripts.
 
 Deliverable goal:
 - Enterprise security baseline and operational trust.
