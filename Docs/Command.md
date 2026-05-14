@@ -8,7 +8,11 @@ Before starting any work, the assistant must:
 3. Continue from the exact Current Execution Pointer below.
 
 ## Global Repository Sync Rule (Always Mandatory)
-After **every completion** (stage, phase, feature, fix, or documentation task), always update the repository in this sequence:
+After **every completion** (stage, phase, feature, fix, or documentation task), always add both:
+1. `Implementation Summary`
+2. `Validation Summary`
+
+After that, always update the repository (commit, push, and pull required) using this sequence:
 1. Commit all relevant changes
 2. Pull latest remote changes with `--rebase`
 3. Push local committed changes
