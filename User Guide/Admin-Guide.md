@@ -1,8 +1,8 @@
 # Admin User Guide
 
-Version: 1.2  
-Date: 14 May 2026  
-Completion Status: Phase 31 Stage 31.3
+Version: 1.3  
+Date: 15 May 2026  
+Completion Status: Phase 33 complete, Phase 34 ready
 
 ## 1. Purpose
 
@@ -18,6 +18,13 @@ This guide covers departmental administration in Tabsan EduSphere: user operatio
 - Student lifecycle views support institution-driven academic-level wording (Semester/Grade/Year).
 - School stream support for Grades 9-12 with stream-aware subject filtering is available where School mode is active.
 - Parent-facing read-only features and notifications are available when parent portal module is enabled.
+
+## 1.2 Documentation Baseline (15 May 2026)
+
+- Institution parity baseline remains active for School, College, and University contexts.
+- User import templates are role-specific in User Import Sheets: faculty-admin-import-template.csv and students-import-template.csv.
+- Standard DB deployment run path is Scripts/01 through Scripts/05.
+- Cross-phase planning and enhancement tracking is consolidated in Docs/Consolidated-Execution-Enhancements-Issues.md.
 
 ## 2. Admin Scope
 

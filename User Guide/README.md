@@ -2,8 +2,8 @@
 
 This folder contains role-based manuals for day-to-day use of the platform.
 
-Version: 1.3 — updated 14 May 2026  
-Completion Status: Phase 31 Stage 31.3
+Version: 1.4 — updated 15 May 2026  
+Completion Status: Phase 33 complete, Phase 34 ready
 
 ## Documents
 
@@ -29,4 +29,6 @@ Completion Status: Phase 31 Stage 31.3
 - Role and institute filters are enforced together: visible menus, data scope, and report behavior can differ between School, College, and University contexts.
 - Some screens can look slightly different depending on theme and deployment settings.
 - Audit-sensitive actions such as publishing results and system-level changes are logged.
-- Current release context: Phase 31 Stage 31.3 completed (Analytics, Reports, Export Enhancements), with Phase 32+ planned next.
+- User import templates are now role-specific under User Import Sheets: faculty-admin-import-template.csv and students-import-template.csv.
+- Standard database deployment run order is Scripts/01-Schema-Current.sql through Scripts/05-PostDeployment-Checks.sql.
+- Consolidated planning and enhancement history is maintained in Docs/Consolidated-Execution-Enhancements-Issues.md.

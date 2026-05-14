@@ -1,9 +1,9 @@
 # Tabsan EduSphere – User Guide
 
-**Version:** 1.3  
-**Date:** 14 May 2026  
+**Version:** 1.4  
+**Date:** 15 May 2026  
 **Aligned With PRD:** v1.8 | Modules v1.3  
-**Completion Status:** Phase 31 Stage 31.3  
+**Completion Status:** Phase 33 complete, Phase 34 ready  
 **Audience:** Students, Faculty, Admins, Super Admins
 
 ---
@@ -28,7 +28,7 @@
 ### Infrastructure & Governance (Phase 33)
 - Tenant operations settings now support tenant-scope isolation (onboarding, subscription, tenant profile) for SaaS-ready deployments.
 - Parent portal enhancements include linked-student read-only views and parent notification fan-out (where enabled).
-- UAT, SAT, and Output documentation are available in the Docs folder for validation and acceptance.
+- UAT, SAT, and Output documentation are available in UAT-SAT docs/ for validation and acceptance.
 - Import/export (CSV, PDF, Excel) and index maintenance scripts are included for admins and IT staff.
 
 ---
@@ -89,7 +89,13 @@ DBAs/IT staff: See Scripts/04-Maintenance-Indexes-And-Views.sql for index and vi
 
 ### 2.8 UAT/SAT/Output Docs
 
-Acceptance and validation checklists are in Docs/UAT.md, Docs/SAT.md, Docs/Output.md.
+Acceptance and validation checklists are in UAT-SAT docs/UAT.md, UAT-SAT docs/SAT.md, UAT-SAT docs/Output.md.
+
+### 2.9 Current Baseline Notes (15 May 2026)
+
+- User import templates are role-specific under User Import Sheets: faculty-admin-import-template.csv and students-import-template.csv.
+- Standard DB deployment run path is Scripts/01 through Scripts/05.
+- Consolidated planning and enhancement history is maintained in Docs/Consolidated-Execution-Enhancements-Issues.md.
 
 ---
 

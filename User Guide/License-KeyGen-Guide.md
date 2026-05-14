@@ -1,9 +1,9 @@
 # License KeyGen User Guide
 
-Version: 1.3  
-Date: 14 May 2026  
+Version: 1.4  
+Date: 15 May 2026  
 Applies to: tools/KeyGen/KeyGen.cs  
-Completion Status: Phase 31 Stage 31.3
+Completion Status: Phase 33 complete, Phase 34 ready
 
 ## 1. Purpose
 
@@ -21,6 +21,12 @@ These keys support secure license generation and verification workflows.
 - Institution-scope-aware licensing remains a core control path for School/College/University enablement.
 - Current operational baseline includes stronger module enforcement and institute-scope guardrails across API and portal surfaces.
 - Continue using strict key-handling controls: private keys in vault only, public keys in verifier configuration only.
+
+## 1.2 Documentation Baseline (15 May 2026)
+
+- Institution scope remains tri-mode: School, College, University.
+- SuperAdmin license workflows should be validated alongside standard deployment scripts Scripts/01 through Scripts/05.
+- Consolidated planning and phase history now resides in Docs/Consolidated-Execution-Enhancements-Issues.md.
 
 ## 2. Prerequisites
 

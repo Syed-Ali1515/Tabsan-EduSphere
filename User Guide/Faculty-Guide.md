@@ -1,8 +1,8 @@
 # Faculty User Guide
 
-Version: 1.2  
-Date: 14 May 2026  
-Completion Status: Phase 31 Stage 31.3
+Version: 1.3  
+Date: 15 May 2026  
+Completion Status: Phase 33 complete, Phase 34 ready
 
 ## 1. Purpose
 
@@ -16,6 +16,13 @@ This guide explains faculty workflows in Tabsan EduSphere: teaching setup, assig
 - Report and analytics requests now enforce assignment plus institute compatibility more strictly.
 - Parent notification fan-out is supported for published results and selected academic alerts where parent module is active.
 - Export behavior for analytics/reporting is standardized across synchronous and queued job paths.
+
+## 1.2 Documentation Baseline (15 May 2026)
+
+- Institution parity baseline remains active for School, College, and University contexts.
+- Student and faculty-facing labels remain institution-aware (Semester/Grade/Year) by policy.
+- User import templates are now role-specific under User Import Sheets and aligned to admin onboarding workflows.
+- Standard DB deployment run path is Scripts/01 through Scripts/05.
 
 ## 2. Login and Role Scope
 

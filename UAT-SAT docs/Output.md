@@ -40,3 +40,12 @@ This document captures the expected lifecycle of a single student across the sup
 ## Validation Basis
 
 This output reflects the currently implemented lifecycle services, progression rules, institution policy support, and license-gated access paths in the codebase.
+
+## Current Baseline Notes (15 May 2026)
+
+- Institution parity is active for School, College, and University contexts.
+- Standard DB deployment verification chain is Scripts/01 through Scripts/05.
+- User onboarding templates are role-specific under User Import Sheets:
+	- faculty-admin-import-template.csv
+	- students-import-template.csv
+- Cross-phase planning and enhancement history is consolidated in Docs/Consolidated-Execution-Enhancements-Issues.md.

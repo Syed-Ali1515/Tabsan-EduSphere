@@ -14,8 +14,11 @@ User acceptance testing confirms the product behaves correctly from an operator 
 7. Confirm the license becomes active and the correct institution scope is enforced.
 8. Verify a domain-locked license is rejected from the wrong host.
 9. Verify a license with `MaxUsers` greater than zero enforces the user limit.
-10. Test import/export (CSV, PDF, Excel) features for users and timetables.
-11. Run Scripts/04-Maintenance-Indexes-And-Views.sql and confirm indexes/views are up to date.
+10. Validate user import templates in User Import Sheets:
+	- faculty-admin-import-template.csv
+	- students-import-template.csv
+11. Test import/export (CSV, PDF, Excel) features for users and timetables.
+12. Run Scripts/01-Schema-Current.sql through Scripts/05-PostDeployment-Checks.sql in order for full deployment validation.
 
 ## Tabsan.Lic UAT Steps
 
@@ -32,4 +35,5 @@ User acceptance testing confirms the product behaves correctly from an operator 
 - The license tool supports 1 month, 1 year, 2 years, 3 years, and Permanent expiry choices.
 - The license payload carries institution-scope flags and the app applies them on activation.
 - Import/export and index maintenance features are validated.
+- User import templates are role-specific and aligned to current onboarding workflow.
 - The unit-test build for the main application passed during this session.

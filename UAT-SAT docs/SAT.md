@@ -13,8 +13,11 @@ Site acceptance testing verifies the deployed application behaves correctly in i
 6. Verify the institution policy stored in the application matches the license scope.
 7. Confirm login and role-based navigation continue to work.
 8. Confirm student lifecycle actions still function after deployment.
-9. Test import/export (CSV, PDF, Excel) features for users and timetables.
-10. Run Scripts/04-Maintenance-Indexes-And-Views.sql and confirm indexes/views are up to date.
+9. Validate user import templates in User Import Sheets:
+	- faculty-admin-import-template.csv
+	- students-import-template.csv
+10. Test import/export (CSV, PDF, Excel) features for users and timetables.
+11. Run Scripts/01-Schema-Current.sql through Scripts/05-PostDeployment-Checks.sql in order for site deployment verification.
 
 ## Tabsan.Lic SAT Steps
 
@@ -30,3 +33,4 @@ Site acceptance testing verifies the deployed application behaves correctly in i
 - License activation succeeds only in the intended environment.
 - Institution scope and user limits remain enforced after deployment.
 - Import/export and index maintenance features are validated.
+- Role-specific user import templates are available and validated.

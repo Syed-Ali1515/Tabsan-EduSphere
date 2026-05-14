@@ -1,8 +1,8 @@
 # SuperAdmin User Guide
 
-Version: 1.2  
-Date: 14 May 2026  
-Completion Status: Phase 31 Stage 31.3
+Version: 1.3  
+Date: 15 May 2026  
+Completion Status: Phase 33 complete, Phase 34 ready
 
 ## 1. Purpose
 
@@ -24,6 +24,12 @@ This guide is for platform-level administrators responsible for licensing, modul
 - Parent portal capabilities can now include linked-student read surfaces and parent notification fan-out.
 - Phase 33 tenant-scope isolation was delivered for tenant operations settings (onboarding, subscription, tenant profile).
 - Institution-aware academic vocabulary (Semester/Grade/Year, GPA/Percentage/Marks) configured via license policy.
+
+## 1.2 Documentation Baseline (15 May 2026)
+
+- User import templates are now role-specific under User Import Sheets: faculty-admin-import-template.csv and students-import-template.csv.
+- Standard DB deployment run path is Scripts/01 through Scripts/05.
+- Consolidated cross-phase planning and enhancement record is maintained in Docs/Consolidated-Execution-Enhancements-Issues.md.
 
 ## 2. SuperAdmin Responsibilities
 

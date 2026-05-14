@@ -1,8 +1,8 @@
 # Student User Guide
 
-Version: 1.2  
-Date: 14 May 2026  
-Completion Status: Phase 31 Stage 31.3
+Version: 1.3  
+Date: 15 May 2026  
+Completion Status: Phase 33 complete, Phase 34 ready
 
 ## 1. Purpose
 
@@ -16,6 +16,13 @@ This guide helps students use Tabsan EduSphere for coursework, attendance, quizz
 - Parent-linked notification experience can be active in school-focused deployments where parent module is enabled.
 - Results, transcript, and data surfaces follow tighter role and institute scope boundaries for your privacy.
 - Performance analytics and trends are now available in some institutions; view your individual performance compared to class averages (Phase 31.2).
+
+## 1.2 Documentation Baseline (15 May 2026)
+
+- Institution parity baseline remains active for School, College, and University contexts.
+- Student terminology and lifecycle labels remain institution-aware by policy (Semester/Grade/Year).
+- Standard DB deployment run path is Scripts/01 through Scripts/05.
+- Consolidated enhancement and roadmap tracking is maintained in Docs/Consolidated-Execution-Enhancements-Issues.md.
 
 ## 2. Access and Login
 
