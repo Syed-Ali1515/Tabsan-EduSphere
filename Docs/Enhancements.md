@@ -5,6 +5,14 @@
 **Phases are ordered by implementation sequence** — lowest complexity and fewest dependencies first.  
 **Status:** All phases are **Planned — Not Started** unless noted.
 
+### 2026-05-14 — Phase 33 (SaaS and Multi-Tenant Readiness) Complete
+- Added tenant-scope-aware settings isolation in `TenantOperationsService` for onboarding-template, subscription-plan, and tenant-profile operations.
+- Added tenant-scoped distributed cache keys for tenant operations payloads to avoid cross-tenant cache collisions.
+- Added default-scope backward compatibility: when tenant scope resolves to default, existing unscoped settings keys continue to be used.
+- Added `ITenantScopeResolver` contract and API resolver implementation (`HttpTenantScopeResolver`) with claim/header scope discovery.
+- Added unit regression test proving two tenant scopes do not leak data when sharing one settings repository instance.
+- No database migration or schema change was required for this Phase 33 delivery.
+
 ### 2026-05-14 — Phase 24 Stage 24.3 Complete
 - Sidebar navigation now filters module-governed entries by current module activation status through the `my-visible` sidebar endpoint.
 - Disabled module areas are hidden from menu output, keeping navigation aligned with Stage 24.2 backend module enforcement.

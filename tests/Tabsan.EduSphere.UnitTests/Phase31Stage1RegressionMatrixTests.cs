@@ -109,6 +109,42 @@ public class Phase31Stage1RegressionMatrixTests
         profileA.TenantCode.Should().NotBe(profileB.TenantCode);
     }
 
+    [Fact]
+    public async Task TenantIsolation_SameStore_DifferentTenantScopes_DoNotLeakData()
+    {
+        var sharedRepo = new MatrixSettingsRepository();
+
+        var tenantA = new TenantOperationsService(sharedRepo, CreateDistributedCache(), new MatrixTenantScopeResolver("tenant-a"));
+        var tenantB = new TenantOperationsService(sharedRepo, CreateDistributedCache(), new MatrixTenantScopeResolver("tenant-b"));
+
+        await tenantA.SaveTenantProfileAsync(new SaveTenantProfileSettingsCommand(
+            TenantCode: "tenant-a",
+            TenantDisplayName: "Tenant A",
+            SupportEmail: "a@tenant.test",
+            SupportPhone: "+1-111-1111",
+            TimeZone: "UTC",
+            Locale: "en-US",
+            CurrencyCode: "USD",
+            BrandingTheme: "a-theme"));
+
+        await tenantB.SaveTenantProfileAsync(new SaveTenantProfileSettingsCommand(
+            TenantCode: "tenant-b",
+            TenantDisplayName: "Tenant B",
+            SupportEmail: "b@tenant.test",
+            SupportPhone: "+1-222-2222",
+            TimeZone: "UTC",
+            Locale: "en-US",
+            CurrencyCode: "USD",
+            BrandingTheme: "b-theme"));
+
+        var profileA = await tenantA.GetTenantProfileAsync();
+        var profileB = await tenantB.GetTenantProfileAsync();
+
+        profileA.TenantCode.Should().Be("tenant-a");
+        profileB.TenantCode.Should().Be("tenant-b");
+        profileA.TenantCode.Should().NotBe(profileB.TenantCode);
+    }
+
     private static IDistributedCache CreateDistributedCache()
         => new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
 }
@@ -198,4 +234,16 @@ file sealed class MatrixSettingsRepository : ISettingsRepository
     public Task AddMenuRoleAccessAsync(SidebarMenuRoleAccess access, CancellationToken ct = default) => throw new NotImplementedException();
     public void RemoveMenuRoleAccess(SidebarMenuRoleAccess access) => throw new NotImplementedException();
     public Task<SidebarMenuRoleAccess?> GetMenuRoleAccessAsync(Guid menuItemId, string roleName, CancellationToken ct = default) => throw new NotImplementedException();
+}
+
+file sealed class MatrixTenantScopeResolver : ITenantScopeResolver
+{
+    private readonly string _scope;
+
+    public MatrixTenantScopeResolver(string scope)
+    {
+        _scope = scope;
+    }
+
+    public string? GetTenantScopeKey() => _scope;
 }

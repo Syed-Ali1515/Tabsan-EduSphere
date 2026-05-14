@@ -276,7 +276,7 @@ public class NotificationService : INotificationService
                         ["BODY"] = body,
                         ["TYPE"] = type.ToString(),
                         ["CREATED_AT_UTC"] = DateTime.UtcNow.ToString("u"),
-                        ["PORTAL_URL"] = _smsOptions.PortalUrl
+                        ["PORTAL_URL"] = _smsOptions.PortalUrl ?? string.Empty
                     },
                     ct);
             }

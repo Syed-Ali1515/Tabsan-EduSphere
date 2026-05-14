@@ -13,7 +13,7 @@ Purpose:
 - Preserve core functionality, global configuration behavior, and role-rights policy.
 
 Status:
-- In progress (Phase 32 all stages completed 32.1-32.3, ready to proceed with Phase 33)
+- In progress (Phase 33 completed, ready to proceed with Phase 34)
 
 ## Execution Updates
 
@@ -586,14 +586,28 @@ Stage planning addendum (2026-05-14):
 Complexity: High
 Depends on: Phases 23-24
 
+### 2026-05-14 - Phase 33 Completion
+- Completed tenant-scope isolation for tenant operations settings reads/writes without schema churn.
+- Added tenant-scoped key and cache behavior in `TenantOperationsService` for:
+	- onboarding template,
+	- subscription plan,
+	- tenant profile.
+- Added default-scope backward compatibility so existing single-tenant deployments continue to read legacy unscoped keys.
+- Added API tenant-scope resolver (`HttpTenantScopeResolver`) with claim/header discovery (`tenant_code`, `tenantCode`, `tenant`, `tid`, `X-Tenant-Code`).
+- Added unit validation proving isolation across two tenant scopes using a shared settings repository.
+- Validation: focused unit tests passed for Stage 33 isolation coverage.
+
 ### Stage 33.1 - Tenant Isolation Model
-- Tenant-aware data boundaries and filtering.
+- Status: Completed (2026-05-14).
+- Tenant-aware boundaries now applied on tenant operations settings via tenant-scoped keys and cache keys.
 
 ### Stage 33.2 - Subscription Management
-- Plan lifecycle, expiry warnings, subscription state checks.
+- Status: Completed (2026-05-14).
+- Subscription plan state is now tenant-scoped, preventing cross-tenant read/write leakage.
 
 ### Stage 33.3 - Onboarding and Branding
-- Tenant onboarding workflow and branding customization.
+- Status: Completed (2026-05-14).
+- Onboarding template and tenant profile/branding settings now resolve and persist per-tenant scope.
 
 Deliverable goal:
 - Production SaaS posture with clear tenant boundaries.

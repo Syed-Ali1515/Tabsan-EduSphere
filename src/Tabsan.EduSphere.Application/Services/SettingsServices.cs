@@ -375,15 +375,20 @@ public class PortalBrandingService : IPortalBrandingService
     public async Task<PortalBrandingDto> GetAsync(CancellationToken ct = default)
     {
         var all = await _repo.GetAllPortalSettingsAsync(ct);
+        static string? ReadOptional(IReadOnlyDictionary<string, string> values, string key)
+            => values.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value)
+                ? value
+                : null;
+
         return new PortalBrandingDto(
             all.GetValueOrDefault(KeyUniversityName, "Tabsan EduSphere"),
             all.GetValueOrDefault(KeyPortalSubtitle, "Campus Portal"),
             all.GetValueOrDefault(KeyFooterText,     "© 2026 Tabsan EduSphere"),
-            all.GetValueOrDefault(KeyLogoImage,      null),
-            all.GetValueOrDefault(KeyPrivacyPolicy,  null),
-            all.GetValueOrDefault(KeyPrivacyPolicyContent, null),
-            all.GetValueOrDefault(KeyFontFamily,     null),
-            all.GetValueOrDefault(KeyFontSize,       null)
+            ReadOptional(all, KeyLogoImage),
+            ReadOptional(all, KeyPrivacyPolicy),
+            ReadOptional(all, KeyPrivacyPolicyContent),
+            ReadOptional(all, KeyFontFamily),
+            ReadOptional(all, KeyFontSize)
         );
     }
 
@@ -441,110 +446,149 @@ public class TenantOperationsService : ITenantOperationsService
 
     private readonly ISettingsRepository _repo;
     private readonly IDistributedCache _distributedCache;
+    private readonly ITenantScopeResolver? _tenantScopeResolver;
 
-    public TenantOperationsService(ISettingsRepository repo, IDistributedCache distributedCache)
+    public TenantOperationsService(
+        ISettingsRepository repo,
+        IDistributedCache distributedCache,
+        ITenantScopeResolver? tenantScopeResolver = null)
     {
         _repo = repo;
         _distributedCache = distributedCache;
+        _tenantScopeResolver = tenantScopeResolver;
     }
 
     public async Task<TenantOnboardingTemplateDto> GetOnboardingTemplateAsync(CancellationToken ct = default)
     {
-        return await GetOrSetCachedAsync(CacheKeyOnboardingTemplate, async () =>
+        return await GetOrSetCachedAsync(ScopedCacheKey(CacheKeyOnboardingTemplate), async () =>
         {
             var all = await _repo.GetAllPortalSettingsAsync(ct);
             return new TenantOnboardingTemplateDto(
-                all.GetValueOrDefault(KeyOnboardingTemplateName, "Standard University"),
-                all.GetValueOrDefault(KeyOnboardingInstitutionMode, "University"),
-                all.GetValueOrDefault(KeyOnboardingAdminRole, "Admin"),
-                all.GetValueOrDefault(KeyOnboardingWelcomeMessage, "Welcome to Tabsan EduSphere."),
-                all.GetValueOrDefault(KeyOnboardingStarterModules, "dashboard,students,courses,results")
+                ReadSetting(all, KeyOnboardingTemplateName, "Standard University"),
+                ReadSetting(all, KeyOnboardingInstitutionMode, "University"),
+                ReadSetting(all, KeyOnboardingAdminRole, "Admin"),
+                ReadSetting(all, KeyOnboardingWelcomeMessage, "Welcome to Tabsan EduSphere."),
+                ReadSetting(all, KeyOnboardingStarterModules, "dashboard,students,courses,results")
             );
         }, ct);
     }
 
     public async Task SaveOnboardingTemplateAsync(SaveTenantOnboardingTemplateCommand cmd, CancellationToken ct = default)
     {
-        await _repo.UpsertPortalSettingAsync(KeyOnboardingTemplateName, cmd.TemplateName ?? string.Empty, ct);
-        await _repo.UpsertPortalSettingAsync(KeyOnboardingInstitutionMode, cmd.DefaultInstitutionMode ?? string.Empty, ct);
-        await _repo.UpsertPortalSettingAsync(KeyOnboardingAdminRole, cmd.DefaultAdminRole ?? string.Empty, ct);
-        await _repo.UpsertPortalSettingAsync(KeyOnboardingWelcomeMessage, cmd.WelcomeMessage ?? string.Empty, ct);
-        await _repo.UpsertPortalSettingAsync(KeyOnboardingStarterModules, cmd.StarterModulesCsv ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(ScopedSettingKey(KeyOnboardingTemplateName), cmd.TemplateName ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(ScopedSettingKey(KeyOnboardingInstitutionMode), cmd.DefaultInstitutionMode ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(ScopedSettingKey(KeyOnboardingAdminRole), cmd.DefaultAdminRole ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(ScopedSettingKey(KeyOnboardingWelcomeMessage), cmd.WelcomeMessage ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(ScopedSettingKey(KeyOnboardingStarterModules), cmd.StarterModulesCsv ?? string.Empty, ct);
         await _repo.SaveChangesAsync(ct);
-        await _distributedCache.RemoveAsync(CacheKeyOnboardingTemplate, ct);
+        await _distributedCache.RemoveAsync(ScopedCacheKey(CacheKeyOnboardingTemplate), ct);
     }
 
     public async Task<TenantSubscriptionPlanDto> GetSubscriptionPlanAsync(CancellationToken ct = default)
     {
-        return await GetOrSetCachedAsync(CacheKeySubscriptionPlan, async () =>
+        return await GetOrSetCachedAsync(ScopedCacheKey(CacheKeySubscriptionPlan), async () =>
         {
             var all = await _repo.GetAllPortalSettingsAsync(ct);
 
-            var monthlyPrice = decimal.TryParse(all.GetValueOrDefault(KeyPlanMonthlyPrice), out var parsedPrice)
+            var monthlyPrice = decimal.TryParse(ReadSetting(all, KeyPlanMonthlyPrice, string.Empty), out var parsedPrice)
                 ? parsedPrice
                 : 0m;
 
-            var maxUsers = int.TryParse(all.GetValueOrDefault(KeyPlanMaxUsers), out var parsedUsers)
+            var maxUsers = int.TryParse(ReadSetting(all, KeyPlanMaxUsers, string.Empty), out var parsedUsers)
                 ? parsedUsers
                 : 1000;
 
             return new TenantSubscriptionPlanDto(
-                all.GetValueOrDefault(KeyPlanKey, "standard"),
-                all.GetValueOrDefault(KeyPlanName, "Standard"),
+                ReadSetting(all, KeyPlanKey, "standard"),
+                ReadSetting(all, KeyPlanName, "Standard"),
                 monthlyPrice,
                 maxUsers,
-                ParseBool(all.GetValueOrDefault(KeyPlanEnableLms), true),
-                ParseBool(all.GetValueOrDefault(KeyPlanEnablePayments), true),
-                ParseBool(all.GetValueOrDefault(KeyPlanEnableIntegrations), true),
-                ParseBool(all.GetValueOrDefault(KeyPlanIsActive), true)
+                ParseBool(ReadSetting(all, KeyPlanEnableLms, string.Empty), true),
+                ParseBool(ReadSetting(all, KeyPlanEnablePayments, string.Empty), true),
+                ParseBool(ReadSetting(all, KeyPlanEnableIntegrations, string.Empty), true),
+                ParseBool(ReadSetting(all, KeyPlanIsActive, string.Empty), true)
             );
         }, ct);
     }
 
     public async Task SaveSubscriptionPlanAsync(SaveTenantSubscriptionPlanCommand cmd, CancellationToken ct = default)
     {
-        await _repo.UpsertPortalSettingAsync(KeyPlanKey, cmd.PlanKey ?? string.Empty, ct);
-        await _repo.UpsertPortalSettingAsync(KeyPlanName, cmd.PlanName ?? string.Empty, ct);
-        await _repo.UpsertPortalSettingAsync(KeyPlanMonthlyPrice, cmd.MonthlyPrice.ToString(System.Globalization.CultureInfo.InvariantCulture), ct);
-        await _repo.UpsertPortalSettingAsync(KeyPlanMaxUsers, Math.Max(1, cmd.MaxUsers).ToString(), ct);
-        await _repo.UpsertPortalSettingAsync(KeyPlanEnableLms, cmd.EnableLms.ToString(), ct);
-        await _repo.UpsertPortalSettingAsync(KeyPlanEnablePayments, cmd.EnablePayments.ToString(), ct);
-        await _repo.UpsertPortalSettingAsync(KeyPlanEnableIntegrations, cmd.EnableIntegrations.ToString(), ct);
-        await _repo.UpsertPortalSettingAsync(KeyPlanIsActive, cmd.IsActive.ToString(), ct);
+        await _repo.UpsertPortalSettingAsync(ScopedSettingKey(KeyPlanKey), cmd.PlanKey ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(ScopedSettingKey(KeyPlanName), cmd.PlanName ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(ScopedSettingKey(KeyPlanMonthlyPrice), cmd.MonthlyPrice.ToString(System.Globalization.CultureInfo.InvariantCulture), ct);
+        await _repo.UpsertPortalSettingAsync(ScopedSettingKey(KeyPlanMaxUsers), Math.Max(1, cmd.MaxUsers).ToString(), ct);
+        await _repo.UpsertPortalSettingAsync(ScopedSettingKey(KeyPlanEnableLms), cmd.EnableLms.ToString(), ct);
+        await _repo.UpsertPortalSettingAsync(ScopedSettingKey(KeyPlanEnablePayments), cmd.EnablePayments.ToString(), ct);
+        await _repo.UpsertPortalSettingAsync(ScopedSettingKey(KeyPlanEnableIntegrations), cmd.EnableIntegrations.ToString(), ct);
+        await _repo.UpsertPortalSettingAsync(ScopedSettingKey(KeyPlanIsActive), cmd.IsActive.ToString(), ct);
         await _repo.SaveChangesAsync(ct);
-        await _distributedCache.RemoveAsync(CacheKeySubscriptionPlan, ct);
+        await _distributedCache.RemoveAsync(ScopedCacheKey(CacheKeySubscriptionPlan), ct);
     }
 
     public async Task<TenantProfileSettingsDto> GetTenantProfileAsync(CancellationToken ct = default)
     {
-        return await GetOrSetCachedAsync(CacheKeyTenantProfile, async () =>
+        return await GetOrSetCachedAsync(ScopedCacheKey(CacheKeyTenantProfile), async () =>
         {
             var all = await _repo.GetAllPortalSettingsAsync(ct);
             return new TenantProfileSettingsDto(
-                all.GetValueOrDefault(KeyTenantCode, "default-tenant"),
-                all.GetValueOrDefault(KeyTenantDisplayName, "Tabsan EduSphere"),
-                all.GetValueOrDefault(KeyTenantSupportEmail, "support@tabsan-edusphere.com"),
-                all.GetValueOrDefault(KeyTenantSupportPhone, "+1-000-000-0000"),
-                all.GetValueOrDefault(KeyTenantTimeZone, "UTC"),
-                all.GetValueOrDefault(KeyTenantLocale, "en-US"),
-                all.GetValueOrDefault(KeyTenantCurrency, "USD"),
-                all.GetValueOrDefault(KeyTenantBrandTheme, "default")
+                ReadSetting(all, KeyTenantCode, "default-tenant"),
+                ReadSetting(all, KeyTenantDisplayName, "Tabsan EduSphere"),
+                ReadSetting(all, KeyTenantSupportEmail, "support@tabsan-edusphere.com"),
+                ReadSetting(all, KeyTenantSupportPhone, "+1-000-000-0000"),
+                ReadSetting(all, KeyTenantTimeZone, "UTC"),
+                ReadSetting(all, KeyTenantLocale, "en-US"),
+                ReadSetting(all, KeyTenantCurrency, "USD"),
+                ReadSetting(all, KeyTenantBrandTheme, "default")
             );
         }, ct);
     }
 
     public async Task SaveTenantProfileAsync(SaveTenantProfileSettingsCommand cmd, CancellationToken ct = default)
     {
-        await _repo.UpsertPortalSettingAsync(KeyTenantCode, cmd.TenantCode ?? string.Empty, ct);
-        await _repo.UpsertPortalSettingAsync(KeyTenantDisplayName, cmd.TenantDisplayName ?? string.Empty, ct);
-        await _repo.UpsertPortalSettingAsync(KeyTenantSupportEmail, cmd.SupportEmail ?? string.Empty, ct);
-        await _repo.UpsertPortalSettingAsync(KeyTenantSupportPhone, cmd.SupportPhone ?? string.Empty, ct);
-        await _repo.UpsertPortalSettingAsync(KeyTenantTimeZone, cmd.TimeZone ?? string.Empty, ct);
-        await _repo.UpsertPortalSettingAsync(KeyTenantLocale, cmd.Locale ?? string.Empty, ct);
-        await _repo.UpsertPortalSettingAsync(KeyTenantCurrency, cmd.CurrencyCode ?? string.Empty, ct);
-        await _repo.UpsertPortalSettingAsync(KeyTenantBrandTheme, cmd.BrandingTheme ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(ScopedSettingKey(KeyTenantCode), cmd.TenantCode ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(ScopedSettingKey(KeyTenantDisplayName), cmd.TenantDisplayName ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(ScopedSettingKey(KeyTenantSupportEmail), cmd.SupportEmail ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(ScopedSettingKey(KeyTenantSupportPhone), cmd.SupportPhone ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(ScopedSettingKey(KeyTenantTimeZone), cmd.TimeZone ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(ScopedSettingKey(KeyTenantLocale), cmd.Locale ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(ScopedSettingKey(KeyTenantCurrency), cmd.CurrencyCode ?? string.Empty, ct);
+        await _repo.UpsertPortalSettingAsync(ScopedSettingKey(KeyTenantBrandTheme), cmd.BrandingTheme ?? string.Empty, ct);
         await _repo.SaveChangesAsync(ct);
-        await _distributedCache.RemoveAsync(CacheKeyTenantProfile, ct);
+        await _distributedCache.RemoveAsync(ScopedCacheKey(CacheKeyTenantProfile), ct);
+    }
+
+    private string ScopedSettingKey(string key)
+    {
+        var scope = ResolveTenantScope();
+        return string.Equals(scope, "default", StringComparison.OrdinalIgnoreCase)
+            ? key
+            : $"tenant:{scope}:{key}";
+    }
+
+    private string ScopedCacheKey(string key)
+        => $"{key}:{ResolveTenantScope()}";
+
+    private string ResolveTenantScope()
+    {
+        var raw = _tenantScopeResolver?.GetTenantScopeKey();
+        if (string.IsNullOrWhiteSpace(raw))
+            return "default";
+
+        var normalized = raw.Trim().ToLowerInvariant();
+        return normalized;
+    }
+
+    private string ReadSetting(Dictionary<string, string> all, string rawKey, string defaultValue)
+    {
+        var scopedKey = ScopedSettingKey(rawKey);
+
+        if (all.TryGetValue(scopedKey, out var scopedValue))
+            return scopedValue;
+
+        if (!string.Equals(scopedKey, rawKey, StringComparison.OrdinalIgnoreCase) && all.TryGetValue(rawKey, out var legacyValue))
+            return legacyValue;
+
+        return defaultValue;
     }
 
     private async Task<T> GetOrSetCachedAsync<T>(string key, Func<Task<T>> factory, CancellationToken ct) where T : class

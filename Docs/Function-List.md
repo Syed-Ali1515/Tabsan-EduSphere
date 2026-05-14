@@ -452,6 +452,19 @@
 | `CredentialVerificationIntegrationTests.EnsureUserAsync(username, password, role)` | Seeds deterministic role-based auth smoke users in integration DB so credential checks remain executable after backend changes. | `tests/Tabsan.EduSphere.IntegrationTests/CredentialVerificationIntegrationTests.cs` |
 | `CredentialVerificationIntegrationTests.Login_WithVerifiedCredentials_ReturnsTokenAndExpectedRole(username, password, expectedRole)` | Verifies `api/v1/auth/login` succeeds for SuperAdmin/Admin/Faculty/Student smoke credentials and returns token + expected role. | `tests/Tabsan.EduSphere.IntegrationTests/CredentialVerificationIntegrationTests.cs` |
 
+## Phase 33 - SaaS and Multi-Tenant Readiness (2026-05-14)
+
+### Tenant Scope Isolation
+
+| Function Name | Purpose | Location |
+|---|---|---|
+| `ITenantScopeResolver.GetTenantScopeKey()` | Provides a tenant-scope abstraction for application-layer tenant-aware key resolution. | `src/Tabsan.EduSphere.Application/Interfaces/ITenantScopeResolver.cs` |
+| `HttpTenantScopeResolver.GetTenantScopeKey()` | Resolves tenant scope from JWT claims or `X-Tenant-Code` request header for API-request-scoped operations. | `src/Tabsan.EduSphere.API/Services/HttpTenantScopeResolver.cs` |
+| `TenantOperationsService.ScopedSettingKey(key)` | Builds tenant-scoped settings keys for onboarding/subscription/profile operations with default-tenant backward compatibility. | `src/Tabsan.EduSphere.Application/Services/SettingsServices.cs` |
+| `TenantOperationsService.ScopedCacheKey(key)` | Builds tenant-scoped distributed-cache keys to prevent cross-tenant cache collisions. | `src/Tabsan.EduSphere.Application/Services/SettingsServices.cs` |
+| `TenantOperationsService.ReadSetting(all, rawKey, defaultValue)` | Reads tenant-scoped values first and falls back to legacy unscoped keys for migration-safe compatibility. | `src/Tabsan.EduSphere.Application/Services/SettingsServices.cs` |
+| `Phase31Stage1RegressionMatrixTests.TenantIsolation_SameStore_DifferentTenantScopes_DoNotLeakData()` | Verifies no cross-tenant leakage when two tenant scopes share one settings repository instance. | `tests/Tabsan.EduSphere.UnitTests/Phase31Stage1RegressionMatrixTests.cs` |
+
 ## Final-Touches Phase 31 - Quality, Security, and Go-Live Gates (2026-05-10)
 
 ### Load and Reliability Certification (Stage 31.3)
