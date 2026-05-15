@@ -1,8 +1,8 @@
 # Faculty User Guide
 
-Version: 1.3  
+Version: 1.5  
 Date: 15 May 2026  
-Completion Status: Phase 33 complete, Phase 34 ready
+Completion Status: Phase 38 complete (final separation baseline)
 
 ## 1. Purpose
 
@@ -23,6 +23,14 @@ This guide explains faculty workflows in Tabsan EduSphere: teaching setup, assig
 - Student and faculty-facing labels remain institution-aware (Semester/Grade/Year) by policy.
 - User import templates are now role-specific under User Import Sheets and aligned to admin onboarding workflows.
 - Standard DB deployment run path is Scripts/01 through Scripts/05.
+
+## 1.3 Final Release Packaging Update (Phase 37/38)
+
+- Runtime app publish outputs are separated from license app outputs.
+- User-facing guides and import templates are distributed through the non-runtime asset package.
+- Phase evidence references:
+   - Artifacts/Phase37/Publish-Separation-20260515.md
+   - Artifacts/Phase38/NonRuntime-Asset-Separation-20260515.md
 
 ## 2. Login and Role Scope
 

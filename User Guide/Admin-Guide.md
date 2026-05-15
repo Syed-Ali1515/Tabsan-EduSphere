@@ -1,8 +1,8 @@
 # Admin User Guide
 
-Version: 1.3  
+Version: 1.5  
 Date: 15 May 2026  
-Completion Status: Phase 33 complete, Phase 34 ready
+Completion Status: Phase 38 complete (final separation baseline)
 
 ## 1. Purpose
 
@@ -25,6 +25,14 @@ This guide covers departmental administration in Tabsan EduSphere: user operatio
 - User import templates are role-specific in User Import Sheets: faculty-admin-import-template.csv and students-import-template.csv.
 - Standard DB deployment run path is Scripts/01 through Scripts/05.
 - Cross-phase planning and enhancement tracking is consolidated in Docs/Consolidated-Execution-Enhancements-Issues.md.
+
+## 1.3 Final Release Packaging Update (Phase 37/38)
+
+- Runtime app artifact and license app artifact are now published separately.
+- User guides and import templates are delivered through the non-runtime package workflow.
+- Packaging evidence:
+	- Artifacts/Phase37/Publish-Separation-20260515.md
+	- Artifacts/Phase38/NonRuntime-Asset-Separation-20260515.md
 
 ## 2. Admin Scope
 

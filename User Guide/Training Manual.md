@@ -1,14 +1,19 @@
 # Tabsan EduSphere – Training Manual
 
-**Version:** 1.4  
+**Version:** 1.5  
 **Date:** 15 May 2026  
 **Aligned With PRD:** v1.8 | Modules v1.3  
-**Completion Status:** Phase 33 complete, Phase 34 ready  
+**Completion Status:** Phase 38 complete (final separation baseline)  
 **Audience:** Trainers, IT Staff, Super Admins, Department Coordinators
 
 ---
 
 ## 0. Training Updates (May 2026)
+
+### Final Release Packaging Baseline (Phase 37/38)
+- Include release packaging walkthrough: runtime app publish is separate from Tabsan.Lic publish.
+- Include operator guidance for non-runtime asset bundle distribution for training and operations materials.
+- Refer to evidence reports in `Artifacts/Phase37/Publish-Separation-20260515.md` and `Artifacts/Phase38/NonRuntime-Asset-Separation-20260515.md`.
 
 ### Institution-Aware Vocabulary (Phase 23.2)
 - Include module-governance demonstration: backend enforcement plus sidebar visibility alignment.

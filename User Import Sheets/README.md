@@ -2,9 +2,17 @@
 
 This folder contains CSV templates for bulk-importing user accounts via the admin portal.
 
-Version: 1.4  
+Version: 1.5  
 Date: 15 May 2026  
-Completion Status: Updated import templates
+Completion Status: Phase 38 complete (final separation baseline)
+
+## Final Release Packaging Update (Phase 37/38)
+
+- Runtime app and license app publish outputs are separated.
+- User import templates are distributed through the non-runtime package flow.
+- Evidence references:
+	- Artifacts/Phase37/Publish-Separation-20260515.md
+	- Artifacts/Phase38/NonRuntime-Asset-Separation-20260515.md
 
 ## Templates
 
@@ -84,3 +92,7 @@ Note: CSV format itself cannot store in-cell dropdown validation metadata. Dropd
 - Confirm GUID format for all `DepartmentId` values.
 - Confirm institution mode support before using `InstitutionType` assignments.
 - For student imports, align `CourseCode` and `SemesterName` to active course offerings.
+
+## Distribution Note
+
+For release packaging, include this folder through the Phase 38 non-runtime asset workflow so import templates stay out of runtime app artifacts.

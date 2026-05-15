@@ -1,9 +1,9 @@
 # License KeyGen User Guide
 
-Version: 1.4  
+Version: 1.5  
 Date: 15 May 2026  
 Applies to: tools/KeyGen/KeyGen.cs  
-Completion Status: Phase 33 complete, Phase 34 ready
+Completion Status: Phase 38 complete (final separation baseline)
 
 ## 1. Purpose
 
@@ -27,6 +27,14 @@ These keys support secure license generation and verification workflows.
 - Institution scope remains tri-mode: School, College, University.
 - SuperAdmin license workflows should be validated alongside standard deployment scripts Scripts/01 through Scripts/05.
 - Consolidated planning and phase history now resides in Docs/Consolidated-Execution-Enhancements-Issues.md.
+
+## 1.3 Final Release Packaging Update (Phase 37/38)
+
+- The runtime app is now published separately from Tabsan.Lic outputs.
+- License operations documentation is distributed via the non-runtime asset package.
+- Separation evidence references:
+	- Artifacts/Phase37/Publish-Separation-20260515.md
+	- Artifacts/Phase38/NonRuntime-Asset-Separation-20260515.md
 
 ## 2. Prerequisites
 

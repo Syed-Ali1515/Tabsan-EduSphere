@@ -1,14 +1,21 @@
 # Tabsan EduSphere – User Guide
 
-**Version:** 1.4  
+**Version:** 1.5  
 **Date:** 15 May 2026  
 **Aligned With PRD:** v1.8 | Modules v1.3  
-**Completion Status:** Phase 33 complete, Phase 34 ready  
+**Completion Status:** Phase 38 complete (final separation baseline)  
 **Audience:** Students, Faculty, Admins, Super Admins
 
 ---
 
 ## 0. What’s New (May 2026)
+
+### Final Release Packaging (Phase 37/38)
+- Runtime app publish output is now separated from the license app publish output.
+- Non-runtime documentation/training assets are packaged separately for distribution.
+- Evidence references:
+   - `Artifacts/Phase37/Publish-Separation-20260515.md`
+   - `Artifacts/Phase38/NonRuntime-Asset-Separation-20260515.md`
 
 ### Core Enhancements (Phase 23-25)
 - Institution-aware academic vocabulary: dynamically render Semester/Grade/Year, GPA/Percentage/Marks based on School/College/University policy (Phase 23.2).

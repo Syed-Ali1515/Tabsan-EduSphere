@@ -1,5 +1,12 @@
 
 (Moved to User Guide/Training Manual.md. This file is deprecated.)
+
+Final baseline update (15 May 2026):
+- Phase 38 complete (final separation baseline).
+- Canonical training guide: User Guide/Training Manual.md (Version 1.5).
+- Packaging references:
+	- Artifacts/Phase37/Publish-Separation-20260515.md
+	- Artifacts/Phase38/NonRuntime-Asset-Separation-20260515.md
 # Tabsan EduSphere – Training Manual
 
 **Version:** 1.1  

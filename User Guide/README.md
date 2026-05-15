@@ -2,8 +2,17 @@
 
 This folder contains role-based manuals for day-to-day use of the platform.
 
-Version: 1.4 — updated 15 May 2026  
-Completion Status: Phase 33 complete, Phase 34 ready
+Version: 1.5 — updated 15 May 2026  
+Completion Status: Phase 38 complete (final separation baseline)
+
+## Final Release Packaging Update (Phase 37/38)
+
+- Runtime app publish output is separated from the license app publish output.
+- Non-runtime documentation and training assets are distributed as a separate package.
+- Canonical package outputs:
+	- Artifacts/Phase37/Tabsan.EduSphere-App-Publish-20260515.zip
+	- Artifacts/Phase37/Tabsan.Lic-Publish-20260515.zip
+	- Artifacts/Phase38/NonRuntime-Assets-20260515.zip
 
 ## Documents
 

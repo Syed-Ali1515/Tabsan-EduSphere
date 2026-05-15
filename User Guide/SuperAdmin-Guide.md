@@ -1,8 +1,8 @@
 # SuperAdmin User Guide
 
-Version: 1.3  
+Version: 1.5  
 Date: 15 May 2026  
-Completion Status: Phase 33 complete, Phase 34 ready
+Completion Status: Phase 38 complete (final separation baseline)
 
 ## 1. Purpose
 
@@ -30,6 +30,14 @@ This guide is for platform-level administrators responsible for licensing, modul
 - User import templates are now role-specific under User Import Sheets: faculty-admin-import-template.csv and students-import-template.csv.
 - Standard DB deployment run path is Scripts/01 through Scripts/05.
 - Consolidated cross-phase planning and enhancement record is maintained in Docs/Consolidated-Execution-Enhancements-Issues.md.
+
+## 1.3 Final Release Packaging Update (Phase 37/38)
+
+- Runtime app and license app are published as separate deliverables.
+- Non-runtime documents (including user guides and training assets) are packaged separately.
+- Execution evidence:
+	- Artifacts/Phase37/Publish-Separation-20260515.md
+	- Artifacts/Phase38/NonRuntime-Asset-Separation-20260515.md
 
 ## 2. SuperAdmin Responsibilities
 
