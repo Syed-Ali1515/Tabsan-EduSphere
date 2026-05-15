@@ -88,6 +88,11 @@ Do not end a completed task with local-only changes.
 
 ### Institute Parity Checkpoint (2026-05-13 - Stage 0.3)
 - Completed Stage 0.3 report failure inventory in `Docs/Institute-Parity-Issue-Fix-Phases.md` with required Implementation Summary and Validation Summary.
+
+### Deployment Readiness Checkpoint (2026-05-15 - Stage 36.4)
+- Completed Stage 36.4 security, reliability, and performance gates in `Docs/Consolidated-Execution-Enhancements-Issues.md` with required Implementation Summary and Validation Summary.
+- Added the combined Stage 36.4 gate script, health/license smoke tests, and dry-run compatibility for the Stage 34 recovery utilities.
+- Next stage: Stage 36.5 (UAT/SAT, Runbook, and Operational Sign-Off).
 - Classified report issues by root-cause tags and mapped resolution ownership to next stages.
 - Synchronized required tracking docs for stage closeout:
   - `Docs/Function-List.md`

@@ -121,3 +121,24 @@ powershell -ExecutionPolicy Bypass -File "Scripts\Phase36-Deployment-Rehearsal.p
 ```
 
 The rehearsal script also invokes the Stage 34 rollback/drill utilities in dry-run mode so operators can confirm the backup and recovery playbook is part of the deployment gate.
+
+### Stage 36.4 Security, Reliability, and Performance Gates
+
+`Phase36-Security-Reliability-Performance-Gates.ps1` runs the Stage 36.4 gate set and writes a markdown report under `Artifacts/Phase36/Stage36.4/`.
+
+Checks included:
+1. MFA and security hardening regression tests.
+2. Dashboard health-visibility coverage for SuperAdmin.
+3. Public health snapshot and license-blocking smoke tests.
+4. Performance smoke regression coverage for critical portal/API paths.
+5. Backup/restore dry-run evidence gate.
+
+Dry-run report generation:
+```powershell
+powershell -ExecutionPolicy Bypass -File "Scripts\Phase36-Security-Reliability-Performance-Gates.ps1" -RepoRoot "C:\path\to\Tabsan-EduSphere"
+```
+
+Execution mode:
+```powershell
+powershell -ExecutionPolicy Bypass -File "Scripts\Phase36-Security-Reliability-Performance-Gates.ps1" -RepoRoot "C:\path\to\Tabsan-EduSphere" -Execute
+```

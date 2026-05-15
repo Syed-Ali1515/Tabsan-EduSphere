@@ -2551,13 +2551,17 @@ Validation Summary
 - Stage 34 rollback-safe utilities were invoked in dry-run rehearsal mode as part of the deployment plan.
 
 ### Stage 36.4 - Security, Reliability, and Performance Gates
-- Re-run mandatory hardening gates:
-  - MFA privileged-role enforcement,
-  - audit search endpoint access and logging correctness,
-  - module-license gating on sensitive routes,
-  - backup/restore drill evidence.
-- Execute focused performance smoke suite for critical portal/API paths and verify no regression against Phase 34/35 baseline.
-- Confirm health endpoints (`/health/*`, `/metrics`, background-job health) are operational and dashboard-visible.
+- Status: Completed (2026-05-15).
+Implementation Summary
+- Added Stage 36.4 smoke coverage for public health snapshots and module-license blocking on a sensitive route: `tests/Tabsan.EduSphere.IntegrationTests/Phase36Stage4HealthAndLicenseGateTests.cs`.
+- Added Stage 36.4 orchestration script: `Scripts/Phase36-Security-Reliability-Performance-Gates.ps1`.
+- Added backup/restore dry-run compatibility for Stage 34 utility scripts so the recovery gate can be validated without requiring `sqlcmd` during dry-run mode.
+- Reused the existing security, dashboard-visibility, and performance regression test suites as the Stage 36.4 hardening/performance gate set.
+
+Validation Summary
+- Stage 36.4 gate script executed successfully and produced `Artifacts/Phase36/Stage36.4/Security-Reliability-Performance-Gates-20260515.md`.
+- Hardening gate coverage included MFA/security regression tests, dashboard health visibility, public health/metrics snapshots, module-license blocking, and performance smoke coverage.
+- Backup/restore evidence gate completed in dry-run mode through the Stage 34 recovery utility.
 
 ### Stage 36.5 - UAT/SAT, Runbook, and Operational Sign-Off
 - Complete UAT/SAT final pass for SuperAdmin/Admin/Faculty/Student core flows.

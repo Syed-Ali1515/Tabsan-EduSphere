@@ -89,7 +89,7 @@ function Invoke-SqlcmdQuery {
     (& sqlcmd @args | Out-String).Trim()
 }
 
-if (-not (Get-Command sqlcmd -ErrorAction SilentlyContinue)) {
+if (-not $DryRun -and -not (Get-Command sqlcmd -ErrorAction SilentlyContinue)) {
     throw "sqlcmd is required but was not found in PATH."
 }
 
