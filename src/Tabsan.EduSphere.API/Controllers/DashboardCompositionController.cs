@@ -21,6 +21,10 @@ public sealed class DashboardCompositionController : ControllerBase
     private readonly IDistributedCache _distributedCache;
 
     private static readonly TimeSpan ContextCacheTtl = TimeSpan.FromSeconds(30);
+    private static readonly JsonSerializerOptions ContextCacheJsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
 
     public DashboardCompositionController(
         IDashboardCompositionService composer,
@@ -67,11 +71,7 @@ public sealed class DashboardCompositionController : ControllerBase
         var cached = await _distributedCache.GetStringAsync(cacheKey, ct);
         if (!string.IsNullOrWhiteSpace(cached))
         {
-            var cachedPayload = JsonSerializer.Deserialize<object>(cached);
-            if (cachedPayload is not null)
-            {
-                return Ok(cachedPayload);
-            }
+            return Content(cached, "application/json");
         }
 
         var modulesTask = _moduleRegistry.GetVisibleModulesAsync(role, policy, ct);
@@ -108,7 +108,7 @@ public sealed class DashboardCompositionController : ControllerBase
 
         await _distributedCache.SetStringAsync(
             cacheKey,
-            JsonSerializer.Serialize(payload),
+            JsonSerializer.Serialize(payload, ContextCacheJsonOptions),
             new DistributedCacheEntryOptions
             {
                 AbsoluteExpirationRelativeToNow = ContextCacheTtl

@@ -1,6 +1,6 @@
 ﻿# Stage 36.4 Security, Reliability, and Performance Gates Report
 
-- Generated (UTC): 2026-05-15 00:35:57
+- Generated (UTC): 2026-05-15 03:31:34
 - Repository root: c:\Users\alin\Desktop\Prj\Tabsan-EduSphere
 - Unit test project: c:\Users\alin\Desktop\Prj\Tabsan-EduSphere\tests\Tabsan.EduSphere.UnitTests\Tabsan.EduSphere.UnitTests.csproj
 - Integration test project: c:\Users\alin\Desktop\Prj\Tabsan-EduSphere\tests\Tabsan.EduSphere.IntegrationTests\Tabsan.EduSphere.IntegrationTests.csproj

@@ -25,6 +25,17 @@ public class UserImportAndForceChangeIntegrationTests
         return client;
     }
 
+    private static async Task SetInstitutionPolicyAsync(HttpClient client, bool university, bool school, bool college)
+    {
+        var response = await client.PutAsJsonAsync("api/v1/institution-policy", new
+        {
+            includeSchool = school,
+            includeCollege = college,
+            includeUniversity = university
+        });
+        response.EnsureSuccessStatusCode();
+    }
+
     [Fact]
     public async Task UserImportCsv_StudentRole_ReturnsForbidden()
     {
@@ -46,6 +57,9 @@ public class UserImportAndForceChangeIntegrationTests
 
         using (var adminClient = CreateClient("Admin"))
         {
+            using var superAdminClient = CreateClient("SuperAdmin");
+            await SetInstitutionPolicyAsync(superAdminClient, university: true, school: false, college: false);
+
             var csv = string.Join('\n',
             [
                 "Username,Email,FullName,Role,DepartmentId,InstitutionType",
@@ -118,6 +132,8 @@ public class UserImportAndForceChangeIntegrationTests
     public async Task UserImportCsv_WithDisabledInstitutionType_ReturnsValidationError()
     {
         using var adminClient = CreateClient("Admin");
+        using var superAdminClient = CreateClient("SuperAdmin");
+        await SetInstitutionPolicyAsync(superAdminClient, university: true, school: false, college: false);
 
         var username = $"import_disabled_{Guid.NewGuid():N}";
         var csv = string.Join('\n',

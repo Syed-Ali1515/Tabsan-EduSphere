@@ -4,6 +4,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Tabsan.EduSphere.Domain.Modules;
 using Tabsan.EduSphere.Infrastructure.Persistence;
 
 namespace Tabsan.EduSphere.IntegrationTests.Infrastructure;
@@ -46,6 +47,20 @@ public sealed class EduSphereWebFactory : WebApplicationFactory<Program>, IAsync
                 mutex.ReleaseMutex();
             }
         }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default).Unwrap();
+
+        // Most integration suites exercise the app as a fully licensed deployment.
+        // Activate every module in the shared baseline so auth/role checks are not
+        // masked by module-license middleware unless a test opts out explicitly.
+        using var scope = Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+        var moduleStatuses = await db.ModuleStatuses.ToListAsync();
+        foreach (var status in moduleStatuses.Where(status => !status.IsActive))
+        {
+            status.Activate(Guid.Empty, "manual");
+        }
+
+        await db.SaveChangesAsync();
     }
 
     public new async Task DisposeAsync()
