@@ -103,6 +103,18 @@ Do not end a completed task with local-only changes.
 - Completed Stage 36.6 go-live execution and hypercare plan in `Docs/Consolidated-Execution-Enhancements-Issues.md` with required Implementation Summary and Validation Summary.
 - Added Stage 36.6 go-live/hypercare runner script, dedicated hypercare plan document, and Stage 36.6 execution evidence artifact.
 - Next action: execute production go-live through the rollback-safe flow and monitor hypercare checkpoints to close Phase 36.
+
+### Final Separation Checkpoint (2026-05-15 - Phase 37)
+- Completed Phase 37 separation of runtime app publish outputs from Tabsan.Lic publish outputs.
+- Added publish separation script and evidence report:
+  - `Scripts/Phase37-Separate-App-And-License-Publish.ps1`
+  - `Artifacts/Phase37/Publish-Separation-20260515.md`
+
+### Final Separation Checkpoint (2026-05-15 - Phase 38)
+- Completed Phase 38 separation of non-runtime folders from runtime app publish outputs.
+- Added non-runtime asset separation script and evidence report:
+  - `Scripts/Phase38-Separate-NonRuntime-Assets.ps1`
+  - `Artifacts/Phase38/NonRuntime-Asset-Separation-20260515.md`
 - Classified report issues by root-cause tags and mapped resolution ownership to next stages.
 - Synchronized required tracking docs for stage closeout:
   - `Docs/Function-List.md`

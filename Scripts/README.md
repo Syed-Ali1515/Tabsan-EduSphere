@@ -172,3 +172,31 @@ Execute mode:
 ```powershell
 powershell -ExecutionPolicy Bypass -File "Scripts\Phase36-GoLive-Hypercare.ps1" -RepoRoot "C:\path\to\Tabsan-EduSphere" -Execute -ApiBaseUrl "https://api.example.com" -WebBaseUrl "https://portal.example.com"
 ```
+
+### Phase 37 App vs License Publish Separation
+
+`Phase37-Separate-App-And-License-Publish.ps1` isolates runtime app publish outputs from Tabsan.Lic publish outputs.
+
+Dry-run:
+```powershell
+powershell -ExecutionPolicy Bypass -File "Scripts\Phase37-Separate-App-And-License-Publish.ps1" -RepoRoot "C:\path\to\Tabsan-EduSphere"
+```
+
+Execute mode:
+```powershell
+powershell -ExecutionPolicy Bypass -File "Scripts\Phase37-Separate-App-And-License-Publish.ps1" -RepoRoot "C:\path\to\Tabsan-EduSphere" -Execute
+```
+
+### Phase 38 Non-Runtime Asset Separation
+
+`Phase38-Separate-NonRuntime-Assets.ps1` packages non-runtime folders separately from runtime app publish outputs.
+
+Dry-run:
+```powershell
+powershell -ExecutionPolicy Bypass -File "Scripts\Phase38-Separate-NonRuntime-Assets.ps1" -RepoRoot "C:\path\to\Tabsan-EduSphere"
+```
+
+Execute mode:
+```powershell
+powershell -ExecutionPolicy Bypass -File "Scripts\Phase38-Separate-NonRuntime-Assets.ps1" -RepoRoot "C:\path\to\Tabsan-EduSphere" -Execute
+```

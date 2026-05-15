@@ -18,6 +18,28 @@ Each stage log entry must clearly describe behavior impact for School/College/Un
 
 ## 0. Implementation Update Log
 
+### 2026-05-15 - Phase 38 Stage 38.1/38.2 (Execution Snapshot)
+- Completed non-runtime asset separation from runtime app publish path.
+- Implementation Summary:
+  - added `Scripts/Phase38-Separate-NonRuntime-Assets.ps1` to package Docs/PPT/Project startup Docs/Scripts/UAT-SAT docs/User Guide/New Enhancements separately,
+  - added separation governance documentation in `Docs/Phase37-Phase38-Publish-Separation.md`.
+- Validation Summary:
+  - dry-run separation report generated at `Artifacts/Phase38/NonRuntime-Asset-Separation-20260515.md`,
+  - all requested folders were included in the separated packaging plan.
+- Behavior impact:
+  - runtime app publishing can proceed without bundling non-runtime documentation and operations assets.
+
+### 2026-05-15 - Phase 37 Stage 37.1/37.2 (Execution Snapshot)
+- Completed runtime app vs license app publish separation.
+- Implementation Summary:
+  - added `Scripts/Phase37-Separate-App-And-License-Publish.ps1` to publish API/Web/BackgroundJobs separately from Tabsan.Lic,
+  - added final publish separation governance doc `Docs/Phase37-Phase38-Publish-Separation.md`.
+- Validation Summary:
+  - dry-run publish separation report generated at `Artifacts/Phase37/Publish-Separation-20260515.md`,
+  - report confirms runtime app and license app are handled as separate publish targets.
+- Behavior impact:
+  - Tabsan.Lic can be published independently from the main app stack and is no longer part of runtime app artifact composition.
+
 ### 2026-05-15 - Phase 36 Stage 36.6 (Execution Snapshot)
 - Completed go-live execution and hypercare planning implementation.
 - Implementation Summary:

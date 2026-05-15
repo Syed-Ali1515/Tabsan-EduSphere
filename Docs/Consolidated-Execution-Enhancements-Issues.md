@@ -2494,7 +2494,7 @@ These rules are mandatory across all phases:
 
 To avoid editing the same core pieces repeatedly, implement in this exact order:
 
-Phase 23 -> Phase 24 -> Phase 25 -> Phase 26 -> Phase 27 -> Phase 28 -> Phase 29 -> Phase 30 -> Phase 31 -> Phase 32 -> Phase 33 -> Phase 34 -> Phase 35 -> Phase 36
+Phase 23 -> Phase 24 -> Phase 25 -> Phase 26 -> Phase 27 -> Phase 28 -> Phase 29 -> Phase 30 -> Phase 31 -> Phase 32 -> Phase 33 -> Phase 34 -> Phase 35 -> Phase 36 -> Phase 37 -> Phase 38
 
 Reason:
 - Institution model first.
@@ -2602,6 +2602,64 @@ Required evidence artifacts:
 
 Deliverable goal:
 - Completion of Phase 36 means the system is fully deployment-ready and can proceed to production go-live with controlled risk.
+
+---
+
+## Phase 37 - Separate License App from Runtime App Publish
+Complexity: Medium
+Depends on: Phase 36 completed
+
+### Stage 37.1 - Runtime App Publish Isolation
+- Status: Completed (2026-05-15).
+Implementation Summary
+- Added separation script: `Scripts/Phase37-Separate-App-And-License-Publish.ps1`.
+- The script publishes API/Web/BackgroundJobs into app-only publish roots and publishes Tabsan.Lic into a separate license-only publish root.
+- Added Phase 37 evidence report output path: `Artifacts/Phase37/Publish-Separation-20260515.md`.
+
+Validation Summary
+- Phase 37 dry-run executed successfully and generated separation evidence report.
+- Report confirms app targets and license target are handled as distinct publish outputs.
+
+### Stage 37.2 - Publish Separation Governance
+- Status: Completed (2026-05-15).
+Implementation Summary
+- Added governance document: `Docs/Phase37-Phase38-Publish-Separation.md`.
+- Documented policy that runtime app artifacts and license app artifacts must be packaged and delivered separately.
+
+Validation Summary
+- Confirmed governance document cross-references executable script paths and artifact/report outputs.
+
+---
+
+## Phase 38 - Separate Non-Runtime Repository Assets from App Publish
+Complexity: Medium
+Depends on: Phase 37 completed
+
+### Stage 38.1 - Non-Runtime Asset Packaging Isolation
+- Status: Completed (2026-05-15).
+Implementation Summary
+- Added separation script: `Scripts/Phase38-Separate-NonRuntime-Assets.ps1`.
+- Script packages the following folders separately from runtime app publish output:
+  - `Docs`
+  - `PPT`
+  - `Project startup Docs`
+  - `Scripts`
+  - `UAT-SAT docs`
+  - `User Guide`
+  - `New Enhancements`
+- Added Phase 38 evidence report output path: `Artifacts/Phase38/NonRuntime-Asset-Separation-20260515.md`.
+
+Validation Summary
+- Phase 38 dry-run executed successfully and generated non-runtime asset separation evidence report.
+- Report confirms all requested folders are handled through separate packaging workflow.
+
+### Stage 38.2 - Final Separation Confirmation
+- Status: Completed (2026-05-15).
+Implementation Summary
+- Documented final publish separation policy and phase linkage in `Docs/Phase37-Phase38-Publish-Separation.md`.
+
+Validation Summary
+- Confirmed final-phase outputs provide executable separation scripts plus artifact-level evidence for both app/license and non-runtime asset separation.
 
 ---
 
