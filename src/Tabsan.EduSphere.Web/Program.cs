@@ -7,6 +7,33 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 
+static bool IsUnsafePlaceholderValue(string? value)
+{
+    if (string.IsNullOrWhiteSpace(value))
+    {
+        return true;
+    }
+
+    var normalized = value.Trim().ToLowerInvariant();
+    return normalized.Contains("replace_with", StringComparison.Ordinal)
+        || normalized.Contains("or_set_via_env_var", StringComparison.Ordinal)
+        || normalized.Contains("change_me", StringComparison.Ordinal)
+        || normalized.Contains("changeme", StringComparison.Ordinal)
+        || normalized.Contains("todo", StringComparison.Ordinal)
+        || normalized.Contains("yourdomain.com", StringComparison.Ordinal)
+        || normalized.Contains("example.com", StringComparison.Ordinal)
+        || normalized.Contains("<")
+        || normalized.Contains(">");
+}
+
+static void EnsureSecureStartupValue(string settingPath, string? value)
+{
+    if (IsUnsafePlaceholderValue(value))
+    {
+        throw new InvalidOperationException($"{settingPath} contains an unsafe placeholder or missing value for non-development startup.");
+    }
+}
+
 var builder = WebApplication.CreateBuilder(args);
 
 var env = builder.Environment;
@@ -55,6 +82,10 @@ var eduApiBaseUrl = builder.Configuration["EduApi:BaseUrl"];
 if (string.IsNullOrWhiteSpace(eduApiBaseUrl))
 {
     throw new InvalidOperationException("EduApi:BaseUrl is required for Tabsan.EduSphere.Web startup.");
+}
+if (!builder.Environment.IsDevelopment() && !builder.Environment.IsEnvironment("Testing"))
+{
+    EnsureSecureStartupValue("EduApi:BaseUrl", eduApiBaseUrl);
 }
 var useForwardedHeaders = builder.Configuration.GetValue<bool>("ReverseProxy:Enabled");
 var configuredKnownProxies = builder.Configuration.GetSection("ReverseProxy:KnownProxies").Get<string[]>() ?? [];
@@ -105,6 +136,11 @@ if (!string.IsNullOrWhiteSpace(sharedKeyRingPath))
 else if (!builder.Environment.IsDevelopment() && !builder.Environment.IsEnvironment("Testing"))
 {
     throw new InvalidOperationException("ScaleOut:SharedDataProtectionKeyRingPath is required outside Development/Testing to keep web auth cookies valid across instances.");
+}
+
+if (!builder.Environment.IsDevelopment() && !builder.Environment.IsEnvironment("Testing"))
+{
+    EnsureSecureStartupValue("ScaleOut:SharedDataProtectionKeyRingPath", sharedKeyRingPath);
 }
 
 // Final-Touches Phase 34 Stage 3.3 — transport tuning for keep-alive and HTTP/2-friendly connection handling.

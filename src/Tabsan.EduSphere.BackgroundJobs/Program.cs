@@ -9,6 +9,25 @@ using Tabsan.EduSphere.Infrastructure.Email;
 using Tabsan.EduSphere.Infrastructure.Persistence;
 using Tabsan.EduSphere.Infrastructure.Repositories;
 
+static bool IsUnsafePlaceholderValue(string? value)
+{
+    if (string.IsNullOrWhiteSpace(value))
+    {
+        return true;
+    }
+
+    var normalized = value.Trim().ToLowerInvariant();
+    return normalized.Contains("replace_with", StringComparison.Ordinal)
+        || normalized.Contains("or_set_via_env_var", StringComparison.Ordinal)
+        || normalized.Contains("change_me", StringComparison.Ordinal)
+        || normalized.Contains("changeme", StringComparison.Ordinal)
+        || normalized.Contains("todo", StringComparison.Ordinal)
+        || normalized.Contains("yourdomain.com", StringComparison.Ordinal)
+        || normalized.Contains("example.com", StringComparison.Ordinal)
+        || normalized.Contains("<")
+        || normalized.Contains(">");
+}
+
 var builder = Host.CreateApplicationBuilder(args);
 
 var env = builder.Environment;
@@ -60,7 +79,8 @@ builder.Services.ConfigureHttpClientDefaults(httpClientBuilder =>
 // ── Database ──────────────────────────────────────────────────────────────────
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("DefaultConnection is required.");
-if (connectionString.Contains("NOT_SET", StringComparison.OrdinalIgnoreCase))
+if (connectionString.Contains("NOT_SET", StringComparison.OrdinalIgnoreCase)
+    || (!builder.Environment.IsDevelopment() && !builder.Environment.IsEnvironment("Testing") && IsUnsafePlaceholderValue(connectionString)))
 {
     throw new InvalidOperationException("DefaultConnection must be overridden by environment-specific configuration.");
 }

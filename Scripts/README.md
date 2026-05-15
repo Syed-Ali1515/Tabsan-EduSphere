@@ -81,3 +81,22 @@ Example:
 ```powershell
 powershell -ExecutionPolicy Bypass -File "Scripts\Phase34-Rollback-Safe-Deployment.ps1" -ServerInstance "localhost"
 ```
+
+### Stage 36.2 Environment and Secret Readiness Utility
+
+`Phase36-Validate-Environment-Readiness.ps1` validates deployment-readiness configuration for API/Web/BackgroundJobs.
+
+Checks included:
+1. Appsettings parity for critical keys across base/development/production files.
+2. Effective production secret readiness (file values + environment-variable overrides).
+3. Optional fail-fast gate with `-FailOnIssues`.
+
+Baseline report generation:
+```powershell
+powershell -ExecutionPolicy Bypass -File "Scripts\Phase36-Validate-Environment-Readiness.ps1" -RepoRoot "C:\path\to\Tabsan-EduSphere"
+```
+
+Strict gate mode (fails command on findings):
+```powershell
+powershell -ExecutionPolicy Bypass -File "Scripts\Phase36-Validate-Environment-Readiness.ps1" -RepoRoot "C:\path\to\Tabsan-EduSphere" -FailOnIssues
+```

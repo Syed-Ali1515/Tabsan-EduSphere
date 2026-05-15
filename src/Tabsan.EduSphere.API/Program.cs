@@ -42,6 +42,34 @@ using Serilog;
 using Serilog.Events;
 using OpenTelemetry.Metrics;
 
+static bool IsUnsafePlaceholderValue(string? value)
+{
+    if (string.IsNullOrWhiteSpace(value))
+    {
+        return true;
+    }
+
+    var normalized = value.Trim().ToLowerInvariant();
+    return normalized.Contains("replace_with", StringComparison.Ordinal)
+        || normalized.Contains("or_set_via_env_var", StringComparison.Ordinal)
+        || normalized.Contains("change_me", StringComparison.Ordinal)
+        || normalized.Contains("changeme", StringComparison.Ordinal)
+        || normalized.Contains("todo", StringComparison.Ordinal)
+        || normalized.Contains("yourdomain.com", StringComparison.Ordinal)
+        || normalized.Contains("example.com", StringComparison.Ordinal)
+        || normalized.Contains("<")
+        || normalized.Contains(">");
+}
+
+static void EnsureSecureStartupValue(string settingPath, string? value, int minLength = 1)
+{
+    var trimmed = value?.Trim() ?? string.Empty;
+    if (trimmed.Length < minLength || IsUnsafePlaceholderValue(trimmed))
+    {
+        throw new InvalidOperationException($"{settingPath} contains an unsafe placeholder or missing value for non-development startup.");
+    }
+}
+
 var builder = WebApplication.CreateBuilder(args);
 
 var env = builder.Environment;
@@ -241,6 +269,27 @@ if (!builder.Environment.IsDevelopment() && !builder.Environment.IsEnvironment("
         {
             throw new InvalidOperationException("AuthSecurity:Mfa:RequireForPrivilegedRolesOnly is enabled but no privileged roles are configured.");
         }
+    }
+
+    EnsureSecureStartupValue("ConnectionStrings:DefaultConnection", configuredConnectionString);
+    EnsureSecureStartupValue("JwtSettings:SecretKey", jwtSettings.SecretKey, minLength: 32);
+
+    var notificationEmailEnabled = builder.Configuration.GetValue("NotificationEmail:Enabled", false);
+    if (notificationEmailEnabled)
+    {
+        EnsureSecureStartupValue("Email:Username", builder.Configuration["Email:Username"]);
+        EnsureSecureStartupValue("Email:Password", builder.Configuration["Email:Password"]);
+    }
+
+    EnsureSecureStartupValue("ScaleOut:RedisConnectionString", builder.Configuration["ScaleOut:RedisConnectionString"]);
+    EnsureSecureStartupValue("MediaStorage:SignedUrlSecret", builder.Configuration["MediaStorage:SignedUrlSecret"]);
+
+    var queueProvider = builder.Configuration["QueuePlatform:Provider"]?.Trim() ?? "InMemory";
+    var rabbitMqEnabled = builder.Configuration.GetValue("QueuePlatform:RabbitMq:Enabled", false)
+        || string.Equals(queueProvider, "RabbitMq", StringComparison.OrdinalIgnoreCase);
+    if (rabbitMqEnabled)
+    {
+        EnsureSecureStartupValue("QueuePlatform:RabbitMq:ConnectionString", builder.Configuration["QueuePlatform:RabbitMq:ConnectionString"]);
     }
 }
 

@@ -9,6 +9,9 @@
 |---|---|---|
 | `Phase36-Release-Candidate-Manifest` | Pins the release-candidate baseline commit and defines deployable units, prerequisites, security/config flags, required secrets, and validation evidence for production readiness. | `Docs/Phase36-Release-Candidate-Manifest.md` |
 | `Stage 36.1 baseline freeze status` | Records completion state with implementation and validation summaries for release-candidate freeze execution. | `Docs/Consolidated-Execution-Enhancements-Issues.md` |
+| `Phase36-Validate-Environment-Readiness.ps1` | Validates Stage 36.2 config parity and production secret readiness with optional fail-on-issues gate and markdown evidence output. | `Scripts/Phase36-Validate-Environment-Readiness.ps1` |
+| `Production startup placeholder guardrails` | Fails non-development startup when critical deployment settings still contain unsafe placeholder values. | `src/Tabsan.EduSphere.API/Program.cs`, `src/Tabsan.EduSphere.Web/Program.cs`, `src/Tabsan.EduSphere.BackgroundJobs/Program.cs` |
+| `Stage 36.2 readiness evidence reports` | Captures baseline and strict environment-readiness validation results for deployment gate traceability. | `Artifacts/Phase36/Stage36.2/Environment-Readiness-20260515-100414.md`, `Artifacts/Phase36/Stage36.2/Environment-Readiness-20260515-100417.md` |
 
 ## Phase 35 - In-App User Import UX Completion (2026-05-15)
 

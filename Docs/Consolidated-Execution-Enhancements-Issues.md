@@ -2522,14 +2522,20 @@ Validation Summary
 - `dotnet build Tabsan.EduSphere.sln -v minimal` passed against the RC baseline commit.
 
 ### Stage 36.2 - Environment and Secret Readiness
-- Validate environment parity across Development, Staging/UAT, and Production for appsettings, queue providers, cache providers, and storage providers.
-- Validate secrets and keys are provisioned and non-placeholder in target environments:
-  - JWT signing keys,
-  - SMTP credentials,
-  - optional Twilio credentials,
-  - signed URL secret,
-  - Redis and database credentials.
-- Run startup safety checks in Production-like configuration and fail if unsafe placeholders are detected.
+- Status: Completed (2026-05-15).
+Implementation Summary
+- Added startup safety guardrails for non-development startup in API/Web/BackgroundJobs to fail fast when unsafe placeholder-style values are detected for critical deployment settings.
+- Added Stage 36.2 environment-readiness validator script: `Scripts/Phase36-Validate-Environment-Readiness.ps1`.
+- Validator coverage includes:
+  - appsettings parity checks across base/development/production files for critical deployment keys,
+  - effective-value secret readiness checks using production config with environment-variable overrides,
+  - optional strict failure mode (`-FailOnIssues`) for deployment gate enforcement.
+- Generated Stage 36.2 evidence reports under `Artifacts/Phase36/Stage36.2/`.
+
+Validation Summary
+- `dotnet build Tabsan.EduSphere.sln -v minimal` passed after startup-guard and validation-script additions.
+- `powershell -ExecutionPolicy Bypass -File "Scripts/Phase36-Validate-Environment-Readiness.ps1" -RepoRoot "<repo>"` generated baseline readiness report (`Environment-Readiness-20260515-100414.md`).
+- `powershell -ExecutionPolicy Bypass -File "Scripts/Phase36-Validate-Environment-Readiness.ps1" -RepoRoot "<repo>" -FailOnIssues` passed in production-like mode with secure environment overrides (`Environment-Readiness-20260515-100417.md`).
 
 ### Stage 36.3 - Data and Migration Deployment Rehearsal
 - Execute full script chain in rehearsal mode using the standardized order (`01 -> 02 -> 03 -> 04 -> 05`).
