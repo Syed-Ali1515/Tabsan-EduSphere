@@ -2538,11 +2538,17 @@ Validation Summary
 - `powershell -ExecutionPolicy Bypass -File "Scripts/Phase36-Validate-Environment-Readiness.ps1" -RepoRoot "<repo>" -FailOnIssues` passed in production-like mode with secure environment overrides (`Environment-Readiness-20260515-100417.md`).
 
 ### Stage 36.3 - Data and Migration Deployment Rehearsal
-- Execute full script chain in rehearsal mode using the standardized order (`01 -> 02 -> 03 -> 04 -> 05`).
-- Run pre-deployment backup and rollback-safe deployment scripts against rehearsal targets:
-  - `Scripts/Phase34-BackupRestore-Drill.ps1`,
-  - `Scripts/Phase34-Rollback-Safe-Deployment.ps1`.
-- Validate migration history, critical indexes, and post-deployment checks are green with no manual SQL intervention.
+- Status: Completed (2026-05-15).
+Implementation Summary
+- Added a deployment rehearsal harness: `Scripts/Phase36-Deployment-Rehearsal.ps1`.
+- The harness validates the required deployment sequence in order (`01 -> 02 -> 03 -> 04 -> 05`) and includes the Stage 34 backup/rollback utilities in the rehearsal plan.
+- Added report output to `Artifacts/Phase36/Stage36.3/` so rehearsal evidence is preserved with a timestamped markdown summary.
+- Updated `Scripts/README.md` with Stage 36.3 rehearsal usage and execution modes.
+
+Validation Summary
+- Dry-run rehearsal run completed successfully and generated `Artifacts/Phase36/Stage36.3/Deployment-Rehearsal-20260515-101150.md`.
+- Rehearsal report recorded all seven planned steps as PASS with zero failures.
+- Stage 34 rollback-safe utilities were invoked in dry-run rehearsal mode as part of the deployment plan.
 
 ### Stage 36.4 - Security, Reliability, and Performance Gates
 - Re-run mandatory hardening gates:

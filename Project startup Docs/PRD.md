@@ -18,6 +18,20 @@ Each stage log entry must clearly describe behavior impact for School/College/Un
 
 ## 0. Implementation Update Log
 
+### 2026-05-15 - Phase 36 Stage 36.3 (Execution Snapshot)
+- Completed data and migration deployment rehearsal implementation.
+- Implementation Summary:
+  - added `Scripts/Phase36-Deployment-Rehearsal.ps1` to validate the required `01 -> 05` deployment order,
+  - included Stage 34 backup/restore drill and rollback-safe deployment utilities in the rehearsal plan,
+  - generated a timestamped rehearsal evidence artifact under `Artifacts/Phase36/Stage36.3/`.
+- Validation Summary:
+  - dry-run rehearsal report generated successfully,
+  - all seven rehearsal steps passed in the report,
+  - the rehearsal plan covered schema, seed, dummy data, maintenance, post-deployment checks, backup/restore drill, and rollback-safe deployment utilities.
+- Behavior impact:
+  - deployment rehearsal is now scripted and auditable,
+  - the release path has an explicit pre-production validation gate that does not require manual SQL sequencing.
+
 ### 2026-05-15 - Phase 36 Stage 36.2 (Execution Snapshot)
 - Completed environment and secret readiness implementation for deployment gate validation.
 - Implementation Summary:

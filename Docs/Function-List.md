@@ -12,6 +12,8 @@
 | `Phase36-Validate-Environment-Readiness.ps1` | Validates Stage 36.2 config parity and production secret readiness with optional fail-on-issues gate and markdown evidence output. | `Scripts/Phase36-Validate-Environment-Readiness.ps1` |
 | `Production startup placeholder guardrails` | Fails non-development startup when critical deployment settings still contain unsafe placeholder values. | `src/Tabsan.EduSphere.API/Program.cs`, `src/Tabsan.EduSphere.Web/Program.cs`, `src/Tabsan.EduSphere.BackgroundJobs/Program.cs` |
 | `Stage 36.2 readiness evidence reports` | Captures baseline and strict environment-readiness validation results for deployment gate traceability. | `Artifacts/Phase36/Stage36.2/Environment-Readiness-20260515-100414.md`, `Artifacts/Phase36/Stage36.2/Environment-Readiness-20260515-100417.md` |
+| `Phase36-Deployment-Rehearsal.ps1` | Orchestrates the Stage 36.3 deployment and migration rehearsal sequence, including 01→05 ordering and Stage 34 utility steps. | `Scripts/Phase36-Deployment-Rehearsal.ps1` |
+| `Stage 36.3 rehearsal report` | Captures the dry-run deployment rehearsal evidence for the required script order and rollback/drill utilities. | `Artifacts/Phase36/Stage36.3/Deployment-Rehearsal-20260515-101150.md` |
 
 ## Phase 35 - In-App User Import UX Completion (2026-05-15)
 

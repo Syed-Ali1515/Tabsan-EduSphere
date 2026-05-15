@@ -100,3 +100,24 @@ Strict gate mode (fails command on findings):
 ```powershell
 powershell -ExecutionPolicy Bypass -File "Scripts\Phase36-Validate-Environment-Readiness.ps1" -RepoRoot "C:\path\to\Tabsan-EduSphere" -FailOnIssues
 ```
+
+### Stage 36.3 Deployment and Migration Rehearsal Utility
+
+`Phase36-Deployment-Rehearsal.ps1` validates the required deployment sequence before production go-live.
+
+Checks included:
+1. Required script presence for `01 -> 05` and the Stage 34 rollback/drill helpers.
+2. Ordered rehearsal reporting for schema, seed, dummy data, maintenance, and post-deployment checks.
+3. Optional execution mode for environments that have `sqlcmd` and SQL Server available.
+
+Dry-run report generation:
+```powershell
+powershell -ExecutionPolicy Bypass -File "Scripts\Phase36-Deployment-Rehearsal.ps1" -RepoRoot "C:\path\to\Tabsan-EduSphere"
+```
+
+Strict execution mode (requires reachable SQL Server + `sqlcmd`):
+```powershell
+powershell -ExecutionPolicy Bypass -File "Scripts\Phase36-Deployment-Rehearsal.ps1" -RepoRoot "C:\path\to\Tabsan-EduSphere" -Execute -ServerInstance "localhost"
+```
+
+The rehearsal script also invokes the Stage 34 rollback/drill utilities in dry-run mode so operators can confirm the backup and recovery playbook is part of the deployment gate.
