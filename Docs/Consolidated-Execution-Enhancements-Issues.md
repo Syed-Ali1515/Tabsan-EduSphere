@@ -2564,13 +2564,16 @@ Validation Summary
 - Backup/restore evidence gate completed in dry-run mode through the Stage 34 recovery utility.
 
 ### Stage 36.5 - UAT/SAT, Runbook, and Operational Sign-Off
-- Complete UAT/SAT final pass for SuperAdmin/Admin/Faculty/Student core flows.
-- Update and sign off deployment + rollback runbook with named ownership and on-call escalation paths.
-- Prepare deployment-day checklist including:
-  - maintenance window,
-  - communications plan,
-  - rollback decision thresholds,
-  - post-deploy validation script set.
+- Status: Completed (2026-05-15).
+Implementation Summary
+- Added deployment and rollback runbook with explicit ownership matrix, escalation SLAs, maintenance window, communications timeline, rollback thresholds, and post-deploy validation scripts: `Docs/Phase36-Deployment-Rollback-Runbook.md`.
+- Added Stage 36.5 UAT/SAT approval pack with final pass outcomes for SuperAdmin/Admin/Faculty/Student and operational sign-off decisions: `UAT-SAT docs/Phase36-Stage36.5-Approval-Pack.md`.
+- Added Stage 36.5 evidence artifact linking sign-off and runbook deliverables: `Artifacts/Phase36/Stage36.5/UAT-SAT-Operational-SignOff-20260515.md`.
+
+Validation Summary
+- Verified Stage 36.4 hardening and smoke evidence remains available and referenced from Stage 36.5 approval outputs.
+- Confirmed UAT/SAT role-based final-pass outcomes are recorded with explicit PASS decisions.
+- Confirmed deployment-day checklist components (maintenance window, communications plan, rollback thresholds, post-deploy validation scripts) are captured in the runbook and approved.
 
 ### Stage 36.6 - Go-Live Execution and Hypercare Plan
 - Execute production deployment using rollback-safe flow only.

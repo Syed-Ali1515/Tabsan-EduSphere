@@ -17,6 +17,9 @@
 | `Phase36-Security-Reliability-Performance-Gates.ps1` | Orchestrates the Stage 36.4 hardening, dashboard-visibility, health, performance, and backup/restore evidence gates. | `Scripts/Phase36-Security-Reliability-Performance-Gates.ps1` |
 | `Phase36Stage4HealthAndLicenseGateTests` | Verifies public health snapshots, metrics output, and module-license blocking on a sensitive route. | `tests/Tabsan.EduSphere.IntegrationTests/Phase36Stage4HealthAndLicenseGateTests.cs` |
 | `Stage 36.4 gate report` | Captures the combined Stage 36.4 security, reliability, performance, and backup/restore evidence results. | `Artifacts/Phase36/Stage36.4/Security-Reliability-Performance-Gates-20260515.md` |
+| `Phase36-Deployment-Rollback-Runbook` | Defines deployment-day ownership, escalation path, rollback thresholds, communications plan, and post-deploy validation script order for production go-live. | `Docs/Phase36-Deployment-Rollback-Runbook.md` |
+| `Phase36 Stage36.5 UAT/SAT Approval Pack` | Records final role-based UAT/SAT outcomes and operational readiness approvals for Stage 36.5 sign-off. | `UAT-SAT docs/Phase36-Stage36.5-Approval-Pack.md` |
+| `Stage 36.5 operational sign-off evidence` | Captures the final Stage 36.5 approval evidence and references to runbook and prior gate artifacts. | `Artifacts/Phase36/Stage36.5/UAT-SAT-Operational-SignOff-20260515.md` |
 
 ## Phase 35 - In-App User Import UX Completion (2026-05-15)
 

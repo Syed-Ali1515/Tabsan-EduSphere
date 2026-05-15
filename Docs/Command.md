@@ -93,6 +93,11 @@ Do not end a completed task with local-only changes.
 - Completed Stage 36.4 security, reliability, and performance gates in `Docs/Consolidated-Execution-Enhancements-Issues.md` with required Implementation Summary and Validation Summary.
 - Added the combined Stage 36.4 gate script, health/license smoke tests, and dry-run compatibility for the Stage 34 recovery utilities.
 - Next stage: Stage 36.5 (UAT/SAT, Runbook, and Operational Sign-Off).
+
+### Deployment Readiness Checkpoint (2026-05-15 - Stage 36.5)
+- Completed Stage 36.5 UAT/SAT, runbook, and operational sign-off in `Docs/Consolidated-Execution-Enhancements-Issues.md` with required Implementation Summary and Validation Summary.
+- Added deployment and rollback runbook with ownership and escalation, plus Stage 36.5 UAT/SAT approval and sign-off evidence artifacts.
+- Next stage: Stage 36.6 (Go-Live Execution and Hypercare Plan).
 - Classified report issues by root-cause tags and mapped resolution ownership to next stages.
 - Synchronized required tracking docs for stage closeout:
   - `Docs/Function-List.md`

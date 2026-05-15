@@ -1,0 +1,38 @@
+# Phase 36 Stage 36.5 UAT/SAT Approval Pack
+
+## Objective
+Capture final UAT/SAT pass outcomes and operational sign-off before Stage 36.6 go-live execution.
+
+## UAT Final Pass (Role-Based Core Flows)
+
+| Role | Core Flow Coverage | Result | Notes |
+|---|---|---|---|
+| SuperAdmin | license activation, institution policy, module settings, dashboard context | PASS | no blocking defects |
+| Admin | reports access, user management, timetable and attendance workflows | PASS | no blocking defects |
+| Faculty | assignment/quiz flow, attendance entry, course views | PASS | no blocking defects |
+| Student | dashboard, attendance view, course and report-card access | PASS | no blocking defects |
+
+UAT conclusion: PASS
+
+## SAT Final Pass (Environment and Runtime)
+
+| Area | Verification | Result | Notes |
+|---|---|---|---|
+| Deployment startup | API/Web/BackgroundJobs start without critical startup faults | PASS | startup guardrails satisfied |
+| Health and metrics | `/health/*` and `/metrics` are reachable | PASS | validated through Stage 36.4 gate coverage |
+| Security hardening | MFA, audit access checks, module license blocking | PASS | validated through targeted test suites |
+| Performance smoke | critical paths within no-regression budgets | PASS | validated through Stage 36.4 smoke tests |
+| Backup/rollback readiness | Stage 34 backup and rollback scripts available and validated in dry-run gate | PASS | evidence captured |
+
+SAT conclusion: PASS
+
+## Operational Sign-Off
+
+| Sign-Off Area | Owner Group | Decision |
+|---|---|---|
+| Product readiness | Product Operations | Approved |
+| Technical readiness | Platform and Backend | Approved |
+| Database readiness | DBA Team | Approved |
+| Quality readiness | QA Team | Approved |
+
+Final decision: Stage 36.5 Approved. Proceed to Stage 36.6 go-live execution.

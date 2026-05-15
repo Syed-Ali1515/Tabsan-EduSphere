@@ -142,3 +142,13 @@ Execution mode:
 ```powershell
 powershell -ExecutionPolicy Bypass -File "Scripts\Phase36-Security-Reliability-Performance-Gates.ps1" -RepoRoot "C:\path\to\Tabsan-EduSphere" -Execute
 ```
+
+### Stage 36.5 Operational Runbook and Sign-Off
+
+Stage 36.5 operational handoff references:
+1. Deployment and rollback runbook:
+	- `Docs/Phase36-Deployment-Rollback-Runbook.md`
+2. UAT/SAT approval pack:
+	- `UAT-SAT docs/Phase36-Stage36.5-Approval-Pack.md`
+3. Stage 36.5 sign-off evidence:
+	- `Artifacts/Phase36/Stage36.5/UAT-SAT-Operational-SignOff-20260515.md`
