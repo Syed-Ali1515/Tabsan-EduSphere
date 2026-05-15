@@ -152,3 +152,23 @@ Stage 36.5 operational handoff references:
 	- `UAT-SAT docs/Phase36-Stage36.5-Approval-Pack.md`
 3. Stage 36.5 sign-off evidence:
 	- `Artifacts/Phase36/Stage36.5/UAT-SAT-Operational-SignOff-20260515.md`
+
+### Stage 36.6 Go-Live Execution and Hypercare Utility
+
+`Phase36-GoLive-Hypercare.ps1` captures Stage 36.6 go-live smoke execution and hypercare activation evidence.
+
+Checks included:
+1. Rollback-safe deployment mode declaration.
+2. Immediate smoke checks for API/Web health and observability surfaces.
+3. Focused smoke suites for authentication/dashboard/security and student-lifecycle/reporting paths.
+4. Hypercare checkpoints for H+24/H+48/H+72 review cadence.
+
+Dry-run execution (recommended for handoff validation):
+```powershell
+powershell -ExecutionPolicy Bypass -File "Scripts\Phase36-GoLive-Hypercare.ps1" -RepoRoot "C:\path\to\Tabsan-EduSphere"
+```
+
+Execute mode:
+```powershell
+powershell -ExecutionPolicy Bypass -File "Scripts\Phase36-GoLive-Hypercare.ps1" -RepoRoot "C:\path\to\Tabsan-EduSphere" -Execute -ApiBaseUrl "https://api.example.com" -WebBaseUrl "https://portal.example.com"
+```

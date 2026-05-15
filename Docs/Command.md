@@ -98,6 +98,11 @@ Do not end a completed task with local-only changes.
 - Completed Stage 36.5 UAT/SAT, runbook, and operational sign-off in `Docs/Consolidated-Execution-Enhancements-Issues.md` with required Implementation Summary and Validation Summary.
 - Added deployment and rollback runbook with ownership and escalation, plus Stage 36.5 UAT/SAT approval and sign-off evidence artifacts.
 - Next stage: Stage 36.6 (Go-Live Execution and Hypercare Plan).
+
+### Deployment Readiness Checkpoint (2026-05-15 - Stage 36.6)
+- Completed Stage 36.6 go-live execution and hypercare plan in `Docs/Consolidated-Execution-Enhancements-Issues.md` with required Implementation Summary and Validation Summary.
+- Added Stage 36.6 go-live/hypercare runner script, dedicated hypercare plan document, and Stage 36.6 execution evidence artifact.
+- Next action: execute production go-live through the rollback-safe flow and monitor hypercare checkpoints to close Phase 36.
 - Classified report issues by root-cause tags and mapped resolution ownership to next stages.
 - Synchronized required tracking docs for stage closeout:
   - `Docs/Function-List.md`

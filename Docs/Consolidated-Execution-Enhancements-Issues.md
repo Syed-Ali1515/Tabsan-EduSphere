@@ -2576,9 +2576,17 @@ Validation Summary
 - Confirmed deployment-day checklist components (maintenance window, communications plan, rollback thresholds, post-deploy validation scripts) are captured in the runbook and approved.
 
 ### Stage 36.6 - Go-Live Execution and Hypercare Plan
-- Execute production deployment using rollback-safe flow only.
-- Run immediate post-deploy smoke validation on authentication, dashboard, student lifecycle, reporting exports, user import, and notifications.
-- Enable hypercare window (24-72h) with incident triage board, SLO/error-rate monitoring, and checkpoint reviews.
+- Status: Completed (2026-05-15).
+Implementation Summary
+- Added Stage 36.6 execution runner script: `Scripts/Phase36-GoLive-Hypercare.ps1`.
+- Added go-live and hypercare operational plan: `Docs/Phase36-GoLive-Hypercare-Plan.md`.
+- Added Stage 36.6 evidence artifact: `Artifacts/Phase36/Stage36.6/GoLive-Hypercare-20260515.md`.
+- The Stage 36.6 bundle formalizes rollback-safe deployment usage, immediate post-deploy smoke coverage, incident triage priorities, and 24/48/72-hour hypercare checkpoints.
+
+Validation Summary
+- Stage 36.6 script dry-run executed successfully and generated the evidence report under `Artifacts/Phase36/Stage36.6/`.
+- Smoke validation coverage includes authentication/dashboard/security and student-lifecycle/reporting paths via focused integration smoke suites.
+- Hypercare checkpoint plan and SLO/error-rate guardrails are documented and cross-referenced with the Stage 36 runbook and Stage 36.5 approval pack.
 
 ### Phase 36 Exit Criteria (Deployment Go/No-Go)
 - Build and targeted integration/unit suites pass from the release candidate commit.

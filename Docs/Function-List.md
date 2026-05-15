@@ -20,6 +20,9 @@
 | `Phase36-Deployment-Rollback-Runbook` | Defines deployment-day ownership, escalation path, rollback thresholds, communications plan, and post-deploy validation script order for production go-live. | `Docs/Phase36-Deployment-Rollback-Runbook.md` |
 | `Phase36 Stage36.5 UAT/SAT Approval Pack` | Records final role-based UAT/SAT outcomes and operational readiness approvals for Stage 36.5 sign-off. | `UAT-SAT docs/Phase36-Stage36.5-Approval-Pack.md` |
 | `Stage 36.5 operational sign-off evidence` | Captures the final Stage 36.5 approval evidence and references to runbook and prior gate artifacts. | `Artifacts/Phase36/Stage36.5/UAT-SAT-Operational-SignOff-20260515.md` |
+| `Phase36-GoLive-Hypercare.ps1` | Executes/plans Stage 36.6 go-live smoke checks and produces hypercare checkpoint evidence. | `Scripts/Phase36-GoLive-Hypercare.ps1` |
+| `Phase36-GoLive-Hypercare-Plan` | Defines Stage 36.6 incident triage board, SLO/error-rate guardrails, and 24/48/72-hour hypercare checkpoints. | `Docs/Phase36-GoLive-Hypercare-Plan.md` |
+| `Stage 36.6 go-live hypercare evidence` | Captures Stage 36.6 execution readiness and hypercare activation report. | `Artifacts/Phase36/Stage36.6/GoLive-Hypercare-20260515.md` |
 
 ## Phase 35 - In-App User Import UX Completion (2026-05-15)
 
