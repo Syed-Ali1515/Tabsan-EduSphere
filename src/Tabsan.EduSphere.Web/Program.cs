@@ -232,7 +232,8 @@ app.UseStaticFiles(new StaticFileOptions
 });
 
 app.UseRouting();
-app.UseSession();
+
+app.UseAuthentication();
 
 // Build a request principal from protected cookie identity so User.IsInRole works across stateless web nodes.
 app.Use(async (context, next) =>
@@ -281,6 +282,7 @@ app.Use(async (context, next) =>
 });
 
 app.UseAuthorization();
+app.UseSession();
 
 app.MapControllerRoute(
     name: "default",
