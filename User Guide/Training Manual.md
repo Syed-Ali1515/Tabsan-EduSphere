@@ -10,6 +10,13 @@
 
 ## 0. Training Updates (May 2026)
 
+### Final Documentation Synchronization (Post Phase 38 Execute)
+- Trainer-facing baseline now references final execute-mode publish-separation behavior.
+- Training delivery should include where to find final package evidence and separated deliverables:
+	- `Artifacts/Phase37/Publish-Separation-20260515.md`
+	- `Artifacts/Phase38/NonRuntime-Asset-Separation-20260515.md`
+- Training assets are distributed through the non-runtime packaging workflow and should not be bundled into runtime app artifacts.
+
 ### Final Release Packaging Baseline (Phase 37/38)
 - Include release packaging walkthrough: runtime app publish is separate from Tabsan.Lic publish.
 - Include operator guidance for non-runtime asset bundle distribution for training and operations materials.

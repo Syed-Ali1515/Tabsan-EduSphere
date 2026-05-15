@@ -1,9 +1,9 @@
 # Tabsan-EduSphere - Complete Functionality Reference
 
-**Document Version:** 2.0 (Merged Comprehensive)  
-**Date:** May 11, 2026  
-**Project Status:** Phase 33 (Hosting Configuration and Security Hardening)  
-**Last Updated:** Based on PRD v1.58 and complete codebase exploration  
+**Document Version:** 2.1 (Final Phase 38 Baseline)  
+**Date:** May 15, 2026  
+**Project Status:** Phase 38 complete (final publish-separation baseline)  
+**Last Updated:** Based on PRD v1.75 and execute-mode closure evidence  
 
 ## Institute Parity Documentation Governance (2026-05-13)
 
@@ -12,6 +12,19 @@ For every completed stage under `Docs/Institute-Parity-Issue-Fix-Phases.md`, the
 - `Validation Summary`
 
 After each completed stage, this document must be updated to reflect any net functionality behavior change for School/College/University parity, including role/institute filters and report behavior.
+
+## 2026-05-15 Update - Final Phase 37/38 Execute Closure Snapshot
+
+- Completed execute-mode closure for final separation phases.
+- Functional behavior confirmed:
+    - runtime app publish output is separated from license app publish output,
+    - non-runtime assets (docs/guides/scripts/training/import templates) are packaged independently from runtime app artifacts.
+- Validation evidence:
+    - `Artifacts/Phase37/Publish-Separation-20260515.md` shows execute mode `True` and phase status `PASS` (`4/4`),
+    - `Artifacts/Phase38/NonRuntime-Asset-Separation-20260515.md` shows execute mode `True` and phase status `PASS` (`7/7`).
+- Behavior impact:
+    - production app packaging no longer bundles license tooling,
+    - operational/documentation assets are distributed through dedicated non-runtime packaging workflow.
 
 ## 2026-05-13 Update - Institute Parity Stage 0.1 Audit Snapshot
 

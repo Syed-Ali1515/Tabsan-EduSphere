@@ -1,8 +1,8 @@
 # Tabsan EduSphere Development Plan (ASP.NET)
 
-**Version:** 1.4  
-**Date:** 8 May 2026  
-**Based On:** PRD v1.33, Modules v1.3, Database Schema v1.2
+**Version:** 1.5  
+**Date:** 15 May 2026  
+**Based On:** PRD v1.75, Modules v1.3, Database Schema v1.2
 
 ## Institute Parity Stage Documentation Rule (2026-05-13)
 
@@ -18,6 +18,19 @@ Validation summaries must include at minimum:
 ---
 
 ## Execution Updates
+
+### 2026-05-15 - Final Phase 37/38 Execute Closure (Execution Snapshot)
+- Completed execute-mode finalization for publish-separation phases.
+- Implementation Summary:
+  - Phase 37 script finalized to separate runtime app and license app publish outputs with stable execute-mode behavior,
+  - Phase 38 script finalized to package non-runtime repository assets separately from runtime app outputs,
+  - documentation baseline synchronized for user guides, training, and import templates.
+- Validation Summary:
+  - Phase 37 execute evidence report passed (`4/4`) at `Artifacts/Phase37/Publish-Separation-20260515.md`,
+  - Phase 38 execute evidence report passed (`7/7`) at `Artifacts/Phase38/NonRuntime-Asset-Separation-20260515.md`,
+  - separated package outputs were generated for app/license/non-runtime bundles.
+- Stage status: Phase 37 and Phase 38 execute closeout completed.
+- Phase status: Final roadmap phases completed.
 
 ### 2026-05-14 - Phase 23 Stage 23.2 (Execution Snapshot)
 - Completed dynamic academic labels and context stage from `Docs/Advance-Enhancements.md`.

@@ -10,6 +10,13 @@
 
 ## 0. What’s New (May 2026)
 
+### Final Documentation Synchronization (Post Phase 38 Execute)
+- User documentation baseline has been synchronized to the final execute-mode release closure.
+- Runtime app, license app, and non-runtime assets now follow separated packaging and distribution workflows.
+- For operational verification, refer to:
+   - `Artifacts/Phase37/Publish-Separation-20260515.md`
+   - `Artifacts/Phase38/NonRuntime-Asset-Separation-20260515.md`
+
 ### Final Release Packaging (Phase 37/38)
 - Runtime app publish output is now separated from the license app publish output.
 - Non-runtime documentation/training assets are packaged separately for distribution.
