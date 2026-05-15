@@ -24,9 +24,9 @@
 | `Phase36-GoLive-Hypercare-Plan` | Defines Stage 36.6 incident triage board, SLO/error-rate guardrails, and 24/48/72-hour hypercare checkpoints. | `Docs/Phase36-GoLive-Hypercare-Plan.md` |
 | `Stage 36.6 go-live hypercare evidence` | Captures Stage 36.6 execution readiness and hypercare activation report. | `Artifacts/Phase36/Stage36.6/GoLive-Hypercare-20260515.md` |
 | `Phase37-Separate-App-And-License-Publish.ps1` | Publishes runtime app targets separately from Tabsan.Lic to enforce independent publish outputs. | `Scripts/Phase37-Separate-App-And-License-Publish.ps1` |
-| `Phase 37 publish separation evidence` | Captures app-vs-license publish separation results and planned package outputs. | `Artifacts/Phase37/Publish-Separation-20260515.md` |
+| `Phase 37 publish separation evidence` | Captures execute-mode app-vs-license publish separation results and generated package outputs. | `Artifacts/Phase37/Publish-Separation-20260515.md` |
 | `Phase38-Separate-NonRuntime-Assets.ps1` | Packages Docs/PPT/project-doc/user-guide/script assets separately from runtime app publish outputs. | `Scripts/Phase38-Separate-NonRuntime-Assets.ps1` |
-| `Phase 38 non-runtime separation evidence` | Captures separation status for all requested non-runtime folders. | `Artifacts/Phase38/NonRuntime-Asset-Separation-20260515.md` |
+| `Phase 38 non-runtime separation evidence` | Captures execute-mode separation status and generated non-runtime package for all requested folders. | `Artifacts/Phase38/NonRuntime-Asset-Separation-20260515.md` |
 | `Phase37-Phase38-Publish-Separation` | Defines final publish separation governance across runtime app, license app, and non-runtime assets. | `Docs/Phase37-Phase38-Publish-Separation.md` |
 
 ## Phase 35 - In-App User Import UX Completion (2026-05-15)

@@ -24,8 +24,8 @@ Each stage log entry must clearly describe behavior impact for School/College/Un
   - added `Scripts/Phase38-Separate-NonRuntime-Assets.ps1` to package Docs/PPT/Project startup Docs/Scripts/UAT-SAT docs/User Guide/New Enhancements separately,
   - added separation governance documentation in `Docs/Phase37-Phase38-Publish-Separation.md`.
 - Validation Summary:
-  - dry-run separation report generated at `Artifacts/Phase38/NonRuntime-Asset-Separation-20260515.md`,
-  - all requested folders were included in the separated packaging plan.
+  - execute-mode separation report generated at `Artifacts/Phase38/NonRuntime-Asset-Separation-20260515.md`,
+  - all requested folders were included in the separated package output `Artifacts/Phase38/NonRuntime-Assets-20260515.zip`.
 - Behavior impact:
   - runtime app publishing can proceed without bundling non-runtime documentation and operations assets.
 
@@ -35,8 +35,8 @@ Each stage log entry must clearly describe behavior impact for School/College/Un
   - added `Scripts/Phase37-Separate-App-And-License-Publish.ps1` to publish API/Web/BackgroundJobs separately from Tabsan.Lic,
   - added final publish separation governance doc `Docs/Phase37-Phase38-Publish-Separation.md`.
 - Validation Summary:
-  - dry-run publish separation report generated at `Artifacts/Phase37/Publish-Separation-20260515.md`,
-  - report confirms runtime app and license app are handled as separate publish targets.
+  - execute-mode publish separation report generated at `Artifacts/Phase37/Publish-Separation-20260515.md`,
+  - report confirms runtime app and license app are handled as separate publish targets and package outputs (`Artifacts/Phase37/Tabsan.EduSphere-App-Publish-20260515.zip`, `Artifacts/Phase37/Tabsan.Lic-Publish-20260515.zip`).
 - Behavior impact:
   - Tabsan.Lic can be published independently from the main app stack and is no longer part of runtime app artifact composition.
 

@@ -106,15 +106,20 @@ Do not end a completed task with local-only changes.
 
 ### Final Separation Checkpoint (2026-05-15 - Phase 37)
 - Completed Phase 37 separation of runtime app publish outputs from Tabsan.Lic publish outputs.
+- Execute-mode validation PASS with separated package outputs.
 - Added publish separation script and evidence report:
   - `Scripts/Phase37-Separate-App-And-License-Publish.ps1`
   - `Artifacts/Phase37/Publish-Separation-20260515.md`
+  - `Artifacts/Phase37/Tabsan.EduSphere-App-Publish-20260515.zip`
+  - `Artifacts/Phase37/Tabsan.Lic-Publish-20260515.zip`
 
 ### Final Separation Checkpoint (2026-05-15 - Phase 38)
 - Completed Phase 38 separation of non-runtime folders from runtime app publish outputs.
+- Execute-mode validation PASS with separated package output.
 - Added non-runtime asset separation script and evidence report:
   - `Scripts/Phase38-Separate-NonRuntime-Assets.ps1`
   - `Artifacts/Phase38/NonRuntime-Asset-Separation-20260515.md`
+  - `Artifacts/Phase38/NonRuntime-Assets-20260515.zip`
 - Classified report issues by root-cause tags and mapped resolution ownership to next stages.
 - Synchronized required tracking docs for stage closeout:
   - `Docs/Function-List.md`

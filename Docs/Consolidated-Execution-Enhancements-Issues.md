@@ -2617,8 +2617,11 @@ Implementation Summary
 - Added Phase 37 evidence report output path: `Artifacts/Phase37/Publish-Separation-20260515.md`.
 
 Validation Summary
-- Phase 37 dry-run executed successfully and generated separation evidence report.
-- Report confirms app targets and license target are handled as distinct publish outputs.
+- Phase 37 execute-mode run completed successfully and generated updated separation evidence report.
+- Report confirms API/Web/BackgroundJobs/LicenseApp publish targets passed and were packaged separately.
+- Execute artifact outputs were produced:
+  - `Artifacts/Phase37/Tabsan.EduSphere-App-Publish-20260515.zip`
+  - `Artifacts/Phase37/Tabsan.Lic-Publish-20260515.zip`
 
 ### Stage 37.2 - Publish Separation Governance
 - Status: Completed (2026-05-15).
@@ -2650,8 +2653,9 @@ Implementation Summary
 - Added Phase 38 evidence report output path: `Artifacts/Phase38/NonRuntime-Asset-Separation-20260515.md`.
 
 Validation Summary
-- Phase 38 dry-run executed successfully and generated non-runtime asset separation evidence report.
-- Report confirms all requested folders are handled through separate packaging workflow.
+- Phase 38 execute-mode run completed successfully and generated updated non-runtime asset separation evidence report.
+- Report confirms all requested folders were copied into a separated non-runtime package workflow.
+- Execute artifact output was produced: `Artifacts/Phase38/NonRuntime-Assets-20260515.zip`.
 
 ### Stage 38.2 - Final Separation Confirmation
 - Status: Completed (2026-05-15).
