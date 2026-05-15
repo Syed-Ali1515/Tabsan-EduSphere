@@ -1265,6 +1265,108 @@ public class PortalController : Controller
         return RedirectToAction(nameof(Departments));
     }
 
+    [HttpGet]
+    public async Task<IActionResult> Programs(Guid? departmentId, CancellationToken ct)
+    {
+        ViewData["Title"] = "Programs";
+        var model = new ProgramsPageModel { IsConnected = _api.IsConnected(), SelectedDepartmentId = departmentId };
+        if (!model.IsConnected) return View(model);
+
+        var identity = _api.GetSessionIdentity();
+        if (identity?.IsAdmin != true && identity?.IsSuperAdmin != true)
+        {
+            TempData["PortalMessage"] = "Only Admin or SuperAdmin can manage programs.";
+            return RedirectToAction(nameof(Dashboard));
+        }
+
+        try
+        {
+            model.Departments = await _api.GetDepartmentsAsync(ct);
+            var programs = await _api.GetProgramDetailsAsync(departmentId, ct);
+            var deptMap = model.Departments.ToDictionary(d => d.Id, d => d.Name);
+            model.Programs = programs.Select(p =>
+            {
+                p.DepartmentName = deptMap.TryGetValue(p.DepartmentId, out var name) ? name : "Unknown";
+                return p;
+            }).ToList();
+        }
+        catch (Exception ex) { model.Message = ex.Message; }
+        model.Message ??= TempData["PortalMessage"]?.ToString();
+        return View(model);
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateProgram(
+        string name,
+        string code,
+        Guid departmentId,
+        int totalSemesters,
+        Guid? filterDepartmentId,
+        CancellationToken ct)
+    {
+        var identity = _api.GetSessionIdentity();
+        if (identity?.IsAdmin != true && identity?.IsSuperAdmin != true)
+        {
+            TempData["PortalMessage"] = "Only Admin or SuperAdmin can create programs.";
+            return RedirectToAction(nameof(Dashboard));
+        }
+
+        if (_api.IsConnected())
+        {
+            try
+            {
+                await _api.CreateProgramAsync(name, code, departmentId, totalSemesters, ct);
+                TempData["PortalMessage"] = $"Program '{name}' created.";
+            }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(Programs), new { departmentId = filterDepartmentId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateProgram(Guid id, string newName, Guid? filterDepartmentId, CancellationToken ct)
+    {
+        var identity = _api.GetSessionIdentity();
+        if (identity?.IsAdmin != true && identity?.IsSuperAdmin != true)
+        {
+            TempData["PortalMessage"] = "Only Admin or SuperAdmin can update programs.";
+            return RedirectToAction(nameof(Dashboard));
+        }
+
+        if (_api.IsConnected())
+        {
+            try
+            {
+                await _api.UpdateProgramAsync(id, newName, ct);
+                TempData["PortalMessage"] = "Program updated.";
+            }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(Programs), new { departmentId = filterDepartmentId });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeactivateProgram(Guid id, Guid? filterDepartmentId, CancellationToken ct)
+    {
+        var identity = _api.GetSessionIdentity();
+        if (identity?.IsSuperAdmin != true)
+        {
+            TempData["PortalMessage"] = "Only SuperAdmin can deactivate programs.";
+            return RedirectToAction(nameof(Dashboard));
+        }
+
+        if (_api.IsConnected())
+        {
+            try
+            {
+                await _api.DeactivateProgramAsync(id, ct);
+                TempData["PortalMessage"] = "Program deactivated.";
+            }
+            catch (Exception ex) { TempData["PortalMessage"] = $"Error: {ex.Message}"; }
+        }
+        return RedirectToAction(nameof(Programs), new { departmentId = filterDepartmentId });
+    }
+
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> UpdateAdminDepartmentAssignments(Guid adminUserId, Guid[] departmentIds, CancellationToken ct)
     {

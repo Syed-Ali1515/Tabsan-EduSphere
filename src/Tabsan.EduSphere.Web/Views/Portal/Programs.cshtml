@@ -1,0 +1,138 @@
+@model Tabsan.EduSphere.Web.Models.Portal.ProgramsPageModel
+@{
+    ViewData["Title"] = "Programs";
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.Message))
+{
+    <div class="alert alert-info">@Model.Message</div>
+}
+
+@if (!Model.IsConnected)
+{
+    <div class="alert alert-warning">Not connected. <a asp-action="Dashboard">Configure API</a>.</div>
+}
+else
+{
+    var canManagePrograms = User.IsInRole("SuperAdmin") || User.IsInRole("Admin");
+
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+            <form method="get" asp-action="Programs" class="row g-2 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Filter by Department</label>
+                    <select name="departmentId" class="form-select" onchange="this.form.submit()">
+                        <option value="">All Departments</option>
+                        @foreach (var d in Model.Departments)
+                        {
+                            <option value="@d.Id" selected="@(Model.SelectedDepartmentId == d.Id ? "selected" : null)">@d.Name</option>
+                        }
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (canManagePrograms)
+    {
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Create Program</h2>
+                <form method="post" asp-action="CreateProgram" class="row g-3">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="filterDepartmentId" value="@Model.SelectedDepartmentId" />
+                    <div class="col-md-3">
+                        <label class="form-label">Code</label>
+                        <input type="text" name="code" class="form-control" maxlength="32" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Name</label>
+                        <input type="text" name="name" class="form-control" maxlength="128" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Department</label>
+                        <select name="departmentId" class="form-select" required>
+                            <option value="">Select Department</option>
+                            @foreach (var d in Model.Departments)
+                            {
+                                <option value="@d.Id">@d.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Total Semesters</label>
+                        <input type="number" name="totalSemesters" class="form-control" min="1" max="20" value="8" required />
+                    </div>
+                    <div class="col-md-1 d-grid">
+                        <button type="submit" class="btn btn-primary">Create</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <h2 class="h5 mb-3">Program List <span class="badge bg-secondary ms-2">@Model.Programs.Count</span></h2>
+
+            @if (Model.Programs.Count == 0)
+            {
+                <p class="text-muted mb-0">No programs found.</p>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Code</th>
+                                <th>Name</th>
+                                <th>Department</th>
+                                <th class="text-center">Semesters</th>
+                                <th>Status</th>
+                                <th style="width: 340px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var p in Model.Programs)
+                            {
+                                <tr>
+                                    <td><code>@p.Code</code></td>
+                                    <td>@p.Name</td>
+                                    <td>@p.DepartmentName</td>
+                                    <td class="text-center">@p.TotalSemesters</td>
+                                    <td>
+                                        <span class="badge @(p.IsActive ? "bg-success" : "bg-secondary")">@(p.IsActive ? "Active" : "Inactive")</span>
+                                    </td>
+                                    <td>
+                                        @if (p.IsActive && canManagePrograms)
+                                        {
+                                            <div class="d-flex gap-2">
+                                                <form method="post" asp-action="UpdateProgram" class="d-flex gap-2 flex-grow-1">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@p.Id" />
+                                                    <input type="hidden" name="filterDepartmentId" value="@Model.SelectedDepartmentId" />
+                                                    <input type="text" name="newName" class="form-control form-control-sm" value="@p.Name" required maxlength="128" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-primary">Rename</button>
+                                                </form>
+                                                @if (User.IsInRole("SuperAdmin"))
+                                                {
+                                                    <form method="post" asp-action="DeactivateProgram" onsubmit="return confirm('Deactivate this program?');">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="id" value="@p.Id" />
+                                                        <input type="hidden" name="filterDepartmentId" value="@Model.SelectedDepartmentId" />
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger">Deactivate</button>
+                                                    </form>
+                                                }
+                                            </div>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+}

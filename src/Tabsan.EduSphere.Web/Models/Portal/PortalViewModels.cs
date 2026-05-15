@@ -521,6 +521,26 @@ public class DepartmentsPageModel
     public List<Guid> AssignedDepartmentIds { get; set; } = new();
 }
 
+public class ProgramItem
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = "";
+    public string Code { get; set; } = "";
+    public Guid DepartmentId { get; set; }
+    public string DepartmentName { get; set; } = "";
+    public int TotalSemesters { get; set; }
+    public bool IsActive { get; set; }
+}
+
+public class ProgramsPageModel
+{
+    public bool IsConnected { get; set; }
+    public string? Message { get; set; }
+    public Guid? SelectedDepartmentId { get; set; }
+    public List<LookupItem> Departments { get; set; } = new();
+    public List<ProgramItem> Programs { get; set; } = new();
+}
+
 public class AdminUsersPageModel
 {
     public bool IsConnected { get; set; }

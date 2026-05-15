@@ -58,19 +58,19 @@
                             }
                             @if (Model.InstitutionType == 1)
                             {
-                                <option value="1" selected>College</option>
+                                <option value="1" selected>School</option>
                             }
                             else
                             {
-                                <option value="1">College</option>
+                                <option value="1">School</option>
                             }
                             @if (Model.InstitutionType == 2)
                             {
-                                <option value="2" selected>School</option>
+                                <option value="2" selected>College</option>
                             }
                             else
                             {
-                                <option value="2">School</option>
+                                <option value="2">College</option>
                             }
                         </select>
                     </div>
@@ -101,15 +101,15 @@
                     {
                         <div class="col-md-1">
                             <a href="@Url.Action("ExportAssignmentSummary", "Portal", new { semesterId = Model.SemesterId, departmentId = Model.DepartmentId, offeringId = Model.OfferingId, studentId = Model.StudentId, institutionType = Model.InstitutionType })"
-                               class="btn btn-success btn-sm w-100" title="Export Excel"><i class="bi bi-file-earmark-excel"></i></a>
+                               class="btn btn-success btn-sm w-100" title="Export Excel"><i class="bi bi-file-earmark-excel me-1"></i><span>Excel</span></a>
                         </div>
                         <div class="col-md-1">
                             <a href="@Url.Action("ExportAssignmentSummaryCsv", "Portal", new { semesterId = Model.SemesterId, departmentId = Model.DepartmentId, offeringId = Model.OfferingId, studentId = Model.StudentId, institutionType = Model.InstitutionType })"
-                               class="btn btn-outline-success btn-sm w-100" title="Export CSV"><i class="bi bi-filetype-csv"></i></a>
+                               class="btn btn-outline-success btn-sm w-100" title="Export CSV"><i class="bi bi-filetype-csv me-1"></i><span>CSV</span></a>
                         </div>
                         <div class="col-md-1">
                             <a href="@Url.Action("ExportAssignmentSummaryPdf", "Portal", new { semesterId = Model.SemesterId, departmentId = Model.DepartmentId, offeringId = Model.OfferingId, studentId = Model.StudentId, institutionType = Model.InstitutionType })"
-                               class="btn btn-outline-danger btn-sm w-100" title="Export PDF"><i class="bi bi-filetype-pdf"></i></a>
+                               class="btn btn-outline-danger btn-sm w-100" title="Export PDF"><i class="bi bi-filetype-pdf me-1"></i><span>PDF</span></a>
                         </div>
                     }
                 </div>

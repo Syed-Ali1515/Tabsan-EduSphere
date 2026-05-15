@@ -84,8 +84,10 @@ public class SidebarMenuController : ControllerBase
             .Where(v => !string.IsNullOrWhiteSpace(v))
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
+        // Keep all non-SuperAdmin roles from the token so roles like Finance/Parent
+        // can receive sidebar menus when access is configured in the DB.
         var filteredRoles = effectiveRoles
-            .Where(r => r is "Admin" or "Faculty" or "Student")
+            .Where(r => !string.Equals(r, "SuperAdmin", StringComparison.OrdinalIgnoreCase))
             .ToList();
 
         if (filteredRoles.Count == 0)

@@ -23,10 +23,11 @@
                             <a class="btn btn-sm btn-outline-secondary" asp-action="UserImportTemplate" asp-route-fileName="students-import-template.csv">students-import-template.csv</a>
                         </div>
                         <ul class="mb-0 ps-3">
-                            <li>Required columns: <strong>Username, Email, FullName, Role</strong></li>
-                            <li>Optional columns: <strong>DepartmentId</strong></li>
+                            <li>Required columns: <strong>Username, Email, Role</strong></li>
+                            <li>Optional columns: <strong>FullName, DepartmentId, InstitutionType</strong></li>
                             <li>Accepted file type: <strong>.csv</strong> only</li>
                             <li>Role values: <strong>Admin</strong>, <strong>Faculty</strong>, <strong>Student</strong></li>
+                            <li>If you provide <strong>DepartmentId</strong>, use valid IDs from your current database.</li>
                             <li>Imported accounts use Username as temporary password and must change it at first login.</li>
                         </ul>
                     </div>
@@ -47,10 +48,10 @@
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
                     <h2 class="h5 mb-3">CSV Header Example</h2>
-                    <pre class="bg-light rounded p-3 mb-0" style="white-space:pre-wrap;">Username,Email,FullName,Role,DepartmentId
-admin1,admin1@tabsan.local,Admin One,Admin,
-faculty1,faculty1@tabsan.local,Faculty One,Faculty,0f8fad5b-d9cb-469f-a165-70867728950e
-student1,student1@tabsan.local,Student One,Student,0f8fad5b-d9cb-469f-a165-70867728950e</pre>
+                    <pre class="bg-light rounded p-3 mb-0" style="white-space:pre-wrap;">Username,Email,FullName,Role,DepartmentId,InstitutionType
+admin1,admin1@tabsan.local,Admin One,Admin,,University
+faculty1,faculty1@tabsan.local,Faculty One,Faculty,{valid-department-guid},University
+student1,student1@tabsan.local,Student One,Student,{valid-department-guid},School</pre>
                 </div>
             </div>
         </div>

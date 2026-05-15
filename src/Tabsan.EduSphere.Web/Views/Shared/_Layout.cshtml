@@ -122,7 +122,9 @@
         "notifications"     => ("Portal", "Notifications"),
         "students"          => ("Portal", "Students"),
         "user_import"       => ("Portal", "UserImport"),
+        "program"           => ("Portal", "Programs"),
         "departments"       => ("Portal", "Departments"),
+        "programs"          => ("Portal", "Programs"),
         "admin_users"       => ("Portal", "AdminUsers"),
         "courses"           => ("Portal", "Courses"),
         "assignments"       => ("Portal", "Assignments"),
@@ -135,6 +137,7 @@
         "gradebook"         => ("Portal", "Gradebook"),
         "rubric_manage"     => ("Portal", "RubricManage"),
         "analytics"         => ("Portal", "Analytics"),
+        "ai_chat"           => ("Portal", "AiChat"),
         "student_lifecycle" => ("Portal", "StudentLifecycle"),
         "payments"          => ("Portal", "Payments"),
         "enrollments"       => ("Portal", "Enrollments"),
@@ -174,6 +177,8 @@
         "buildings" => ("Faculty Related", 2),
         "rooms" => ("Faculty Related", 2),
         "departments" => ("Faculty Related", 2),
+        "program" => ("Faculty Related", 2),
+        "programs" => ("Faculty Related", 2),
         "admin_users" => ("Faculty Related", 2),
         "courses" => ("Faculty Related", 2),
         "assignments" => ("Faculty Related", 2),
@@ -320,6 +325,11 @@
                         {
                             foreach (var sub in subMenus)
                             {
+                                if (sub.Key.Equals("ai_chat", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    continue;
+                                }
+
                                 if (isStudent && !canStudentSeeFyp && sub.Key.Equals("fyp", StringComparison.OrdinalIgnoreCase))
                                 {
                                     continue;
@@ -333,6 +343,11 @@
                         }
                         else
                         {
+                            if (top.Key.Equals("ai_chat", StringComparison.OrdinalIgnoreCase))
+                            {
+                                continue;
+                            }
+
                             if (isStudent && !canStudentSeeFyp && top.Key.Equals("fyp", StringComparison.OrdinalIgnoreCase))
                             {
                                 continue;
@@ -343,6 +358,14 @@
                             var topGroup = ResolveGroup(top.Key);
                             groupedLinks.Add((topGroup.Group, topGroup.SortOrder, top.DisplayOrder * 100, top.Name, topRoute.Value.Controller, topRoute.Value.Action));
                         }
+                    }
+
+                    var hasProgramsLink = groupedLinks.Any(l =>
+                        l.Controller.Equals("Portal", StringComparison.OrdinalIgnoreCase)
+                        && l.Action.Equals("Programs", StringComparison.OrdinalIgnoreCase));
+                    if (showAdminLinks && !hasProgramsLink)
+                    {
+                        groupedLinks.Add(("Faculty Related", 2, 2500, "Programs", "Portal", "Programs"));
                     }
 
                     foreach (var group in groupedLinks
@@ -396,6 +419,7 @@
                             <a class="menu-link" asp-controller="Portal" asp-action="Students">Students</a>
                             <a class="menu-link" asp-controller="Portal" asp-action="UserImport">User Import</a>
                             <a class="menu-link" asp-controller="Portal" asp-action="Departments">Departments</a>
+                            <a class="menu-link" asp-controller="Portal" asp-action="Programs">Programs</a>
                         }
                         <a class="menu-link" asp-controller="Portal" asp-action="Courses">Courses</a>
                         <a class="menu-link" asp-controller="Portal" asp-action="Enrollments">Enrollments</a>

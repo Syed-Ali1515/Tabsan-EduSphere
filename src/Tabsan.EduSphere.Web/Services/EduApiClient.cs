@@ -21,6 +21,7 @@ public interface IEduApiClient
 
     Task<List<LookupItem>> GetDepartmentsAsync(CancellationToken ct);
     Task<List<LookupItem>> GetProgramsAsync(Guid? departmentId, CancellationToken ct);
+    Task<List<ProgramItem>> GetProgramDetailsAsync(Guid? departmentId, CancellationToken ct);
     Task<List<LookupItem>> GetSemestersAsync(CancellationToken ct);
     Task<List<LookupItem>> GetCoursesAsync(Guid? departmentId, CancellationToken ct);
     Task<List<FacultyLookupItem>> GetFacultyAsync(CancellationToken ct);
@@ -120,6 +121,9 @@ public interface IEduApiClient
 
     // Departments
     Task<List<DepartmentItem>> GetDepartmentDetailsAsync(CancellationToken ct);
+    Task CreateProgramAsync(string name, string code, Guid departmentId, int totalSemesters, CancellationToken ct);
+    Task UpdateProgramAsync(Guid id, string newName, CancellationToken ct);
+    Task DeactivateProgramAsync(Guid id, CancellationToken ct);
     Task CreateDepartmentAsync(string name, string code, int institutionType, CancellationToken ct);
     Task UpdateDepartmentAsync(Guid id, string newName, int? institutionType, CancellationToken ct);
     Task DeactivateDepartmentAsync(Guid id, CancellationToken ct);
@@ -499,6 +503,23 @@ public class EduApiClient : IEduApiClient
             ? $"api/v1/program?departmentId={departmentId.Value}"
             : "api/v1/program";
         return await GetAsync<List<LookupItem>>(path, ct) ?? new();
+    }
+
+    public async Task<List<ProgramItem>> GetProgramDetailsAsync(Guid? departmentId, CancellationToken ct)
+    {
+        var path = departmentId.HasValue
+            ? $"api/v1/program?departmentId={departmentId.Value}"
+            : "api/v1/program";
+        var raw = await GetAsync<List<ProgramDetailDto>>(path, ct) ?? new();
+        return raw.Select(p => new ProgramItem
+        {
+            Id = p.Id,
+            Name = p.Name ?? "",
+            Code = p.Code ?? "",
+            DepartmentId = p.DepartmentId,
+            TotalSemesters = p.TotalSemesters,
+            IsActive = p.IsActive
+        }).ToList();
     }
 
     public async Task<List<LookupItem>> GetSemestersAsync(CancellationToken ct)
@@ -1323,6 +1344,16 @@ public class EduApiClient : IEduApiClient
         public int     InstitutionType { get; set; }
     }
 
+    private sealed class ProgramDetailDto
+    {
+        public Guid Id { get; set; }
+        public string? Name { get; set; }
+        public string? Code { get; set; }
+        public Guid DepartmentId { get; set; }
+        public int TotalSemesters { get; set; }
+        public bool IsActive { get; set; }
+    }
+
     private sealed class AdminUserApiDto
     {
         public Guid Id { get; set; }
@@ -1349,6 +1380,15 @@ public class EduApiClient : IEduApiClient
 
     public Task CreateDepartmentAsync(string name, string code, int institutionType, CancellationToken ct)
         => PostAsync<object, object>("api/v1/department", new { name, code, institutionType }, ct);
+
+    public Task CreateProgramAsync(string name, string code, Guid departmentId, int totalSemesters, CancellationToken ct)
+        => PostAsync<object, object>("api/v1/program", new { name, code, departmentId, totalSemesters }, ct);
+
+    public Task UpdateProgramAsync(Guid id, string newName, CancellationToken ct)
+        => PutAsync<object, object>($"api/v1/program/{id}", new { name = newName }, ct);
+
+    public Task DeactivateProgramAsync(Guid id, CancellationToken ct)
+        => DeleteAsync($"api/v1/program/{id}", ct);
 
     public Task UpdateDepartmentAsync(Guid id, string newName, int? institutionType, CancellationToken ct)
         => PutAsync<object, object>($"api/v1/department/{id}", new { newName, institutionType }, ct);
@@ -2254,13 +2294,13 @@ public class EduApiClient : IEduApiClient
 
     // Final-Touches Phase 6 Stage 6.2 — replaced raw JSON fetch with typed GetAsync<T> deserialization
     public Task<DepartmentPerformanceReport?> GetPerformanceAnalyticsAsync(Guid? departmentId, int? institutionType, CancellationToken ct)
-        => GetAsync<DepartmentPerformanceReport>($"api/analytics/performance{BuildAnalyticsQuery(departmentId, institutionType)}", ct);
+        => GetAsync<DepartmentPerformanceReport>($"api/v1/analytics/performance{BuildAnalyticsQuery(departmentId, institutionType)}", ct);
 
     public Task<DepartmentAttendanceReport?> GetAttendanceAnalyticsAsync(Guid? departmentId, int? institutionType, CancellationToken ct)
-        => GetAsync<DepartmentAttendanceReport>($"api/analytics/attendance{BuildAnalyticsQuery(departmentId, institutionType)}", ct);
+        => GetAsync<DepartmentAttendanceReport>($"api/v1/analytics/attendance{BuildAnalyticsQuery(departmentId, institutionType)}", ct);
 
     public Task<AssignmentStatsReport?> GetAssignmentAnalyticsAsync(Guid? departmentId, int? institutionType, CancellationToken ct)
-        => GetAsync<AssignmentStatsReport>($"api/analytics/assignments{BuildAnalyticsQuery(departmentId, institutionType)}", ct);
+        => GetAsync<AssignmentStatsReport>($"api/v1/analytics/assignments{BuildAnalyticsQuery(departmentId, institutionType)}", ct);
 
     private static string BuildAnalyticsQuery(Guid? departmentId, int? institutionType)
     {
