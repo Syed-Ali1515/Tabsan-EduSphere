@@ -1,19 +1,19 @@
 ﻿# Phase 38 Non-Runtime Asset Separation Report
 
-- Generated (UTC): 2026-05-15 01:08:42
-- Execute mode: False
+- Generated (UTC): 2026-05-15 02:55:23
+- Execute mode: True
 
 | Folder | Result | Details |
 |---|---|---|
-| Docs | PASS | Dry-run planned copy |
-| PPT | PASS | Dry-run planned copy |
-| Project startup Docs | PASS | Dry-run planned copy |
-| Scripts | PASS | Dry-run planned copy |
-| UAT-SAT docs | PASS | Dry-run planned copy |
-| User Guide | PASS | Dry-run planned copy |
-| New Enhancements | PASS | Dry-run planned copy |
+| Docs | PASS | Copied to packaging root |
+| PPT | PASS | Copied to packaging root |
+| Project startup Docs | PASS | Copied to packaging root |
+| Scripts | PASS | Copied to packaging root |
+| UAT-SAT docs | PASS | Copied to packaging root |
+| User Guide | PASS | Copied to packaging root |
+| New Enhancements | PASS | Copied to packaging root |
 
-- [DryRun] Non-runtime package path: c:\Users\alin\Desktop\Prj\Tabsan-EduSphere\.\Artifacts\Phase38\NonRuntime-Assets-20260515.zip
+- Non-runtime package: c:\Users\alin\Desktop\Prj\Tabsan-EduSphere\.\Artifacts\Phase38\NonRuntime-Assets-20260515.zip
 
 ## Summary
 - Total folders: 7
