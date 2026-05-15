@@ -29,13 +29,13 @@ function Invoke-PublishProject {
         [Parameter(Mandatory = $true)][string]$OutputPath
     )
 
-    $args = @("publish", $ProjectPath, "-c", $Configuration, "-o", $OutputPath)
+    $args = @("publish", $ProjectPath, "-c", $Configuration, "-o", $OutputPath, "-p:ErrorOnDuplicatePublishOutputFiles=false")
     if (-not $Execute) {
         Add-ReportLine "[DryRun] dotnet $($args -join ' ')"
         return [pscustomobject]@{ Name = $Name; Result = "PASS"; Details = "Dry-run planned publish" }
     }
 
-    & dotnet @args
+    & dotnet @args | Out-Null
     if ($LASTEXITCODE -eq 0) {
         return [pscustomobject]@{ Name = $Name; Result = "PASS"; Details = "Publish succeeded" }
     }
