@@ -18,6 +18,10 @@ param(
     [int]$HypercareHours = 72,
 
     [Parameter(Mandatory = $false)]
+    [ValidateSet("Demo", "Clean")]
+    [string]$DeploymentMode = "Demo",
+
+    [Parameter(Mandatory = $false)]
     [switch]$Execute
 )
 
@@ -105,12 +109,14 @@ Add-ReportLine "- Execute mode: $Execute"
 Add-ReportLine "- API base URL: $ApiBaseUrl"
 Add-ReportLine "- Web base URL: $WebBaseUrl"
 Add-ReportLine "- Hypercare window (hours): $HypercareHours"
+Add-ReportLine "- Deployment mode: $DeploymentMode"
 Add-ReportLine ""
 
 Add-ReportLine "## Deployment Flow"
 Add-ReportLine "1. Rollback-safe deployment flow selected as mandatory path."
-Add-ReportLine "2. Immediate post-deploy smoke checks executed/planned."
-Add-ReportLine "3. Hypercare monitoring checkpoints activated."
+Add-ReportLine "2. Deployment mode selected: $DeploymentMode."
+Add-ReportLine "3. Immediate post-deploy smoke checks executed/planned."
+Add-ReportLine "4. Hypercare monitoring checkpoints activated."
 Add-ReportLine ""
 
 Add-ReportLine "## Post-Deploy Smoke Validation"

@@ -26,6 +26,10 @@ param(
     [string]$SqlPassword,
 
     [Parameter(Mandatory = $false)]
+    [ValidateSet("Demo", "Clean")]
+    [string]$DeploymentMode = "Demo",
+
+    [Parameter(Mandatory = $false)]
     [switch]$DryRun = $true,
 
     [Parameter(Mandatory = $false)]
@@ -96,15 +100,28 @@ if ($Execute -and -not (Get-Command sqlcmd -ErrorAction SilentlyContinue)) {
     throw "sqlcmd is required but was not found in PATH."
 }
 
-$requiredScripts = @(
-    "01-Schema-Current.sql",
-    "02-Seed-Core.sql",
-    "03-FullDummyData.sql",
-    "04-Maintenance-Indexes-And-Views.sql",
-    "05-PostDeployment-Checks.sql",
+$sqlSequence = if ($DeploymentMode -eq "Clean") {
+    @(
+        "01-Schema-Current.sql",
+        "Seed-Core-Clean.sql",
+        "04-Maintenance-Indexes-And-Views.sql",
+        "05-PostDeployment-Checks-Clean.sql"
+    )
+}
+else {
+    @(
+        "01-Schema-Current.sql",
+        "02-Seed-Core.sql",
+        "03-FullDummyData.sql",
+        "04-Maintenance-Indexes-And-Views.sql",
+        "05-PostDeployment-Checks.sql"
+    )
+}
+
+$requiredScripts = @($sqlSequence + @(
     "Phase34-BackupRestore-Drill.ps1",
     "Phase34-Rollback-Safe-Deployment.ps1"
-)
+))
 
 foreach ($scriptName in $requiredScripts) {
     $path = Join-Path $RepoRoot (Join-Path $ScriptsRoot $scriptName)
@@ -123,7 +140,7 @@ if (-not [System.IO.Path]::IsPathRooted($ScriptsRoot)) {
 
 New-Item -ItemType Directory -Path $ArtifactRoot -Force | Out-Null
 $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
-$reportPath = Join-Path $ArtifactRoot "Deployment-Rehearsal-$timestamp.md"
+$reportPath = Join-Path $ArtifactRoot "Deployment-Rehearsal-$($DeploymentMode)-$timestamp.md"
 $reportLines = [System.Collections.Generic.List[string]]::new()
 
 $script:ReportLines = $reportLines
@@ -133,19 +150,32 @@ Add-ReportLine ""
 Add-ReportLine "- Generated (UTC): $((Get-Date).ToUniversalTime().ToString('yyyy-MM-dd HH:mm:ss'))"
 Add-ReportLine "- Server: $ServerInstance"
 Add-ReportLine "- Database: $DatabaseName"
+Add-ReportLine "- DeploymentMode: $DeploymentMode"
 Add-ReportLine "- DryRun: $DryRun"
 Add-ReportLine "- Execute: $Execute"
 Add-ReportLine ""
 
-$steps = @(
-    [pscustomobject]@{ Name = "Schema"; Database = "master"; Command = "01-Schema-Current.sql"; Description = "Create or refresh schema" },
-    [pscustomobject]@{ Name = "Seed"; Database = $DatabaseName; Command = "02-Seed-Core.sql"; Description = "Seed core data" },
-    [pscustomobject]@{ Name = "DummyData"; Database = $DatabaseName; Command = "03-FullDummyData.sql"; Description = "Seed full dummy data" },
-    [pscustomobject]@{ Name = "Maintenance"; Database = $DatabaseName; Command = "04-Maintenance-Indexes-And-Views.sql"; Description = "Build maintenance indexes and views" },
-    [pscustomobject]@{ Name = "PostDeploymentChecks"; Database = $DatabaseName; Command = "05-PostDeployment-Checks.sql"; Description = "Validate post-deployment state" },
-    [pscustomobject]@{ Name = "BackupRestoreDrill"; Database = $null; Command = "Phase34-BackupRestore-Drill.ps1"; Description = "Run backup/restore drill utility" },
-    [pscustomobject]@{ Name = "RollbackSafeDeployment"; Database = $null; Command = "Phase34-Rollback-Safe-Deployment.ps1"; Description = "Run rollback-safe deployment utility" }
-)
+$steps = if ($DeploymentMode -eq "Clean") {
+    @(
+        [pscustomobject]@{ Name = "Schema"; Database = "master"; Command = "01-Schema-Current.sql"; Description = "Create or refresh schema" },
+        [pscustomobject]@{ Name = "CleanSeed"; Database = $DatabaseName; Command = "Seed-Core-Clean.sql"; Description = "Seed clean startup baseline" },
+        [pscustomobject]@{ Name = "Maintenance"; Database = $DatabaseName; Command = "04-Maintenance-Indexes-And-Views.sql"; Description = "Build maintenance indexes and views" },
+        [pscustomobject]@{ Name = "PostDeploymentChecksClean"; Database = $DatabaseName; Command = "05-PostDeployment-Checks-Clean.sql"; Description = "Validate clean post-deployment baseline" },
+        [pscustomobject]@{ Name = "BackupRestoreDrill"; Database = $null; Command = "Phase34-BackupRestore-Drill.ps1"; Description = "Run backup/restore drill utility" },
+        [pscustomobject]@{ Name = "RollbackSafeDeployment"; Database = $null; Command = "Phase34-Rollback-Safe-Deployment.ps1"; Description = "Run rollback-safe deployment utility" }
+    )
+}
+else {
+    @(
+        [pscustomobject]@{ Name = "Schema"; Database = "master"; Command = "01-Schema-Current.sql"; Description = "Create or refresh schema" },
+        [pscustomobject]@{ Name = "Seed"; Database = $DatabaseName; Command = "02-Seed-Core.sql"; Description = "Seed core data" },
+        [pscustomobject]@{ Name = "DummyData"; Database = $DatabaseName; Command = "03-FullDummyData.sql"; Description = "Seed full dummy data" },
+        [pscustomobject]@{ Name = "Maintenance"; Database = $DatabaseName; Command = "04-Maintenance-Indexes-And-Views.sql"; Description = "Build maintenance indexes and views" },
+        [pscustomobject]@{ Name = "PostDeploymentChecks"; Database = $DatabaseName; Command = "05-PostDeployment-Checks.sql"; Description = "Validate post-deployment state" },
+        [pscustomobject]@{ Name = "BackupRestoreDrill"; Database = $null; Command = "Phase34-BackupRestore-Drill.ps1"; Description = "Run backup/restore drill utility" },
+        [pscustomobject]@{ Name = "RollbackSafeDeployment"; Database = $null; Command = "Phase34-Rollback-Safe-Deployment.ps1"; Description = "Run rollback-safe deployment utility" }
+    )
+}
 
 Add-ReportLine "| Step | Description | Target | Result |"
 Add-ReportLine "|---|---|---|---|"
@@ -169,6 +199,10 @@ foreach ($step in $steps) {
                 Invoke-SqlcmdScriptFile -Database $step.Database -ScriptPath (Join-Path $ScriptsRoot $step.Command)
                 $result.Details = "Core seed script verified in sequence"
             }
+            "Seed-Core-Clean.sql" {
+                Invoke-SqlcmdScriptFile -Database $step.Database -ScriptPath (Join-Path $ScriptsRoot $step.Command)
+                $result.Details = "Clean seed script verified in sequence"
+            }
             "03-FullDummyData.sql" {
                 Invoke-SqlcmdScriptFile -Database $step.Database -ScriptPath (Join-Path $ScriptsRoot $step.Command)
                 $result.Details = "Dummy data script verified in sequence"
@@ -180,6 +214,10 @@ foreach ($step in $steps) {
             "05-PostDeployment-Checks.sql" {
                 Invoke-SqlcmdScriptFile -Database $step.Database -ScriptPath (Join-Path $ScriptsRoot $step.Command)
                 $result.Details = "Post-deployment validation script verified in sequence"
+            }
+            "05-PostDeployment-Checks-Clean.sql" {
+                Invoke-SqlcmdScriptFile -Database $step.Database -ScriptPath (Join-Path $ScriptsRoot $step.Command)
+                $result.Details = "Clean post-deployment validation script verified in sequence"
             }
             "Phase34-BackupRestore-Drill.ps1" {
                 $drillArgs = @(
@@ -209,6 +247,7 @@ foreach ($step in $steps) {
                     "-File", (Join-Path $ScriptsRoot $step.Command),
                     "-ServerInstance", $ServerInstance,
                     "-DatabaseName", $DatabaseName,
+                    "-DeploymentMode", $DeploymentMode,
                     "-DryRun"
                 )
 

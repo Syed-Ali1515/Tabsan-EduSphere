@@ -30,9 +30,11 @@ Escalation path:
 2. Execute environment and secret readiness validation:
    - `powershell -ExecutionPolicy Bypass -File "Scripts\Phase36-Validate-Environment-Readiness.ps1" -RepoRoot "<repo>" -FailOnIssues`
 3. Execute deployment rehearsal validation:
-   - `powershell -ExecutionPolicy Bypass -File "Scripts\Phase36-Deployment-Rehearsal.ps1" -RepoRoot "<repo>"`
+   - Demo flow: `powershell -ExecutionPolicy Bypass -File "Scripts\Phase36-Deployment-Rehearsal.ps1" -RepoRoot "<repo>" -DeploymentMode "Demo"`
+   - Clean flow: `powershell -ExecutionPolicy Bypass -File "Scripts\Phase36-Deployment-Rehearsal.ps1" -RepoRoot "<repo>" -DeploymentMode "Clean"`
 4. Execute rollback-safe deployment flow:
-   - `powershell -ExecutionPolicy Bypass -File "Scripts\Phase34-Rollback-Safe-Deployment.ps1" -ServerInstance "<server>" -DatabaseName "Tabsan-EduSphere"`
+   - Demo flow: `powershell -ExecutionPolicy Bypass -File "Scripts\Phase34-Rollback-Safe-Deployment.ps1" -ServerInstance "<server>" -DatabaseName "Tabsan-EduSphere" -DeploymentMode "Demo"`
+   - Clean flow: `powershell -ExecutionPolicy Bypass -File "Scripts\Phase34-Rollback-Safe-Deployment.ps1" -ServerInstance "<server>" -DatabaseName "Tabsan-EduSphere" -DeploymentMode "Clean"`
 5. Execute backup/restore drill evidence step:
    - `powershell -ExecutionPolicy Bypass -File "Scripts\Phase34-BackupRestore-Drill.ps1" -ServerInstance "<server>" -DatabaseName "Tabsan-EduSphere"`
 

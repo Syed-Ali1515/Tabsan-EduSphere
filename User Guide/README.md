@@ -5,6 +5,12 @@ This folder contains role-based manuals for day-to-day use of the platform.
 Version: 1.5 — updated 15 May 2026  
 Completion Status: Phase 38 complete (final separation baseline)
 
+Repository Sync Note (15 May 2026):
+- Operations now support dual deployment flows:
+	- Demo flow (with full dummy data)
+	- Clean flow (startup-only baseline without dummy data)
+- Refer to `Scripts/README.md` and `Scripts/README-SCRIPT-EXECUTION-ORDER.md` for exact commands.
+
 ## Final Release Packaging Update (Phase 37/38)
 
 - Runtime app publish output is separated from the license app publish output.

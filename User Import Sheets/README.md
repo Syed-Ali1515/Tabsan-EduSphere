@@ -6,6 +6,10 @@ Version: 1.5
 Date: 15 May 2026  
 Completion Status: Phase 38 complete (final separation baseline)
 
+Repository Sync Note (15 May 2026):
+- Deployment workflows now support both Demo and Clean database modes.
+- For clean startup environments, use `Scripts/Seed-Core-Clean.sql` and `Scripts/05-PostDeployment-Checks-Clean.sql`.
+
 ## Final Release Packaging Update (Phase 37/38)
 
 - Runtime app and license app publish outputs are separated.

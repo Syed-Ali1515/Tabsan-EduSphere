@@ -2,6 +2,9 @@
 
 Current load scripts are aligned to live API routes under `api/v1/*` and local development URL `http://localhost:5181`.
 
+Repository Sync Note (15 May 2026):
+- Deployment automation now supports both Demo and Clean DB flows; load-test users should ensure target data state matches the chosen deployment mode.
+
 **Current Focus**: auth and core authenticated flows (auth, dashboard, sidebar, notification inbox)
 
 Phase 5 update:

@@ -1,15 +1,17 @@
 ﻿# Stage 36.6 Go-Live Execution and Hypercare Report
 
-- Generated (UTC): 2026-05-15 01:05:48
+- Generated (UTC): 2026-05-15 04:27:43
 - Execute mode: False
 - API base URL: http://localhost:5000
 - Web base URL: http://localhost:5001
 - Hypercare window (hours): 72
+- Deployment mode: Demo
 
 ## Deployment Flow
 1. Rollback-safe deployment flow selected as mandatory path.
-2. Immediate post-deploy smoke checks executed/planned.
-3. Hypercare monitoring checkpoints activated.
+2. Deployment mode selected: Demo.
+3. Immediate post-deploy smoke checks executed/planned.
+4. Hypercare monitoring checkpoints activated.
 
 ## Post-Deploy Smoke Validation
 | Check | Result | Details |

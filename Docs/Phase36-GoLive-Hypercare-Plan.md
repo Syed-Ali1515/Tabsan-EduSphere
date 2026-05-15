@@ -5,7 +5,9 @@ Execute production go-live with rollback-safe controls and maintain a structured
 
 ## Go-Live Execution Controls
 
-1. Use rollback-safe deployment flow only (`Scripts/Phase34-Rollback-Safe-Deployment.ps1`).
+1. Use rollback-safe deployment flow only (`Scripts/Phase34-Rollback-Safe-Deployment.ps1`) with explicit mode:
+   - Demo flow: `-DeploymentMode "Demo"`
+   - Clean flow: `-DeploymentMode "Clean"`
 2. Run immediate post-deploy smoke validation for:
    - authentication,
    - dashboard,

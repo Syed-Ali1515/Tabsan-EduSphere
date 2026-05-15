@@ -1,5 +1,8 @@
 # Tabsan EduSphere Database Scripts - Execution Guide
 
+Repository Sync Note (15 May 2026):
+- This guide now includes both the full demo path and the clean startup path.
+
 ## ⚠️ CRITICAL: Script Execution Order
 
 **You MUST run these scripts in the exact order listed below. Skipping steps or running them out of order will cause errors.**
@@ -31,7 +34,7 @@ sqlcmd -S YOUR_SERVER -d master -i Scripts/01-Schema-Current.sql
 
 ---
 
-### Step 2: Seed Core Data (REQUIRED)
+### Step 2: Seed Core Data (REQUIRED - choose one path)
 **File:** `02-Seed-Core.sql`
 
 **What it does:**
@@ -58,7 +61,31 @@ sqlcmd -S YOUR_SERVER -d Tabsan-EduSphere -i Scripts/02-Seed-Core.sql
 
 ---
 
-### Step 3: Add Comprehensive Test Data (REQUIRED)
+### Step 2A: Seed Clean Core Baseline (REQUIRED for clean startup)
+**File:** `Seed-Core-Clean.sql`
+
+**What it does:**
+- Seeds startup-only baseline with no dummy/demo rows
+- Seeds all core roles, only one superadmin user, baseline institution-type departments
+- Seeds modules, module status, module-role permissions, baseline report/sidebar access
+- Seeds required portal settings and optional baseline license row
+
+**Prerequisites:**
+- ✅ `01-Schema-Current.sql` must complete successfully
+
+**How to run:**
+```bash
+sqlcmd -S YOUR_SERVER -d Tabsan-EduSphere -i Scripts/Seed-Core-Clean.sql
+```
+
+**Expected output:**
+- "Seed-Core-Clean completed successfully." message
+- No errors should occur
+- Script should complete in 5-15 seconds
+
+---
+
+### Step 3: Add Comprehensive Test Data (OPTIONAL - demo path only)
 **File:** `03-FullDummyData.sql`
 
 **What it does:**
@@ -73,7 +100,7 @@ sqlcmd -S YOUR_SERVER -d Tabsan-EduSphere -i Scripts/02-Seed-Core.sql
 
 **Prerequisites:**
 - ✅ `01-Schema-Current.sql` must complete successfully
-- ✅ `02-Seed-Core.sql` must complete successfully
+- ✅ `02-Seed-Core.sql` OR `Seed-Core-Clean.sql` must complete successfully
 
 **How to run:**
 ```bash
@@ -148,6 +175,30 @@ sqlcmd -S YOUR_SERVER -d Tabsan-EduSphere -i Scripts/05-PostDeployment-Checks.sq
 
 ---
 
+### Step 5A: Validate Clean Baseline (OPTIONAL - clean path)
+**File:** `05-PostDeployment-Checks-Clean.sql`
+
+**What it does:**
+- Verifies strict clean baseline after `Seed-Core-Clean.sql`
+- Fails if dummy-domain data exists (programs/courses/enrollments/results/quizzes etc.)
+- Validates startup permissions and access baseline (modules, role access, reports, sidebar)
+
+**Prerequisites:**
+- ✅ `01-Schema-Current.sql` must complete successfully
+- ✅ `Seed-Core-Clean.sql` must complete successfully
+
+**How to run:**
+```bash
+sqlcmd -S YOUR_SERVER -d Tabsan-EduSphere -i Scripts/05-PostDeployment-Checks-Clean.sql
+```
+
+**Expected output:**
+- Table of check names with pass/fail values
+- "Clean baseline checks passed." message when baseline is clean
+- Script raises an error if any clean baseline check fails
+
+---
+
 ## Quick Start (Copy-Paste)
 
 If you have SQL Server installed and accessible via `sqlcmd`, paste this entire block into PowerShell:
@@ -173,6 +224,25 @@ Write-Host "Step 5: Running validation..." -ForegroundColor Cyan
 sqlcmd -S $server -d Tabsan-EduSphere -i Scripts/05-PostDeployment-Checks.sql
 
 Write-Host "✓ Database setup complete!" -ForegroundColor Green
+```
+
+### Clean Startup Quick Start (No Dummy Data)
+
+```powershell
+$server = "YOUR_SERVER"
+
+cd "e:\Tabsan-EduSphere\Tabsan-EduSphere"
+
+Write-Host "Step 1: Creating schema..." -ForegroundColor Cyan
+sqlcmd -S $server -d master -i Scripts/01-Schema-Current.sql
+
+Write-Host "Step 2A: Seeding clean core baseline..." -ForegroundColor Cyan
+sqlcmd -S $server -d Tabsan-EduSphere -i Scripts/Seed-Core-Clean.sql
+
+Write-Host "Step 5A: Running clean baseline validation..." -ForegroundColor Cyan
+sqlcmd -S $server -d Tabsan-EduSphere -i Scripts/05-PostDeployment-Checks-Clean.sql
+
+Write-Host "✓ Clean baseline setup complete!" -ForegroundColor Green
 ```
 
 ---
@@ -211,10 +281,12 @@ Then run all 5 scripts again from the beginning.
 | Script | Type | Time | Required? | Idempotent? |
 |--------|------|------|-----------|-------------|
 | 01-Schema-Current.sql | DDL | 10-30s | ✅ YES | ✅ YES |
-| 02-Seed-Core.sql | DML | 5-15s | ✅ YES | ✅ YES |
-| 03-FullDummyData.sql | DML | 30-60s | ✅ YES | ✅ YES |
+| 02-Seed-Core.sql | DML | 5-15s | ✅ YES (full/demo path) | ✅ YES |
+| Seed-Core-Clean.sql | DML | 5-15s | ✅ YES (clean path) | ✅ YES |
+| 03-FullDummyData.sql | DML | 30-60s | ⚠️ Optional (demo path) | ✅ YES |
 | 04-Maintenance | DDL | 5-10s | ⚠️ Optional | ✅ YES |
 | 05-PostDeployment | SELECT | 2-5s | ⚠️ Optional | ✅ YES |
+| 05-PostDeployment-Checks-Clean.sql | SELECT | 2-5s | ⚠️ Optional (clean path) | ✅ YES |
 
 **Notes:**
 - **Required:** Must run for full functionality
@@ -225,7 +297,7 @@ Then run all 5 scripts again from the beginning.
 
 ## Data Content After Execution
 
-After running all 5 scripts, your database will contain:
+After running the full demo path (`01 -> 02 -> 03 -> 04 -> 05`), your database will contain:
 
 **Institutions:**
 - 1 University (InstitutionType = 2)

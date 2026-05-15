@@ -2,15 +2,20 @@
 
 This folder contains the refreshed database scripts aligned to the current EF Core model, active modules, and present application hierarchy.
 
+Repository Sync Note (15 May 2026):
+- This README is synchronized with dual deployment modes (`Demo` and `Clean`) across Phase 34/36 automation.
+
 ## Script Hierarchy
 
 | Order | File | Purpose |
 | --- | --- | --- |
 | 01 | `01-Schema-Current.sql` | Idempotent full schema generated from current EF migrations. |
 | 02 | `02-Seed-Core.sql` | Core seed: roles, modules, module status, portal settings, report definitions, and base sidebar menus. |
+| 02A | `Seed-Core-Clean.sql` | Clean core seed: startup-only baseline (roles, superadmin-only user, baseline departments/modules/permissions) with no dummy rows. |
 | 03 | `03-FullDummyData.sql` | Full dummy data for demos: multi-department hierarchy, users, programs, courses, offerings, enrollments, assignments, submissions, attendance, results, quizzes, support tickets, discussions, and notifications. |
 | 04 | `04-Maintenance-Indexes-And-Views.sql` | Safe maintenance indexes + operational views for current workload paths. |
 | 05 | `05-PostDeployment-Checks.sql` | Validation queries for migration/version, core entity counts, and demo-domain counts (results/quizzes/helpdesk/discussions). |
+| 05A | `05-PostDeployment-Checks-Clean.sql` | Strict clean-baseline validation after `Seed-Core-Clean.sql`; fails when dummy-domain data exists. |
 
 ## Recommended Execution
 
@@ -24,11 +29,20 @@ sqlcmd -S "localhost" -E -d "master" -i "Scripts\04-Maintenance-Indexes-And-View
 sqlcmd -S "localhost" -E -d "master" -i "Scripts\05-PostDeployment-Checks.sql"
 ```
 
+Clean startup path (no dummy data):
+
+```powershell
+sqlcmd -S "localhost" -E -d "master" -i "Scripts\01-Schema-Current.sql"
+sqlcmd -S "localhost" -E -d "master" -i "Scripts\Seed-Core-Clean.sql"
+sqlcmd -S "localhost" -E -d "master" -i "Scripts\05-PostDeployment-Checks-Clean.sql"
+```
+
 Environment notes:
 
 - Run `01-Schema-Current.sql` from `master`; it creates and switches to `[Tabsan-EduSphere]` automatically.
 - Run scripts with an account that can create databases, alter schema, and create indexes/views.
 - Execute in the exact order `01 -> 02 -> 03 -> 04 -> 05` for full deployment + validation.
+- For clean startup without demo data, execute `01 -> Seed-Core-Clean -> 05-PostDeployment-Checks-Clean`.
 - If legacy EduSphere objects exist in `master`, run `00-Cleanup-Master-Mistake.sql` once before `01`.
 
 Rollback and verification checklist:
@@ -77,9 +91,18 @@ powershell -ExecutionPolicy Bypass -File "Scripts\Phase34-BackupRestore-Drill.ps
 - If deployment fails after backup, it performs automatic rollback restore from the pre-deployment backup.
 - Stores rollback backups under `Artifacts/Phase34/RollbackBackups` by default.
 
+Deployment mode options:
+- `-DeploymentMode "Demo"` runs the demo flow (`01 -> 02 -> 03 -> 04 -> 05`).
+- `-DeploymentMode "Clean"` runs the clean flow (`01 -> Seed-Core-Clean -> 04 -> 05-PostDeployment-Checks-Clean`).
+
 Example:
 ```powershell
-powershell -ExecutionPolicy Bypass -File "Scripts\Phase34-Rollback-Safe-Deployment.ps1" -ServerInstance "localhost"
+powershell -ExecutionPolicy Bypass -File "Scripts\Phase34-Rollback-Safe-Deployment.ps1" -ServerInstance "localhost" -DeploymentMode "Demo"
+```
+
+Clean-flow example:
+```powershell
+powershell -ExecutionPolicy Bypass -File "Scripts\Phase34-Rollback-Safe-Deployment.ps1" -ServerInstance "localhost" -DeploymentMode "Clean"
 ```
 
 ### Stage 36.2 Environment and Secret Readiness Utility
@@ -106,18 +129,30 @@ powershell -ExecutionPolicy Bypass -File "Scripts\Phase36-Validate-Environment-R
 `Phase36-Deployment-Rehearsal.ps1` validates the required deployment sequence before production go-live.
 
 Checks included:
-1. Required script presence for `01 -> 05` and the Stage 34 rollback/drill helpers.
-2. Ordered rehearsal reporting for schema, seed, dummy data, maintenance, and post-deployment checks.
+1. Required script presence for the selected deployment flow and the Stage 34 rollback/drill helpers.
+2. Ordered rehearsal reporting for either:
+	- Demo flow: `01 -> 02 -> 03 -> 04 -> 05`
+	- Clean flow: `01 -> Seed-Core-Clean -> 04 -> 05-PostDeployment-Checks-Clean`
 3. Optional execution mode for environments that have `sqlcmd` and SQL Server available.
 
-Dry-run report generation:
+Dry-run report generation (demo flow):
 ```powershell
-powershell -ExecutionPolicy Bypass -File "Scripts\Phase36-Deployment-Rehearsal.ps1" -RepoRoot "C:\path\to\Tabsan-EduSphere"
+powershell -ExecutionPolicy Bypass -File "Scripts\Phase36-Deployment-Rehearsal.ps1" -RepoRoot "C:\path\to\Tabsan-EduSphere" -DeploymentMode "Demo"
 ```
 
-Strict execution mode (requires reachable SQL Server + `sqlcmd`):
+Dry-run report generation (clean flow):
 ```powershell
-powershell -ExecutionPolicy Bypass -File "Scripts\Phase36-Deployment-Rehearsal.ps1" -RepoRoot "C:\path\to\Tabsan-EduSphere" -Execute -ServerInstance "localhost"
+powershell -ExecutionPolicy Bypass -File "Scripts\Phase36-Deployment-Rehearsal.ps1" -RepoRoot "C:\path\to\Tabsan-EduSphere" -DeploymentMode "Clean"
+```
+
+Strict execution mode (demo flow, requires reachable SQL Server + `sqlcmd`):
+```powershell
+powershell -ExecutionPolicy Bypass -File "Scripts\Phase36-Deployment-Rehearsal.ps1" -RepoRoot "C:\path\to\Tabsan-EduSphere" -DeploymentMode "Demo" -Execute -ServerInstance "localhost"
+```
+
+Strict execution mode (clean flow):
+```powershell
+powershell -ExecutionPolicy Bypass -File "Scripts\Phase36-Deployment-Rehearsal.ps1" -RepoRoot "C:\path\to\Tabsan-EduSphere" -DeploymentMode "Clean" -Execute -ServerInstance "localhost"
 ```
 
 The rehearsal script also invokes the Stage 34 rollback/drill utilities in dry-run mode so operators can confirm the backup and recovery playbook is part of the deployment gate.

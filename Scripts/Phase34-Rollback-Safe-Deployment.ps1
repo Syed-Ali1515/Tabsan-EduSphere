@@ -23,19 +23,33 @@ param(
     [string]$SqlPassword,
 
     [Parameter(Mandatory = $false)]
+    [ValidateSet("Demo", "Clean")]
+    [string]$DeploymentMode = "Demo",
+
+    [Parameter(Mandatory = $false)]
     [switch]$DryRun
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-$scriptSequence = @(
-    @{ Name = "01-Schema-Current.sql"; Database = "master" },
-    @{ Name = "02-Seed-Core.sql"; Database = $DatabaseName },
-    @{ Name = "03-FullDummyData.sql"; Database = $DatabaseName },
-    @{ Name = "04-Maintenance-Indexes-And-Views.sql"; Database = $DatabaseName },
-    @{ Name = "05-PostDeployment-Checks.sql"; Database = $DatabaseName }
-)
+$scriptSequence = if ($DeploymentMode -eq "Clean") {
+    @(
+        @{ Name = "01-Schema-Current.sql"; Database = "master" },
+        @{ Name = "Seed-Core-Clean.sql"; Database = $DatabaseName },
+        @{ Name = "04-Maintenance-Indexes-And-Views.sql"; Database = $DatabaseName },
+        @{ Name = "05-PostDeployment-Checks-Clean.sql"; Database = $DatabaseName }
+    )
+}
+else {
+    @(
+        @{ Name = "01-Schema-Current.sql"; Database = "master" },
+        @{ Name = "02-Seed-Core.sql"; Database = $DatabaseName },
+        @{ Name = "03-FullDummyData.sql"; Database = $DatabaseName },
+        @{ Name = "04-Maintenance-Indexes-And-Views.sql"; Database = $DatabaseName },
+        @{ Name = "05-PostDeployment-Checks.sql"; Database = $DatabaseName }
+    )
+}
 
 function Get-SqlcmdAuthArgs {
     if ($UseTrustedConnection.IsPresent) {
@@ -106,6 +120,7 @@ $preBackupFile = Join-Path $BackupDirectory ("{0}-predeploy-{1}.bak" -f $Databas
 
 Write-Host "[Phase34] Rollback-safe deployment started" -ForegroundColor Cyan
 Write-Host "[Phase34] Server: $ServerInstance | Database: $DatabaseName"
+Write-Host "[Phase34] DeploymentMode: $DeploymentMode"
 
 $databaseExistsQuery = "SELECT CASE WHEN DB_ID(N'$DatabaseName') IS NULL THEN 0 ELSE 1 END;"
 $databaseExists = Invoke-SqlcmdQuery -Database "master" -Query $databaseExistsQuery

@@ -2,6 +2,9 @@
 
 A **standalone .NET 8 console application** for generating encrypted `.tablic` license files for Tabsan EduSphere.
 
+Repository Sync Note (15 May 2026):
+- License generation workflow remains unchanged and compatible with both Demo and Clean deployment modes of EduSphere runtime environments.
+
 ## ⚠️ Important: Separate Application
 
 **Tabsan-Lic is NOT part of the main EduSphere application.**
